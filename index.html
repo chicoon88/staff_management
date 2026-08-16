@@ -32,13 +32,20 @@ input,select{border:1px solid #d2d7e0;background:white;border-radius:9px;padding
 @media(max-width:560px){.formgrid{grid-template-columns:1fr}.top{padding:0 10px}.v{font-size:21px}}
 @page{size:A4 landscape;margin:8mm}
 @media print{
+ *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
  body{background:#fff}body>*{display:none!important}#printArea{display:block!important;color:#000}
  #printArea .printHead{display:flex;justify-content:space-between;align-items:end;margin-bottom:8px}
  #printArea h1{font-size:20px;margin:0}#printArea .meta{font-size:10px}
  #printArea table{min-width:0;width:100%;table-layout:fixed;border-collapse:collapse}
  #printArea th,#printArea td{border:1px solid #777;padding:3px 2px;font-size:8.5px;height:21px;text-align:center;white-space:nowrap}
- #printArea th.pname,#printArea td.pname{width:72px;font-weight:800;text-align:left;padding-left:5px}
- #printArea .psun{background:#f3f3f3}.printLegend{font-size:9px;margin-top:6px}.printFoot{font-size:8px;margin-top:4px;text-align:right}
+ #printArea th.pname,#printArea td.pname{width:78px;font-weight:800;text-align:left;padding-left:5px}
+ #printArea .pweekend{background:#eaf2ff!important;color:#1456b8!important;font-weight:900}
+ #printArea .pholiday{background:#ffecec!important;color:#c62828!important;font-weight:900}
+ #printArea .poff{background:#f5f5f5!important;color:#999}
+ #printArea .pleave{background:#fff5cf!important;color:#805d00;font-weight:900}
+ #printArea .psick{background:#ffe9e9!important;color:#a62323;font-weight:900}
+ #printArea .present{font-weight:900}
+ #printArea .printEmployeeName{border-left:7px solid var(--empColor)!important}.printLegend{font-size:9px;margin-top:6px}.printFoot{font-size:8px;margin-top:4px;text-align:right}
 }
 </style>
 </head>
@@ -115,7 +122,7 @@ input,select{border:1px solid #d2d7e0;background:white;border-radius:9px;padding
 
 <section id="employeesPage" class="page">
  <div class="row"><div><h1 class="title">직원관리</h1><div class="sub">근무시간과 근무요일까지 언제든 수정 가능합니다.</div></div><button class="btn" onclick="openEmployee()">+ 직원 추가</button></div>
- <div class="card" style="margin-top:13px"><div class="tablewrap"><table><thead><tr><th class="name">이름</th><th>업무</th><th>입사일</th><th>근무형태</th><th>기본시간</th><th>휴게</th><th>근무요일</th><th>급여형태</th><th>연차 기준</th><th>연차 잔여</th><th></th></tr></thead><tbody id="employeeBody"></tbody></table></div></div>
+ <div class="card" style="margin-top:13px"><div class="tablewrap"><table><thead><tr><th class="name">이름</th><th>업무</th><th>입사일</th><th>근무형태</th><th>기본시간</th><th>휴게</th><th>근무요일</th><th>급여형태</th><th>연차 기준</th><th>연차 잔여</th><th>출력순서</th><th>출력색</th><th></th></tr></thead><tbody id="employeeBody"></tbody></table></div></div>
 </section>
 
 <section id="storesPage" class="page">
@@ -150,6 +157,13 @@ function workType(e){return e.work_type==='36'?'주4일·36h (소정32+추가4)'
 function leaveWeeklyHours(e){return Number(e.leave_weekly_hours ?? (e.work_type==='36'?32:40))}
 function leaveMonthlyHours(e){return Number(e.leave_monthly_hours ?? (e.work_type==='36'?7:8))}
 function leaveDayHours(e){return Number(e.leave_day_hours ?? 8)}
+const PRINT_COLORS=[
+ ['#DCEBFF','하늘'],['#E4F6E8','민트'],['#FFF0D8','살구'],['#F0E4FF','보라'],
+ ['#FFE3ED','핑크'],['#E8F5F2','청록'],['#FFF6C9','노랑'],['#E8ECF4','회색']
+];
+function employeeColor(e){return e.print_color||PRINT_COLORS[(employees.indexOf(e)+PRINT_COLORS.length)%PRINT_COLORS.length][0]}
+function orderedEmployees(){return [...employees].sort((a,b)=>(Number(a.print_order??9999)-Number(b.print_order??9999))||a.name.localeCompare(b.name,'ko'))}
+
 async function signIn(){let {error}=await sb.auth.signInWithPassword({email:$('loginEmail').value.trim(),password:$('loginPassword').value});$('loginMsg').textContent=error?error.message:'';if(!error)openApp()}
 async function signOut(){await sb.auth.signOut();location.reload()}async function boot(){let {data}=await sb.auth.getSession();if(data.session)openApp()}
 async function openApp(){$('login').classList.add('hidden');$('app').classList.remove('hidden');await loadStores();await loadHolidays();await refreshAll()}
@@ -161,7 +175,7 @@ async function refreshAll(){
  let r=monthRange();
  let e=await sb.from('employees').select('*').eq('store_id',storeId()).eq('active',true).order('name');
  if(e.error){alert('DB 연차 업데이트 SQL을 먼저 실행해주세요.\n'+e.error.message);return}
- employees=e.data||[];
+ employees=(e.data||[]).sort((a,b)=>(Number(a.print_order??9999)-Number(b.print_order??9999))||a.name.localeCompare(b.name,'ko'));
  let ids=employees.map(x=>x.id);
  schedules=[];
  if(ids.length){
@@ -380,7 +394,7 @@ function renderHome(){
    <td>${s.accrued}h</td><td>${s.used}h</td><td>${s.adjust>=0?'+':''}${s.adjust}h</td><td><b>${s.balance}h</b></td></tr>`;
  }).join(''):'<tr><td colspan="8">이번 달 연차 발생 직원이 없습니다.</td></tr>';
 }
-function renderSchedule(){let r=monthRange(),h='<tr><th class="name">선택 · 직원</th>';for(let d=1;d<=r.days;d++){let date=r.m+'-'+String(d).padStart(2,'0'),wd=new Date(r.y,r.mo-1,d).getDay(),hol=holidayFor(date),cl=hol?'holidayHead':(wd===0||wd===6?'weekendHead':'');h+=`<th class="${cl}" title="${hol?esc(hol.name):''}">${d}<br>${'일월화수목금토'[wd]}${hol?`<span class="holidayName">${esc(hol.name)}</span>`:''}</th>`}h+='<th>실근로</th><th>연장</th></tr>';$('schHead').innerHTML=h;$('schBody').innerHTML=employees.map(e=>{let x=calc(e),checked=selectedEmployees.has(e.id),row=`<tr class="${checked?'selectedRow':''}"><td class="name"><label style="display:flex;gap:8px;align-items:center"><input class="selectEmp" type="checkbox" ${checked?'checked':''} onchange="toggleEmployee(${e.id},this.checked)"><span><b>${esc(e.name)}</b><br><span class="pill">${workType(e)}</span></span></label></td>`;for(let d=1;d<=r.days;d++){let date=r.m+'-'+String(d).padStart(2,'0'),s=sched(e,date),v=s?.work_code||'',wd=new Date(r.y,r.mo-1,d).getDay(),hol=holidayFor(date),cl=hol?' holidayHead':(wd===0||wd===6?' weekendHead':'');row+=`<td class="${cl}" ondblclick="openShift(${e.id},'${date}')" title="${hol?esc(hol.name):''}"><input class="code code${v}" value="${esc(v)}" maxlength="4" onchange="quickSave(${e.id},'${date}',this.value)" title="더블클릭: 상세시간 수정"></td>`}return row+`<td><b>${x.worked}h</b></td><td>${x.ot}h</td></tr>`}).join('')}
+function renderSchedule(){let r=monthRange(),h='<tr><th class="name">선택 · 직원</th>';for(let d=1;d<=r.days;d++){let date=r.m+'-'+String(d).padStart(2,'0'),wd=new Date(r.y,r.mo-1,d).getDay(),hol=holidayFor(date),cl=hol?'holidayHead':(wd===0||wd===6?'weekendHead':'');h+=`<th class="${cl}" title="${hol?esc(hol.name):''}">${d}<br>${'일월화수목금토'[wd]}${hol?`<span class="holidayName">${esc(hol.name)}</span>`:''}</th>`}h+='<th>실근로</th><th>연장</th></tr>';$('schHead').innerHTML=h;$('schBody').innerHTML=orderedEmployees().map(e=>{let x=calc(e),checked=selectedEmployees.has(e.id),row=`<tr class="${checked?'selectedRow':''}"><td class="name"><label style="display:flex;gap:8px;align-items:center"><input class="selectEmp" type="checkbox" ${checked?'checked':''} onchange="toggleEmployee(${e.id},this.checked)"><span><b>${esc(e.name)}</b><br><span class="pill">${workType(e)}</span></span></label></td>`;for(let d=1;d<=r.days;d++){let date=r.m+'-'+String(d).padStart(2,'0'),s=sched(e,date),v=s?.work_code||'',wd=new Date(r.y,r.mo-1,d).getDay(),hol=holidayFor(date),cl=hol?' holidayHead':(wd===0||wd===6?' weekendHead':'');row+=`<td class="${cl}" ondblclick="openShift(${e.id},'${date}')" title="${hol?esc(hol.name):''}"><input class="code code${v}" value="${esc(v)}" maxlength="4" onchange="quickSave(${e.id},'${date}',this.value)" title="더블클릭: 상세시간 수정"></td>`}return row+`<td><b>${x.worked}h</b></td><td>${x.ot}h</td></tr>`}).join('')}
 async function quickSave(id,date,raw){
  let emp=employees.find(e=>e.id===id),code=raw.trim(),base=Number(emp.daily_hours||8),leaveH=leaveDayHours(emp),scheduled=0,worked=0,ot=0,status='';
  if(code==='연'){scheduled=leaveH;status='leave'}
@@ -423,16 +437,43 @@ function renderHours(){
 }
 function renderPayroll(){$('payrollBody').innerHTML=employees.map(e=>{let p=payrollFor(e),x=calc(e);if(!p)return `<tr><td class="name">${esc(e.name)}</td><td colspan="11">급여자료 없음</td></tr>`;let extra=Number(p.adjustment_pay||0)+Number(p.bonus||0),ded=Number(p.total_deduction||0),diff=Math.round((x.worked-Number(p.scheduled_hours||0))*100)/100;return `<tr><td class="name">${esc(e.name)}</td><td>${p.scheduled_hours||0}h</td><td class="money">${money(p.base_pay)}</td><td class="money">${money(p.fixed_overtime_pay)}</td><td class="money">${money(p.holiday_pay)}</td><td class="money">${money(p.overtime_pay)}</td><td class="money">${money(p.meal_allowance)}</td><td class="money">${money(extra)}</td><td class="money">${money(p.gross_pay)}</td><td class="money">${money(ded)}</td><td class="money"><b>${money(p.net_pay)}</b></td><td class="${diff===0?'ok':'warn'}">${diff>0?'+':''}${diff}h</td></tr>`}).join('')}
 function renderEmployees(){
- $('employeeBody').innerHTML=employees.map(e=>{
+ let list=orderedEmployees();
+ $('employeeBody').innerHTML=list.map((e,idx)=>{
    let ls=leaveSummary(e,isoToday());
-   return `<tr><td class="name"><b>${esc(e.name)}</b></td><td>${esc(e.role||'')}</td><td>${e.hire_date||''}</td><td>${workType(e)}</td>
+   let colors=PRINT_COLORS.map(([c,n])=>`<option value="${c}" ${employeeColor(e)===c?'selected':''}>${n}</option>`).join('');
+   return `<tr>
+   <td class="name"><b>${esc(e.name)}</b></td><td>${esc(e.role||'')}</td><td>${e.hire_date||''}</td><td>${workType(e)}</td>
    <td>${(e.default_start_time||'').slice(0,5)}~${(e.default_end_time||'').slice(0,5)}<br><span class="help">소정 ${e.daily_hours||8}h</span></td>
    <td>${e.break_minutes||0}분</td><td>${dayNames(e.work_days)}</td>
    <td>${e.pay_type==='hourly'?'시급':e.pay_type==='daily'?'일당':e.pay_type==='business'?'사업소득':'월급'}</td>
    <td>주 ${leaveWeeklyHours(e)}h<br><span class="help">월 +${leaveMonthlyHours(e)}h / 1일 -${leaveDayHours(e)}h</span></td>
    <td><b>${ls.balance}h</b><br><button class="btn gray small" onclick="adjustLeave(${e.id})">조정</button></td>
-   <td><button class="btn gray small" onclick="openEmployee(${e.id})">수정</button> <button class="btn red small" onclick="deleteEmployee(${e.id},'${esc(e.name).replace(/'/g,"&#39;")}')">삭제</button></td></tr>`;
+   <td><button class="btn gray small" ${idx===0?'disabled':''} onclick="movePrintOrder(${e.id},-1)">↑</button>
+       <button class="btn gray small" ${idx===list.length-1?'disabled':''} onclick="movePrintOrder(${e.id},1)">↓</button></td>
+   <td><select onchange="setPrintColor(${e.id},this.value)" style="padding:5px 7px">
+       ${colors}</select><span style="display:inline-block;width:18px;height:18px;border-radius:5px;vertical-align:middle;margin-left:4px;background:${employeeColor(e)};border:1px solid #bbb"></span></td>
+   <td><button class="btn gray small" onclick="openEmployee(${e.id})">수정</button> <button class="btn red small" onclick="deleteEmployee(${e.id},'${esc(e.name).replace(/'/g,"&#39;")}')">삭제</button></td>
+   </tr>`;
  }).join('');
+}
+async function normalizePrintOrder(){
+ let list=orderedEmployees(), rows=list.map((e,i)=>({id:e.id,print_order:i+1}));
+ for(const r of rows) await sb.from('employees').update({print_order:r.print_order}).eq('id',r.id);
+}
+async function movePrintOrder(id,dir){
+ let list=orderedEmployees(),idx=list.findIndex(e=>e.id===id),target=idx+dir;
+ if(idx<0||target<0||target>=list.length)return;
+ let a=list[idx],b=list[target],ao=Number(a.print_order??idx+1),bo=Number(b.print_order??target+1);
+ let q1=await sb.from('employees').update({print_order:bo}).eq('id',a.id);
+ let q2=await sb.from('employees').update({print_order:ao}).eq('id',b.id);
+ if(q1.error||q2.error)return alert((q1.error||q2.error).message);
+ await refreshAll();
+}
+async function setPrintColor(id,color){
+ let q=await sb.from('employees').update({print_color:color}).eq('id',id);
+ if(q.error)return alert(q.error.message);
+ let e=employees.find(x=>x.id===id);if(e)e.print_color=color;
+ renderEmployees();renderSchedule();
 }
 function dayNames(a){a=a||[];return a.map(x=>'일월화수목금토'[x]).join('·')}
 function openEmployee(id){
@@ -468,6 +509,10 @@ async function saveEmployee(id){
  break_minutes:Number($('eBreak').value||0),work_days:[...document.querySelectorAll('.wd:checked')].map(x=>Number(x.value)),pay_type:$('ePay').value,
  leave_weekly_hours:Number($('eLeaveWeekly').value||40),leave_monthly_hours:Number($('eLeaveMonthly').value||8),leave_day_hours:Number($('eLeaveDay').value||8),active:true};
  if(!obj.name||!obj.hire_date)return alert('이름과 입사일은 필수입니다.');
+ if(!id){
+   obj.print_order=(Math.max(0,...employees.map(e=>Number(e.print_order||0)))+1);
+   obj.print_color=PRINT_COLORS[employees.length%PRINT_COLORS.length][0];
+ }
  let q=id?await sb.from('employees').update(obj).eq('id',id):await sb.from('employees').insert(obj);
  if(q.error)return alert(q.error.message);closeModal();refreshAll();
 }
@@ -559,51 +604,34 @@ function num(v){return typeof v==='number'?v:(Number(String(v||'').replace(/,/g,
 function exportSchedule(){let r=monthRange(),data=[['업장',stores.find(s=>s.id===storeId())?.name],['월',r.m],[],['직원',...Array.from({length:r.days},(_,i)=>`${i+1}일`),'실근로','연장']];employees.forEach(e=>{let x=calc(e);data.push([e.name,...Array.from({length:r.days},(_,i)=>sched(e,r.m+'-'+String(i+1).padStart(2,'0'))?.work_code||''),x.worked,x.ot])});downloadXlsx(data,`${stores.find(s=>s.id===storeId())?.name}_${r.m}_스케줄.xlsx`)}
 function exportPayroll(){let data=[['직원','월근무시간','기본급','고정연장','휴일수당','연장수당','식대','조정수당','상여','총지급액','공제총액','실지급액']];payroll.forEach(p=>data.push([p.employee_name,p.scheduled_hours,p.base_pay,p.fixed_overtime_pay,p.holiday_pay,p.overtime_pay,p.meal_allowance,p.adjustment_pay,p.bonus,p.gross_pay,p.total_deduction,p.net_pay]));downloadXlsx(data,`${stores.find(s=>s.id===storeId())?.name}_${$('monthSelect').value}_급여.xlsx`)}
 function downloadXlsx(data,name){let ws=XLSX.utils.aoa_to_sheet(data),wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'내역');XLSX.writeFile(wb,name)}
-function printSchedule(){let r=monthRange(),st=stores.find(s=>s.id===storeId()),h=`<div class="printHead"><div><h1>${esc(st?.name||'')} 월간 근무표</h1><div class="meta">${r.y}년 ${r.mo}월</div></div><div class="meta">출력일 ${new Date().toLocaleDateString('ko-KR')}</div></div><table><thead><tr><th class="pname">직원</th>`;for(let d=1;d<=r.days;d++){let date=r.m+'-'+String(d).padStart(2,'0'),wd=new Date(r.y,r.mo-1,d).getDay(),hol=holidayFor(date);h+=`<th class="${hol||wd===0||wd===6?'psun':''}">${d}<br>${'일월화수목금토'[wd]}${hol?'<br>공':''}</th>`}h+=`</tr></thead><tbody>`;employees.forEach(e=>{h+=`<tr><td class="pname">${esc(e.name)}</td>`;for(let d=1;d<=r.days;d++){let date=r.m+'-'+String(d).padStart(2,'0'),v=sched(e,date)?.work_code||'',wd=new Date(r.y,r.mo-1,d).getDay();h+=`<td class="${wd===0||wd===6?'psun':''}">${esc(v)}</td>`}h+='</tr>'});h+=`</tbody></table><div class="printLegend">8=8시간 · 9=9시간 · 0=휴무 · 연=연차 · 병=병가</div><div class="printFoot">직원관리 대시보드</div>`;$('printArea').innerHTML=h;window.print()}
-
-function renderHolidays(){
- if(!$('holidayBody'))return;
- let y=Number($('holidayYear')?.value||monthRange().y);
- if($('holidayYear')&&!$('holidayYear').options.length){
-   let years=[monthRange().y-1,monthRange().y,monthRange().y+1,monthRange().y+2];
-   $('holidayYear').innerHTML=years.map(v=>`<option value="${v}">${v}년</option>`).join('');
-   $('holidayYear').value=String(monthRange().y);y=monthRange().y;
+function printSchedule(){
+ let r=monthRange(),st=stores.find(s=>s.id===storeId()),list=orderedEmployees();
+ let h=`<div class="printHead"><div><h1>${esc(st?.name||'')} 월간 근무표</h1><div class="meta">${r.y}년 ${r.mo}월</div></div><div class="meta">출력일 ${new Date().toLocaleDateString('ko-KR')}</div></div>
+ <table><thead><tr><th class="pname">직원</th>`;
+ for(let d=1;d<=r.days;d++){
+   let date=r.m+'-'+String(d).padStart(2,'0'),wd=new Date(r.y,r.mo-1,d).getDay(),hol=holidayFor(date);
+   let cls=hol?'pholiday':(wd===0||wd===6?'pweekend':'');
+   h+=`<th class="${cls}" title="${hol?esc(hol.name):''}">${d}<br>${'일월화수목금토'[wd]}${hol?'<br>공':''}</th>`;
  }
- let list=holidays.filter(h=>Number(h.holiday_date.slice(0,4))===y);
- $('holidayBody').innerHTML=list.map(h=>{
-   let wd='일월화수목금토'[new Date(h.holiday_date+'T12:00:00').getDay()];
-   return `<tr><td>${h.holiday_date}</td><td>${wd}</td><td><b>${esc(h.name)}</b></td>
-   <td>${h.auto?'자동':'수동'}${h.is_substitute?' · 대체공휴일':''}</td>
-   <td>${h.auto?'<span class="help">자동반영</span>':`<button class="btn gray small" onclick="openHoliday(${h.id})">수정</button> <button class="btn red small" onclick="deleteHoliday(${h.id})">삭제</button>`}</td></tr>`;
- }).join('')||'<tr><td colspan="5">등록된 공휴일이 없습니다.</td></tr>';
-}
-async function reloadAutoHolidays(){
- await loadHolidays(true);
- renderAll();
- alert('대한민국 공휴일 정보를 새로 불러왔습니다.');
-}
-function openHoliday(id){
- let h=id?manualHolidays.find(x=>x.id===id):{holiday_date:$('monthSelect').value+'-01',name:'',is_substitute:false};
- modal(`<h2>${id?'수동 공휴일 수정':'수동 공휴일 추가'}</h2>
- <div class="formgrid"><div class="field"><label>날짜</label><input id="hDate" type="date" value="${h.holiday_date}"></div>
- <div class="field"><label>공휴일명</label><input id="hName" value="${esc(h.name||'')}"></div>
- <div class="field"><label>구분</label><select id="hSub"><option value="0">공휴일</option><option value="1">대체공휴일</option></select></div></div>
- <div class="help">자동 공휴일 데이터에 없는 임시공휴일 등을 직접 추가할 때만 사용하세요. 같은 날짜에 수동값이 있으면 수동값이 우선합니다.</div>
- <div class="modalActions"><button class="btn gray" onclick="closeModal()">취소</button><button class="btn" onclick="saveHoliday(${id||'null'})">저장</button></div>`);
- $('hSub').value=h.is_substitute?'1':'0';
-}
-async function saveHoliday(id){
- let obj={holiday_date:$('hDate').value,name:$('hName').value.trim(),is_substitute:$('hSub').value==='1'};
- if(!obj.holiday_date||!obj.name)return alert('날짜와 공휴일명을 입력하세요.');
- let q=id?await sb.from('holidays').update(obj).eq('id',id):await sb.from('holidays').upsert(obj,{onConflict:'holiday_date'});
- if(q.error)return alert(q.error.message);
- closeModal();await loadHolidays(true);renderAll();
-}
-async function deleteHoliday(id){
- if(!confirm('수동 공휴일을 삭제할까요?'))return;
- let q=await sb.from('holidays').delete().eq('id',id);
- if(q.error)return alert(q.error.message);
- await loadHolidays(true);renderAll();
+ h+=`</tr></thead><tbody>`;
+ list.forEach(e=>{
+   let color=employeeColor(e);
+   h+=`<tr style="--empColor:${color}"><td class="pname printEmployeeName">${esc(e.name)}</td>`;
+   for(let d=1;d<=r.days;d++){
+     let date=r.m+'-'+String(d).padStart(2,'0'),s=sched(e,date),v=s?.work_code||'',
+         worked=Number(s?.worked_hours||0),cls='',style='';
+     if(v==='연')cls='pleave';
+     else if(v==='병')cls='psick';
+     else if(v==='0'||!v)cls='poff';
+     else if(worked>0){cls='present';style=`background:${color}!important`;}
+     h+=`<td class="${cls}" style="${style}">${esc(v)}</td>`;
+   }
+   h+='</tr>';
+ });
+ h+=`</tbody></table>
+ <div class="printLegend">출근일 = 직원별 지정색 · 0=휴무 · 연=연차 · 병=병가 · 토/일 날짜=파랑 · 공휴일 날짜=빨강(공휴일 우선)</div>
+ <div class="printFoot">직원관리 대시보드</div>`;
+ $('printArea').innerHTML=h;window.print();
 }
 boot();
 </script>
