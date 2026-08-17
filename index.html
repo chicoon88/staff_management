@@ -454,7 +454,7 @@ input,select{border:1px solid #d2d7e0;background:white;border-radius:9px;padding
    <button class="btn" onclick="openEmployee()">+ 직원 추가</button>
   </div>
  </div>
- <div class="card" style="margin-top:10px"><div class="help"><b>직원은 한 번만 등록하면 됩니다.</b> 과거월은 입사일·퇴사일로 자동 판별합니다.<br>지원 파일: 근로자현황파악 / 약국급여표. 파일 구조를 자동판별해 성명·입사일(근무시작일)·직무 등을 가져옵니다. 근무조건이 없는 직원은 등록 후 ‘확인 필요’로 표시합니다. <b>주민번호·계좌번호는 현재 직원 자동등록에서는 저장하지 않습니다.</b> 애매한 행은 ‘확인 필요’로 표시합니다.</div></div>
+ <div class="card" style="margin-top:10px"><div class="help"><b>직원은 한 번만 등록하면 됩니다.</b> 과거월은 입사일·퇴사일로 자동 판별합니다.<br>지원 파일: 근로자현황파악 / 약국급여표. 성명이 있으면 직원후보로 인식하며, 근무시작일이 비어 있으면 급여가 처음 나타나는 월을 기준으로 임시 입사일을 제안합니다. 등록 전에 미리보기에서 입사일을 수정할 수 있습니다. <b>주민번호·계좌번호는 현재 직원 자동등록에서는 저장하지 않습니다.</b> 애매한 행은 ‘확인 필요’로 표시합니다.</div></div>
  <div class="card" style="margin-top:13px">
   <div class="row" style="margin-bottom:10px">
    <div class="empTabs"><button id="activeEmpTab" class="empTab active" onclick="setEmployeeView('active')">재직자</button><button id="retiredEmpTab" class="empTab" onclick="setEmployeeView('retired')">퇴사자</button></div>
@@ -1806,20 +1806,53 @@ function parseEmployeeFromWorkerStatus(r,headers){
    review,source_type:'근로자현황',source:{fixed:String(fixed??''),workTime:String(workTime??''),employment:String(employment??'')}
  };
 }
+function inferHireFromPharmacyPayRow(r,headers){
+ // 1. 명시된 근무시작일/입사일 최우선
+ let hi=headerIndex(headers,['근무시작일','입사일']);
+ let direct=hi>=0?excelDateToIso(r[hi]):'';
+ if(direct)return {date:direct,source:'직접입력',review:false};
+
+ // 2. 급여가 실제 처음 나타나는 월을 찾아 해당월 1일로 임시 추정
+ // 파일에 연도가 없는 경우 현재 대시보드 선택연도를 사용.
+ let selectedYear=Number(($('monthSelect').value||`${new Date().getFullYear()}-01`).slice(0,4));
+ for(let i=0;i<headers.length;i++){
+   let h=String(headers[i]||'').trim();
+   let m=h.match(/^(\d{1,2})월(?:$|기본급|31일|30일|29일|28일)/);
+   if(!m)continue;
+   let val=Number(String(r[i]??'').replace(/,/g,''));
+   if(isFinite(val)&&val>0){
+     let mon=Number(m[1]);
+     return {date:`${selectedYear}-${String(mon).padStart(2,'0')}-01`,source:`${mon}월 지급자료`,review:true};
+   }
+ }
+
+ // 3. 판단 불가: 현재 선택월 1일을 임시값으로 넣고 반드시 확인 표시
+ let ym=$('monthSelect').value||`${new Date().getFullYear()}-${String(new Date().getMonth()+1).padStart(2,'0')}`;
+ return {date:`${ym}-01`,source:'선택월 임시값',review:true};
+}
+
 function parseEmployeeFromPharmacyPay(r,headers){
  const get=(...names)=>{let i=headerIndex(headers,names);return i>=0?r[i]:null};
  let name=String(get('성명','직원명')??'').trim(),
-     hire=excelDateToIso(get('근무시작일','입사일')),
      job=String(get('직무','직급')??'').trim();
- if(!name||!hire)return null;
- let isPart=/파트|알바|시간제/.test(job),isPharmacist=/약사/.test(job);
- let payType=isPart?'hourly':'monthly';
- let pr=paymentRulePreset(payType);
- let role=job||'';
- let review=['근무조건'];
+
+ // 약국급여표는 성명만 있으면 직원후보로 인정.
+ if(!name || /합계|총계/.test(name))return null;
+
+ let hireInfo=inferHireFromPharmacyPayRow(r,headers),
+     hire=hireInfo.date,
+     isPart=/파트|알바|시간제/.test(job),
+     payType=isPart?'hourly':'monthly',
+     pr=paymentRulePreset(payType),
+     role=job||'',
+     review=['근무조건'];
+
  if(!job)review.push('직무');
+ if(hireInfo.review)review.push(`입사일(${hireInfo.source})`);
+
  return {
-   name,hire_date:hire,role,memo:`약국급여표 자동등록${job?` / 직무:${job}`:''}`,
+   name,hire_date:hire,hire_inferred:hireInfo.review,hire_source:hireInfo.source,
+   role,memo:`약국급여표 자동등록${job?` / 직무:${job}`:''}`,
    work_type:'custom',daily_hours:8,default_start_time:null,default_end_time:null,break_minutes:60,work_days:[],
    pay_type:payType,salary_delay_months:pr.salary_delay_months,salary_pay_day:pr.salary_pay_day,
    incentive_delay_months:pr.incentive_delay_months,holiday_incentive_unit:pr.holiday_incentive_unit,holiday_incentive_enabled:true,
@@ -1832,16 +1865,18 @@ function detectEmployeeSheet(wb){
  let candidates=[];
  for(const sn of wb.SheetNames){
    let rows=XLSX.utils.sheet_to_json(wb.Sheets[sn],{header:1,defval:null,raw:true});
-   for(let i=0;i<Math.min(rows.length,15);i++){
+   for(let i=0;i<Math.min(rows.length,30);i++){
      let hs=(rows[i]||[]).map(normHeader);
-     let hasName=hs.some(h=>h.includes('성명'));
+     let hasName=hs.some(h=>h==='성명'||h.includes('직원명'));
      let hasWorkerHire=hs.some(h=>h.includes('입사일'));
      let hasPayHire=hs.some(h=>h.includes('근무시작일'));
-     let hasWork=hs.some(h=>h.includes('고정근무일')||h.includes('근무시간'));
-     let hasPay=hs.some(h=>h.includes('월지급금액')||h.includes('계좌번호')||h.includes('직무'));
-     if(hasName&&(hasWorkerHire||hasPayHire)){
-       let type=(hasWork||hasWorkerHire&&!hasPayHire)?'worker':'payroll';
-       let score=(hasWork?5:0)+(hasPay?4:0)+(hasWorkerHire?3:0)+(hasPayHire?3:0);
+     let hasWork=hs.some(h=>h.includes('고정근무일')||h.includes('근무시간')||h.includes('통상휴게시간'));
+     let hasPay=hs.some(h=>h.includes('월지급금액')||h.includes('계좌번호')||h==='직무'||h.includes('인센'));
+
+     // 약국급여표는 입사일이 일부 비어 있어도 헤더 구조 자체로 인식
+     if(hasName && (hasWorkerHire||hasPayHire||hasWork||hasPay)){
+       let type=(hasWork && !hasPay)?'worker':(hasPayHire||hasPay?'payroll':'worker');
+       let score=(hasWork?8:0)+(hasPay?8:0)+(hasWorkerHire?4:0)+(hasPayHire?5:0)+(sn.includes('급여')?3:0)+(sn.includes('근로')?3:0);
        candidates.push({sn,rows,hi:i,type,score});
      }
    }
@@ -1854,15 +1889,24 @@ function employeeFromExcelRow(r,headers,type){
 }
 async function previewEmployeeImport(file){
  if(!file)return;
- let buf=await file.arrayBuffer(),wb=XLSX.read(buf,{type:'array',cellDates:true}),best=detectEmployeeSheet(wb);
- if(!best)return alert('직원 명단을 찾지 못했습니다.\n근로자현황파악 또는 약국급여표 파일인지 확인해주세요.');
- let headers=best.rows[best.hi].map(x=>String(x??'').replace(/\n/g,' '));
- employeeImportRows=best.rows.slice(best.hi+1).map(r=>employeeFromExcelRow(r,headers,best.type)).filter(Boolean);
+ let buf;
+ try{buf=await file.arrayBuffer()}
+ catch(err){return alert('파일을 읽지 못했습니다.\n'+err.message)}
 
- // 같은 이름이 여러 행이면 최초 1명으로 합치고, 더 상세한 근로자현황 데이터를 우선
+ let wb;
+ try{wb=XLSX.read(buf,{type:'array',cellDates:true})}
+ catch(err){return alert('Excel 파일 분석 오류\n'+err.message)}
+
+ let best=detectEmployeeSheet(wb);
+ if(!best)return alert('직원 명단 헤더를 찾지 못했습니다.\n성명/근무시작일/직무가 들어있는 약국급여표 또는 근로자현황 파일인지 확인해주세요.');
+
+ let headers=best.rows[best.hi].map(x=>String(x??'').replace(/\n/g,' '));
+ let raw=best.rows.slice(best.hi+1).map(r=>employeeFromExcelRow(r,headers,best.type)).filter(Boolean);
+
+ // 이름 기준 중복 제거
  let dedup=new Map();
- employeeImportRows.forEach(x=>{
-   let k=normalizeName(x.name);
+ raw.forEach(x=>{
+   let k=normalizeName(x.name);if(!k)return;
    if(!dedup.has(k))dedup.set(k,x);
    else{
      let old=dedup.get(k);
@@ -1870,40 +1914,74 @@ async function previewEmployeeImport(file){
    }
  });
  employeeImportRows=[...dedup.values()];
- if(!employeeImportRows.length)return alert('가져올 직원을 찾지 못했습니다.');
+ if(!employeeImportRows.length)
+   return alert(`시트 "${best.sn}"에서 성명은 찾았지만 등록 가능한 직원행이 없습니다.`);
 
  let all=[...employees,...retiredEmployees];
  employeeImportRows.forEach((x,i)=>{
    let ex=all.find(e=>normalizeName(e.name)===normalizeName(x.name));
    x._existing=ex||null;x._selected=true;x._i=i;
  });
+
  let newCount=employeeImportRows.filter(x=>!x._existing).length;
  let updCount=employeeImportRows.length-newCount;
+ let inferred=employeeImportRows.filter(x=>x.hire_inferred).length;
 
  let rows=employeeImportRows.map(x=>`<tr>
   <td><input type="checkbox" class="impSel" data-i="${x._i}" checked></td>
-  <td class="name"><b>${esc(x.name)}</b><br><span class="${x._existing?'reviewWarn':'reviewOk'}">${x._existing?'기존직원 확인/업데이트':'신규추가'}</span></td>
-  <td>${x.hire_date}</td><td>${esc(x.role||'')}</td><td>${esc(x.source_type)}</td>
+  <td class="name"><b>${esc(x.name)}</b><br>
+    <span class="${x._existing?'reviewWarn':'reviewOk'}">${x._existing?'기존직원':'신규추가'}</span>
+  </td>
+  <td>
+    <input type="date" class="impHire" data-i="${x._i}" value="${x._existing?.hire_date||x.hire_date||''}" style="min-width:135px">
+    ${x.hire_inferred&&!x._existing?`<br><span class="reviewWarn">추정: ${esc(x.hire_source)}</span>`:''}
+  </td>
+  <td>${esc(x.role||'')}</td>
+  <td>${esc(x.source_type)}</td>
   <td>${x.work_type==='custom'?'확인 필요':workType(x)}</td>
-  <td>${x.default_start_time?`${x.default_start_time}~${x.default_end_time}`:'-'}</td>
   <td class="${x.review.length?'reviewWarn':'reviewOk'}">${x.review.length?'확인: '+x.review.join(', '):'자동인식 완료'}</td>
  </tr>`).join('');
+
  modal(`<h2>직원 Excel 자동불러오기</h2>
- <div class="help"><b>${esc(file.name)}</b><br>
- 자동판별: <b>${best.type==='payroll'?'약국급여표':'근로자현황파악'}</b> · 시트 ${esc(best.sn)} · 총 ${employeeImportRows.length}명<br>
- 신규 ${newCount}명 / 기존직원 ${updCount}명. 직원은 한 번만 등록하며 입사일·퇴사일로 월별 화면에 자동 표시됩니다.<br>
- <b>약국급여표에서 추가된 직원은 근무시간/스케줄형태가 없으므로 ‘확인 필요’로 등록됩니다.</b></div>
- <div class="importReview"><table><thead><tr><th>선택</th><th class="name">직원</th><th>입사일</th><th>직무</th><th>출처</th><th>근무형태</th><th>기본시간</th><th>검토</th></tr></thead><tbody>${rows}</tbody></table></div>
- <div class="modalActions"><button class="btn gray" onclick="closeModal()">취소</button><button class="btn" onclick="commitEmployeeImport()">선택 직원 등록</button></div>`);
+ <div class="help">
+  <b>${esc(file.name)}</b><br>
+  감지 시트: <b>${esc(best.sn)}</b> / 형식: <b>${best.type==='payroll'?'약국급여표':'근로자현황'}</b><br>
+  발견 <b>${employeeImportRows.length}명</b> · 신규 ${newCount}명 · 기존 ${updCount}명 · 입사일 추정 ${inferred}명<br>
+  <b>입사일은 이 화면에서 바로 수정할 수 있습니다.</b> 약국급여표에 입사일이 없으면 첫 급여월 또는 현재 선택월을 임시값으로 넣고 확인 필요로 표시합니다.
+ </div>
+ <div class="importReview"><table><thead><tr>
+  <th>선택</th><th class="name">직원</th><th>입사일</th><th>직무</th><th>출처</th><th>근무형태</th><th>검토</th>
+ </tr></thead><tbody>${rows}</tbody></table></div>
+ <div class="modalActions">
+  <button class="btn gray" onclick="closeModal()">취소</button>
+  <button class="btn" onclick="commitEmployeeImport()">선택 직원 등록</button>
+ </div>`);
 }
 async function commitEmployeeImport(){
- let chosen=[...document.querySelectorAll('.impSel:checked')].map(c=>employeeImportRows[Number(c.dataset.i)]).filter(Boolean);
+ // 미리보기에서 사용자가 수정한 입사일 반영
+ document.querySelectorAll('.impHire').forEach(inp=>{
+   let x=employeeImportRows[Number(inp.dataset.i)];
+   if(x)x.hire_date=inp.value||'';
+ });
+
+ let chosen=[...document.querySelectorAll('.impSel:checked')]
+   .map(c=>employeeImportRows[Number(c.dataset.i)]).filter(Boolean);
+
  if(!chosen.length)return alert('등록할 직원을 선택하세요.');
- let maxOrder=Math.max(0,...employees.map(e=>Number(e.print_order||0)),...retiredEmployees.map(e=>Number(e.print_order||0))),inserts=[],updates=[];
- chosen.forEach((x,n)=>{
-   let obj={store_id:storeId(),name:x.name,role:x.role,hire_date:x.hire_date,pay_type:x.pay_type,
-    salary_delay_months:x.salary_delay_months,salary_pay_day:x.salary_pay_day,incentive_delay_months:x.incentive_delay_months,
-    holiday_incentive_unit:x.holiday_incentive_unit,holiday_incentive_enabled:x.holiday_incentive_enabled,memo:x.memo,active:true};
+
+ let missing=chosen.filter(x=>!x.hire_date);
+ if(missing.length)return alert('입사일이 비어 있는 직원이 있습니다.\n'+missing.map(x=>x.name).join(', '));
+
+ let maxOrder=Math.max(0,...employees.map(e=>Number(e.print_order||0)),...retiredEmployees.map(e=>Number(e.print_order||0)));
+ let inserts=[],updates=[];
+
+ chosen.forEach(x=>{
+   let obj={
+     store_id:storeId(),name:x.name,role:x.role||'',hire_date:x.hire_date,pay_type:x.pay_type,
+     salary_delay_months:x.salary_delay_months,salary_pay_day:x.salary_pay_day,
+     incentive_delay_months:x.incentive_delay_months,holiday_incentive_unit:x.holiday_incentive_unit,
+     holiday_incentive_enabled:x.holiday_incentive_enabled,memo:x.memo||'',active:true
+   };
 
    if(x.source_type==='근로자현황'){
      Object.assign(obj,{
@@ -1912,32 +1990,47 @@ async function commitEmployeeImport(){
        leave_monthly_hours:x.leave_monthly_hours,leave_day_hours:x.leave_day_hours
      });
    }else if(!x._existing){
-     // 약국급여표 신규자는 아는 정보만 넣고 상세 근무조건은 수정화면에서 보완
      Object.assign(obj,{
-       work_type:'custom',daily_hours:8,default_start_time:null,default_end_time:null,break_minutes:60,work_days:[],
-       leave_weekly_hours:40,leave_monthly_hours:8,leave_day_hours:8
+       work_type:'custom',daily_hours:8,default_start_time:null,default_end_time:null,
+       break_minutes:60,work_days:[],leave_weekly_hours:40,leave_monthly_hours:8,leave_day_hours:8
      });
    }
 
    if(x._existing){
-     // 과거 퇴사자를 약국급여표만 올렸다고 임의로 재직복귀시키지 않음
+     // 약국급여표의 추정 입사일로 기존 직원의 정확한 입사일을 덮어쓰지 않음
+     if(x.hire_inferred && x._existing.hire_date)obj.hire_date=x._existing.hire_date;
      if(x._existing.active===false)delete obj.active;
-     updates.push({id:x._existing.id,obj});
+     updates.push({id:x._existing.id,name:x.name,obj});
    }else{
      obj.print_order=maxOrder+(inserts.length+1);
      obj.print_color=PRINT_COLORS[(employees.length+inserts.length)%PRINT_COLORS.length][0];
-     inserts.push(obj);
+     inserts.push({name:x.name,obj});
    }
  });
- if(inserts.length){
-   let qi=await sb.from('employees').insert(inserts);if(qi.error)return alert('신규직원 등록 오류: '+qi.error.message);
+
+ let successNew=0,successUpdate=0,errors=[];
+
+ // 한 행 때문에 전부 실패하지 않도록 개별 저장
+ for(const item of inserts){
+   let q=await sb.from('employees').insert(item.obj);
+   if(q.error)errors.push(`${item.name}: ${q.error.message}`);
+   else successNew++;
  }
- if(updates.length){
-   let results=await Promise.all(updates.map(u=>sb.from('employees').update(u.obj).eq('id',u.id)));
-   let bad=results.find(r=>r.error);if(bad)return alert('기존직원 업데이트 오류: '+bad.error.message);
+
+ for(const item of updates){
+   let q=await sb.from('employees').update(item.obj).eq('id',item.id);
+   if(q.error)errors.push(`${item.name}: ${q.error.message}`);
+   else successUpdate++;
  }
- closeModal();await refreshAll();
- alert(`직원 반영 완료\n신규 ${inserts.length}명 / 기존정보 업데이트 ${updates.length}명`);
+
+ if(successNew||successUpdate){
+   closeModal();
+   await refreshAll();
+ }
+
+ let msg=`직원 반영 결과\n신규 ${successNew}명 / 기존 업데이트 ${successUpdate}명`;
+ if(errors.length)msg+=`\n\n실패 ${errors.length}명:\n${errors.slice(0,15).join('\n')}`;
+ alert(msg);
 }
 async function openEmployee(id,isRetired=false){
  let e=id?[...employees,...retiredEmployees].find(x=>x.id===id):null;
