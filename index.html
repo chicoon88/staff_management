@@ -1232,7 +1232,7 @@ function openEmployee(id,isRetired=false){
  <div class="field"><label>연차 하루 사용(h)</label><input id="eLeaveDay" type="number" step=".5" value="${leaveDayHours(e)}"></div>
  </div>
  <div style="margin-top:10px"><b style="font-size:12px">기본근무 채우기용 패턴 (선택사항)</b><div style="margin-top:6px">${checks}</div></div>
- <div class="help" style="margin-top:10px">실제 근무요일이 매주 바뀌는 스케줄근무라면 위 요일은 비워두셔도 됩니다. 이 항목은 “기본근무 채우기”를 빠르게 사용할 때만 참고합니다.<br>연차 기본값: 주5일은 월 +8h / 하루 -8h, 주4일은 주32h 소정 기준 월 +7h / 하루 -8h.</div>
+ <div class="help" style="margin-top:10px"><b>이 화면의 모든 항목은 수기로 수정 후 저장할 수 있습니다.</b><br>퇴사자 정보를 수정해도 자동으로 재직복귀되지 않습니다.<br>실제 근무요일이 매주 바뀌는 스케줄근무라면 위 요일은 비워두셔도 됩니다. 이 항목은 “기본근무 채우기”를 빠르게 사용할 때만 참고합니다.<br>연차 기본값: 주5일은 월 +8h / 하루 -8h, 주4일은 주32h 소정 기준 월 +7h / 하루 -8h.</div>
  <div class="modalActions"><button class="btn gray" onclick="closeModal()">취소</button><button class="btn" onclick="saveEmployee(${id||'null'})">저장</button></div>`);
  $('eType').value=e.work_type||'40';$('ePay').value=e.pay_type||'monthly';$('ePayDay').value=payDayRule(e);$('eIncentiveOn').value=incentiveEnabled(e)?'1':'0';
 }
@@ -1246,20 +1246,65 @@ function applyPayPreset(){
  $('eSalaryDelay').value=p.salary_delay_months;$('ePayDay').value=p.salary_pay_day;$('eIncentiveDelay').value=p.incentive_delay_months;$('eIncentiveUnit').value=p.holiday_incentive_unit;$('eIncentiveOn').value=p.holiday_incentive_enabled?'1':'0';
 }
 async function saveEmployee(id){
- let resign=$('eResign')?.value||null;let obj={store_id:storeId(),name:$('eName').value.trim(),role:$('eRole').value.trim(),department:$('eDept').value.trim(),birth_date:$('eBirth').value||null,phone:$('ePhone').value.trim(),email:$('eEmail').value.trim(),address:$('eAddress').value.trim(),hire_date:$('eHire').value,resign_date:resign,work_type:$('eType').value,
- daily_hours:Number($('eDaily').value||8),default_start_time:$('eStart').value||null,default_end_time:$('eEnd').value||null,
- break_minutes:Number($('eBreak').value||0),work_days:[...document.querySelectorAll('.wd:checked')].map(x=>Number(x.value)),pay_type:$('ePay').value,
- salary_delay_months:Number($('eSalaryDelay').value||0),salary_pay_day:$('ePayDay').value,incentive_delay_months:Number($('eIncentiveDelay').value||0),holiday_incentive_unit:Number($('eIncentiveUnit').value||0),holiday_incentive_enabled:$('eIncentiveOn').value==='1',
- leave_weekly_hours:Number($('eLeaveWeekly').value||40),leave_monthly_hours:Number($('eLeaveMonthly').value||8),leave_day_hours:Number($('eLeaveDay').value||8),active:true};
- if(!obj.name||!obj.hire_date)return alert('이름과 입사일은 필수입니다.');
- if(!id){
-   obj.print_order=(Math.max(0,...employees.map(e=>Number(e.print_order||0)))+1);
-   obj.print_color=PRINT_COLORS[employees.length%PRINT_COLORS.length][0];
- }
- let q=id?await sb.from('employees').update(obj).eq('id',id):await sb.from('employees').insert(obj);
- if(q.error)return alert(q.error.message);closeModal();refreshAll();
-}
+ let existing=id?[...employees,...retiredEmployees].find(x=>x.id===id):null;
+ let resign=$('eResign')?.value||null;
 
+ let obj={
+   store_id:storeId(),
+   name:$('eName').value.trim(),
+   role:$('eRole').value.trim(),
+   department:$('eDept').value.trim(),
+   birth_date:$('eBirth').value||null,
+   phone:$('ePhone').value.trim(),
+   email:$('eEmail').value.trim(),
+   address:$('eAddress').value.trim(),
+   hire_date:$('eHire').value,
+   resign_date:resign,
+   work_type:$('eType').value,
+   daily_hours:Number($('eDaily').value||8),
+   default_start_time:$('eStart').value||null,
+   default_end_time:$('eEnd').value||null,
+   break_minutes:Number($('eBreak').value||0),
+   work_days:[...document.querySelectorAll('.wd:checked')].map(x=>Number(x.value)),
+   pay_type:$('ePay').value,
+   salary_delay_months:Number($('eSalaryDelay').value||0),
+   salary_pay_day:$('ePayDay').value,
+   incentive_delay_months:Number($('eIncentiveDelay').value||0),
+   holiday_incentive_unit:Number($('eIncentiveUnit').value||0),
+   holiday_incentive_enabled:$('eIncentiveOn').value==='1',
+   leave_weekly_hours:Number($('eLeaveWeekly').value||40),
+   leave_monthly_hours:Number($('eLeaveMonthly').value||8),
+   leave_day_hours:Number($('eLeaveDay').value||8)
+ };
+
+ if(!obj.name||!obj.hire_date)return alert('이름과 입사일은 필수입니다.');
+
+ // 상태 보존:
+ // - 기존 퇴사자는 정보수정만 했다고 자동 복직하지 않음
+ // - 퇴사일을 직접 입력하면 퇴사상태
+ // - 신규 직원은 재직상태
+ if(existing){
+   obj.active=resign?false:(existing.active!==false);
+ }else{
+   obj.active=!resign;
+   obj.print_order=(Math.max(0,...employees.map(e=>Number(e.print_order||0)),...retiredEmployees.map(e=>Number(e.print_order||0)))+1);
+   obj.print_color=PRINT_COLORS[(employees.length+retiredEmployees.length)%PRINT_COLORS.length][0];
+ }
+
+ let q=id
+   ?await sb.from('employees').update(obj).eq('id',id)
+   :await sb.from('employees').insert(obj);
+
+ if(q.error)return alert('직원정보 저장 오류:\n'+q.error.message);
+
+ closeModal();
+ await refreshAll();
+
+ if(existing?.active===false || obj.active===false)setEmployeeView('retired');
+ else setEmployeeView('active');
+
+ alert(`${obj.name} 직원정보를 저장했습니다.`);
+}
 
 function toggleEmployee(id,checked){
  if(checked)selectedEmployees.add(id);else selectedEmployees.delete(id);
