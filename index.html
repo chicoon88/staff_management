@@ -371,7 +371,7 @@ input,select{border:1px solid #d2d7e0;background:white;border-radius:9px;padding
 </aside>
 <main class="main">
 <div class="toolbar" style="margin-bottom:12px">
- <select id="storeSelect" onchange="refreshAll()"></select>
+ <select id="storeSelect" onchange="switchStore()"></select>
  <button class="btn gray small" onclick="renameCurrentStore()">업장명 수정</button>
  <input id="monthSelect" type="month" onchange="refreshAll()">
 </div>
@@ -401,7 +401,7 @@ input,select{border:1px solid #d2d7e0;background:white;border-radius:9px;padding
   <button class="btn red" onclick="clearSelectedSchedules()">선택 직원 비우기</button>
   <button class="btn green" onclick="printSchedule()">근무표 인쇄/PDF</button>
   <button class="btn" onclick="exportSchedule()">스케줄 Excel</button>
-  <span id="scheduleSaveState" class="saveState saved">저장완료</span><span class="help">연차잔여는 입력 즉시 반영</span>
+  <span id="scheduleStoreState" class="saveState"></span><span id="scheduleSaveState" class="saveState saved">저장완료</span><span class="help">연차잔여는 입력 즉시 반영</span>
  </div>
  </div>
  <div class="legend"><span class="tag">먼저 직원명 왼쪽 체크박스 선택</span><span class="tag">8 = 8시간</span><span class="tag">9 = 8시간+연장1</span><span class="tag">0 = 휴무</span><span class="tag">연 = 연차</span><span class="tag">병 = 병가</span><span class="tag">숫자 직접입력 가능</span><span class="tag">공휴일: 날짜 빨강 + 공휴일명 표시</span></div>
@@ -519,7 +519,7 @@ function closeModal(){
  document.body.style.overflow='';
 }
 $('monthSelect').value=new Date().toISOString().slice(0,7);
-let employees=[],schedules=[],payroll=[],stores=[],holidays=[],manualHolidays=[],autoHolidays=[],selectedEmployees=new Set(),leaveLedger=[],scheduleSaveQueue=new Map(),scheduleSaveTimer=null,employeeImportRows=[],paymentRegister=[],incentiveRegister=[],retiredEmployees=[],employeeView='active';
+let employees=[],schedules=[],payroll=[],stores=[],holidays=[],manualHolidays=[],autoHolidays=[],selectedEmployees=new Set(),leaveLedger=[],scheduleSaveQueue=new Map(),scheduleSaveTimer=null,employeeImportRows=[],paymentRegister=[],incentiveRegister=[],retiredEmployees=[],employeeView='active',refreshToken=0,payrollReloadToken=0;
 const money=n=>Number(n||0).toLocaleString('ko-KR')+'원',esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 function monthRange(){let m=$('monthSelect').value,[y,mo]=m.split('-').map(Number),days=new Date(y,mo,0).getDate();return {m,y,mo,days,first:m+'-01',last:m+'-'+String(days).padStart(2,'0')}}
 function storeId(){return Number($('storeSelect').value)}
@@ -579,32 +579,80 @@ document.querySelectorAll('.nav').forEach(b=>b.onclick=()=>{
 })
 $('monthSelect').addEventListener('change',()=>{refreshAll().then(()=>{if($('payrollPage')?.classList.contains('active'))reloadPayrollScreen()})});
 async function loadStores(){let q=await sb.from('stores').select('*').order('id');if(q.error)return alert(q.error.message);stores=q.data||[];let cur=$('storeSelect').value;$('storeSelect').innerHTML=stores.map(s=>`<option value="${s.id}">${esc(s.name)}</option>`).join('');if(stores.some(s=>String(s.id)===cur))$('storeSelect').value=cur}
-async function refreshAll(){
- if(!$('storeSelect').value)return;
+
+function clearStoreScopedUI(){
+ employees=[];retiredEmployees=[];schedules=[];payroll=[];leaveLedger=[];paymentRegister=[];incentiveRegister=[];
+ selectedEmployees.clear();
+ if($('schBody'))$('schBody').innerHTML='<tr><td style="padding:20px">업장 자료 불러오는 중...</td></tr>';
+ if($('employeeBody'))$('employeeBody').innerHTML='<tr><td colspan="16" style="padding:20px">업장 자료 불러오는 중...</td></tr>';
+ if($('hoursBody'))$('hoursBody').innerHTML='<tr><td colspan="16" style="padding:20px">업장 자료 불러오는 중...</td></tr>';
+ if($('payrollBody'))$('payrollBody').innerHTML='<tr><td colspan="12" style="padding:20px">업장 자료 불러오는 중...</td></tr>';
+
+ let saved=localStorage.getItem('staff_dashboard_store_id');
+ if(saved && stores.some(s=>String(s.id)===String(saved)))$('storeSelect').value=String(saved);
+}
+async function switchStore(){
+ ++refreshToken; // 기존 업장 진행 중 요청 무효화
+ clearStoreScopedUI();
+ let sid=storeId();
+ localStorage.setItem('staff_dashboard_store_id',String(sid));
+ await refreshAll({skipLeaveSync:true});
+ // 선택 화면이 급여면 급여만 한 번 더 빠르게 검증
+ if($('payrollPage')?.classList.contains('active'))await reloadPayrollScreen();
+}
+
+async function refreshAll(options={}){
+ if(!$('storeSelect')?.value)return;
+ const myToken=++refreshToken;
+ const sid=storeId();
+ const skipLeaveSync=!!options.skipLeaveSync;
+
  await loadHolidays();
+ if(myToken!==refreshToken || sid!==storeId())return;
+
  let r=monthRange();
 
- // 직원은 월별 등록이 아니라 업장별 마스터로 한 번만 등록
- let q=await sb.from('employees').select('*').eq('store_id',storeId()).order('name');
- if(q.error){alert('DB 연결을 확인해주세요.\n'+q.error.message);return}
+ // 반드시 현재 선택 업장의 직원만 조회
+ let q=await sb.from('employees').select('*').eq('store_id',sid).order('name');
+ if(myToken!==refreshToken || sid!==storeId())return;
+ if(q.error){alert('직원자료 조회 오류\n'+q.error.message);return}
+
  let all=(q.data||[]).sort((a,b)=>(Number(a.print_order??9999)-Number(b.print_order??9999))||a.name.localeCompare(b.name,'ko'));
  employees=all.filter(x=>x.active!==false);
  retiredEmployees=all.filter(x=>x.active===false);
 
- // 선택한 월에 실제 재직했던 직원의 스케줄만 로드
  let monthEmps=employeesForMonth(r.m),ids=monthEmps.map(x=>x.id);
  schedules=[];
  if(ids.length){
    let ss=await sb.from('schedules').select('*').in('employee_id',ids).gte('work_date',r.first).lte('work_date',r.last);
-   schedules=ss.data||[];
+   if(myToken!==refreshToken || sid!==storeId())return;
+   if(!ss.error)schedules=ss.data||[];
  }
- await syncLeaveLedger();
- await loadLeaveLedger();
- await loadPayroll();
- await loadPaymentRegisters();
- renderAll();
-}
 
+ // 화면 표시를 막지 않도록 급여/지급자료를 먼저 병렬 조회
+ await Promise.all([loadPayroll(),loadPaymentRegisters()]);
+ if(myToken!==refreshToken || sid!==storeId())return;
+
+ // 연차는 기존 데이터부터 읽어 즉시 표시
+ await loadLeaveLedger();
+ if(myToken!==refreshToken || sid!==storeId())return;
+
+ renderAll();
+
+ // 무거운 연차원장 동기화는 뒤에서. 업장 전환/급여조회 속도를 막지 않음.
+ if(!skipLeaveSync){
+   Promise.resolve().then(async()=>{
+     try{
+       await syncLeaveLedger();
+       if(sid!==storeId())return;
+       await loadLeaveLedger();
+       if(sid!==storeId())return;
+       if($('employeesPage')?.classList.contains('active'))renderEmployees();
+       if($('homePage')?.classList.contains('active'))renderHome();
+     }catch(err){console.warn('leave background sync',err)}
+   });
+ }
+}
 function isoToday(){
  const d=new Date(),y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0'),day=String(d.getDate()).padStart(2,'0');
  return `${y}-${m}-${day}`;
@@ -746,19 +794,17 @@ async function adjustLeave(id){
 
 async function loadPayroll(){
  payroll=[];
- let ym=$('monthSelect').value;
- let pm=await sb.from('payroll_months').select('id,pay_month').eq('store_id',storeId()).eq('pay_month',ym+'-01').maybeSingle();
- if(pm.error){
-   console.error('payroll_months load error',pm.error);
-   return {count:0,error:pm.error};
+ const sid=storeId(),ym=$('monthSelect').value,t0=performance.now();
+ let pm=await sb.from('payroll_months').select('id,pay_month').eq('store_id',sid).eq('pay_month',ym+'-01').maybeSingle();
+ if(pm.error){console.error('payroll_months load error',pm.error);return {count:0,error:pm.error}}
+ if(!pm.data){
+   console.log(`급여조회 ${ym}: 0건 (${Math.round(performance.now()-t0)}ms)`);
+   return {count:0,error:null};
  }
- if(!pm.data)return {count:0,error:null};
  let p=await sb.from('payroll_entries').select('*').eq('payroll_month_id',pm.data.id);
- if(p.error){
-   console.error('payroll_entries load error',p.error);
-   return {count:0,error:p.error};
- }
+ if(p.error){console.error('payroll_entries load error',p.error);return {count:0,error:p.error}}
  payroll=p.data||[];
+ console.log(`급여조회 ${ym}: ${payroll.length}건 (${Math.round(performance.now()-t0)}ms)`);
  return {count:payroll.length,error:null,monthId:pm.data.id};
 }
 function paySlot(e){return payDayRule(e)==='month_end'?'month_end':'regular'}
@@ -1078,7 +1124,7 @@ function renderHome(){
  }).join(''):'<tr><td colspan="8">이번 달 연차 발생 직원이 없습니다.</td></tr>';
 }
 function renderSchedule(){
- let r=monthRange(),list=employeesForMonth(r.m),h='<tr><th class="name">선택 · 직원</th>';
+ let r=monthRange(),list=employeesForMonth(r.m),st=stores.find(s=>s.id===storeId());if($('scheduleStoreState'))$('scheduleStoreState').textContent=st?.name||'업장';h='<tr><th class="name">선택 · 직원</th>';
  for(let d=1;d<=r.days;d++){
   let date=r.m+'-'+String(d).padStart(2,'0'),wd=new Date(r.y,r.mo-1,d).getDay(),hol=holidayFor(date),cl=hol?'holidayHead':(wd===0||wd===6?'weekendHead':'');
   h+=`<th class="${cl}" title="${hol?esc(hol.name):''}">${d}<br>${'일월화수목금토'[wd]}${hol?`<span class="holidayName">${esc(hol.name)}</span>`:''}</th>`;
@@ -1314,16 +1360,28 @@ function setPayrollLoadState(text,type=''){
  el.textContent=text;el.className='saveState '+type;
 }
 async function reloadPayrollScreen(){
+ const token=++payrollReloadToken,sid=storeId(),ym=$('monthSelect').value;
  setPayrollLoadState('불러오는 중','saving');
+
  let r=await loadPayroll();
+ if(token!==payrollReloadToken || sid!==storeId() || ym!==$('monthSelect').value)return;
  if(r?.error){
    setPayrollLoadState('불러오기 오류','error');
-   alert('급여자료를 불러오지 못했습니다.\n'+r.error.message);
+   if($('payrollBody'))$('payrollBody').innerHTML=`<tr><td colspan="12" style="padding:22px;color:#b42318">급여자료 불러오기 오류: ${esc(r.error.message)}</td></tr>`;
    return;
  }
+
  renderPayroll();
- renderPharmacyPay();
- setPayrollLoadState(`${$('monthSelect').value} · ${r.count}건`,'saved');
+ setPayrollLoadState(`${ym} · ${r.count}건`,'saved');
+
+ // 지급관리 표는 별도 DB를 사용하므로 비동기 갱신. 급여대장 표 표시를 기다리게 하지 않음.
+ Promise.resolve().then(async()=>{
+   try{
+     await loadPaymentRegisters();
+     if(token!==payrollReloadToken || sid!==storeId() || ym!==$('monthSelect').value)return;
+     await renderPharmacyPay();
+   }catch(err){console.warn(err)}
+ });
 }
 
 function renderPayroll(){
