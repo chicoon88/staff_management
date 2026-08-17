@@ -495,7 +495,7 @@ input,select{border:1px solid #d2d7e0;background:white;border-radius:9px;padding
    </div>
   </div>
   <div class="help" style="margin-bottom:8px">삭제할 직원 왼쪽 체크박스를 선택하세요. 연번은 현재 직원순서에 따라 자동 생성됩니다.</div>
-  <div class="tablewrap"><table><thead><tr><th style="width:44px">선택</th><th>연번</th><th class="name">이름</th><th>업무</th><th>입사일</th><th>퇴사일</th><th>근무형태</th><th>기본시간</th><th>휴게</th><th>스케줄방식</th><th>급여형태</th><th>연차 기준</th><th>연차 잔여</th><th>급여 지급규칙</th><th>순서</th><th>출력색</th><th>문서</th><th></th></tr></thead><tbody id="employeeBody"></tbody></table></div>
+  <div class="tablewrap"><table><thead><tr><th style="width:44px">선택</th><th>연번</th><th class="name">이름</th><th>직책</th><th>업무</th><th>입사일</th><th>퇴사일</th><th>근무형태</th><th>기본시간</th><th>휴게</th><th>스케줄방식</th><th>급여형태</th><th>연차 기준</th><th>연차 잔여</th><th>급여 지급규칙</th><th>순서</th><th>출력색</th><th>문서</th><th></th></tr></thead><tbody id="employeeBody"></tbody></table></div>
  </div>
 </section>
 
@@ -1851,7 +1851,7 @@ function renderEmployees(){
     :`<button class="btn gray small" onclick="openEmployee(${e.id},true)">정보보기</button> <button class="btn green small" onclick="restoreEmployee(${e.id},'${esc(e.name).replace(/'/g,"&#39;")}')">재직복귀</button>`;
    return `<tr class="${employeeView==='retired'?'retiredRow':''}">
    <td style="text-align:center"><input type="checkbox" class="empDeleteCheck" data-id="${e.id}" ${delChecked?'checked':''} onchange="toggleEmployeeDeleteSelection(${e.id},this.checked)"></td>
-   <td><span class="seqBadge">${idx+1}</span></td><td class="name"><b>${esc(e.name)}</b></td><td>${esc(e.role||'')}</td><td>${e.hire_date||''}</td><td>${e.resign_date||'-'}</td><td>${workType(e)}</td>
+   <td><span class="seqBadge">${idx+1}</span></td><td class="name"><b>${esc(e.name)}</b></td><td>${esc(e.role||'')}</td><td>${esc(e.department||'')}</td><td>${e.hire_date||''}</td><td>${e.resign_date||'-'}</td><td>${workType(e)}</td>
    <td>${(e.default_start_time||'').slice(0,5)}~${(e.default_end_time||'').slice(0,5)}<br><span class="help">소정 ${e.daily_hours||8}h</span></td>
    <td>${e.break_minutes||0}분</td><td>${e.work_type==='36'?'주4일':'주5일'}<br><span class="help">요일 변동 스케줄</span></td>
    <td>${e.pay_type==='hourly'?'시급':e.pay_type==='daily'?'일당':e.pay_type==='business'?'사업소득':'월급'}</td>
@@ -1862,7 +1862,7 @@ function renderEmployees(){
    <td>${employeeView==='active'?`<select onchange="setPrintColor(${e.id},this.value)" style="padding:5px 7px">${colors}</select><span style="display:inline-block;width:18px;height:18px;border-radius:5px;vertical-align:middle;margin-left:4px;background:${employeeColor(e)};border:1px solid #bbb"></span>`:'-'}</td>
    <td><div class="docActions"><button class="btn green small" onclick="printEmploymentCertificate(${e.id})">재직증명서</button><button class="btn gray small" onclick="printResignation(${e.id})">사직서</button></div></td>
    <td>${action}</td></tr>`;
- }).join('')||`<tr><td colspan="17">${employeeView==='active'?'재직자가':'퇴사자가'} 없습니다.</td></tr>`;
+ }).join('')||`<tr><td colspan="18">${employeeView==='active'?'재직자가':'퇴사자가'} 없습니다.</td></tr>`;
 }
 
 function toggleEmployeeDeleteSelection(id,on){
@@ -2330,8 +2330,8 @@ async function openEmployee(id,isRetired=false){
  let checks=[0,1,2,3,4,5,6].map(d=>`<label style="font-size:12px"><input type="checkbox" class="wd" value="${d}" ${e.work_days?.includes(d)?'checked':''}>${'일월화수목금토'[d]}</label>`).join(' ');
  modal(`<h2>${id?'직원 수정':'직원 추가'}</h2><div class="formgrid">
  <div class="field"><label>이름</label><input id="eName" value="${esc(e.name||'')}"></div>
- <div class="field"><label>업무/직책</label><input id="eRole" value="${esc(e.role||'')}"></div>
- <div class="field"><label>부서</label><input id="eDept" value="${esc(e.department||'')}"></div>
+ <div class="field"><label>직책</label><input id="eRole" value="${esc(e.role||'')}"></div>
+ <div class="field"><label>업무</label><input id="eDept" value="${esc(e.department||'')}"></div>
  <div class="field"><label>생년월일</label><input id="eBirth" type="date" value="${e.birth_date||''}"></div>
  <div class="field"><label>전화번호</label><input id="ePhone" value="${esc(e.phone||'')}"></div>
  <div class="field"><label>이메일</label><input id="eEmail" type="email" value="${esc(e.email||'')}"></div>
@@ -2354,7 +2354,7 @@ async function openEmployee(id,isRetired=false){
  <div class="field"><label>연차 하루 사용(h)</label><input id="eLeaveDay" type="number" step=".5" value="${leaveDayHours(e)}"></div>
  </div>
  <div style="margin-top:10px"><b style="font-size:12px">기본근무 채우기용 패턴 (선택사항)</b><div style="margin-top:6px">${checks}</div></div>
- <div class="help" style="margin-top:10px"><b>이 화면의 모든 항목은 수기로 수정 후 저장할 수 있습니다.</b><br>퇴사자 정보를 수정해도 자동으로 재직복귀되지 않습니다.<br>실제 근무요일이 매주 바뀌는 스케줄근무라면 위 요일은 비워두셔도 됩니다. 이 항목은 “기본근무 채우기”를 빠르게 사용할 때만 참고합니다.<br>연차 기본값: 주5일은 월 +8h / 하루 -8h, 주4일은 주32h 소정 기준 월 +7h / 하루 -8h.</div>
+ <div class="help" style="margin-top:10px"><b>직책과 업무를 구분해서 입력하세요.</b> 예: 직책=과장 / 업무=매장관리·조제·전산 등<br><b>이 화면의 모든 항목은 수기로 수정 후 저장할 수 있습니다.</b><br>퇴사자 정보를 수정해도 자동으로 재직복귀되지 않습니다.<br>실제 근무요일이 매주 바뀌는 스케줄근무라면 위 요일은 비워두셔도 됩니다. 이 항목은 “기본근무 채우기”를 빠르게 사용할 때만 참고합니다.<br>연차 기본값: 주5일은 월 +8h / 하루 -8h, 주4일은 주32h 소정 기준 월 +7h / 하루 -8h.</div>
  <div class="modalActions"><button class="btn gray" onclick="closeModal()">취소</button><button class="btn" onclick="saveEmployee(${id||'null'})">저장</button></div>`);
  $('eType').value=e.work_type||'40';$('ePay').value=e.pay_type||'monthly';$('ePayDay').value=payDayRule(e);$('eIncentiveOn').value=incentiveEnabled(e)?'1':'0';
 }
@@ -3032,9 +3032,32 @@ function showPayrollImportInfo(parsed,fileName){
  el.style.display='block';
  el.innerHTML=`<b>${monthLabel(parsed.payMonth)} 급여대장 본표 불러오기 완료</b><br><span class="help">파일: ${esc(fileName)} · Excel 사업장: ${esc(parsed.storeName||'-')} · 자동 등록월: ${esc(parsed.payMonth)} · 산정기간: ${esc(parsed.periodStart||'-')} ~ ${esc(parsed.periodEnd||'-')} · 지급일: ${esc(parsed.payDate||'-')} · 직원 ${parsed.rows.length}명 · 직원매칭 ${parsed.matched}명</span>`;
 }
+
+function payrollEmployeeOrderMap(){
+ const m=new Map();
+ (employees||[]).forEach((e,i)=>{
+   let explicit=Number(e.sort_order ?? e.order_no ?? e.sequence ?? e.seq);
+   let ord=Number.isFinite(explicit)&&explicit>0 ? explicit : i+1;
+   if(e.id!=null)m.set('id:'+String(e.id),ord);
+   let name=String(e.name||'').trim();
+   if(name)m.set('name:'+name,ord);
+ });
+ return m;
+}
+function sortPayrollByEmployeeOrder(rows){
+ const order=payrollEmployeeOrderMap();
+ return [...(rows||[])].sort((a,b)=>{
+   let an=String(a.employee_name||'').trim(),bn=String(b.employee_name||'').trim();
+   let ao=order.get('id:'+String(a.employee_id??'')) ?? order.get('name:'+an) ?? 999999;
+   let bo=order.get('id:'+String(b.employee_id??'')) ?? order.get('name:'+bn) ?? 999999;
+   if(ao!==bo)return ao-bo;
+   return an.localeCompare(bn,'ko');
+ });
+}
+
 function renderPayrollSimple(){
  if(!$('payrollBody'))return;
- let rows=payroll.map(p=>`<tr>
+ let rows=sortPayrollByEmployeeOrder(payroll).map(p=>`<tr>
   <td class="name"><b>${esc(p.employee_name)}</b>${p.employee_id?'':' <span class="reviewWarn">미매칭</span>'}</td>
   <td>${Number(p.scheduled_hours||0).toFixed(2).replace(/\.00$/,'')}h</td>
   <td>${(()=>{
@@ -3070,6 +3093,7 @@ async function loadPayrollSimple(){
    let n=String(p.employee_name||'').trim();
    return n && !/미매칭|세부\s*사항/.test(n);
  });
+ payroll=sortPayrollByEmployeeOrder(payroll);
  renderPayrollSimple();
  setPayrollLoadState(`${ym} · ${payroll.length}명`,'saved');
 }
@@ -3465,11 +3489,11 @@ function printEmploymentCertificate(id){
       <div class="docCellLabel">회 사 명</div><div class="docCellValue">${v(s.name)}</div>
       <div class="docCellLabel">사업자번호</div><div class="docCellValue">${v(s.business_number)}</div>
 
-      <div class="docCellLabel">근무부서</div><div class="docCellValue">${v(e.department)}</div>
+      <div class="docCellLabel">근무부서</div><div class="docCellValue"></div>
       <div class="docCellLabel">직위/직급</div><div class="docCellValue">${v(e.role)}</div>
 
       <div class="docCellLabel">입사일자</div><div class="docCellValue">${e.hire_date?fmtDateKo(e.hire_date):''}</div>
-      <div class="docCellLabel">담당업무</div><div class="docCellValue">${v(e.role)}</div>
+      <div class="docCellLabel">담당업무</div><div class="docCellValue">${v(e.department)}</div>
 
       <div class="docCellLabel docWideLabel docNoBottom">발급용도</div>
       <div class="docCellValue docWideValue docNoBottom">${v(purpose)}</div>
@@ -3499,7 +3523,7 @@ function printResignation(id){
       <div class="docCellLabel">성&nbsp;&nbsp;&nbsp;&nbsp;명</div><div class="docCellValue">${v(e.name)}</div>
       <div class="docCellLabel">생년월일</div><div class="docCellValue">${e.birth_date?fmtDateKo(e.birth_date):''}</div>
 
-      <div class="docCellLabel">담당업무</div><div class="docCellValue">${v(e.role)}</div>
+      <div class="docCellLabel">담당업무</div><div class="docCellValue">${v(e.department)}</div>
       <div class="docCellLabel">입 사 일</div><div class="docCellValue">${e.hire_date?fmtDateKo(e.hire_date):''}</div>
 
       <div class="docCellLabel docWideLabel docNoBottom" style="min-height:48mm">사직사유</div>
