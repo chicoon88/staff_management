@@ -2610,41 +2610,248 @@ function payrollWeeklyHoursFromMemo(memo){
 async function parseLaborPayrollExact(file){
  let buf=await file.arrayBuffer();
  let wb=XLSX.read(buf,{type:'array',cellDates:false,cellFormula:true});
- let sheetName=wb.SheetNames.find(n=>n==='급여대장') || wb.SheetNames.find(n=>n.includes('급여대장')&&!n.includes('명세서'));
- if(!sheetName)return {error:'급여대장 시트를 찾지 못했습니다.'};
+
+ let sheetName=wb.SheetNames.find(n=>/급여대장/.test(n) && !/사업|소득/.test(n)) || wb.SheetNames[0];
  let ws=wb.Sheets[sheetName];
- const cv=(addr)=>ws[addr]?.v ?? null;
- let storeName=String(cv('D4')||'').trim();
- let payMonth=excelCellDateToMonth(cv('D5'));
- let periodStart=excelCellDateIso(cv('D5')),periodEnd=excelCellDateIso(cv('F5')),payDate=excelCellDateIso(cv('Q5'));
- if(!payMonth)return {error:'급여대장 D5의 산정기간을 읽지 못했습니다.'};
- let rows=[];
- for(let r=10;r<=80;r++){
-  let name=String(cv(`B${r}`)||'').trim();
-  if(!name)continue;
-  if(/합계|총계|세부사항/.test(name))continue;
-  let gross=nval(cv(`AX${r}`)),net=nval(cv(`BO${r}`));
-  let deductions=nval(cv(`BF${r}`));
-  if(gross && !deductions && gross>=net)deductions=gross-net;
-  rows.push({
-    employee_id:null,employee_name:name,
-    ordinary_hourly_rate:nval(cv(`I${r}`)),
-    scheduled_hours:nval(cv(`J${r}`)),_weekly_hours:nval(cv(`K${r}`)),
-    overtime_hours:nval(cv(`AO${r}`)),holiday_hours:nval(cv(`AM${r}`)),
-    base_pay:nval(cv(`O${r}`)),weekly_holiday_pay:nval(cv(`P${r}`)),position_allowance:nval(cv(`Q${r}`)),
-    fixed_overtime_pay:nval(cv(`S${r}`)),fixed_holiday_pay:nval(cv(`T${r}`)),
-    meal_allowance:nval(cv(`AB${r}`)),vehicle_allowance:nval(cv(`AD${r}`)),childcare_allowance:nval(cv(`AF${r}`)),
-    holiday_pay:nval(cv(`AN${r}`)),overtime_pay:nval(cv(`AP${r}`)),
-    adjustment_pay:nval(cv(`AS${r}`)),bonus:nval(cv(`AT${r}`)),unused_leave_pay:nval(cv(`AU${r}`)),
-    absence_deduction:nval(cv(`AW${r}`)),gross_pay:gross,
-    income_tax:nval(cv(`AZ${r}`)),local_income_tax:nval(cv(`BA${r}`)),national_pension:nval(cv(`BB${r}`)),
-    health_insurance:nval(cv(`BC${r}`)),longterm_care:nval(cv(`BD${r}`)),employment_insurance:nval(cv(`BE${r}`)),
-    total_deduction:deductions,net_pay:net,source_file:file.name
-  });
+ let range=XLSX.utils.decode_range(ws['!ref']||'A1:A1');
+
+ const cv=(addr)=>{
+   let c=ws[addr];
+   if(!c)return null;
+   return c.v ?? null;
+ };
+ const txt=v=>String(v??'').trim();
+ const nval=v=>{
+   if(v===null||v===undefined||v==='')return 0;
+   if(typeof v==='number')return Math.round(v*100)/100;
+   let n=Number(String(v).replace(/,/g,'').replace(/[^\d.\-]/g,''));
+   return isFinite(n)?Math.round(n*100)/100:0;
+ };
+ const datev=v=>excelDateToIso(v);
+
+ // 상단 정보는 표 바깥이지만 "메타데이터"로만 사용.
+ // 급여 금액/직원 데이터는 아래 본표에서만 읽는다.
+ let storeName='',periodStart='',periodEnd='',payDate='';
+ for(let r=range.s.r;r<=Math.min(range.e.r,20);r++){
+   for(let c=range.s.c;c<=Math.min(range.e.c,20);c++){
+     let v=txt(ws[XLSX.utils.encode_cell({r,c})]?.v);
+     if(!v)continue;
+     if(v.includes('사업장명')){
+       for(let cc=c+1;cc<=Math.min(c+6,range.e.c);cc++){
+         let x=txt(ws[XLSX.utils.encode_cell({r, c:cc})]?.v);
+         if(x && !/^\d+$/.test(x)){storeName=x;break}
+       }
+     }
+     if(v.includes('산정기간')){
+       let vals=[];
+       for(let cc=c+1;cc<=Math.min(c+10,range.e.c);cc++){
+         let raw=ws[XLSX.utils.encode_cell({r,c:cc})]?.v;
+         let d=datev(raw);
+         if(d)vals.push(d);
+       }
+       if(vals.length){periodStart=vals[0];periodEnd=vals[1]||vals[0]}
+     }
+     if(v.includes('지급일')){
+       for(let cc=c+1;cc<=Math.min(c+6,range.e.c);cc++){
+         let d=datev(ws[XLSX.utils.encode_cell({r,c:cc})]?.v);
+         if(d){payDate=d;break}
+       }
+     }
+   }
  }
- if(!rows.length)return {error:'급여대장에서 직원 급여행을 찾지 못했습니다.'};
+
+ // "순번/성명/주민번호..."가 있는 본표 헤더를 찾음
+ let headerRow=-1;
+ for(let r=range.s.r;r<=Math.min(range.e.r,40);r++){
+   let vals=[];
+   for(let c=range.s.c;c<=range.e.c;c++)vals.push(txt(ws[XLSX.utils.encode_cell({r,c})]?.v).replace(/\s/g,''));
+   if(vals.includes('순번') && vals.includes('성명') && vals.some(x=>x.includes('총지급')) && vals.some(x=>x.includes('실지급'))){
+     headerRow=r;break;
+   }
+ }
+ if(headerRow<0)return {error:'급여대장 본표 헤더(순번/성명/총지급/실지급)를 찾지 못했습니다.'};
+
+ // 실제 표의 열 위치를 행 전체에서 찾음
+ let headers=[];
+ for(let c=range.s.c;c<=range.e.c;c++){
+   headers[c]=txt(ws[XLSX.utils.encode_cell({r:headerRow,c})]?.v).replace(/\s|\n/g,'');
+ }
+ const hcol=(patterns)=>{
+   for(const p of patterns){
+     let i=headers.findIndex(h=>h===p||h.includes(p));
+     if(i>=0)return i;
+   }
+   return -1;
+ };
+
+ let colSeq=hcol(['순번']), colName=hcol(['성명']), colRole=hcol(['업무']),
+     colRank=hcol(['직급']), colHire=hcol(['입사일']),
+     colScheduled=hcol(['기본']), colWeekly=hcol(['주휴']),
+     colOvertimeH=hcol(['연장']), colHolidayH=hcol(['휴일']),
+     colBase=hcol(['기본급']), colWeeklyPay=hcol(['주휴수당']),
+     colFixedOT=hcol(['고정휴일수당','고정연장수당']),
+     colMeal=hcol(['식대']), colOTPay=hcol(['연장근로수당']),
+     colGross=hcol(['총지급액','합계액','총지급']),
+     colIncome=hcol(['소득세']), colLocal=hcol(['지방소득세']),
+     colPension=hcol(['국민연금']), colHealth=hcol(['건강보험']),
+     colCare=hcol(['장기요양']), colEmpIns=hcol(['고용보험']),
+     colDed=hcol(['선지급공제','공제합계','합계공제']),
+     colNet=hcol(['실지급액','실지급']);
+
+ let rows=[],blankRun=0;
+ for(let r=headerRow+1;r<=range.e.r;r++){
+   let name=txt(ws[XLSX.utils.encode_cell({r,c:colName})]?.v);
+
+   // 본표 끝 조건:
+   // "세부 사항"이 나오거나, 이름이 없는 공백행이 일정 개수 연속되면 중단
+   let rowText='';
+   for(let c=range.s.c;c<=Math.min(range.e.c,12);c++){
+     rowText+=' '+txt(ws[XLSX.utils.encode_cell({r,c})]?.v);
+   }
+   if(/세부\s*사항/.test(rowText))break;
+
+   if(!name || /합계|총계/.test(name)){
+     if(!name)blankRun++; else blankRun=0;
+     if(blankRun>=3 && rows.length)break;
+     continue;
+   }
+   blankRun=0;
+
+   let seq=Number(ws[XLSX.utils.encode_cell({r,c:colSeq})]?.v);
+   if(!isFinite(seq))continue; // 직원 본표 행만
+
+   let gross=nval(ws[XLSX.utils.encode_cell({r,c:colGross})]?.v);
+   let net=nval(ws[XLSX.utils.encode_cell({r,c:colNet})]?.v);
+
+   let income=nval(ws[XLSX.utils.encode_cell({r,c:colIncome})]?.v),
+       local=nval(ws[XLSX.utils.encode_cell({r,c:colLocal})]?.v),
+       pension=nval(ws[XLSX.utils.encode_cell({r,c:colPension})]?.v),
+       health=nval(ws[XLSX.utils.encode_cell({r,c:colHealth})]?.v),
+       care=nval(ws[XLSX.utils.encode_cell({r,c:colCare})]?.v),
+       empins=nval(ws[XLSX.utils.encode_cell({r,c:colEmpIns})]?.v);
+
+   let totalDed=Math.max(0,Math.round(gross-net));
+   if(!totalDed)totalDed=Math.round(income+local+pension+health+care+empins+nval(ws[XLSX.utils.encode_cell({r,c:colDed})]?.v));
+
+   rows.push({
+     employee_id:null,
+     employee_name:name,
+     role:txt(ws[XLSX.utils.encode_cell({r,c:colRole})]?.v),
+     rank:txt(ws[XLSX.utils.encode_cell({r,c:colRank})]?.v),
+     hire_date:datev(ws[XLSX.utils.encode_cell({r,c:colHire})]?.v),
+     ordinary_hourly_rate:0,
+     scheduled_hours:nval(ws[XLSX.utils.encode_cell({r,c:colScheduled})]?.v),
+     _weekly_hours:nval(ws[XLSX.utils.encode_cell({r,c:colWeekly})]?.v),
+     overtime_hours:nval(ws[XLSX.utils.encode_cell({r,c:colOvertimeH})]?.v),
+     holiday_hours:nval(ws[XLSX.utils.encode_cell({r,c:colHolidayH})]?.v),
+     base_pay:nval(ws[XLSX.utils.encode_cell({r,c:colBase})]?.v),
+     weekly_holiday_pay:nval(ws[XLSX.utils.encode_cell({r,c:colWeeklyPay})]?.v),
+     position_allowance:0,
+     fixed_overtime_pay:nval(ws[XLSX.utils.encode_cell({r,c:colFixedOT})]?.v),
+     fixed_holiday_pay:0,
+     meal_allowance:nval(ws[XLSX.utils.encode_cell({r,c:colMeal})]?.v),
+     vehicle_allowance:0,
+     childcare_allowance:0,
+     overtime_pay:nval(ws[XLSX.utils.encode_cell({r,c:colOTPay})]?.v),
+     holiday_pay:0,
+     adjustment_pay:0,
+     bonus:0,
+     unused_leave_pay:0,
+     absence_deduction:0,
+     gross_pay:Math.round(gross),
+     income_tax:Math.round(income),
+     local_income_tax:Math.round(local),
+     national_pension:Math.round(pension),
+     health_insurance:Math.round(health),
+     longterm_care:Math.round(care),
+     employment_insurance:Math.round(empins),
+     total_deduction:Math.round(totalDed),
+     net_pay:Math.round(net)
+   });
+ }
+
+ let payMonth=periodStart?periodStart.slice(0,7):'';
+ if(!payMonth && payDate){
+   let d=new Date(payDate+'T00:00:00');
+   d.setMonth(d.getMonth()-1);
+   payMonth=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+ }
+
  return {sheetName,storeName,payMonth,periodStart,periodEnd,payDate,rows,matched:0};
 }
+
+async function addMissingEmployeesFromPayroll(parsed,targetStore){
+ let missing=parsed.rows.filter(x=>!x.employee_id);
+ if(!missing.length)return {added:0,skipped:0};
+
+ let names=missing.map(x=>x.employee_name).join(', ');
+ if(!confirm(`급여대장에서 직원관리와 매칭되지 않는 직원 ${missing.length}명이 발견됐습니다.
+
+${names}
+
+이 직원들을 ${targetStore.name} 직원관리에도 자동 추가할까요?
+
+[확인] 신규 직원으로 자동 추가
+[취소] 직원추가는 하지 않고 급여자료만 등록`)){
+   return {added:0,skipped:missing.length};
+ }
+
+ let eq=await sb.from('employees').select('*').eq('store_id',targetStore.id);
+ if(eq.error)return {added:0,skipped:missing.length,error:eq.error};
+ let existing=eq.data||[];
+ let maxOrder=Math.max(0,...existing.map(e=>Number(e.print_order||0)));
+
+ let inserts=[];
+ for(const x of missing){
+   // 입사일은 급여대장 본표의 입사일을 우선.
+   // 비어 있으면 산정월 1일로 임시등록 후 직원관리에서 수정 가능.
+   let hire=x.hire_date || `${parsed.payMonth}-01`;
+   let role=x.role||x.rank||'';
+   let obj={
+     store_id:targetStore.id,
+     name:x.employee_name,
+     role,
+     hire_date:hire,
+     work_type:'custom',
+     daily_hours:8,
+     default_start_time:null,
+     default_end_time:null,
+     break_minutes:60,
+     work_days:[],
+     pay_type:'monthly',
+     salary_delay_months:1,
+     salary_pay_day:'10',
+     incentive_delay_months:2,
+     holiday_incentive_unit:30000,
+     holiday_incentive_enabled:true,
+     leave_weekly_hours:40,
+     leave_monthly_hours:8,
+     leave_day_hours:8,
+     active:true,
+     print_order:++maxOrder,
+     print_color:PRINT_COLORS[(maxOrder-1)%PRINT_COLORS.length][0]
+   };
+   inserts.push(obj);
+ }
+
+ if(inserts.length){
+   let qi=await sb.from('employees').insert(inserts);
+   if(qi.error)return {added:0,skipped:missing.length,error:qi.error};
+ }
+
+ // 다시 조회해서 employee_id 매칭
+ let nq=await sb.from('employees').select('id,name').eq('store_id',targetStore.id);
+ if(!nq.error){
+   parsed.rows.forEach(r=>{
+     let emp=(nq.data||[]).find(e=>normalizeName(e.name)===normalizeName(r.employee_name));
+     if(emp)r.employee_id=emp.id;
+   });
+   parsed.matched=parsed.rows.filter(x=>x.employee_id).length;
+ }
+
+ return {added:inserts.length,skipped:0};
+}
+
 async function importPayrollSimple(file){
  if(!file)return;
  setPayrollLoadState('파일 읽는 중','saving');
@@ -2680,6 +2887,12 @@ async function importPayrollSimple(file){
    r.employee_id=emp?.id||null;
  });
  parsed.matched=parsed.rows.filter(x=>x.employee_id).length;
+
+ // 미매칭 직원은 급여대장 한 번 업로드로 직원관리에도 추가 가능
+ let addResult=await addMissingEmployeesFromPayroll(parsed,targetStore);
+ if(addResult?.error){
+   alert('신규 직원 자동추가 오류:\n'+addResult.error.message);
+ }
  let unmatched=parsed.rows.filter(x=>!x.employee_id).map(x=>x.employee_name);
 
  let message=`Excel 자동분석 결과\n\n사업장명: ${parsed.storeName||'-'}\n→ 등록 업장: ${targetStore.name}\n산정월: ${monthLabel(parsed.payMonth)}\n산정기간: ${parsed.periodStart||'-'} ~ ${parsed.periodEnd||'-'}\n지급일: ${parsed.payDate||'-'}\n직원: ${parsed.rows.length}명\n직원매칭: ${parsed.matched}명`;
