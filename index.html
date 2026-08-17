@@ -23,7 +23,7 @@ input,select{border:1px solid #d2d7e0;background:white;border-radius:9px;padding
 .workclass.weekday{background:#eef3ff;color:#315efb}
 .workclass.weekend{background:#f1f3f5;color:#4b5563}
 .workclass.holiday{background:#fdeaea;color:#b42318}
-.holidayName{display:block;font-size:8px;line-height:1.1;margin-top:2px;color:#b42318;max-width:46px;overflow:hidden;text-overflow:ellipsis}
+.holidayName{display:block;font-size:9px;line-height:1.15;margin-top:2px;color:#b42318;max-width:64px;white-space:normal;font-weight:900}
 
 
 .selectEmp{width:20px;height:20px;accent-color:#315efb}
@@ -88,7 +88,8 @@ input,select{border:1px solid #d2d7e0;background:white;border-radius:9px;padding
  #printArea .pleave{background:#fff5cf!important;color:#805d00;font-weight:900}
  #printArea .psick{background:#ffe9e9!important;color:#a62323;font-weight:900}
  #printArea .present{font-weight:900}
- #printArea .printEmployeeName{border-left:7px solid var(--empColor)!important}.printLegend{font-size:9px;margin-top:6px}.printFoot{font-size:8px;margin-top:4px;text-align:right}
+ #printArea .printEmployeeName{border-left:7px solid var(--empColor)!important}
+ #printArea .pHolidayName{display:block;font-size:6.5px;line-height:1.05;margin-top:1px;white-space:normal}.printLegend{font-size:9px;margin-top:6px}.printFoot{font-size:8px;margin-top:4px;text-align:right}
 }
 </style>
 </head>
@@ -147,7 +148,7 @@ input,select{border:1px solid #d2d7e0;background:white;border-radius:9px;padding
   <span id="scheduleSaveState" class="saveState saved">저장완료</span>
  </div>
  </div>
- <div class="legend"><span class="tag">먼저 직원명 왼쪽 체크박스 선택</span><span class="tag">8 = 8시간</span><span class="tag">9 = 8시간+연장1</span><span class="tag">0 = 휴무</span><span class="tag">연 = 연차</span><span class="tag">병 = 병가</span><span class="tag">숫자 직접입력 가능</span></div>
+ <div class="legend"><span class="tag">먼저 직원명 왼쪽 체크박스 선택</span><span class="tag">8 = 8시간</span><span class="tag">9 = 8시간+연장1</span><span class="tag">0 = 휴무</span><span class="tag">연 = 연차</span><span class="tag">병 = 병가</span><span class="tag">숫자 직접입력 가능</span><span class="tag">공휴일: 날짜 빨강 + 공휴일명 표시</span></div>
  <div class="tablewrap"><table><thead id="schHead"></thead><tbody id="schBody"></tbody></table></div>
  <div class="help" style="margin-top:7px">※ 직원마다 기본 출퇴근시간·휴게시간·근무요일을 따로 설정할 수 있습니다. 예외 근무는 날짜 셀의 ‘상세’에서 그날만 변경합니다.</div>
 </section>
@@ -215,7 +216,7 @@ input,select{border:1px solid #d2d7e0;background:white;border-radius:9px;padding
 <section id="holidaysPage" class="page">
  <div class="row"><div><h1 class="title">공휴일 관리</h1><div class="sub">대한민국 공휴일은 연도별로 자동 불러옵니다. 공휴일은 주말보다 우선하며, 필요한 경우에만 수동 추가할 수 있습니다.</div></div><button class="btn" onclick="openHoliday()">+ 공휴일 추가</button></div>
  <div class="card" style="margin-top:13px">
-  <div class="toolbar"><select id="holidayYear" onchange="renderHolidays()"></select><button class="btn gray" onclick="reloadAutoHolidays()">공휴일 새로고침</button></div>
+  <div class="toolbar"><select id="holidayYear" onchange="loadHolidayManagementYear()"></select><button class="btn gray" onclick="reloadAutoHolidays()">공휴일 새로고침</button><span id="holidayLoadState" class="saveState">대기</span></div>
   <div class="tablewrap" style="margin-top:10px"><table><thead><tr><th>날짜</th><th>기본패턴</th><th>공휴일명</th><th>구분</th><th></th></tr></thead><tbody id="holidayBody"></tbody></table></div>
  </div>
 </section>
@@ -467,47 +468,90 @@ async function autoForecastPaymentMonth(){
 }
 
 
+const KR_HOLIDAY_FALLBACK_2026=[
+ {holiday_date:'2026-01-01',name:'신정'},
+ {holiday_date:'2026-02-16',name:'설날 연휴'},{holiday_date:'2026-02-17',name:'설날'},{holiday_date:'2026-02-18',name:'설날 연휴'},
+ {holiday_date:'2026-03-01',name:'삼일절'},{holiday_date:'2026-03-02',name:'삼일절 대체공휴일',is_substitute:true},
+ {holiday_date:'2026-05-01',name:'근로자의 날'},{holiday_date:'2026-05-05',name:'어린이날'},
+ {holiday_date:'2026-05-24',name:'부처님오신날'},{holiday_date:'2026-05-25',name:'부처님오신날 대체공휴일',is_substitute:true},
+ {holiday_date:'2026-06-03',name:'전국동시지방선거일'},{holiday_date:'2026-06-06',name:'현충일'},
+ {holiday_date:'2026-07-17',name:'제헌절'},
+ {holiday_date:'2026-08-15',name:'광복절'},{holiday_date:'2026-08-17',name:'광복절 대체공휴일',is_substitute:true},
+ {holiday_date:'2026-09-24',name:'추석 연휴'},{holiday_date:'2026-09-25',name:'추석'},{holiday_date:'2026-09-26',name:'추석 연휴'},
+ {holiday_date:'2026-10-03',name:'개천절'},{holiday_date:'2026-10-05',name:'개천절 대체공휴일',is_substitute:true},
+ {holiday_date:'2026-10-09',name:'한글날'},
+ {holiday_date:'2026-12-25',name:'기독탄신일'}
+];
+let holidayYearData={};
+
+function setHolidayState(text,type=''){
+ let el=$('holidayLoadState');if(!el)return;
+ el.textContent=text;el.className='saveState '+type;
+}
+function normalizeNagerHoliday(x){
+ return {
+   id:`auto-${x.date}`,
+   holiday_date:x.date,
+   name:x.localName||x.name||'공휴일',
+   is_substitute:/대체|Substitute|observed/i.test(`${x.localName||''} ${x.name||''}`),
+   auto:true
+ };
+}
+async function fetchAutoHolidayYear(y,force=false){
+ const cacheKey=`kr_public_holidays_v2_${y}`;
+ if(!force){
+   try{
+     const c=JSON.parse(localStorage.getItem(cacheKey)||'null');
+     if(Array.isArray(c)&&c.length)return c;
+   }catch(e){}
+ }
+ // Nager.Date: browser CORS 지원 공개 API
+ try{
+   const res=await fetch(`https://date.nager.at/api/v3/PublicHolidays/${y}/KR`,{cache:'no-store'});
+   if(!res.ok)throw new Error(`HTTP ${res.status}`);
+   const arr=(await res.json()).map(normalizeNagerHoliday);
+   if(!arr.length)throw new Error('empty holiday result');
+   localStorage.setItem(cacheKey,JSON.stringify(arr));
+   return arr;
+ }catch(err){
+   console.warn('공휴일 API 실패:',err);
+   // 현재 운영연도는 API 장애 시에도 업무가 멈추지 않도록 공식 일정 fallback
+   if(Number(y)===2026)return KR_HOLIDAY_FALLBACK_2026.map(x=>({...x,id:`fallback-${x.holiday_date}`,auto:true,fallback:true}));
+   try{
+     const c=JSON.parse(localStorage.getItem(cacheKey)||'null');
+     if(Array.isArray(c)&&c.length)return c;
+   }catch(e){}
+   return [];
+ }
+}
+async function loadHolidayYear(y,force=false){
+ y=Number(y);
+ setHolidayState(`${y} 불러오는 중`,'saving');
+ let manual=[];
+ let q=await sb.from('holidays').select('*').gte('holiday_date',`${y}-01-01`).lte('holiday_date',`${y}-12-31`).order('holiday_date');
+ if(q.error)console.warn('수동 공휴일 DB 오류:',q.error.message);
+ else manual=q.data||[];
+ let auto=await fetchAutoHolidayYear(y,force);
+ const map=new Map();
+ auto.forEach(h=>map.set(h.holiday_date,h));
+ // 같은 날짜는 관리자 수동 입력이 우선
+ manual.forEach(h=>map.set(h.holiday_date,{...h,auto:false}));
+ let merged=[...map.values()].sort((a,b)=>a.holiday_date.localeCompare(b.holiday_date));
+ holidayYearData[y]={manual,auto,merged};
+ setHolidayState(auto.length?`${y} 자동 ${auto.length}일 + 수동 ${manual.length}일`:`${y} 자동자료 없음 · 수동 ${manual.length}일`,auto.length?'saved':'error');
+ return merged;
+}
 async function loadHolidays(force=false){
  let y=monthRange().y;
- manualHolidays=[];
- autoHolidays=[];
- // 1) 관리자 수동 공휴일
- let q=await sb.from('holidays').select('*').gte('holiday_date',`${y}-01-01`).lte('holiday_date',`${y}-12-31`).order('holiday_date');
- if(!q.error) manualHolidays=q.data||[];
-
- // 2) 대한민국 공휴일 자동 데이터
- const cacheKey=`kr_holidays_${y}`;
- try{
-   if(!force){
-     const cached=localStorage.getItem(cacheKey);
-     if(cached) autoHolidays=JSON.parse(cached);
-   }
-   if(force || !autoHolidays.length){
-     const res=await fetch('https://holidays.hyunbin.page/basic.json',{cache:'no-store'});
-     if(!res.ok) throw new Error('holiday fetch failed');
-     const all=await res.json();
-     autoHolidays=Object.entries(all)
-       .filter(([date])=>date.startsWith(String(y)+'-'))
-       .map(([date,names])=>({
-         id:`auto-${date}`,
-         holiday_date:date,
-         name:Array.isArray(names)?names.join(' · '):String(names),
-         is_substitute:Array.isArray(names)?names.some(n=>String(n).includes('대체')):String(names).includes('대체'),
-         auto:true
-       }));
-     localStorage.setItem(cacheKey,JSON.stringify(autoHolidays));
-   }
- }catch(err){
-   console.warn('자동 공휴일 로드 실패:',err);
- }
-
- // 같은 날짜에 수동 공휴일이 있으면 수동값 우선
- const map=new Map();
- autoHolidays.forEach(h=>map.set(h.holiday_date,h));
- manualHolidays.forEach(h=>map.set(h.holiday_date,{...h,auto:false}));
- holidays=[...map.values()].sort((a,b)=>a.holiday_date.localeCompare(b.holiday_date));
+ holidays=await loadHolidayYear(y,force);
+ manualHolidays=holidayYearData[y]?.manual||[];
+ autoHolidays=holidayYearData[y]?.auto||[];
 }
-function holidayFor(date){return holidays.find(h=>h.holiday_date===date)}
+function holidayFor(date){
+ let y=Number(date.slice(0,4));
+ let data=holidayYearData[y]?.merged;
+ return (data||holidays).find(h=>h.holiday_date===date);
+}
 function classifyDate(date){
  if(holidayFor(date))return 'holiday';
  let wd=new Date(date+'T12:00:00').getDay();
@@ -523,6 +567,80 @@ function classifyWork(emp){
    o[c].days++;o[c].hours+=worked;o[c].dates.push({date,hours:worked,name:h?.name||''});
  }
  return o;
+}
+async function loadHolidayManagementYear(){
+ let y=Number($('holidayYear')?.value||monthRange().y);
+ await loadHolidayYear(y,false);
+ renderHolidays();
+}
+async function reloadAutoHolidays(){
+ let y=Number($('holidayYear')?.value||monthRange().y);
+ await loadHolidayYear(y,true);
+ if(y===monthRange().y){
+   holidays=holidayYearData[y].merged;
+   manualHolidays=holidayYearData[y].manual;
+   autoHolidays=holidayYearData[y].auto;
+   renderSchedule();renderHours();
+ }
+ renderHolidays();
+ alert(`${y}년 대한민국 공휴일 정보를 새로 불러왔습니다.`);
+}
+function renderHolidays(){
+ if(!$('holidayBody'))return;
+ let sel=$('holidayYear'),current=monthRange().y;
+ if(sel&&!sel.options.length){
+   let years=[];for(let y=current-2;y<=current+4;y++)years.push(y);
+   sel.innerHTML=years.map(y=>`<option value="${y}">${y}년</option>`).join('');
+   sel.value=String(current);
+ }
+ let y=Number(sel?.value||current),list=holidayYearData[y]?.merged||[];
+ $('holidayBody').innerHTML=list.length?list.map(h=>{
+   let wd='일월화수목금토'[new Date(h.holiday_date+'T12:00:00').getDay()];
+   return `<tr>
+    <td>${h.holiday_date}</td><td>${wd}</td><td><b>${esc(h.name)}</b></td>
+    <td>${h.auto?'자동':'수동'}${h.is_substitute?' · 대체':''}${h.fallback?' · 비상자료':''}</td>
+    <td>${h.auto?'<span class="help">자동반영</span>':`<button class="btn gray small" onclick="openHoliday(${h.id})">수정</button> <button class="btn red small" onclick="deleteHoliday(${h.id})">삭제</button>`}</td>
+   </tr>`;
+ }).join(''):'<tr><td colspan="5">공휴일 자료가 없습니다. “공휴일 새로고침”을 눌러주세요.</td></tr>';
+}
+function openHoliday(id=null){
+ let h=null;
+ if(id){
+   let y=Number($('holidayYear')?.value||monthRange().y);
+   h=(holidayYearData[y]?.manual||[]).find(x=>String(x.id)===String(id));
+ }
+ let base=h||{holiday_date:`${$('monthSelect').value}-01`,name:'',is_substitute:false};
+ modal(`<h2>${id?'공휴일 수정':'공휴일 추가'}</h2>
+ <div class="formgrid">
+  <div class="field"><label>날짜</label><input id="hDate" type="date" value="${base.holiday_date||''}"></div>
+  <div class="field"><label>공휴일명</label><input id="hName" value="${esc(base.name||'')}"></div>
+  <div class="field"><label>구분</label><select id="hSub"><option value="0">일반 공휴일</option><option value="1">대체공휴일</option></select></div>
+ </div>
+ <div class="help">자동자료에 없는 임시공휴일이나 업장 자체 휴일을 추가할 때 사용하세요. 같은 날짜가 자동자료와 겹치면 수동 입력명이 우선합니다.</div>
+ <div class="modalActions"><button class="btn gray" onclick="closeModal()">취소</button><button class="btn" onclick="saveHoliday(${id||'null'})">저장</button></div>`);
+ $('hSub').value=base.is_substitute?'1':'0';
+}
+async function saveHoliday(id){
+ let date=$('hDate').value,name=$('hName').value.trim(),sub=$('hSub').value==='1';
+ if(!date||!name)return alert('날짜와 공휴일명을 입력하세요.');
+ let obj={holiday_date:date,name,is_substitute:sub};
+ let q=id?await sb.from('holidays').update(obj).eq('id',id):await sb.from('holidays').upsert(obj,{onConflict:'holiday_date'});
+ if(q.error)return alert('공휴일 저장 오류: '+q.error.message);
+ closeModal();
+ let y=Number(date.slice(0,4));
+ await loadHolidayYear(y,true);
+ if(y===monthRange().y)holidays=holidayYearData[y].merged;
+ if($('holidayYear'))$('holidayYear').value=String(y);
+ renderAll();
+}
+async function deleteHoliday(id){
+ if(!confirm('이 수동 공휴일을 삭제할까요?'))return;
+ let q=await sb.from('holidays').delete().eq('id',id);
+ if(q.error)return alert(q.error.message);
+ let y=Number($('holidayYear')?.value||monthRange().y);
+ await loadHolidayYear(y,true);
+ if(y===monthRange().y)holidays=holidayYearData[y].merged;
+ renderAll();
 }
 
 function sched(emp,date){return schedules.find(x=>x.employee_id===emp.id&&x.work_date===date)}
@@ -1476,7 +1594,7 @@ function printSchedule(){
  for(let d=1;d<=r.days;d++){
    let date=r.m+'-'+String(d).padStart(2,'0'),wd=new Date(r.y,r.mo-1,d).getDay(),hol=holidayFor(date);
    let cls=hol?'pholiday':(wd===0||wd===6?'pweekend':'');
-   h+=`<th class="${cls}" title="${hol?esc(hol.name):''}">${d}<br>${'일월화수목금토'[wd]}${hol?'<br>공':''}</th>`;
+   h+=`<th class="${cls}" title="${hol?esc(hol.name):''}">${d}<br>${'일월화수목금토'[wd]}${hol?`<span class="pHolidayName">${esc(hol.name)}</span>`:''}</th>`;
  }
  h+=`</tr></thead><tbody>`;
  list.forEach(e=>{
