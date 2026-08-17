@@ -459,6 +459,59 @@ tr[draggable="true"]:active,.empDragHandle:active{cursor:grabbing}
 .historyRow{display:flex;justify-content:space-between;align-items:center;gap:12px;border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:#fff}
 @media(max-width:760px){.historyGrid{grid-template-columns:1fr}.historyRow{align-items:flex-start}}
 
+
+/* 급여관리 표 컴팩트 */
+#payrollPage .tablewrap{overflow-x:auto}
+#payrollPage .tablewrap table{
+  width:100%;
+  min-width:1180px;
+  table-layout:fixed;
+}
+#payrollPage .tablewrap th,
+#payrollPage .tablewrap td{
+  padding:6px 5px;
+  font-size:11px;
+  line-height:1.25;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+#payrollPage .tablewrap th:first-child,
+#payrollPage .tablewrap td:first-child{
+  width:82px!important;
+  min-width:82px!important;
+  max-width:82px!important;
+}
+#payrollPage .tablewrap th:nth-child(2),
+#payrollPage .tablewrap td:nth-child(2){width:58px}
+#payrollPage .tablewrap th:nth-child(3),
+#payrollPage .tablewrap td:nth-child(3){width:55px}
+#payrollPage .tablewrap th:nth-child(4),
+#payrollPage .tablewrap td:nth-child(4){width:82px}
+#payrollPage .tablewrap th:nth-child(5),
+#payrollPage .tablewrap td:nth-child(5){width:82px}
+#payrollPage .tablewrap th:nth-child(6),
+#payrollPage .tablewrap td:nth-child(6){width:78px}
+#payrollPage .tablewrap th:nth-child(7),
+#payrollPage .tablewrap td:nth-child(7){width:78px}
+#payrollPage .tablewrap th:nth-child(8),
+#payrollPage .tablewrap td:nth-child(8){width:78px}
+#payrollPage .tablewrap th:nth-child(9),
+#payrollPage .tablewrap td:nth-child(9){width:72px}
+#payrollPage .tablewrap th:nth-child(10),
+#payrollPage .tablewrap td:nth-child(10){width:82px}
+#payrollPage .tablewrap th:nth-child(11),
+#payrollPage .tablewrap td:nth-child(11){width:88px}
+#payrollPage .tablewrap th:nth-child(12),
+#payrollPage .tablewrap td:nth-child(12){width:88px}
+#payrollPage .tablewrap th:nth-child(13),
+#payrollPage .tablewrap td:nth-child(13){width:88px}
+#payrollPage td.name,#payrollPage th.name{
+  min-width:82px!important;
+  width:82px!important;
+  max-width:82px!important;
+}
+
 </style>
 </head>
 <body>
@@ -556,7 +609,7 @@ tr[draggable="true"]:active,.empDragHandle:active{cursor:grabbing}
 
  <div class="grid3 payrollSummaryGrid" style="margin-top:12px">
    <div class="card payrollSummaryCard"><div class="help">선택월 총지급 합계</div><div id="monthGrossTotal" class="payrollBigMoney">0원</div></div>
-   <div class="card payrollSummaryCard"><div class="help">선택월 공제 합계</div><div id="monthDeductionTotal" class="payrollBigMoney">0원</div></div>
+   <div class="card payrollSummaryCard"><div class="help">선택월 공제내역합계</div><div id="monthDeductionTotal" class="payrollBigMoney">0원</div></div>
    <div class="card payrollSummaryCard"><div class="help">선택월 실지급 합계</div><div id="monthNetTotal" class="payrollBigMoney">0원</div></div>
  </div>
 
@@ -566,7 +619,7 @@ tr[draggable="true"]:active,.empDragHandle:active{cursor:grabbing}
   </div>
   <div class="tablewrap" style="margin-top:10px"><table>
    <thead><tr>
-    <th class="name">직원</th><th>월근무</th><th>주휴</th><th>기본급</th><th>주휴수당</th><th>고정연장</th><th>휴일수당</th><th>연장수당</th><th>식대</th><th>상여/조정</th><th>총지급</th><th>공제</th><th>실지급</th>
+    <th class="name">직원</th><th>월근무</th><th>주휴</th><th>기본급</th><th>주휴수당</th><th>고정연장</th><th>휴일수당</th><th>연장수당</th><th>식대</th><th>상여/조정</th><th>총지급</th><th>선지급공제</th><th>실지급</th>
    </tr></thead>
    <tbody id="payrollBody"></tbody>
    <tfoot id="payrollFoot"></tfoot>
@@ -586,7 +639,7 @@ tr[draggable="true"]:active,.empDragHandle:active{cursor:grabbing}
    </div>
    <div class="grid3 payrollSummaryGrid" style="margin-top:12px">
      <div class="miniStat"><span>기간 총지급</span><b id="periodGrossTotal">0원</b></div>
-     <div class="miniStat"><span>기간 총공제</span><b id="periodDeductionTotal">0원</b></div>
+     <div class="miniStat"><span>기간 공제내역합계</span><b id="periodDeductionTotal">0원</b></div>
      <div class="miniStat"><span>기간 실지급</span><b id="periodNetTotal">0원</b></div>
    </div>
    <div id="payrollPeriodTitle" class="help" style="margin-top:12px"></div>
@@ -2015,8 +2068,8 @@ function renderPayroll(){
    let emp=allEmployees().find(x=>x.id===p.employee_id)
        ||allEmployees().find(x=>normalizeName(x.name)===normalizeName(p.employee_name));
    let extra=Number(p.adjustment_pay||0)+Number(p.bonus||0);
-   let ded=Number(p.total_deduction||0);
-   if(!ded && Number(p.gross_pay||0)>=Number(p.net_pay||0))ded=Number(p.gross_pay||0)-Number(p.net_pay||0);
+   // 월별 표의 공제 칸은 '선지급공제'만 표시한다.
+   let ded=Number(p.other_deduction||0);
 
    // 급여대장을 표시하는 데 스케줄 계산이 실패해도 영향 없게 한다.
    let diff='-';
@@ -3315,6 +3368,43 @@ async function parseLaborPayrollExact(file){
    return {error:`급여대장 본표 위치가 예상과 다릅니다.\nA7=${seqHeader||'-'} / B7=${nameHeader||'-'} / AX7=${grossHeader||'-'} / BO7=${netHeader||'-'}`};
  }
 
+ // 급여 계산용 '공제내역합계'와 화면 표시용 '선지급공제'를 각각 찾는다.
+ // 열 위치는 고정하지 않고 실제 헤더명으로 탐색한다.
+ let deductionTotalCol='', advanceDeductionCol='';
+ for(let c=0;c<=XLSX.utils.decode_col('BN');c++){
+   let header=text(ws[XLSX.utils.encode_cell({r:6,c})]?.v).replace(/\s/g,'');
+   if(!deductionTotalCol && (
+      header.includes('공제내역합계') ||
+      header==='공제합계' ||
+      header==='공제액합계' ||
+      header==='공제총액'
+   )){
+     deductionTotalCol=XLSX.utils.encode_col(c);
+   }
+   if(!advanceDeductionCol && (header.includes('선지급공제') || header==='선지급')){
+     advanceDeductionCol=XLSX.utils.encode_col(c);
+   }
+ }
+ // 일부 양식은 공제내역합계가 2단 헤더 아래에 있으므로 7~8행도 보조 탐색
+ if(!deductionTotalCol || !advanceDeductionCol){
+   for(let rr=6;rr<=8;rr++){
+     for(let c=0;c<=XLSX.utils.decode_col('BN');c++){
+       let header=text(ws[XLSX.utils.encode_cell({r:rr,c})]?.v).replace(/\s/g,'');
+       if(!deductionTotalCol && (
+          header.includes('공제내역합계') ||
+          header==='공제합계' ||
+          header==='공제액합계' ||
+          header==='공제총액'
+       )) deductionTotalCol=XLSX.utils.encode_col(c);
+       if(!advanceDeductionCol && (header.includes('선지급공제') || header==='선지급')){
+         advanceDeductionCol=XLSX.utils.encode_col(c);
+       }
+     }
+   }
+ }
+ if(!deductionTotalCol)console.warn('공제내역합계 헤더를 찾지 못했습니다.');
+ if(!advanceDeductionCol)console.warn('선지급공제 헤더를 찾지 못했습니다.');
+
  let rows=[],blankNames=0;
 
  // 직원 본표는 10행부터. A열이 순번이고 B열에 성명이 있는 행만 읽는다.
@@ -3346,26 +3436,26 @@ async function parseLaborPayrollExact(file){
    // AX 월지급총액
    // AZ~BE 6대 기본공제, BG~BN 기타공제
    // BO 실지급액
-   let gross=intMoney(cell(`AX${r}`)),
-       net=intMoney(cell(`BO${r}`));
+   let gross=intMoney(cell(`AX${r}`));
 
-   let basicDeductions =
-       intMoney(cell(`AZ${r}`))+
-       intMoney(cell(`BA${r}`))+
-       intMoney(cell(`BB${r}`))+
-       intMoney(cell(`BC${r}`))+
-       intMoney(cell(`BD${r}`))+
-       intMoney(cell(`BE${r}`));
+   // 계산 기준:
+   // 월지급총액 - 공제내역합계 = 실지급액
+   let deductionTotal=deductionTotalCol
+     ? intMoney(cell(`${deductionTotalCol}${r}`))
+     : 0;
 
-   let otherDeductions=0;
-   for(const col of ['BG','BH','BI','BJ','BK','BL','BM','BN']){
-     otherDeductions+=intMoney(cell(`${col}${r}`));
+   // 월별 표에 별도 표시할 선지급공제
+   let advanceDeduction=advanceDeductionCol
+     ? intMoney(cell(`${advanceDeductionCol}${r}`))
+     : 0;
+
+   // 사용자가 확인한 노무사 급여대장 공식대로 계산.
+   // BO 원본 실지급액도 검산용으로 읽되 대시보드 저장값은 공식으로 통일.
+   let sourceNet=intMoney(cell(`BO${r}`)),
+       net=Math.round(gross-deductionTotal);
+   if(sourceNet!==net){
+     console.warn('실지급 검산 차이',name,{gross,deductionTotal,calculated:net,sourceNet});
    }
-
-   // 실지급액과 총지급의 차이를 최종 공제액으로 사용.
-   // 노무사 표에 선지급공제 등 기타공제가 있는 경우까지 포함.
-   let totalDed=Math.max(0,gross-net);
-   if(!totalDed)totalDed=basicDeductions+otherDeductions;
 
    let weeklyRaw=cell(`K${r}`);
    let weeklyText=typeof weeklyRaw==='string'?weeklyRaw.trim():'';
@@ -3409,8 +3499,10 @@ async function parseLaborPayrollExact(file){
      health_insurance:intMoney(cell(`BC${r}`)),
      longterm_care:intMoney(cell(`BD${r}`)),
      employment_insurance:intMoney(cell(`BE${r}`)),
-     other_deduction:otherDeductions,
-     total_deduction:Math.round(totalDed),
+     // other_deduction 컬럼은 월별표의 '선지급공제' 저장용으로 사용
+     other_deduction:Math.round(advanceDeduction),
+     // total_deduction은 Excel의 '공제내역합계'
+     total_deduction:Math.round(deductionTotal),
      net_pay:net
    });
  }
@@ -3430,6 +3522,7 @@ async function parseLaborPayrollExact(file){
  return {
    sheetName,storeName,payMonth,periodStart,periodEnd,payDate,
    rows,matched:0,
+   deductionTotalCol,advanceDeductionCol,
    tableOnly:true
  };
 }
@@ -3675,7 +3768,8 @@ async function importPayrollSimple(file){
    `사업장: ${parsed.storeName||'-'} → ${targetStore.name}\n`+
    `산정월: ${monthLabel(parsed.payMonth)}\n`+
    `산정기간: ${parsed.periodStart||'-'} ~ ${parsed.periodEnd||'-'}\n`+
-   `급여행: ${parsed.rows.length}건\n\n`+
+   `급여행: ${parsed.rows.length}건\n`+
+   `공제 기준: ${parsed.advanceDeductionCol?parsed.advanceDeductionCol+'열 선지급공제':'선지급공제 헤더 미발견 → 0원'}\n\n`+
    `이번 Excel에서 실제 읽은 직원명:\n${sourcePreview}${sourceNames.length>30?' ...':''}`;
 
  if(exactUnmatched.length){
@@ -3981,7 +4075,7 @@ function renderPayrollSimple(){
   <td class="money">${money(p.meal_allowance)}</td>
   <td class="money">${money(payrollCombinedExtra(p))}</td>
   <td class="money"><b>${money(p.gross_pay)}</b></td>
-  <td class="money">${money(p.total_deduction)}</td>
+  <td class="money">${money(p.other_deduction)}</td>
   <td class="money"><b>${money(p.net_pay)}</b></td>
  </tr>`).join('');
  $('payrollBody').innerHTML=rows||`<tr><td colspan="13" style="padding:26px">${monthLabel($('monthSelect').value)} 급여자료가 없습니다. 위의 <b>급여대장 불러오기</b>를 눌러 Excel을 등록하세요.</td></tr>`;
@@ -3997,6 +4091,7 @@ function renderPayrollSimple(){
   extra:ordered.reduce((a,p)=>a+payrollCombinedExtra(p),0),
   gross:payrollSum(ordered,'gross_pay'),
   ded:payrollSum(ordered,'total_deduction'),
+   advanceDed:payrollSum(ordered,'other_deduction'),
   net:payrollSum(ordered,'net_pay')
  };
  if($('monthGrossTotal'))$('monthGrossTotal').textContent=money(total.gross);
@@ -4006,7 +4101,7 @@ function renderPayrollSimple(){
   <td class="name">합계 · ${ordered.length}명</td><td>${Math.round(total.scheduled*100)/100}h</td><td>${total.weekly.toFixed(1)}h</td>
   <td>${money(total.base)}</td><td>${money(total.weeklyPay)}</td><td>${money(total.fixedOT)}</td><td>${money(total.holiday)}</td>
   <td>${money(total.overtime)}</td><td>${money(total.meal)}</td><td>${money(total.extra)}</td><td>${money(total.gross)}</td>
-  <td>${money(total.ded)}</td><td>${money(total.net)}</td></tr>`:'';
+  <td>${money(total.advanceDed)}</td><td>${money(total.net)}</td></tr>`:'';
 }
 
 async function savePayrollWeeklyHours(id,value){
@@ -4178,7 +4273,7 @@ async function loadPayrollPeriodReport(){
    let name=selectedEmp?.name||rows[0]?.employee_name||'선택 직원';
    rows.sort((a,b)=>a._ym.localeCompare(b._ym));
    $('payrollPeriodTitle').textContent=`${name} · ${monthLabel(from)} ~ ${monthLabel(to)} · ${rows.length}개월 자료`;
-   $('payrollPeriodHead').innerHTML='<tr><th>월</th><th>월근무</th><th>기본급</th><th>주휴수당</th><th>수당/상여</th><th>총지급</th><th>공제</th><th>실지급</th></tr>';
+   $('payrollPeriodHead').innerHTML='<tr><th>월</th><th>월근무</th><th>기본급</th><th>주휴수당</th><th>수당/상여</th><th>총지급</th><th>공제내역합계</th><th>실지급</th></tr>';
    $('payrollPeriodBody').innerHTML=rows.length?rows.map(p=>`<tr>
      <td><b>${esc(p._ym)}</b></td>
      <td>${Number(p.scheduled_hours||0).toFixed(2).replace(/\.00$/,'')}h</td>
@@ -4225,7 +4320,7 @@ async function loadPayrollPeriodReport(){
    });
 
    $('payrollPeriodTitle').textContent=`전체 직원 · ${monthLabel(from)} ~ ${monthLabel(to)} · ${list.length}명`;
-   $('payrollPeriodHead').innerHTML='<tr><th class="name">직원</th><th>급여월 수</th><th>총지급 누계</th><th>공제 누계</th><th>실지급 누계</th><th>월평균 실지급</th></tr>';
+   $('payrollPeriodHead').innerHTML='<tr><th class="name">직원</th><th>급여월 수</th><th>총지급 누계</th><th>공제내역합계 누계</th><th>실지급 누계</th><th>월평균 실지급</th></tr>';
    $('payrollPeriodBody').innerHTML=list.length?list.map(x=>`<tr>
      <td class="name periodEmployeeName">${esc(x.name)}</td>
      <td>${x.months.size}개월</td>
