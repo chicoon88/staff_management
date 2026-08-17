@@ -735,7 +735,23 @@ async function renderPharmacyPay(){
  }
  $('pharmacyPayBody').innerHTML=rows.join('')||'<tr><td colspan="10">직원이 없습니다.</td></tr>';
 }
-function renderPayroll(){$('payrollBody').innerHTML=employees.map(e=>{let p=payrollFor(e),x=calc(e);if(!p)return `<tr><td class="name">${esc(e.name)}</td><td colspan="11">급여자료 없음</td></tr>`;let extra=Number(p.adjustment_pay||0)+Number(p.bonus||0),ded=Number(p.total_deduction||0),diff=Math.round((x.worked-Number(p.scheduled_hours||0))*100)/100;return `<tr><td class="name">${esc(e.name)}</td><td>${p.scheduled_hours||0}h</td><td class="money">${money(p.base_pay)}</td><td class="money">${money(p.fixed_overtime_pay)}</td><td class="money">${money(p.holiday_pay)}</td><td class="money">${money(p.overtime_pay)}</td><td class="money">${money(p.meal_allowance)}</td><td class="money">${money(extra)}</td><td class="money">${money(p.gross_pay)}</td><td class="money">${money(ded)}</td><td class="money"><b>${money(p.net_pay)}</b></td><td class="${diff===0?'ok':'warn'}">${diff>0?'+':''}${diff}h</td></tr>`}).join('')}
+function renderPayroll(){
+ let seen=new Set(),rows=[];
+ payroll.forEach(p=>{
+   seen.add(normalizeName(p.employee_name));
+   let e=[...employees,...retiredEmployees].find(x=>x.id===p.employee_id)||employees.find(x=>normalizeName(x.name)===normalizeName(p.employee_name));
+   let x=e&&employees.some(a=>a.id===e.id)?calc(e):{worked:0};
+   let extra=Number(p.adjustment_pay||0)+Number(p.bonus||0),ded=Number(p.total_deduction||0),
+       diff=e?Math.round((x.worked-Number(p.scheduled_hours||0))*100)/100:null;
+   rows.push(`<tr class="${e?.active===false?'retiredRow':''}"><td class="name">${esc(p.employee_name)}${!e?' <span class="reviewWarn">미매칭</span>':''}</td>
+   <td>${p.scheduled_hours||0}h</td><td class="money">${money(p.base_pay)}</td><td class="money">${money(p.fixed_overtime_pay)}</td>
+   <td class="money">${money(p.holiday_pay)}</td><td class="money">${money(p.overtime_pay)}</td><td class="money">${money(p.meal_allowance)}</td>
+   <td class="money">${money(extra)}</td><td class="money">${money(p.gross_pay)}</td><td class="money">${money(ded)}</td>
+   <td class="money"><b>${money(p.net_pay)}</b></td><td class="${diff===0?'ok':diff==null?'':'warn'}">${diff==null?'-':(diff>0?'+':'')+diff+'h'}</td></tr>`);
+ });
+ employees.filter(e=>!seen.has(normalizeName(e.name))).forEach(e=>rows.push(`<tr><td class="name">${esc(e.name)}</td><td colspan="11">급여자료 없음</td></tr>`));
+ $('payrollBody').innerHTML=rows.join('');
+}
 function setEmployeeView(v){
  employeeView=v;$('activeEmpTab')?.classList.toggle('active',v==='active');$('retiredEmpTab')?.classList.toggle('active',v==='retired');renderEmployees();
 }
@@ -1071,20 +1087,64 @@ function inferPayrollMeta(filename){
  return {payMonth:ym,store:matchedStore};
 }
 
-async function parsePayrollWorkbook(file){
- let meta=inferPayrollMeta(file.name),buf=await file.arrayBuffer(),wb=XLSX.read(buf,{type:'array',cellDates:true}),
- sheetName=wb.SheetNames.find(n=>n.includes('급여대장')&&!n.includes('명세서'))||wb.SheetNames.find(n=>n.includes('급여대장'));
- if(!sheetName)return {error:'급여대장 시트 없음',meta};
- let a=XLSX.utils.sheet_to_json(wb.Sheets[sheetName],{header:1,defval:null,raw:true}),header=-1;
- for(let i=0;i<Math.min(a.length,30);i++){let row=(a[i]||[]).map(x=>String(x||'').replace(/\s/g,''));if(row.some(x=>['성명','직원명','근로자명'].includes(x))){header=i;break}}
- if(header<0)return {error:'직원명 헤더 없음',meta};
- let rows=[];
- for(let i=header+1;i<a.length;i++){
-   let r=a[i],name=String(r?.[1]||'').trim();if(!name||name.includes('합계'))continue;
-   let emp=employees.find(e=>normalizeName(e.name)===normalizeName(name));if(!emp&&!r?.some(v=>typeof v==='number'))continue;
-   rows.push({employee_id:emp?.id||null,employee_name:name,ordinary_hourly_rate:num(r[8]),scheduled_hours:num(r[9]),overtime_hours:num(r[11]),holiday_hours:num(r[12]),base_pay:num(r[14]),weekly_holiday_pay:num(r[15]),position_allowance:num(r[16]),fixed_overtime_pay:num(r[18]),fixed_holiday_pay:num(r[19]),meal_allowance:num(r[27]),vehicle_allowance:num(r[29]),childcare_allowance:num(r[31]),holiday_pay:num(r[39]),overtime_pay:num(r[41]),adjustment_pay:num(r[44]),bonus:num(r[45]),unused_leave_pay:num(r[46]),absence_deduction:num(r[48]),gross_pay:num(r[49]),income_tax:num(r[51]),local_income_tax:num(r[52]),national_pension:num(r[53]),health_insurance:num(r[54]),longterm_care:num(r[55]),employment_insurance:num(r[56]),net_pay:num(r[66]),source_file:file.name});
+
+function monthFromExcelValue(v){
+ if(!v)return null;
+ if(v instanceof Date)return `${v.getFullYear()}-${String(v.getMonth()+1).padStart(2,'0')}`;
+ if(typeof v==='number'){
+   let p=XLSX.SSF.parse_date_code(v);
+   if(p)return `${p.y}-${String(p.m).padStart(2,'0')}`;
  }
- return {meta,rows};
+ let s=String(v),m=s.match(/(20\d{2})[.\-\/년\s]*(\d{1,2})/);
+ return m?`${m[1]}-${String(Number(m[2])).padStart(2,'0')}`:null;
+}
+
+async function parsePayrollWorkbook(file){
+ let meta=inferPayrollMeta(file.name),buf=await file.arrayBuffer(),wb=XLSX.read(buf,{type:'array',cellDates:true});
+ // 파일명 월이 있으면 같은 월의 급여대장 시트를 최우선
+ let wantedMonth=meta.payMonth?Number(meta.payMonth.slice(5)):null;
+ let sheetName=(wantedMonth?wb.SheetNames.find(n=>new RegExp(`(^|[^0-9])${wantedMonth}월.*급여대장`).test(n)):null)
+   ||wb.SheetNames.find(n=>n.includes('급여대장')&&!n.includes('명세서'))
+   ||wb.SheetNames.find(n=>n.includes('급여대장'));
+ if(!sheetName)return {error:'급여대장 시트 없음',meta};
+ let ws=wb.Sheets[sheetName],a=XLSX.utils.sheet_to_json(ws,{header:1,defval:null,raw:true}),header=-1;
+ // 내부 산정기간(D5 등)도 확인
+ for(let rr=0;rr<Math.min(a.length,10);rr++){
+   let row=a[rr]||[];
+   if(row.some(x=>String(x||'').includes('산정기간'))){
+     let internal=row.map(monthFromExcelValue).find(Boolean);
+     if(internal)meta.payMonth=internal;
+   }
+ }
+ if(!meta.payMonth){
+   // 급여대장 제목 "(7월)급여대장" + 파일연도 조합
+   let title=String(a?.[0]?.[0]||''),mm=title.match(/\((\d{1,2})월\)/),yy=file.name.match(/(20\d{2})/);
+   if(mm&&yy)meta.payMonth=`${yy[1]}-${String(Number(mm[1])).padStart(2,'0')}`;
+ }
+ for(let i=0;i<Math.min(a.length,30);i++){
+   let row=(a[i]||[]).map(x=>String(x||'').replace(/\s/g,''));
+   if(row.some(x=>['성명','직원명','근로자명'].includes(x))){header=i;break}
+ }
+ if(header<0)return {error:'직원명 헤더 없음',meta};
+ let rows=[],allPeople=[...employees,...retiredEmployees],matched=0,unmatched=[];
+ for(let i=header+1;i<a.length;i++){
+   let r=a[i],name=String(r?.[1]||'').trim();
+   if(!name||name.includes('합계')||name==='주민번호')continue;
+   if(!r?.some(v=>typeof v==='number'))continue;
+   let emp=allPeople.find(e=>normalizeName(e.name)===normalizeName(name));
+   if(emp)matched++;else unmatched.push(name);
+   rows.push({
+     employee_id:emp?.id||null,employee_name:name,
+     ordinary_hourly_rate:num(r[8]),scheduled_hours:num(r[9]),overtime_hours:num(r[11]),holiday_hours:num(r[12]),
+     base_pay:num(r[14]),weekly_holiday_pay:num(r[15]),position_allowance:num(r[16]),fixed_overtime_pay:num(r[18]),
+     fixed_holiday_pay:num(r[19]),meal_allowance:num(r[27]),vehicle_allowance:num(r[29]),childcare_allowance:num(r[31]),
+     holiday_pay:num(r[39]),overtime_pay:num(r[41]),adjustment_pay:num(r[44]),bonus:num(r[45]),unused_leave_pay:num(r[46]),
+     absence_deduction:num(r[48]),gross_pay:num(r[49]),income_tax:num(r[51]),local_income_tax:num(r[52]),
+     national_pension:num(r[53]),health_insurance:num(r[54]),longterm_care:num(r[55]),employment_insurance:num(r[56]),
+     net_pay:num(r[66]),source_file:file.name
+   });
+ }
+ return {meta,rows,matched,unmatched:[...new Set(unmatched)],sheetName};
 }
 async function persistPayrollParsed(parsed,file,forcePaid=false){
  let targetMonth=parsed.meta.payMonth||$('monthSelect').value,targetStore=parsed.meta.store?.id||storeId();
@@ -1095,7 +1155,7 @@ async function persistPayrollParsed(parsed,file,forcePaid=false){
  let q=await sb.from('payroll_entries').upsert(parsed.rows,{onConflict:'payroll_month_id,employee_name'});if(q.error)return {error:q.error.message};
  let payRows=[];
  for(const r of parsed.rows){
-   let e=employees.find(x=>x.id===r.employee_id);if(!e)continue;
+   let e=[...employees,...retiredEmployees].find(x=>x.id===r.employee_id);if(!e)continue;
    let paid=forcePaid || paymentDateIso(e,targetMonth)<=isoToday();
    payRows.push({store_id:targetStore,employee_id:e.id,payment_month:targetMonth+'-01',pay_slot:paySlot(e),work_month:shiftMonth(targetMonth,-salaryDelay(e))+'-01',
      payment_date:paymentDateIso(e,targetMonth),amount:Number(r.net_pay||0),status:paid?'paid':'expected',locked:paid,paid_at:paid?new Date().toISOString():null,source_type:'labor_file',source_file:file.name});
@@ -1105,14 +1165,30 @@ async function persistPayrollParsed(parsed,file,forcePaid=false){
 }
 async function importPayrollHistory(fileList){
  let files=[...fileList];if(!files.length)return;
- if(!confirm(`${files.length}개 급여파일을 과거 실제지급 자료로 일괄 등록합니다.\n파일명에서 연도·월을 읽으며 기존 같은 월/직원 자료는 업데이트합니다.\n계속할까요?`))return;
- let ok=[],fail=[];
+ if(!confirm(`${files.length}개 급여파일을 과거 실제지급 자료로 등록합니다.\n파일명과 엑셀 내부 산정기간을 같이 확인합니다.\n계속할까요?`))return;
+ let ok=[],fail=[],months=[],allUnmatched=[];
  for(const f of files){
    let p=await parsePayrollWorkbook(f);
-   if(p.error||!p.meta.payMonth||!p.rows?.length){fail.push(`${f.name}: ${p.error||'월/직원자료 인식 실패'}`);continue}
-   let r=await persistPayrollParsed(p,f,true);if(r.error)fail.push(`${f.name}: ${r.error}`);else ok.push(`${f.name} → ${r.month} (${r.count}명)`);
+   if(p.error||!p.meta.payMonth||!p.rows?.length){
+     fail.push(`${f.name}: ${p.error||'월/직원자료 인식 실패'}`);continue;
+   }
+   let r=await persistPayrollParsed(p,f,true);
+   if(r.error)fail.push(`${f.name}: ${r.error}`);
+   else{
+     months.push(r.month);
+     ok.push(`${r.month} · ${p.sheetName} · ${r.count}명 (직원매칭 ${p.matched}명)`);
+     if(p.unmatched?.length)allUnmatched.push(...p.unmatched.map(n=>`${r.month} ${n}`));
+   }
  }
- await refreshAll();alert(`과거자료 등록 완료 ${ok.length}개\n\n${ok.join('\n')}${fail.length?'\n\n실패:\n'+fail.join('\n'):''}`);
+ if(months.length){
+   months.sort();
+   $('monthSelect').value=months[months.length-1]; // 가장 최근 과거월로 자동 이동
+ }
+ await refreshAll();
+ let msg=`과거자료 등록 완료: ${ok.length}개 파일\n\n${ok.join('\n')}`;
+ if(allUnmatched.length)msg+=`\n\n⚠ 직원DB 미등록/미매칭 (${allUnmatched.length}건)\n${allUnmatched.slice(0,20).join('\n')}`;
+ if(fail.length)msg+=`\n\n실패\n${fail.join('\n')}`;
+ alert(msg);
 }
 
 async function importPayroll(file){
@@ -1121,7 +1197,7 @@ async function importPayroll(file){
  let meta=parsed.meta,messages=[];
  if(meta.payMonth)messages.push(`파일 지급월 추정: ${monthLabel(meta.payMonth)}`);else messages.push('파일명에서 월 인식 실패 → 현재 선택월');
  if(meta.store)messages.push(`업장 추정: ${meta.store.name}`);else messages.push('업장 인식 실패 → 현재 선택업장');
- if(!confirm(`${file.name}\n\n${messages.join('\n')}\n\n${parsed.rows.length}명 자료를 반영할까요?`))return;
+ if(!confirm(`${file.name}\n\n${messages.join('\n')}\n급여시트: ${parsed.sheetName}\n감지 ${parsed.rows.length}명 / 직원매칭 ${parsed.matched}명${parsed.unmatched?.length?` / 미매칭 ${parsed.unmatched.length}명`:''}\n\n반영할까요?`))return;
  let r=await persistPayrollParsed(parsed,file,false);if(r.error)return alert(r.error);
  if(meta.payMonth)$('monthSelect').value=meta.payMonth;
  await refreshAll();alert(`${r.count}명의 급여자료를 ${monthLabel(r.month)}에 저장했습니다.`);
