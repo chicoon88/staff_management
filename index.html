@@ -2391,9 +2391,46 @@ function excelCellDateIso(v){
  return '';
 }
 function nval(v){let n=Number(v);return Number.isFinite(n)?n:0}
+
+function normalizeStoreNameForPayroll(s){
+ return String(s||'')
+   .toLowerCase()
+   .replace(/\(.*?\)/g,'')
+   .replace(/주식회사|유한회사|의료법인|약국/g,'')
+   .replace(/[\s\-_.·]/g,'')
+   .trim();
+}
+function findStoreFromPayrollName(name){
+ let n=normalizeStoreNameForPayroll(name);
+ if(!n)return null;
+ let exact=stores.filter(s=>normalizeStoreNameForPayroll(s.name)===n);
+ if(exact.length===1)return exact[0];
+ let partial=stores.filter(s=>{
+   let x=normalizeStoreNameForPayroll(s.name);
+   return x && (x.includes(n)||n.includes(x));
+ });
+ return partial.length===1?partial[0]:null;
+}
+function askPayrollTargetStore(fileStoreName){
+ let matched=findStoreFromPayrollName(fileStoreName);
+ if(matched)return matched;
+ if(!stores.length)return null;
+ let msg=`Excel 사업장명 "${fileStoreName||'인식 안 됨'}"을 업장과 자동매칭하지 못했습니다.\n\n`;
+ msg+=stores.map((s,i)=>`${i+1}. ${s.name}`).join('\n');
+ msg+=`\n\n등록할 업장 번호를 입력하세요.`;
+ let v=prompt(msg,'1');
+ if(v===null)return null;
+ let i=Number(v)-1;
+ return stores[i]||null;
+}
+function payrollWeeklyHoursFromMemo(memo){
+ let m=String(memo||'').match(/weekly_hours=([0-9.]+)/);
+ return m?Number(m[1]):0;
+}
+
 async function parseLaborPayrollExact(file){
  let buf=await file.arrayBuffer();
- let wb=XLSX.read(buf,{type:'array',cellDates:true,cellFormula:true});
+ let wb=XLSX.read(buf,{type:'array',cellDates:false,cellFormula:true});
  let sheetName=wb.SheetNames.find(n=>n==='급여대장') || wb.SheetNames.find(n=>n.includes('급여대장')&&!n.includes('명세서'));
  if(!sheetName)return {error:'급여대장 시트를 찾지 못했습니다.'};
  let ws=wb.Sheets[sheetName];
@@ -2407,14 +2444,13 @@ async function parseLaborPayrollExact(file){
   let name=String(cv(`B${r}`)||'').trim();
   if(!name)continue;
   if(/합계|총계|세부사항/.test(name))continue;
-  let emp=allEmployees().find(e=>normalizeName(e.name)===normalizeName(name));
   let gross=nval(cv(`AX${r}`)),net=nval(cv(`BO${r}`));
   let deductions=nval(cv(`BF${r}`));
   if(gross && !deductions && gross>=net)deductions=gross-net;
   rows.push({
-    employee_id:emp?.id||null,employee_name:name,
+    employee_id:null,employee_name:name,
     ordinary_hourly_rate:nval(cv(`I${r}`)),
-    scheduled_hours:nval(cv(`J${r}`)),weekly_hours:nval(cv(`K${r}`)),
+    scheduled_hours:nval(cv(`J${r}`)),_weekly_hours:nval(cv(`K${r}`)),
     overtime_hours:nval(cv(`AO${r}`)),holiday_hours:nval(cv(`AM${r}`)),
     base_pay:nval(cv(`O${r}`)),weekly_holiday_pay:nval(cv(`P${r}`)),position_allowance:nval(cv(`Q${r}`)),
     fixed_overtime_pay:nval(cv(`S${r}`)),fixed_holiday_pay:nval(cv(`T${r}`)),
@@ -2428,65 +2464,166 @@ async function parseLaborPayrollExact(file){
   });
  }
  if(!rows.length)return {error:'급여대장에서 직원 급여행을 찾지 못했습니다.'};
- return {sheetName,storeName,payMonth,periodStart,periodEnd,payDate,rows,matched:rows.filter(x=>x.employee_id).length};
+ return {sheetName,storeName,payMonth,periodStart,periodEnd,payDate,rows,matched:0};
 }
 async function importPayrollSimple(file){
  if(!file)return;
  setPayrollLoadState('파일 읽는 중','saving');
+
  let parsed;
- try{parsed=await parseLaborPayrollExact(file)}catch(err){setPayrollLoadState('읽기 오류','error');return alert('급여대장 읽기 오류:\n'+(err.message||err))}
- if(parsed.error){setPayrollLoadState('형식 오류','error');return alert(parsed.error)}
-
- let currentStore=stores.find(s=>s.id===storeId());
- let unmatched=parsed.rows.filter(x=>!x.employee_id).map(x=>x.employee_name);
- let message=`Excel 내부 확인\n\n사업장명: ${parsed.storeName||'-'}\n산정월: ${monthLabel(parsed.payMonth)}\n산정기간: ${parsed.periodStart||'-'} ~ ${parsed.periodEnd||'-'}\n지급일: ${parsed.payDate||'-'}\n직원: ${parsed.rows.length}명\n현재 업장 직원매칭: ${parsed.matched}명`;
- if(unmatched.length)message+=`\n미매칭: ${unmatched.join(', ')}`;
- message+=`\n\n현재 대시보드 업장 [${currentStore?.name||'-'}]에 저장할까요?`;
- if(!confirm(message)){setPayrollLoadState('취소','');return}
-
- // Existing month lookup, exact store+month
- let oldm=await sb.from('payroll_months').select('id').eq('store_id',storeId()).eq('pay_month',parsed.payMonth+'-01');
- if(oldm.error){setPayrollLoadState('DB 오류','error');return alert(oldm.error.message)}
- let oldIds=(oldm.data||[]).map(x=>x.id);
- if(oldIds.length){
-  let olde=await sb.from('payroll_entries').select('id').in('payroll_month_id',oldIds);
-  let count=olde.error?0:(olde.data||[]).length;
-  if(!confirm(`${monthLabel(parsed.payMonth)} 급여자료가 이미 ${count}건 있습니다.\n\n[확인] 기존 자료 삭제 후 새 파일로 교체\n[취소] 기존 자료 유지`)){
-    setPayrollLoadState('기존자료 유지','saved');return;
-  }
-  let d=await sb.from('payroll_entries').delete().in('payroll_month_id',oldIds);
-  if(d.error){setPayrollLoadState('삭제 오류','error');return alert('기존 급여 상세 삭제 오류:\n'+d.error.message)}
-  let dm=await sb.from('payroll_months').delete().in('id',oldIds);
-  if(dm.error){setPayrollLoadState('삭제 오류','error');return alert('기존 급여월 삭제 오류:\n'+dm.error.message)}
+ try{
+   parsed=await parseLaborPayrollExact(file);
+ }catch(err){
+   setPayrollLoadState('읽기 오류','error');
+   return alert('급여대장 읽기 오류:\n'+(err.message||err));
+ }
+ if(parsed.error){
+   setPayrollLoadState('형식 오류','error');
+   return alert(parsed.error);
  }
 
- // Insert month, then details. No payment_register / forecast side effects in this simple phase.
- let pm=await sb.from('payroll_months').insert({store_id:storeId(),pay_month:parsed.payMonth+'-01'}).select('id').single();
- if(pm.error){setPayrollLoadState('월 저장 오류','error');return alert('급여월 저장 오류:\n'+pm.error.message)}
- parsed.rows.forEach(x=>x.payroll_month_id=pm.data.id);
- let ins=await sb.from('payroll_entries').insert(parsed.rows);
+ // ① 업장은 현재 대시보드 선택값이 아니라 Excel 내부 사업장명으로 자동판별
+ let targetStore=askPayrollTargetStore(parsed.storeName);
+ if(!targetStore){
+   setPayrollLoadState('업장 선택 취소','');
+   return;
+ }
+
+ // ② 대상 업장의 직원 DB를 다시 직접 조회하여 이름 매칭
+ let eq=await sb.from('employees').select('id,name,active').eq('store_id',targetStore.id);
+ if(eq.error){
+   setPayrollLoadState('직원 조회 오류','error');
+   return alert('대상 업장 직원 조회 오류:\n'+eq.error.message);
+ }
+ let targetEmployees=eq.data||[];
+ parsed.rows.forEach(r=>{
+   let emp=targetEmployees.find(e=>normalizeName(e.name)===normalizeName(r.employee_name));
+   r.employee_id=emp?.id||null;
+ });
+ parsed.matched=parsed.rows.filter(x=>x.employee_id).length;
+ let unmatched=parsed.rows.filter(x=>!x.employee_id).map(x=>x.employee_name);
+
+ let message=`Excel 자동분석 결과\n\n사업장명: ${parsed.storeName||'-'}\n→ 등록 업장: ${targetStore.name}\n산정월: ${monthLabel(parsed.payMonth)}\n산정기간: ${parsed.periodStart||'-'} ~ ${parsed.periodEnd||'-'}\n지급일: ${parsed.payDate||'-'}\n직원: ${parsed.rows.length}명\n직원매칭: ${parsed.matched}명`;
+ if(unmatched.length)message+=`\n미매칭: ${unmatched.join(', ')}`;
+ message+=`\n\n현재 화면의 업장/월과 관계없이 위 분석결과로 자동 등록합니다.\n계속할까요?`;
+ if(!confirm(message)){
+   setPayrollLoadState('취소','');
+   return;
+ }
+
+ let sid=targetStore.id, ym=parsed.payMonth;
+
+ // 같은 업장 + 같은 산정월 기존자료 확인
+ let oldm=await sb.from('payroll_months').select('id').eq('store_id',sid).eq('pay_month',ym+'-01');
+ if(oldm.error){
+   setPayrollLoadState('DB 오류','error');
+   return alert(oldm.error.message);
+ }
+ let oldIds=(oldm.data||[]).map(x=>x.id);
+
+ if(oldIds.length){
+   let olde=await sb.from('payroll_entries').select('id').in('payroll_month_id',oldIds);
+   let count=olde.error?0:(olde.data||[]).length;
+   if(!confirm(`${targetStore.name} ${monthLabel(ym)} 급여자료가 이미 ${count}건 있습니다.\n\n[확인] 기존 자료 삭제 후 새 파일로 교체\n[취소] 기존 자료 유지`)){
+     setPayrollLoadState('기존자료 유지','saved');
+     return;
+   }
+
+   let d=await sb.from('payroll_entries').delete().in('payroll_month_id',oldIds);
+   if(d.error){
+     setPayrollLoadState('삭제 오류','error');
+     return alert('기존 급여 상세 삭제 오류:\n'+d.error.message);
+   }
+   let dm=await sb.from('payroll_months').delete().in('id',oldIds);
+   if(dm.error){
+     setPayrollLoadState('삭제 오류','error');
+     return alert('기존 급여월 삭제 오류:\n'+dm.error.message);
+   }
+ }
+
+ // 급여월 생성
+ let pm=await sb.from('payroll_months')
+   .insert({store_id:sid,pay_month:ym+'-01'})
+   .select('id')
+   .single();
+ if(pm.error){
+   setPayrollLoadState('월 저장 오류','error');
+   return alert('급여월 저장 오류:\n'+pm.error.message);
+ }
+
+ // ★ 현재 DB payroll_entries 컬럼에 존재하는 값만 저장
+ // weekly_hours는 DB 컬럼이 없으므로 memo에 보관
+ let dbRows=parsed.rows.map(x=>({
+   payroll_month_id:pm.data.id,
+   employee_id:x.employee_id,
+   employee_name:x.employee_name,
+   ordinary_hourly_rate:x.ordinary_hourly_rate,
+   scheduled_hours:x.scheduled_hours,
+   overtime_hours:x.overtime_hours,
+   holiday_hours:x.holiday_hours,
+   base_pay:x.base_pay,
+   weekly_holiday_pay:x.weekly_holiday_pay,
+   position_allowance:x.position_allowance,
+   fixed_overtime_pay:x.fixed_overtime_pay,
+   fixed_holiday_pay:x.fixed_holiday_pay,
+   meal_allowance:x.meal_allowance,
+   vehicle_allowance:x.vehicle_allowance,
+   childcare_allowance:x.childcare_allowance,
+   overtime_pay:x.overtime_pay,
+   holiday_pay:x.holiday_pay,
+   adjustment_pay:x.adjustment_pay,
+   bonus:x.bonus,
+   unused_leave_pay:x.unused_leave_pay,
+   absence_deduction:x.absence_deduction,
+   gross_pay:x.gross_pay,
+   income_tax:x.income_tax,
+   local_income_tax:x.local_income_tax,
+   national_pension:x.national_pension,
+   health_insurance:x.health_insurance,
+   longterm_care:x.longterm_care,
+   employment_insurance:x.employment_insurance,
+   other_deduction:0,
+   total_deduction:x.total_deduction,
+   net_pay:x.net_pay,
+   source_file:file.name,
+   memo:`weekly_hours=${Number(x._weekly_hours||0)};pay_date=${parsed.payDate||''};period=${parsed.periodStart||''}~${parsed.periodEnd||''}`
+ }));
+
+ let ins=await sb.from('payroll_entries').insert(dbRows);
  if(ins.error){
    await sb.from('payroll_months').delete().eq('id',pm.data.id);
-   setPayrollLoadState('상세 저장 오류','error');return alert('급여 상세 저장 오류:\n'+ins.error.message);
+   setPayrollLoadState('상세 저장 오류','error');
+   return alert('급여 상세 저장 오류:\n'+ins.error.message);
  }
- $('monthSelect').value=parsed.payMonth;
- payroll=parsed.rows;
+
+ // 화면도 자동으로 Excel 분석결과 업장 + 월로 이동
+ $('storeSelect').value=String(sid);
+ localStorage.setItem('staff_dashboard_store_id',String(sid));
+ $('monthSelect').value=ym;
+
+ // 화면용 데이터에는 주휴시간 임시값 유지
+ payroll=parsed.rows.map(x=>({...x,memo:`weekly_hours=${Number(x._weekly_hours||0)}`}));
  renderPayrollSimple();
  showPayrollImportInfo(parsed,file.name);
- setPayrollLoadState(`${parsed.payMonth} · ${parsed.rows.length}명`,'saved');
- alert(`${monthLabel(parsed.payMonth)} 급여대장 ${parsed.rows.length}명 저장 완료`);
+ setPayrollLoadState(`${targetStore.name} · ${ym} · ${parsed.rows.length}명`,'saved');
+
+ // 직원/스케줄도 대상 업장·월로 다시 로드하되, 저장완료 표시 후 실행
+ await refreshAll();
+ await loadPayrollSimple();
+
+ alert(`${targetStore.name}\n${monthLabel(ym)} 급여대장 ${parsed.rows.length}명 저장 완료`);
 }
 function showPayrollImportInfo(parsed,fileName){
  let el=$('payrollImportInfo');if(!el)return;
  el.style.display='block';
- el.innerHTML=`<b>${monthLabel(parsed.payMonth)} 급여대장 불러오기 완료</b><br><span class="help">파일: ${esc(fileName)} · Excel 사업장: ${esc(parsed.storeName||'-')} · 산정기간: ${esc(parsed.periodStart||'-')} ~ ${esc(parsed.periodEnd||'-')} · 지급일: ${esc(parsed.payDate||'-')} · 직원 ${parsed.rows.length}명 · 직원매칭 ${parsed.matched}명</span>`;
+ el.innerHTML=`<b>${monthLabel(parsed.payMonth)} 급여대장 불러오기 완료</b><br><span class="help">파일: ${esc(fileName)} · Excel 사업장: ${esc(parsed.storeName||'-')} · 자동 등록월: ${esc(parsed.payMonth)} · 산정기간: ${esc(parsed.periodStart||'-')} ~ ${esc(parsed.periodEnd||'-')} · 지급일: ${esc(parsed.payDate||'-')} · 직원 ${parsed.rows.length}명 · 직원매칭 ${parsed.matched}명</span>`;
 }
 function renderPayrollSimple(){
  if(!$('payrollBody'))return;
  let rows=payroll.map(p=>`<tr>
   <td class="name"><b>${esc(p.employee_name)}</b>${p.employee_id?'':' <span class="reviewWarn">미매칭</span>'}</td>
   <td>${Number(p.scheduled_hours||0).toFixed(2).replace(/\.00$/,'')}h</td>
-  <td>${Number(p.weekly_hours||0).toFixed(2).replace(/\.00$/,'')}h</td>
+  <td>${Number(p._weekly_hours ?? payrollWeeklyHoursFromMemo(p.memo)).toFixed(2).replace(/\.00$/,'')}h</td>
   <td class="money">${money(p.base_pay)}</td>
   <td class="money">${money(p.weekly_holiday_pay)}</td>
   <td class="money">${money(p.fixed_overtime_pay)}</td>
