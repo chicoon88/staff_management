@@ -290,6 +290,63 @@ input,select{border:1px solid #d2d7e0;background:white;border-radius:9px;padding
  .modalBack>.modal .formgrid{grid-template-columns:1fr!important}
 }
 
+
+/* ===== 직원/설정 팝업 PC 대형화 ===== */
+.modalBack{
+ padding:18px!important;
+}
+.modalBack>.modal{
+ width:min(1180px,calc(100vw - 60px))!important;
+ max-width:1180px!important;
+ max-height:calc(100vh - 36px)!important;
+ overflow-y:auto!important;
+ overflow-x:hidden!important;
+ padding:24px 26px!important;
+}
+.modalBack>.modal .formgrid{
+ display:grid!important;
+ grid-template-columns:repeat(3,minmax(0,1fr))!important;
+ gap:14px 16px!important;
+ width:100%!important;
+}
+.modalBack>.modal .field{
+ min-width:0!important;
+}
+.modalBack>.modal input,
+.modalBack>.modal select,
+.modalBack>.modal textarea{
+ width:100%!important;
+ min-width:0!important;
+ box-sizing:border-box!important;
+}
+.modalBack>.modal .modalActions{
+ position:sticky!important;
+ bottom:-24px!important;
+ background:#fff!important;
+ padding:14px 0 2px!important;
+ margin-top:16px!important;
+ z-index:2!important;
+}
+@media(max-width:900px){
+ .modalBack>.modal{
+   width:calc(100vw - 28px)!important;
+   padding:20px!important;
+ }
+ .modalBack>.modal .formgrid{
+   grid-template-columns:repeat(2,minmax(0,1fr))!important;
+ }
+}
+@media(max-width:560px){
+ .modalBack>.modal{
+   width:calc(100vw - 16px)!important;
+   max-height:calc(100vh - 16px)!important;
+   padding:16px!important;
+ }
+ .modalBack>.modal .formgrid{
+   grid-template-columns:1fr!important;
+ }
+}
+
 </style>
 </head>
 <body>
@@ -360,13 +417,13 @@ input,select{border:1px solid #d2d7e0;background:white;border-radius:9px;padding
 </section>
 
 <section id="payrollPage" class="page">
- <div class="row"><div><h1 class="title">급여 · 지급관리</h1><div class="sub">과거 실제지급 · 현재 예상 · 수기확정 · 인센 발생월을 따로 관리합니다.</div></div>
+ <div class="card" style="margin-bottom:10px"><div class="help"><b>저장 안내</b> · GitHub의 index.html을 교체해도 Supabase에 저장된 급여 데이터는 삭제되지 않습니다. 원본 Excel 파일 자체는 현재 서버에 보관하지 않고, 읽어낸 급여 데이터만 저장합니다.</div></div><div class="row"><div><h1 class="title">급여 · 지급관리</h1><div class="sub">과거 실제지급 · 현재 예상 · 수기확정 · 인센 발생월을 따로 관리합니다.</div></div>
  <div class="toolbar">
   <input type="file" id="payrollFile" accept=".xlsx,.xls,.xlsm" style="display:none" onchange="importPayroll(this.files[0])">
   <input type="file" id="payrollBulkFile" accept=".xlsx,.xls,.xlsm" multiple style="display:none" onchange="importPayrollHistory(this.files);this.value=''">
   <input type="file" id="pharmacyHistoryFile" accept=".xlsx,.xlsm" style="display:none" onchange="importPharmacyHistory(this.files[0]);this.value=''">
   <input type="file" id="pharmacyTemplateFile" accept=".xlsm,.xlsx" style="display:none" onchange="exportIntoPharmacyTemplate(this.files[0]);this.value=''">
-  <button class="btn gray" onclick="$('payrollFile').click()">노무사 Excel 불러오기</button>
+  <button class="btn gray" onclick="$('payrollFile').click()">노무사 Excel 불러오기</button><button class="btn gray" onclick="checkSavedPayrollData()">저장자료 확인</button>
   <button class="btn gray" onclick="$('payrollBulkFile').click()">과거 노무사파일 일괄</button>
   <button class="btn gray" onclick="$('pharmacyHistoryFile').click()">기존 약국급여표 가져오기</button>
   <button class="btn green" onclick="autoForecastPaymentMonth()">선택월 예상 자동생성</button>
@@ -1183,6 +1240,24 @@ async function renderPharmacyPay(){
  if($('payTotalPaid'))$('payTotalPaid').textContent=money(round2(totalPaid));
  if($('payTotalPending'))$('payTotalPending').textContent=money(round2(totalPending));
 }
+
+async function checkSavedPayrollData(){
+ let sid=storeId(),msgs=[];
+ let pm=await sb.from('payroll_months').select('id,pay_month').eq('store_id',sid).order('pay_month');
+ if(pm.error)return alert('급여 저장자료 확인 오류:\n'+pm.error.message);
+ let months=pm.data||[];
+ let totalEntries=0;
+ if(months.length){
+   let ids=months.map(x=>x.id);
+   let pe=await sb.from('payroll_entries').select('id,payroll_month_id').in('payroll_month_id',ids);
+   if(!pe.error)totalEntries=(pe.data||[]).length;
+ }
+ let pr=await sb.from('payment_register').select('id,payment_month').eq('store_id',sid);
+ let ir=await sb.from('incentive_register').select('id,work_month').eq('store_id',sid);
+ let monthList=months.map(x=>String(x.pay_month).slice(0,7)).join(', ')||'없음';
+ alert(`현재 업장 Supabase 저장현황\n\n급여대장 월: ${months.length}개\n${monthList}\n급여 상세행: ${totalEntries}건\n지급관리 기록: ${pr.error?'확인불가':(pr.data||[]).length+'건'}\n인센 기록: ${ir.error?'확인불가':(ir.data||[]).length+'건'}\n\nGitHub 파일 교체와는 별개로 DB에 저장됩니다.`);
+}
+
 function renderPayroll(){
  let seen=new Set(),rows=[];
  let orderMap=new Map(employeesForMonth($('monthSelect').value).map((e,i)=>[e.id,i]));
