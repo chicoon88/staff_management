@@ -49,6 +49,11 @@ input,select{border:1px solid #d2d7e0;background:white;border-radius:9px;padding
 .tinyBtn{border:1px solid var(--line);background:#fff;border-radius:7px;padding:4px 7px;font-size:10px;font-weight:800;cursor:pointer}
 .lockedMark{font-size:10px;color:#8a5d00;background:#fff3cd;border-radius:999px;padding:2px 5px}
 
+.empTabs{display:flex;gap:6px;flex-wrap:wrap}
+.empTab{border:1px solid var(--line);background:#fff;border-radius:999px;padding:7px 11px;font-size:12px;font-weight:900;cursor:pointer}
+.empTab.active{background:#111827;color:#fff;border-color:#111827}
+.retiredRow td{background:#eeeeee!important;color:#666}
+.seqBadge{display:inline-grid;place-items:center;min-width:25px;height:25px;padding:0 6px;border-radius:7px;background:#eef1f6;font-weight:900;color:#485266}
 #printArea{display:none}
 @media(max-width:900px){.layout{display:block}.side{display:none}.main{padding:11px}.mobileNav{display:flex;overflow:auto;gap:5px;padding:7px;background:#fff;border-bottom:1px solid var(--line);position:sticky;top:66px;z-index:20}.mobileNav .nav{min-width:max-content;width:auto;border:1px solid var(--line);padding:8px 10px}.cards{grid-template-columns:repeat(2,1fr)}.grid2,.grid3{grid-template-columns:1fr}.formgrid{grid-template-columns:1fr 1fr}.brand small{display:none}.title{font-size:20px}}
 @media(max-width:560px){.formgrid{grid-template-columns:1fr}.top{padding:0 10px}.v{font-size:21px}}
@@ -133,7 +138,8 @@ input,select{border:1px solid #d2d7e0;background:white;border-radius:9px;padding
 
 <section id="hoursPage" class="page">
  <div><h1 class="title">근로시간</h1><div class="sub">실제로 출근한 날짜를 평일 / 주말 / 공휴일로 한 번만 분류합니다. 공휴일이 주말보다 우선합니다.</div></div>
- <div class="card" style="margin-top:13px"><div class="tablewrap"><table><thead><tr><th class="name">직원</th><th>근무형태</th><th>평일 출근</th><th>평일 시간</th><th>주말 출근</th><th>주말 시간</th><th>공휴일 출근</th><th>공휴일 시간</th><th>총 실근로</th><th>연장</th><th>연차</th><th>병가</th><th>급여대장 월근무</th><th>차이</th></tr></thead><tbody id="hoursBody"></tbody></table></div></div>
+ <div class="card" style="margin-top:13px"><div class="tablewrap"><table><thead><tr><th class="name">직원</th><th>근무형태</th><th>평일 출근</th><th>평일 시간</th><th>주말 출근</th><th>주말 시간</th><th>공휴일 출근</th><th>공휴일 시간</th><th>실근로</th><th>주휴 예상</th><th>비교 합계</th><th>연장</th><th>연차</th><th>병가</th><th>급여대장 월근무</th><th>차이</th></tr></thead><tbody id="hoursBody"></tbody></table></div></div>
+ <div class="help" style="margin-top:7px">※ 주휴 예상시간은 급여대장 비교용입니다. 주 소정근로시간과 주별 스케줄을 기준으로 계산하며 최종 급여는 노무사 자료와 확인하세요.</div>
  <div class="card" style="margin-top:10px"><h3>직원별 출근 날짜</h3><div class="tablewrap" style="margin-top:10px"><table><thead><tr><th class="name">직원</th><th>평일 근무일</th><th>주말 근무일</th><th>공휴일 근무일</th></tr></thead><tbody id="workDateBody"></tbody></table></div></div>
 </section>
 
@@ -171,7 +177,13 @@ input,select{border:1px solid #d2d7e0;background:white;border-radius:9px;padding
   </div>
  </div>
  <div class="card" style="margin-top:10px"><div class="help">자동 인식: 성명 · 입사일 · 담당업무/직급 · 근무일 · 출퇴근 · 휴게 · 고용형태 · 급여일. <b>주민번호는 이번 자동등록에서 저장하지 않습니다.</b> 애매한 행은 ‘확인 필요’로 표시합니다.</div></div>
- <div class="card" style="margin-top:13px"><div class="tablewrap"><table><thead><tr><th class="name">이름</th><th>업무</th><th>입사일</th><th>근무형태</th><th>기본시간</th><th>휴게</th><th>근무요일</th><th>급여형태</th><th>연차 기준</th><th>연차 잔여</th><th>급여 지급규칙</th><th>출력순서</th><th>출력색</th><th></th></tr></thead><tbody id="employeeBody"></tbody></table></div></div>
+ <div class="card" style="margin-top:13px">
+  <div class="row" style="margin-bottom:10px">
+   <div class="empTabs"><button id="activeEmpTab" class="empTab active" onclick="setEmployeeView('active')">재직자</button><button id="retiredEmpTab" class="empTab" onclick="setEmployeeView('retired')">퇴사자</button></div>
+   <div class="help">연번은 현재 직원순서에 따라 자동 생성됩니다. ↑/↓로 순서만 바꾸면 연번도 자동 재정렬됩니다.</div>
+  </div>
+  <div class="tablewrap"><table><thead><tr><th>연번</th><th class="name">이름</th><th>업무</th><th>입사일</th><th>퇴사일</th><th>근무형태</th><th>기본시간</th><th>휴게</th><th>근무요일</th><th>급여형태</th><th>연차 기준</th><th>연차 잔여</th><th>급여 지급규칙</th><th>순서</th><th>출력색</th><th></th></tr></thead><tbody id="employeeBody"></tbody></table></div>
+ </div>
 </section>
 
 <section id="storesPage" class="page">
@@ -198,7 +210,7 @@ const SUPABASE_URL="https://gxdimhvslurvniwughrs.supabase.co";
 const SUPABASE_KEY="sb_publishable_KQm77StbhQkIZv5UjZnoXQ_OWZ7HHzF";
 const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY),$=id=>document.getElementById(id);
 $('monthSelect').value=new Date().toISOString().slice(0,7);
-let employees=[],schedules=[],payroll=[],stores=[],holidays=[],manualHolidays=[],autoHolidays=[],selectedEmployees=new Set(),leaveLedger=[],scheduleSaveQueue=new Map(),scheduleSaveTimer=null,employeeImportRows=[],paymentRegister=[],incentiveRegister=[];
+let employees=[],schedules=[],payroll=[],stores=[],holidays=[],manualHolidays=[],autoHolidays=[],selectedEmployees=new Set(),leaveLedger=[],scheduleSaveQueue=new Map(),scheduleSaveTimer=null,employeeImportRows=[],paymentRegister=[],incentiveRegister=[],retiredEmployees=[],employeeView='active';
 const money=n=>Number(n||0).toLocaleString('ko-KR')+'원',esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 function monthRange(){let m=$('monthSelect').value,[y,mo]=m.split('-').map(Number),days=new Date(y,mo,0).getDate();return {m,y,mo,days,first:m+'-01',last:m+'-'+String(days).padStart(2,'0')}}
 function storeId(){return Number($('storeSelect').value)}
@@ -234,8 +246,10 @@ async function refreshAll(){
  await loadHolidays();
  let r=monthRange();
  let e=await sb.from('employees').select('*').eq('store_id',storeId()).eq('active',true).order('name');
- if(e.error){alert('DB 연차 업데이트 SQL을 먼저 실행해주세요.\n'+e.error.message);return}
+ if(e.error){alert('DB 연결을 확인해주세요.\n'+e.error.message);return}
  employees=(e.data||[]).sort((a,b)=>(Number(a.print_order??9999)-Number(b.print_order??9999))||a.name.localeCompare(b.name,'ko'));
+ let re=await sb.from('employees').select('*').eq('store_id',storeId()).eq('active',false).order('resign_date',{ascending:false});
+ retiredEmployees=re.data||[];
  let ids=employees.map(x=>x.id);
  schedules=[];
  if(ids.length){
@@ -657,18 +671,43 @@ function incentiveCountFromRows(emp,ym,rows){
  return {count:dates.length,dates};
 }
 function payrollFor(e){return payroll.find(p=>p.employee_id===e.id)||payroll.find(p=>p.employee_name===e.name)}
+
+function weekStartMonday(dateStr){
+ let d=new Date(dateStr+'T12:00:00'),wd=d.getDay(),diff=(wd+6)%7;d.setDate(d.getDate()-diff);
+ return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+function weeklyHolidayOneTimeHours(e){
+ return Math.round((Math.min(40,leaveWeeklyHours(e))/5)*100)/100;
+}
+function expectedWeeklyHolidayHours(e){
+ let r=monthRange(),weeks=new Map(),workDays=(e.work_days||[]);
+ for(let d=1;d<=r.days;d++){
+   let date=r.m+'-'+String(d).padStart(2,'0'),ws=weekStartMonday(date);
+   if(!weeks.has(ws))weeks.set(ws,[]);weeks.get(ws).push(date);
+ }
+ let one=weeklyHolidayOneTimeHours(e),count=0;
+ for(const dates of weeks.values()){
+   let expected=dates.filter(date=>workDays.includes(new Date(date+'T12:00:00').getDay()));
+   if(!expected.length)continue;
+   let ok=expected.every(date=>{let s=sched(e,date),code=s?.work_code||'';return Number(s?.worked_hours||0)>0||code==='연'});
+   if(ok)count++;
+ }
+ return {hours:Math.round(count*one*100)/100,weeks:count,one};
+}
+
 function renderHours(){
  $('hoursBody').innerHTML=employees.map(e=>{
-  let x=calc(e),c=classifyWork(e),p=payrollFor(e),ph=Number(p?.scheduled_hours||0),diff=ph?Math.round((x.worked-ph)*100)/100:null;
+  let x=calc(e),c=classifyWork(e),wh=expectedWeeklyHolidayHours(e),p=payrollFor(e),ph=Number(p?.scheduled_hours||0),
+      compare=Math.round((x.worked+wh.hours)*100)/100,diff=p?Math.round((compare-ph)*100)/100:null;
   return `<tr><td class="name">${esc(e.name)}</td><td>${workType(e)}</td>
   <td>${c.weekday.days}일</td><td>${c.weekday.hours}h</td>
   <td>${c.weekend.days}일</td><td>${c.weekend.hours}h</td>
   <td><b>${c.holiday.days}일</b></td><td><b>${c.holiday.hours}h</b></td>
-  <td><b>${x.worked}h</b></td><td>${x.ot}h</td><td>${x.leave}h</td><td>${x.sick}h</td>
-  <td>${p?ph+'h':'-'}</td><td class="${diff===0?'ok':diff==null?'':'warn'}">${diff==null?'-':(diff>0?'+':'')+diff+'h'}</td></tr>`}).join('');
+  <td><b>${x.worked}h</b></td><td title="주휴 ${wh.one}h × ${wh.weeks}주">${wh.hours}h</td><td><b>${compare}h</b></td>
+  <td>${x.ot}h</td><td>${x.leave}h</td><td>${x.sick}h</td><td>${p?ph+'h':'-'}</td>
+  <td class="${diff===0?'ok':diff==null?'':'warn'}">${diff==null?'-':(diff>0?'+':'')+diff+'h'}</td></tr>`}).join('');
  $('workDateBody').innerHTML=employees.map(e=>{
-   let c=classifyWork(e);
-   const fmt=a=>a.length?a.map(x=>`${Number(x.date.slice(8))}일(${x.hours}h${x.name?'·'+x.name:''})`).join(', '):'-';
+   let c=classifyWork(e),fmt=a=>a.length?a.map(x=>`${Number(x.date.slice(8))}일(${x.hours}h${x.name?'·'+x.name:''})`).join(', '):'-';
    return `<tr><td class="name">${esc(e.name)}</td><td>${fmt(c.weekday.dates)}</td><td>${fmt(c.weekend.dates)}</td><td><b>${fmt(c.holiday.dates)}</b></td></tr>`;
  }).join('');
 }
@@ -697,26 +736,29 @@ async function renderPharmacyPay(){
  $('pharmacyPayBody').innerHTML=rows.join('')||'<tr><td colspan="10">직원이 없습니다.</td></tr>';
 }
 function renderPayroll(){$('payrollBody').innerHTML=employees.map(e=>{let p=payrollFor(e),x=calc(e);if(!p)return `<tr><td class="name">${esc(e.name)}</td><td colspan="11">급여자료 없음</td></tr>`;let extra=Number(p.adjustment_pay||0)+Number(p.bonus||0),ded=Number(p.total_deduction||0),diff=Math.round((x.worked-Number(p.scheduled_hours||0))*100)/100;return `<tr><td class="name">${esc(e.name)}</td><td>${p.scheduled_hours||0}h</td><td class="money">${money(p.base_pay)}</td><td class="money">${money(p.fixed_overtime_pay)}</td><td class="money">${money(p.holiday_pay)}</td><td class="money">${money(p.overtime_pay)}</td><td class="money">${money(p.meal_allowance)}</td><td class="money">${money(extra)}</td><td class="money">${money(p.gross_pay)}</td><td class="money">${money(ded)}</td><td class="money"><b>${money(p.net_pay)}</b></td><td class="${diff===0?'ok':'warn'}">${diff>0?'+':''}${diff}h</td></tr>`}).join('')}
+function setEmployeeView(v){
+ employeeView=v;$('activeEmpTab')?.classList.toggle('active',v==='active');$('retiredEmpTab')?.classList.toggle('active',v==='retired');renderEmployees();
+}
 function renderEmployees(){
- let list=orderedEmployees();
+ let list=employeeView==='retired'?[...retiredEmployees].sort((a,b)=>(b.resign_date||'').localeCompare(a.resign_date||'')||a.name.localeCompare(b.name,'ko')):orderedEmployees();
  $('employeeBody').innerHTML=list.map((e,idx)=>{
-   let ls=leaveSummary(e,isoToday());
+   let ls=employeeView==='active'?leaveSummary(e,isoToday()):{balance:0};
    let colors=PRINT_COLORS.map(([c,n])=>`<option value="${c}" ${employeeColor(e)===c?'selected':''}>${n}</option>`).join('');
-   return `<tr>
-   <td class="name"><b>${esc(e.name)}</b></td><td>${esc(e.role||'')}</td><td>${e.hire_date||''}</td><td>${workType(e)}</td>
+   let action=employeeView==='active'
+    ?`<button class="btn gray small" onclick="openEmployee(${e.id})">수정</button> <button class="btn red small" onclick="retireEmployee(${e.id},'${esc(e.name).replace(/'/g,"&#39;")}')">퇴사처리</button>`
+    :`<button class="btn gray small" onclick="openEmployee(${e.id},true)">정보보기</button> <button class="btn green small" onclick="restoreEmployee(${e.id},'${esc(e.name).replace(/'/g,"&#39;")}')">재직복귀</button>`;
+   return `<tr class="${employeeView==='retired'?'retiredRow':''}">
+   <td><span class="seqBadge">${idx+1}</span></td><td class="name"><b>${esc(e.name)}</b></td><td>${esc(e.role||'')}</td><td>${e.hire_date||''}</td><td>${e.resign_date||'-'}</td><td>${workType(e)}</td>
    <td>${(e.default_start_time||'').slice(0,5)}~${(e.default_end_time||'').slice(0,5)}<br><span class="help">소정 ${e.daily_hours||8}h</span></td>
    <td>${e.break_minutes||0}분</td><td>${dayNames(e.work_days)}</td>
    <td>${e.pay_type==='hourly'?'시급':e.pay_type==='daily'?'일당':e.pay_type==='business'?'사업소득':'월급'}</td>
    <td>주 ${leaveWeeklyHours(e)}h<br><span class="help">월 +${leaveMonthlyHours(e)}h / 1일 -${leaveDayHours(e)}h</span></td>
-   <td><b>${ls.balance}h</b><br><button class="btn gray small" onclick="adjustLeave(${e.id})">조정</button></td>
+   <td>${employeeView==='active'?`<b>${ls.balance}h</b><br><button class="btn gray small" onclick="adjustLeave(${e.id})">조정</button>`:'-'}</td>
    <td class="payRule">${payRuleLabel(e)}</td>
-   <td><button class="btn gray small" ${idx===0?'disabled':''} onclick="movePrintOrder(${e.id},-1)">↑</button>
-       <button class="btn gray small" ${idx===list.length-1?'disabled':''} onclick="movePrintOrder(${e.id},1)">↓</button></td>
-   <td><select onchange="setPrintColor(${e.id},this.value)" style="padding:5px 7px">
-       ${colors}</select><span style="display:inline-block;width:18px;height:18px;border-radius:5px;vertical-align:middle;margin-left:4px;background:${employeeColor(e)};border:1px solid #bbb"></span></td>
-   <td><button class="btn gray small" onclick="openEmployee(${e.id})">수정</button> <button class="btn red small" onclick="deleteEmployee(${e.id},'${esc(e.name).replace(/'/g,"&#39;")}')">삭제</button></td>
-   </tr>`;
- }).join('');
+   <td>${employeeView==='active'?`<button class="btn gray small" ${idx===0?'disabled':''} onclick="movePrintOrder(${e.id},-1)">↑</button><button class="btn gray small" ${idx===list.length-1?'disabled':''} onclick="movePrintOrder(${e.id},1)">↓</button>`:'-'}</td>
+   <td>${employeeView==='active'?`<select onchange="setPrintColor(${e.id},this.value)" style="padding:5px 7px">${colors}</select><span style="display:inline-block;width:18px;height:18px;border-radius:5px;vertical-align:middle;margin-left:4px;background:${employeeColor(e)};border:1px solid #bbb"></span>`:'-'}</td>
+   <td>${action}</td></tr>`;
+ }).join('')||`<tr><td colspan="16">${employeeView==='active'?'재직자가':'퇴사자가'} 없습니다.</td></tr>`;
 }
 async function normalizePrintOrder(){
  let list=orderedEmployees(), rows=list.map((e,i)=>({id:e.id,print_order:i+1}));
@@ -846,7 +888,7 @@ async function previewEmployeeImport(file){
  employeeImportRows=best.rows.slice(best.hi+1).map(r=>employeeFromExcelRow(r,headers)).filter(Boolean);
  if(!employeeImportRows.length)return alert('가져올 직원을 찾지 못했습니다.');
  employeeImportRows.forEach((x,i)=>{
-   let ex=employees.find(e=>e.name.replace(/\s/g,'')===x.name.replace(/\s/g,''));
+   let ex=[...employees,...retiredEmployees].find(e=>e.name.replace(/\s/g,'')===x.name.replace(/\s/g,''));
    x._existing=ex||null;x._selected=true;x._i=i;
  });
  let rows=employeeImportRows.map(x=>`<tr>
@@ -886,13 +928,14 @@ async function commitEmployeeImport(){
  alert(`완료: 신규 ${inserts.length}명 / 업데이트 ${updates.length}명`);
 }
 
-function openEmployee(id){
- let e=id?employees.find(x=>x.id===id):{work_type:'40',daily_hours:8,break_minutes:60,work_days:[1,2,3,4,5],pay_type:'monthly',leave_weekly_hours:40,leave_monthly_hours:8,leave_day_hours:8,salary_delay_months:1,salary_pay_day:'10',incentive_delay_months:2,holiday_incentive_unit:30000,holiday_incentive_enabled:true};
+function openEmployee(id,isRetired=false){
+ let e=id?[...employees,...retiredEmployees].find(x=>x.id===id):{work_type:'40',daily_hours:8,break_minutes:60,work_days:[1,2,3,4,5],pay_type:'monthly',leave_weekly_hours:40,leave_monthly_hours:8,leave_day_hours:8,salary_delay_months:1,salary_pay_day:'10',incentive_delay_months:2,holiday_incentive_unit:30000,holiday_incentive_enabled:true};
  let checks=[0,1,2,3,4,5,6].map(d=>`<label style="font-size:12px"><input type="checkbox" class="wd" value="${d}" ${e.work_days?.includes(d)?'checked':''}>${'일월화수목금토'[d]}</label>`).join(' ');
  modal(`<h2>${id?'직원 수정':'직원 추가'}</h2><div class="formgrid">
  <div class="field"><label>이름</label><input id="eName" value="${esc(e.name||'')}"></div>
  <div class="field"><label>업무/직책</label><input id="eRole" value="${esc(e.role||'')}"></div>
  <div class="field"><label>입사일</label><input id="eHire" type="date" value="${e.hire_date||''}"></div>
+ <div class="field"><label>퇴사일</label><input id="eResign" type="date" value="${e.resign_date||''}"></div>
  <div class="field"><label>근무형태</label><select id="eType" onchange="applyLeavePreset()"><option value="40">주5일·40시간</option><option value="36">주4일·36시간(소정32+추가4)</option><option value="custom">기타</option></select></div>
  <div class="field"><label>1일 소정시간</label><input id="eDaily" type="number" step=".5" value="${e.daily_hours||8}"></div>
  <div class="field"><label>기본 출근</label><input id="eStart" type="time" value="${(e.default_start_time||'').slice(0,5)}"></div>
@@ -923,7 +966,7 @@ function applyPayPreset(){
  $('eSalaryDelay').value=p.salary_delay_months;$('ePayDay').value=p.salary_pay_day;$('eIncentiveDelay').value=p.incentive_delay_months;$('eIncentiveUnit').value=p.holiday_incentive_unit;$('eIncentiveOn').value=p.holiday_incentive_enabled?'1':'0';
 }
 async function saveEmployee(id){
- let obj={store_id:storeId(),name:$('eName').value.trim(),role:$('eRole').value.trim(),hire_date:$('eHire').value,work_type:$('eType').value,
+ let resign=$('eResign')?.value||null;let obj={store_id:storeId(),name:$('eName').value.trim(),role:$('eRole').value.trim(),hire_date:$('eHire').value,resign_date:resign,work_type:$('eType').value,
  daily_hours:Number($('eDaily').value||8),default_start_time:$('eStart').value||null,default_end_time:$('eEnd').value||null,
  break_minutes:Number($('eBreak').value||0),work_days:[...document.querySelectorAll('.wd:checked')].map(x=>Number(x.value)),pay_type:$('ePay').value,
  salary_delay_months:Number($('eSalaryDelay').value||0),salary_pay_day:$('ePayDay').value,incentive_delay_months:Number($('eIncentiveDelay').value||0),holiday_incentive_unit:Number($('eIncentiveUnit').value||0),holiday_incentive_enabled:$('eIncentiveOn').value==='1',
@@ -1003,16 +1046,17 @@ async function clearEmployeeMonth(id,name){
 }
 
 
-async function deleteEmployee(id,name){
- name=String(name).replace(/&#39;/g,"'");
- let first=confirm(`${name} 직원을 삭제할까요?\n\n이 직원의 과거 스케줄 기록도 함께 삭제될 수 있습니다.`);
- if(!first)return;
- let second=confirm(`정말 삭제하시겠습니까?\n\n"${name}" 직원 삭제는 되돌릴 수 없습니다.`);
- if(!second)return;
- let q=await sb.from('employees').delete().eq('id',id);
- if(q.error)return alert(q.error.message);
- selectedEmployees.delete(id);
- await refreshAll();
+async function retireEmployee(id,name){
+ name=String(name).replace(/&#39;/g,"'");let d=prompt(`${name} 퇴사일을 입력하세요. (YYYY-MM-DD)`,isoToday());
+ if(d===null)return;if(!/^\d{4}-\d{2}-\d{2}$/.test(d))return alert('예: 2026-08-31 형식으로 입력하세요.');
+ if(!confirm(`${name}을 ${d} 퇴사자로 처리할까요?\n과거 스케줄·급여기록은 그대로 보존됩니다.`))return;
+ let q=await sb.from('employees').update({active:false,resign_date:d}).eq('id',id);if(q.error)return alert(q.error.message);
+ selectedEmployees.delete(id);await refreshAll();setEmployeeView('active');
+}
+async function restoreEmployee(id,name){
+ name=String(name).replace(/&#39;/g,"'");if(!confirm(`${name}을 재직자로 복귀시킬까요?\n퇴사일도 비웁니다.`))return;
+ let q=await sb.from('employees').update({active:true,resign_date:null}).eq('id',id);if(q.error)return alert(q.error.message);
+ await refreshAll();setEmployeeView('active');
 }
 
 function renderStores(){$('storeCards').innerHTML=stores.map(s=>`<div class="card"><h3>${esc(s.name)}</h3><div class="sub">직원 ${s.id===storeId()?employees.length:'-'}명</div><div class="toolbar" style="margin-top:12px"><button class="btn gray small" onclick="renameStore(${s.id},'${esc(s.name).replace(/'/g,"&#39;")}')">이름 수정</button><button class="btn green small" onclick="$('storeSelect').value='${s.id}';refreshAll()">이 업장 보기</button></div></div>`).join('')}
@@ -1118,7 +1162,7 @@ async function importPharmacyHistory(file){
  let payRows=[],incRows=[],matched=0;
  for(let r=6;r<=range.e.r+1;r++){
    let name=String(ws[`C${r}`]?.v||'').trim();if(!name)continue;
-   let e=employees.find(x=>normalizeName(x.name)===normalizeName(name));if(!e)continue;matched++;
+   let e=[...employees,...retiredEmployees].find(x=>normalizeName(x.name)===normalizeName(name));if(!e)continue;matched++;
    for(const t of timeline){
      let baddr=cellAddress(t.baseCol,r),v=num(ws[baddr]?.v);
      if(v)payRows.push({store_id:storeId(),employee_id:e.id,payment_month:t.ym+'-01',pay_slot:'regular',work_month:shiftMonth(t.ym,-salaryDelay(e))+'-01',payment_date:paymentDateIso(e,t.ym),amount:v,status:workbookCellColor(ws,baddr)==='red'?'paid':'manual',locked:true,source_type:'pharmacy_sheet',source_file:file.name});
@@ -1158,6 +1202,21 @@ async function exportIntoPharmacyTemplate(file){
    let b=xfs[Number(base||0)];if(!b)return base;let bs=sig(b);
    let idx=xfs.findIndex(x=>sig(x)===bs&&fontKind(x)===want);return idx>=0?String(idx):base;
  }
+ let greyFillId=null,greyStyleCache=new Map();
+ function ensureGreyFill(){
+   if(greyFillId!==null)return greyFillId;
+   let fillsNode=styles.getElementsByTagNameNS(ns,'fills')[0],fill=styles.createElementNS(ns,'fill'),pat=styles.createElementNS(ns,'patternFill');
+   pat.setAttribute('patternType','solid');let fg=styles.createElementNS(ns,'fgColor');fg.setAttribute('rgb','FFD9D9D9');let bg=styles.createElementNS(ns,'bgColor');bg.setAttribute('indexed','64');
+   pat.appendChild(fg);pat.appendChild(bg);fill.appendChild(pat);fillsNode.appendChild(fill);greyFillId=[...fillsNode.children].length-1;fillsNode.setAttribute('count',String(fillsNode.children.length));return greyFillId;
+ }
+ function greyStyle(base){
+   base=String(base||'0');if(greyStyleCache.has(base))return greyStyleCache.get(base);let b=xfs[Number(base)];if(!b)return base;
+   let clone=b.cloneNode(true);clone.setAttribute('fillId',String(ensureGreyFill()));clone.setAttribute('applyFill','1');styles.getElementsByTagNameNS(ns,'cellXfs')[0].appendChild(clone);
+   let idx=[...styles.getElementsByTagNameNS(ns,'cellXfs')[0].children].length-1;styles.getElementsByTagNameNS(ns,'cellXfs')[0].setAttribute('count',String(idx+1));xfs.push(clone);greyStyleCache.set(base,String(idx));return String(idx);
+ }
+ function greyRow(row){
+   for(let c=1;c<=Math.max(80,headers.length);c++){let cell=getCell(cellAddress(c,row));if(cell)cell.setAttribute('s',greyStyle(cell.getAttribute('s')||'0'))}
+ }
  function ensureCell(addr){
    let c=getCell(addr);if(c)return c;
    let rowNum=Number(addr.match(/\d+/)[0]),sheetData=sx.getElementsByTagNameNS(ns,'sheetData')[0],row=[...sheetData.children].find(r=>Number(r.getAttribute('r'))===rowNum);
@@ -1173,8 +1232,9 @@ async function exportIntoPharmacyTemplate(file){
  // names
  let nameRows=new Map();
  for(let r=6;r<=200;r++){let c=getCell(`C${r}`);if(c){let n=String(val(c)||'').trim();if(n)nameRows.set(normalizeName(n),r)}}
- for(const e of employees){
+ for(const e of [...employees,...retiredEmployees]){
    let row=nameRows.get(normalizeName(e.name));if(!row)continue;
+   if(e.active===false||e.resign_date)greyRow(row);
    for(const t of timeline){
      let reg=paymentRegister.find(x=>x.employee_id===e.id&&x.payment_month===t.ym+'-01'&&x.pay_slot==='regular');
      let end=paymentRegister.find(x=>x.employee_id===e.id&&x.payment_month===t.ym+'-01'&&x.pay_slot==='month_end');
