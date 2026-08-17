@@ -347,6 +347,7 @@ input,select{border:1px solid #d2d7e0;background:white;border-radius:9px;padding
  }
 }
 
+.empDeleteCheck{width:18px!important;height:18px!important;cursor:pointer;accent-color:#315efb}
 </style>
 </head>
 <body>
@@ -458,9 +459,14 @@ input,select{border:1px solid #d2d7e0;background:white;border-radius:9px;padding
  <div class="card" style="margin-top:13px">
   <div class="row" style="margin-bottom:10px">
    <div class="empTabs"><button id="activeEmpTab" class="empTab active" onclick="setEmployeeView('active')">재직자</button><button id="retiredEmpTab" class="empTab" onclick="setEmployeeView('retired')">퇴사자</button></div>
-   <div class="help">연번은 현재 직원순서에 따라 자동 생성됩니다. ↑/↓로 순서만 바꾸면 연번도 자동 재정렬됩니다.</div>
+   <div class="toolbar" style="margin-left:auto">
+     <button class="btn gray small" onclick="selectAllEmployeeRows(true)">전체선택</button>
+     <button class="btn gray small" onclick="selectAllEmployeeRows(false)">선택해제</button>
+     <button class="btn red small" onclick="deleteSelectedEmployees()">선택 직원 삭제</button>
+   </div>
   </div>
-  <div class="tablewrap"><table><thead><tr><th>연번</th><th class="name">이름</th><th>업무</th><th>입사일</th><th>퇴사일</th><th>근무형태</th><th>기본시간</th><th>휴게</th><th>스케줄방식</th><th>급여형태</th><th>연차 기준</th><th>연차 잔여</th><th>급여 지급규칙</th><th>순서</th><th>출력색</th><th>문서</th><th></th></tr></thead><tbody id="employeeBody"></tbody></table></div>
+  <div class="help" style="margin-bottom:8px">삭제할 직원 왼쪽 체크박스를 선택하세요. 연번은 현재 직원순서에 따라 자동 생성됩니다.</div>
+  <div class="tablewrap"><table><thead><tr><th style="width:44px">선택</th><th>연번</th><th class="name">이름</th><th>업무</th><th>입사일</th><th>퇴사일</th><th>근무형태</th><th>기본시간</th><th>휴게</th><th>스케줄방식</th><th>급여형태</th><th>연차 기준</th><th>연차 잔여</th><th>급여 지급규칙</th><th>순서</th><th>출력색</th><th>문서</th><th></th></tr></thead><tbody id="employeeBody"></tbody></table></div>
  </div>
 </section>
 
@@ -519,7 +525,7 @@ function closeModal(){
  document.body.style.overflow='';
 }
 $('monthSelect').value=new Date().toISOString().slice(0,7);
-let employees=[],schedules=[],payroll=[],stores=[],holidays=[],manualHolidays=[],autoHolidays=[],selectedEmployees=new Set(),leaveLedger=[],scheduleSaveQueue=new Map(),scheduleSaveTimer=null,employeeImportRows=[],paymentRegister=[],incentiveRegister=[],retiredEmployees=[],employeeView='active',refreshToken=0,payrollReloadToken=0;
+let employees=[],schedules=[],payroll=[],stores=[],holidays=[],manualHolidays=[],autoHolidays=[],selectedEmployees=new Set(),leaveLedger=[],scheduleSaveQueue=new Map(),scheduleSaveTimer=null,employeeImportRows=[],paymentRegister=[],incentiveRegister=[],retiredEmployees=[],employeeView='active',refreshToken=0,payrollReloadToken=0,employeeDeleteSelection=new Set();
 const money=n=>Number(n||0).toLocaleString('ko-KR')+'원',esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 function monthRange(){let m=$('monthSelect').value,[y,mo]=m.split('-').map(Number),days=new Date(y,mo,0).getDate();return {m,y,mo,days,first:m+'-01',last:m+'-'+String(days).padStart(2,'0')}}
 function storeId(){return Number($('storeSelect').value)}
@@ -1659,18 +1665,20 @@ function renderPayroll(){
     </td></tr>`;
 }
 function setEmployeeView(v){
- employeeView=v;$('activeEmpTab')?.classList.toggle('active',v==='active');$('retiredEmpTab')?.classList.toggle('active',v==='retired');renderEmployees();
+ employeeView=v;
+ employeeDeleteSelection.clear();$('activeEmpTab')?.classList.toggle('active',v==='active');$('retiredEmpTab')?.classList.toggle('active',v==='retired');renderEmployees();
 }
 function renderEmployees(){
  if(!$('employeeBody'))return;
  let list=employeeView==='retired'?[...retiredEmployees].sort((a,b)=>(b.resign_date||'').localeCompare(a.resign_date||'')||a.name.localeCompare(b.name,'ko')):orderedEmployees();
  $('employeeBody').innerHTML=list.map((e,idx)=>{
-   let ls=employeeView==='active'?liveLeaveSummary(e,isoToday()):{balance:0};
+   let ls=employeeView==='active'?liveLeaveSummary(e,isoToday()):{balance:0};let delChecked=employeeDeleteSelection.has(e.id);
    let colors=PRINT_COLORS.map(([c,n])=>`<option value="${c}" ${employeeColor(e)===c?'selected':''}>${n}</option>`).join('');
    let action=employeeView==='active'
     ?`<button class="btn gray small" onclick="openEmployee(${e.id})">수정</button> <button class="btn red small" onclick="retireEmployee(${e.id},'${esc(e.name).replace(/'/g,"&#39;")}')">퇴사처리</button>`
     :`<button class="btn gray small" onclick="openEmployee(${e.id},true)">정보보기</button> <button class="btn green small" onclick="restoreEmployee(${e.id},'${esc(e.name).replace(/'/g,"&#39;")}')">재직복귀</button>`;
    return `<tr class="${employeeView==='retired'?'retiredRow':''}">
+   <td style="text-align:center"><input type="checkbox" class="empDeleteCheck" data-id="${e.id}" ${delChecked?'checked':''} onchange="toggleEmployeeDeleteSelection(${e.id},this.checked)"></td>
    <td><span class="seqBadge">${idx+1}</span></td><td class="name"><b>${esc(e.name)}</b></td><td>${esc(e.role||'')}</td><td>${e.hire_date||''}</td><td>${e.resign_date||'-'}</td><td>${workType(e)}</td>
    <td>${(e.default_start_time||'').slice(0,5)}~${(e.default_end_time||'').slice(0,5)}<br><span class="help">소정 ${e.daily_hours||8}h</span></td>
    <td>${e.break_minutes||0}분</td><td>${e.work_type==='36'?'주4일':'주5일'}<br><span class="help">요일 변동 스케줄</span></td>
@@ -1682,7 +1690,58 @@ function renderEmployees(){
    <td>${employeeView==='active'?`<select onchange="setPrintColor(${e.id},this.value)" style="padding:5px 7px">${colors}</select><span style="display:inline-block;width:18px;height:18px;border-radius:5px;vertical-align:middle;margin-left:4px;background:${employeeColor(e)};border:1px solid #bbb"></span>`:'-'}</td>
    <td><div class="docActions"><button class="btn green small" onclick="printEmploymentCertificate(${e.id})">재직증명서</button><button class="btn gray small" onclick="printResignation(${e.id})">사직서</button></div></td>
    <td>${action}</td></tr>`;
- }).join('')||`<tr><td colspan="16">${employeeView==='active'?'재직자가':'퇴사자가'} 없습니다.</td></tr>`;
+ }).join('')||`<tr><td colspan="17">${employeeView==='active'?'재직자가':'퇴사자가'} 없습니다.</td></tr>`;
+}
+
+function toggleEmployeeDeleteSelection(id,on){
+ if(on)employeeDeleteSelection.add(id);
+ else employeeDeleteSelection.delete(id);
+}
+function selectAllEmployeeRows(on){
+ let list=employeeView==='retired'?retiredEmployees:employees;
+ if(on)list.forEach(e=>employeeDeleteSelection.add(e.id));
+ else list.forEach(e=>employeeDeleteSelection.delete(e.id));
+ renderEmployees();
+}
+async function deleteSelectedEmployees(){
+ let ids=[...employeeDeleteSelection];
+ if(!ids.length)return alert('삭제할 직원을 먼저 체크하세요.');
+
+ let all=allEmployees();
+ let targets=ids.map(id=>all.find(e=>e.id===id)).filter(Boolean);
+ if(!targets.length)return alert('선택한 직원정보를 찾지 못했습니다.');
+
+ let names=targets.map(e=>e.name).join(', ');
+ if(!confirm(`선택한 ${targets.length}명을 직원목록에서 완전히 삭제할까요?
+
+${names}
+
+주의:
+이미 스케줄·급여·연차 등 다른 기록과 연결된 직원은 데이터 보호 때문에 삭제가 거부될 수 있습니다.
+기록을 남길 직원은 "퇴사처리"를 사용하세요.`))return;
+
+ let deleted=[],failed=[];
+ for(const e of targets){
+   let q=await sb.from('employees').delete().eq('id',e.id);
+   if(q.error)failed.push({name:e.name,error:q.error.message});
+   else{
+     deleted.push(e.name);
+     employeeDeleteSelection.delete(e.id);
+   }
+ }
+
+ await refreshAll();
+
+ let msg=`직원 삭제 결과
+
+삭제 완료: ${deleted.length}명`;
+ if(deleted.length)msg+=`\n${deleted.join(', ')}`;
+ if(failed.length){
+   msg+=`\n\n삭제 실패: ${failed.length}명`;
+   msg+=`\n${failed.map(x=>`${x.name}: ${x.error}`).join('\n')}`;
+   msg+=`\n\n연결된 과거자료가 있는 직원은 삭제 대신 퇴사처리가 안전합니다.`;
+ }
+ alert(msg);
 }
 async function normalizePrintOrder(){
  let list=orderedEmployees(), rows=list.map((e,i)=>({id:e.id,print_order:i+1}));
