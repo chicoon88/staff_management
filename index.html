@@ -231,6 +231,34 @@ input,select{border:1px solid #d2d7e0;background:white;border-radius:9px;padding
 const SUPABASE_URL="https://gxdimhvslurvniwughrs.supabase.co";
 const SUPABASE_KEY="sb_publishable_KQm77StbhQkIZv5UjZnoXQ_OWZ7HHzF";
 const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY),$=id=>document.getElementById(id);
+
+function modal(content){
+ let wrap=document.getElementById('modal');
+ if(!wrap){
+   wrap=document.createElement('div');
+   wrap.id='modal';
+   wrap.className='modal';
+   wrap.innerHTML='<div class="modalBox" id="modalBox"></div>';
+   document.body.appendChild(wrap);
+ }
+ let box=document.getElementById('modalBox')||wrap.querySelector('.modalBox');
+ if(!box){
+   box=document.createElement('div');
+   box.id='modalBox';
+   box.className='modalBox';
+   wrap.appendChild(box);
+ }
+ box.innerHTML=content;
+ wrap.style.display='flex';
+ wrap.classList.add('show');
+}
+function closeModal(){
+ let wrap=document.getElementById('modal');
+ if(!wrap)return;
+ wrap.classList.remove('show');
+ wrap.style.display='none';
+}
+
 $('monthSelect').value=new Date().toISOString().slice(0,7);
 let employees=[],schedules=[],payroll=[],stores=[],holidays=[],manualHolidays=[],autoHolidays=[],selectedEmployees=new Set(),leaveLedger=[],scheduleSaveQueue=new Map(),scheduleSaveTimer=null,employeeImportRows=[],paymentRegister=[],incentiveRegister=[],retiredEmployees=[],employeeView='active';
 const money=n=>Number(n||0).toLocaleString('ko-KR')+'원',esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
@@ -276,7 +304,19 @@ function employeesForMonth(ym){
 async function signIn(){let {error}=await sb.auth.signInWithPassword({email:$('loginEmail').value.trim(),password:$('loginPassword').value});$('loginMsg').textContent=error?error.message:'';if(!error)openApp()}
 async function signOut(){await sb.auth.signOut();location.reload()}async function boot(){let {data}=await sb.auth.getSession();if(data.session)openApp()}
 async function openApp(){$('login').classList.add('hidden');$('app').classList.remove('hidden');await loadStores();await loadHolidays();await refreshAll()}
-document.querySelectorAll('.nav').forEach(b=>b.onclick=()=>{document.querySelectorAll('.nav').forEach(x=>x.classList.remove('active'));document.querySelectorAll(`[data-page="${b.dataset.page}"]`).forEach(x=>x.classList.add('active'));document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));$(b.dataset.page+'Page').classList.add('active')})
+document.querySelectorAll('.nav').forEach(b=>b.onclick=()=>{
+ document.querySelectorAll('.nav').forEach(x=>x.classList.remove('active'));
+ document.querySelectorAll(`[data-page="${b.dataset.page}"]`).forEach(x=>x.classList.add('active'));
+ document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+ let page=$(b.dataset.page+'Page');if(page)page.classList.add('active');
+ if(b.dataset.page==='employees'){
+   employeeView='active';
+   $('activeEmpTab')?.classList.add('active');
+   $('retiredEmpTab')?.classList.remove('active');
+   renderEmployees();
+ }
+ if(b.dataset.page==='holidays')renderHolidays();
+})
 async function loadStores(){let q=await sb.from('stores').select('*').order('id');if(q.error)return alert(q.error.message);stores=q.data||[];let cur=$('storeSelect').value;$('storeSelect').innerHTML=stores.map(s=>`<option value="${s.id}">${esc(s.name)}</option>`).join('');if(stores.some(s=>String(s.id)===cur))$('storeSelect').value=cur}
 async function refreshAll(){
  if(!$('storeSelect').value)return;
@@ -645,7 +685,10 @@ async function deleteHoliday(id){
 
 function sched(emp,date){return schedules.find(x=>x.employee_id===emp.id&&x.work_date===date)}
 function calc(emp){let r=monthRange(),o={days:0,scheduled:0,worked:0,ot:0,leave:0,sick:0};for(let d=1;d<=r.days;d++){let date=r.m+'-'+String(d).padStart(2,'0'),s=sched(emp,date);if(!s)continue;let code=s.work_code||'';if(code==='연'){o.leave+=Number(s.scheduled_hours||emp.daily_hours||8);o.scheduled+=Number(s.scheduled_hours||emp.daily_hours||8)}else if(code==='병'){o.sick+=Number(s.scheduled_hours||emp.daily_hours||8);o.scheduled+=Number(s.scheduled_hours||emp.daily_hours||8)}else if(code!=='0'&&code!==''){o.days++;o.scheduled+=Number(s.scheduled_hours||0);o.worked+=Number(s.worked_hours||0);o.ot+=Number(s.overtime_hours||0)}}return o}
-function renderAll(){renderHome();renderSchedule();renderHours();renderPayroll();renderEmployees();renderStores();renderHolidays();renderPharmacyPay()}
+function renderAll(){
+ renderHome();renderSchedule();renderHours();renderPayroll();renderEmployees();renderStores();renderHolidays();renderPharmacyPay();
+ if($('employeesPage')?.classList.contains('active'))renderEmployees();
+}
 
 function leaveDueInfo(e){
  const r=monthRange();
@@ -927,6 +970,7 @@ function setEmployeeView(v){
  employeeView=v;$('activeEmpTab')?.classList.toggle('active',v==='active');$('retiredEmpTab')?.classList.toggle('active',v==='retired');renderEmployees();
 }
 function renderEmployees(){
+ if(!$('employeeBody'))return;
  let list=employeeView==='retired'?[...retiredEmployees].sort((a,b)=>(b.resign_date||'').localeCompare(a.resign_date||'')||a.name.localeCompare(b.name,'ko')):orderedEmployees();
  $('employeeBody').innerHTML=list.map((e,idx)=>{
    let ls=employeeView==='active'?leaveSummary(e,isoToday()):{balance:0};
@@ -1203,8 +1247,15 @@ async function commitEmployeeImport(){
  closeModal();await refreshAll();
  alert(`직원 반영 완료\n신규 ${inserts.length}명 / 기존정보 업데이트 ${updates.length}명`);
 }
-function openEmployee(id,isRetired=false){
- let e=id?[...employees,...retiredEmployees].find(x=>x.id===id):{work_type:'40',daily_hours:8,break_minutes:60,work_days:[1,2,3,4,5],pay_type:'monthly',leave_weekly_hours:40,leave_monthly_hours:8,leave_day_hours:8,salary_delay_months:1,salary_pay_day:'10',incentive_delay_months:2,holiday_incentive_unit:30000,holiday_incentive_enabled:true};
+async function openEmployee(id,isRetired=false){
+ let e=id?[...employees,...retiredEmployees].find(x=>x.id===id):null;
+ if(id&&!e){
+   let q=await sb.from('employees').select('*').eq('id',id).maybeSingle();
+   if(q.error)return alert('직원정보를 불러오지 못했습니다.\n'+q.error.message);
+   e=q.data;
+ }
+ if(id&&!e)return alert('직원정보를 찾지 못했습니다.');
+ if(!id)e={work_type:'40',daily_hours:8,break_minutes:60,work_days:[1,2,3,4,5],pay_type:'monthly',leave_weekly_hours:40,leave_monthly_hours:8,leave_day_hours:8,salary_delay_months:1,salary_pay_day:'10',incentive_delay_months:2,holiday_incentive_unit:30000,holiday_incentive_enabled:true};
  let checks=[0,1,2,3,4,5,6].map(d=>`<label style="font-size:12px"><input type="checkbox" class="wd" value="${d}" ${e.work_days?.includes(d)?'checked':''}>${'일월화수목금토'[d]}</label>`).join(' ');
  modal(`<h2>${id?'직원 수정':'직원 추가'}</h2><div class="formgrid">
  <div class="field"><label>이름</label><input id="eName" value="${esc(e.name||'')}"></div>
