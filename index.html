@@ -512,6 +512,77 @@ tr[draggable="true"]:active,.empDragHandle:active{cursor:grabbing}
   max-width:82px!important;
 }
 
+
+/* 직원관리 표: 연번 손잡이만 드래그 + 더 컴팩트한 열폭 */
+#employeesPage .tablewrap{overflow-x:auto}
+#employeesPage table{
+  width:100%;
+  min-width:1440px;
+  table-layout:fixed;
+}
+#employeesPage th,#employeesPage td{
+  padding:6px 4px!important;
+  font-size:11px;
+  line-height:1.25;
+  vertical-align:middle;
+  white-space:nowrap!important;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+#employeesPage .empInline{
+  min-width:0!important;
+  width:100%!important;
+  padding:4px 4px;
+  box-sizing:border-box;
+}
+#employeesPage .empInlineName{min-width:0!important}
+#employeesPage .empInlineDate{min-width:0!important}
+#employeesPage .empNoteInput{min-width:0!important;width:100%!important}
+
+/* 선택 / 연번 / 이름 / 직책 / 업무 / 입사 / 퇴사 */
+#employeesPage th:nth-child(1),#employeesPage td:nth-child(1){width:42px}
+#employeesPage th:nth-child(2),#employeesPage td:nth-child(2){width:58px}
+#employeesPage th:nth-child(3),#employeesPage td:nth-child(3){width:82px}
+#employeesPage th:nth-child(4),#employeesPage td:nth-child(4){width:76px}
+#employeesPage th:nth-child(5),#employeesPage td:nth-child(5){width:78px}
+#employeesPage th:nth-child(6),#employeesPage td:nth-child(6){width:82px}
+#employeesPage th:nth-child(7),#employeesPage td:nth-child(7){width:82px}
+
+/* 근무형태 / 기본시간 / 휴게시간 / 스케줄 / 급여형태 */
+#employeesPage th:nth-child(8),#employeesPage td:nth-child(8){width:108px}
+#employeesPage th:nth-child(9),#employeesPage td:nth-child(9){width:94px}
+#employeesPage th:nth-child(10),#employeesPage td:nth-child(10){width:82px}
+#employeesPage th:nth-child(11),#employeesPage td:nth-child(11){width:94px}
+#employeesPage th:nth-child(12),#employeesPage td:nth-child(12){width:96px}
+
+/* 연차 기준 / 잔여 */
+#employeesPage th:nth-child(13),#employeesPage td:nth-child(13){width:112px}
+#employeesPage th:nth-child(14),#employeesPage td:nth-child(14){width:72px}
+
+/* 비고를 넓게 */
+#employeesPage th:nth-child(15),#employeesPage td:nth-child(15){
+  width:190px;
+  min-width:190px;
+}
+
+/* 출력색 / 문서 / 관리 */
+#employeesPage th:nth-child(16),#employeesPage td:nth-child(16){width:86px}
+#employeesPage th:nth-child(17),#employeesPage td:nth-child(17){width:220px}
+#employeesPage th:nth-child(18),#employeesPage td:nth-child(18){width:210px}
+
+#employeesPage .empDragHandle{
+  cursor:grab!important;
+  user-select:none;
+  -webkit-user-drag:element;
+}
+#employeesPage .empDragHandle:active{cursor:grabbing!important}
+#employeesPage input,#employeesPage select,#employeesPage textarea{
+  -webkit-user-drag:none;
+}
+#employeesPage .empQuickSaving{
+  opacity:.7;
+}
+
 </style>
 </head>
 <body>
@@ -670,8 +741,8 @@ tr[draggable="true"]:active,.empDragHandle:active{cursor:grabbing}
      <button class="btn red small" onclick="deleteSelectedEmployees()">선택 직원 삭제</button>
    </div>
   </div>
-  <div class="help" style="margin-bottom:8px">이름·직책·업무·입사일·근무형태·휴게·급여형태·비고는 표에서 바로 수정할 수 있습니다. 기본시간과 연차기준은 오른쪽 상세수정에서 변경하세요. PC에서는 ☰ 또는 직원 행을 드래그해 순서를 한 번에 이동할 수 있습니다.</div>
-  <div class="tablewrap"><table><thead><tr><th style="width:44px">선택</th><th>연번</th><th class="name">이름</th><th>직책</th><th>업무</th><th>입사일</th><th>퇴사일</th><th>근무형태</th><th>기본시간</th><th>휴게</th><th>스케줄방식</th><th>급여형태</th><th>연차 기준</th><th>연차 잔여</th><th>비고</th><th>출력색</th><th>문서</th><th></th></tr></thead><tbody id="employeeBody"></tbody></table></div>
+  <div class="help" style="margin-bottom:8px">이름·직책·업무·입사일·근무형태·휴게·급여형태·비고는 표에서 바로 수정할 수 있습니다. 기본시간과 연차기준은 오른쪽 상세수정에서 변경하세요. PC에서는 연번 옆 ☰ 손잡이만 잡아서 순서를 이동할 수 있습니다. 다른 칸은 드래그 이동되지 않습니다.</div>
+  <div class="tablewrap"><table><thead><tr><th style="width:44px">선택</th><th>연번</th><th class="name">이름</th><th>직책</th><th>업무</th><th>입사일</th><th>퇴사일</th><th>근무형태</th><th>기본시간</th><th>휴게시간(분)</th><th>스케줄방식</th><th>급여형태</th><th>연차 기준</th><th>연차 잔여</th><th>비고</th><th>출력색</th><th>문서</th><th></th></tr></thead><tbody id="employeeBody"></tbody></table></div>
  </div>
 </section>
 
@@ -2169,13 +2240,44 @@ async function saveEmployeeInline(id,field,value){
    setEmployeeView('retired');
  }
 }
+
+async function saveEmployeeInlineQuick(id,field,value,input){
+ let e=allEmployees().find(x=>x.id===id);
+ if(!e)return;
+ let val=String(value??'').trim();
+
+ if(input){
+   input.classList.add('empQuickSaving');
+   input.disabled=true;
+ }
+ let q=await sb.from('employees').update({[field]:val}).eq('id',id);
+ if(input){
+   input.disabled=false;
+   input.classList.remove('empQuickSaving');
+ }
+ if(q.error){
+   alert('직원정보 저장 오류:\n'+q.error.message);
+   if(input)input.value=e[field]||'';
+   return;
+ }
+
+ // 직책/업무는 다른 화면 전체를 다시 불러올 필요가 없음.
+ // 로컬 값만 즉시 갱신하여 입력 후 끊김 현상을 없앤다.
+ e[field]=val;
+}
+
 function employeeInlineText(e,field,cls=''){
+ let quick=(field==='role'||field==='department');
  return `<input class="empInline ${cls}" value="${esc(employeeInlineValue(e,field))}"
-   onfocus="this.select()" onkeydown="if(event.key==='Enter'){this.blur()}"
-   onchange="saveEmployeeInline(${e.id},'${field}',this.value)">`;
+   draggable="false"
+   ondragstart="event.preventDefault()"
+   ondrop="event.preventDefault()"
+   onfocus="this.select()"
+   onkeydown="if(event.key==='Enter'){this.blur()}"
+   onchange="${quick?`saveEmployeeInlineQuick(${e.id},'${field}',this.value,this)`:`saveEmployeeInline(${e.id},'${field}',this.value)`}">`;
 }
 function employeeInlineNumber(e,field,step='1',cls='empInlineSmall'){
- return `<input type="number" step="${step}" class="empInline ${cls}" value="${esc(employeeInlineValue(e,field))}"
+ return `<input type="number" step="${step}" class="empInline ${cls}" draggable="false" ondragstart="event.preventDefault()" ondrop="event.preventDefault()" value="${esc(employeeInlineValue(e,field))}"
    onfocus="this.select()" onkeydown="if(event.key==='Enter'){this.blur()}"
    onchange="saveEmployeeInline(${e.id},'${field}',this.value)">`;
 }
@@ -2210,7 +2312,7 @@ async function saveEmployeeInlineDate(id,field,value,input){
 
 function employeeInlineDate(e,field){
  let compact=employeeInlineValue(e,field)?String(employeeInlineValue(e,field)).replace(/-/g,''):'';
- return `<input type="text" inputmode="numeric" maxlength="8" class="empInline empInlineDate"
+ return `<input type="text" inputmode="numeric" maxlength="8" class="empInline empInlineDate" draggable="false" ondragstart="event.preventDefault()" ondrop="event.preventDefault()"
    placeholder="YYYYMMDD" value="${esc(compact)}"
    onfocus="this.select()"
    oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,8)"
@@ -2238,6 +2340,22 @@ async function saveEmployeeNote(id,value){
 let employeeDragId=null;
 function setupEmployeeDragDrop(){
  const tbody=$('employeeBody');if(!tbody)return;
+
+ // 연번 옆 손잡이 이외의 모든 native drag/drop을 차단한다.
+ // 입력칸의 선택된 글자를 다른 칸으로 끌어 값이 이동하는 브라우저 기본동작도 방지.
+ tbody.addEventListener('dragstart',ev=>{
+   if(!ev.target.closest('.empDragHandle')){
+     ev.preventDefault();
+     ev.stopPropagation();
+   }
+ },true);
+ tbody.addEventListener('drop',ev=>{
+   if(!employeeDragId){
+     ev.preventDefault();
+     ev.stopPropagation();
+   }
+ },true);
+
  const rows=[...tbody.querySelectorAll('tr[data-emp-id]')];
  const handles=[...tbody.querySelectorAll('.empDragHandle[draggable="true"]')];
  handles.forEach(handle=>{
@@ -2336,7 +2454,7 @@ function renderEmployees(){
    <!-- 기본시간: 원래 compact 표시 -->
    <td>${(e.default_start_time||'').slice(0,5)}~${(e.default_end_time||'').slice(0,5)}<br><span class="help">소정 ${e.daily_hours||8}h</span></td>
 
-   <td class="empInlineCell">${employeeView==='active'?employeeInlineNumber(e,'break_minutes','1','empInlineSmall'):(e.break_minutes||0)}${employeeView==='active'?'':'분'}</td>
+   <td class="empInlineCell">${employeeView==='active'?employeeInlineNumber(e,'break_minutes','1','empInlineSmall'):(e.break_minutes||0)}</td>
 
    <td>${e.work_type==='36'?'주4일':e.work_type==='40'?'주5일':'기타'}<br><span class="help">요일 변동 스케줄</span></td>
 
@@ -2355,7 +2473,7 @@ function renderEmployees(){
 
    <!-- 급여 지급규칙 대신 비고 -->
    <td class="empInlineCell">${employeeView==='active'
-     ?`<input class="empInline empNoteInput" placeholder="비고 입력" value="${esc(e.memo||'')}" onfocus="this.select()" onkeydown="if(event.key==='Enter'){this.blur()}" onchange="saveEmployeeNote(${e.id},this.value)">`
+     ?`<input class="empInline empNoteInput" draggable="false" ondragstart="event.preventDefault()" ondrop="event.preventDefault()" placeholder="비고 입력" value="${esc(e.memo||'')}" onfocus="this.select()" onkeydown="if(event.key==='Enter'){this.blur()}" onchange="saveEmployeeNote(${e.id},this.value)">`
      :esc(e.memo||'')}</td>
 
    <td>${employeeView==='active'?`<select onchange="setPrintColor(${e.id},this.value)" style="padding:5px 7px">${colors}</select><span style="display:inline-block;width:18px;height:18px;border-radius:5px;vertical-align:middle;margin-left:4px;background:${employeeColor(e)};border:1px solid #bbb"></span>`:'-'}</td>
