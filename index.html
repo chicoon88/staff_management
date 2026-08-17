@@ -449,6 +449,9 @@ tr[draggable="true"]:active,.empDragHandle:active{cursor:grabbing}
 #payrollPeriodFrom,#payrollPeriodTo{width:105px;min-width:105px;text-align:center;font-weight:800}
 #payrollEmployeeFilter{min-width:150px}
 
+
+.empInlineDate{min-width:92px;text-align:center}
+#contractDocDate{width:120px;text-align:center;font-weight:800}
 </style>
 </head>
 <body>
@@ -552,7 +555,7 @@ tr[draggable="true"]:active,.empDragHandle:active{cursor:grabbing}
 
  <div class="card" style="margin-top:12px">
   <div class="row">
-   <div><h3 style="margin:0">노무사 급여대장 · 월별 검산</h3><div class="help">표의 숫자칸을 직접 클릭해 수정할 수 있습니다. 수정 즉시 총지급·실지급·하단 합계가 다시 계산됩니다.</div></div>
+   <div><h3 style="margin:0">노무사 급여대장 · 월별 검산</h3><div class="help">노무사 Excel에서 불러온 급여자료를 그대로 표시합니다. 표 맨 아래 합계행으로 원본 급여대장과 검산할 수 있습니다.</div></div>
   </div>
   <div class="tablewrap" style="margin-top:10px"><table>
    <thead><tr>
@@ -2135,7 +2138,7 @@ function normalizeCompactDateInput(v){
  if(!/^\d{8}$/.test(s))return '';
  let y=s.slice(0,4),m=s.slice(4,6),d=s.slice(6,8);
  let dt=new Date(Number(y),Number(m)-1,Number(d));
- if(dt.getFullYear()!==Number(y)||dt.getMonth()!==Number(m)-1||dt.getDate()!==Number(d))return '';
+ if(dt.getFullYear()!==Number(y) || dt.getMonth()!==Number(m)-1 || dt.getDate()!==Number(d))return '';
  return `${y}-${m}-${d}`;
 }
 async function saveEmployeeInlineDate(id,field,value,input){
@@ -2147,7 +2150,7 @@ async function saveEmployeeInlineDate(id,field,value,input){
  }
  let normalized=normalizeCompactDateInput(raw);
  if(!normalized){
-   alert('날짜는 8자리로 입력하세요.\n예: 20260825');
+   alert('날짜는 8자리로 입력하세요.\n예: 20260815');
    let e=allEmployees().find(x=>x.id===id);
    if(input)input.value=String(e?.[field]||'').replace(/-/g,'');
    return;
@@ -2160,7 +2163,9 @@ function employeeInlineDate(e,field){
  let compact=employeeInlineValue(e,field)?String(employeeInlineValue(e,field)).replace(/-/g,''):'';
  return `<input type="text" inputmode="numeric" maxlength="8" class="empInline empInlineDate"
    placeholder="YYYYMMDD" value="${esc(compact)}"
-   onfocus="this.select()" onkeydown="if(event.key==='Enter'){this.blur()}"
+   onfocus="this.select()"
+   oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,8)"
+   onkeydown="if(event.key==='Enter'){this.blur()}"
    onchange="saveEmployeeInlineDate(${e.id},'${field}',this.value,this)">`;
 }
 function employeeInlineTime(e,field){
@@ -2784,12 +2789,12 @@ async function openEmployee(id,isRetired=false){
  <div class="field"><label>이름</label><input id="eName" value="${esc(e.name||'')}"></div>
  <div class="field"><label>직책</label><input id="eRole" value="${esc(e.role||'')}"></div>
  <div class="field"><label>업무</label><input id="eDept" value="${esc(e.department||'')}"></div>
- <div class="field"><label>생년월일</label><input id="eBirth" type="date" value="${e.birth_date||''}"></div>
+ <div class="field"><label>생년월일</label><input id="eBirth" type="text" inputmode="numeric" maxlength="8" placeholder="YYYYMMDD" value="${(e.birth_date||'').replace(/-/g,'')}" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,8)"></div>
  <div class="field"><label>전화번호</label><input id="ePhone" value="${esc(e.phone||'')}"></div>
  <div class="field"><label>이메일</label><input id="eEmail" type="email" value="${esc(e.email||'')}"></div>
  <div class="field"><label>현 주소</label><input id="eAddress" value="${esc(e.address||'')}"></div>
- <div class="field"><label>입사일</label><input id="eHire" type="date" value="${e.hire_date||''}"></div>
- <div class="field"><label>퇴사일</label><input id="eResign" type="date" value="${e.resign_date||''}"></div>
+ <div class="field"><label>입사일</label><input id="eHire" type="text" inputmode="numeric" maxlength="8" placeholder="YYYYMMDD" value="${(e.hire_date||'').replace(/-/g,'')}" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,8)"></div>
+ <div class="field"><label>퇴사일</label><input id="eResign" type="text" inputmode="numeric" maxlength="8" placeholder="YYYYMMDD" value="${(e.resign_date||'').replace(/-/g,'')}" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,8)"></div>
  <div class="field"><label>근무형태</label><select id="eType" onchange="applyLeavePreset()"><option value="40">주5일 스케줄근무</option><option value="36">주4일 스케줄근무</option><option value="custom">기타</option></select></div>
  <div class="field"><label>1일 소정시간</label><input id="eDaily" type="number" step=".5" value="${e.daily_hours||8}"></div>
  <div class="field"><label>기본 출근</label><input id="eStart" type="time" value="${(e.default_start_time||'').slice(0,5)}"></div>
@@ -3585,72 +3590,50 @@ function payrollInput(p,field,kind='money',recalc=true){
 function renderPayrollSimple(){
  if(!$('payrollBody'))return;
  let ordered=sortPayrollByEmployeeOrder(payroll);
-
  let rows=ordered.map(p=>`<tr>
   <td class="name"><b>${esc(p.employee_name)}</b>${p.employee_id?'':' <span class="reviewWarn">미매칭</span>'}</td>
-  <td>${payrollInput(p,'scheduled_hours','hours',false)}</td>
+  <td>${Number(p.scheduled_hours||0).toFixed(2).replace(/\.00$/,'')}h</td>
   <td>${(()=>{
    let mm=String(p.memo||'').match(/weekly_text=([^;]*)/),txt='';
    try{txt=mm?decodeURIComponent(mm[1]):''}catch(e){}
    if(p._weekly_hours_text)txt=p._weekly_hours_text;
    if(txt)return esc(txt);
-   let wh=p._weekly_hours ?? payrollWeeklyHoursFromMemo(p.memo);
-   return `<input class="payEdit payEditHours" value="${Number(wh||0).toFixed(1)}"
-      onfocus="this.select()" onkeydown="if(event.key==='Enter'){this.blur()}"
-      onchange="savePayrollWeeklyHours('${p.id}',this.value)">`;
+   return formatWeeklyHours(p._weekly_hours ?? payrollWeeklyHoursFromMemo(p.memo));
   })()}</td>
-  <td>${payrollInput(p,'base_pay')}</td>
-  <td>${payrollInput(p,'weekly_holiday_pay')}</td>
-  <td>${payrollInput(p,'fixed_overtime_pay')}</td>
-  <td>${payrollInput(p,'holiday_pay')}</td>
-  <td>${payrollInput(p,'overtime_pay')}</td>
-  <td>${payrollInput(p,'meal_allowance')}</td>
-  <td><input class="payEdit" value="${Math.round(payrollCombinedExtra(p))}"
-      onfocus="this.select()" onkeydown="if(event.key==='Enter'){this.blur()}"
-      onchange="savePayrollCombinedExtra('${p.id}',this.value)"></td>
+  <td class="money">${money(p.base_pay)}</td>
+  <td class="money">${money(p.weekly_holiday_pay)}</td>
+  <td class="money">${money(p.fixed_overtime_pay)}</td>
+  <td class="money">${money(p.holiday_pay)}</td>
+  <td class="money">${money(p.overtime_pay)}</td>
+  <td class="money">${money(p.meal_allowance)}</td>
+  <td class="money">${money(payrollCombinedExtra(p))}</td>
   <td class="money"><b>${money(p.gross_pay)}</b></td>
-  <td>${payrollInput(p,'total_deduction','money',true)}</td>
+  <td class="money">${money(p.total_deduction)}</td>
   <td class="money"><b>${money(p.net_pay)}</b></td>
  </tr>`).join('');
-
  $('payrollBody').innerHTML=rows||`<tr><td colspan="13" style="padding:26px">${monthLabel($('monthSelect').value)} 급여자료가 없습니다. 위의 <b>급여대장 불러오기</b>를 눌러 Excel을 등록하세요.</td></tr>`;
-
  let total={
-   scheduled:payrollSum(ordered,'scheduled_hours'),
-   weekly:ordered.reduce((a,p)=>a+Number((p._weekly_hours ?? payrollWeeklyHoursFromMemo(p.memo) ?? 0)),0),
-   base:payrollSum(ordered,'base_pay'),
-   weeklyPay:payrollSum(ordered,'weekly_holiday_pay'),
-   fixedOT:payrollSum(ordered,'fixed_overtime_pay'),
-   holiday:payrollSum(ordered,'holiday_pay'),
-   overtime:payrollSum(ordered,'overtime_pay'),
-   meal:payrollSum(ordered,'meal_allowance'),
-   extra:ordered.reduce((a,p)=>a+payrollCombinedExtra(p),0),
-   gross:payrollSum(ordered,'gross_pay'),
-   ded:payrollSum(ordered,'total_deduction'),
-   net:payrollSum(ordered,'net_pay')
+  scheduled:payrollSum(ordered,'scheduled_hours'),
+  weekly:ordered.reduce((a,p)=>a+Number((p._weekly_hours ?? payrollWeeklyHoursFromMemo(p.memo) ?? 0)),0),
+  base:payrollSum(ordered,'base_pay'),
+  weeklyPay:payrollSum(ordered,'weekly_holiday_pay'),
+  fixedOT:payrollSum(ordered,'fixed_overtime_pay'),
+  holiday:payrollSum(ordered,'holiday_pay'),
+  overtime:payrollSum(ordered,'overtime_pay'),
+  meal:payrollSum(ordered,'meal_allowance'),
+  extra:ordered.reduce((a,p)=>a+payrollCombinedExtra(p),0),
+  gross:payrollSum(ordered,'gross_pay'),
+  ded:payrollSum(ordered,'total_deduction'),
+  net:payrollSum(ordered,'net_pay')
  };
-
  if($('monthGrossTotal'))$('monthGrossTotal').textContent=money(total.gross);
  if($('monthDeductionTotal'))$('monthDeductionTotal').textContent=money(total.ded);
  if($('monthNetTotal'))$('monthNetTotal').textContent=money(total.net);
-
- if($('payrollFoot')){
-   $('payrollFoot').innerHTML=ordered.length?`<tr>
-     <td class="name">합계 · ${ordered.length}명</td>
-     <td>${Math.round(total.scheduled*100)/100}h</td>
-     <td>${total.weekly.toFixed(1)}h</td>
-     <td>${money(total.base)}</td>
-     <td>${money(total.weeklyPay)}</td>
-     <td>${money(total.fixedOT)}</td>
-     <td>${money(total.holiday)}</td>
-     <td>${money(total.overtime)}</td>
-     <td>${money(total.meal)}</td>
-     <td>${money(total.extra)}</td>
-     <td>${money(total.gross)}</td>
-     <td>${money(total.ded)}</td>
-     <td>${money(total.net)}</td>
-   </tr>`:'';
- }
+ if($('payrollFoot'))$('payrollFoot').innerHTML=ordered.length?`<tr>
+  <td class="name">합계 · ${ordered.length}명</td><td>${Math.round(total.scheduled*100)/100}h</td><td>${total.weekly.toFixed(1)}h</td>
+  <td>${money(total.base)}</td><td>${money(total.weeklyPay)}</td><td>${money(total.fixedOT)}</td><td>${money(total.holiday)}</td>
+  <td>${money(total.overtime)}</td><td>${money(total.meal)}</td><td>${money(total.extra)}</td><td>${money(total.gross)}</td>
+  <td>${money(total.ded)}</td><td>${money(total.net)}</td></tr>`:'';
 }
 
 async function savePayrollWeeklyHours(id,value){
@@ -4288,7 +4271,7 @@ async function openEmployeeDocuments(employeeId,type){
  <button class="btn gray" onclick="closeModal()">닫기</button></div>
  <div class="contractUploadBox"><div style="font-weight:900;margin-bottom:8px">새 ${label} 업로드</div>
  <div class="contractUploadGrid">
- <div class="field" style="margin:0"><label>계약일</label><input id="contractDocDate" type="date"></div>
+ <div class="field" style="margin:0"><label>계약일</label><input id="contractDocDate" type="text" inputmode="numeric" maxlength="8" placeholder="YYYYMMDD" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,8)"></div>
  <div class="field" style="margin:0"><label>표시명</label><input id="contractDocTitle" placeholder="예: 2026년 ${label}"></div>
  <div class="field" style="margin:0"><label>PDF 원본</label><input id="contractDocFile" type="file" accept="application/pdf,.pdf" onchange="fillContractMetaFromFile(this.files[0],'${type}')"></div>
  <button class="btn" onclick="uploadEmployeeDocument(${employeeId},'${type}')">업로드</button></div></div>
@@ -4297,7 +4280,7 @@ async function openEmployeeDocuments(employeeId,type){
 }
 function fillContractMetaFromFile(file,type){
  if(!file)return;let d=guessContractDateFromFilename(file.name);
- if($('contractDocDate')&&!$('contractDocDate').value)$('contractDocDate').value=d;
+ if($('contractDocDate')&&!$('contractDocDate').value)$('contractDocDate').value=d?d.replace(/-/g,''):'';
  if($('contractDocTitle')&&!$('contractDocTitle').value)$('contractDocTitle').value=(d?d.slice(0,4)+'년 ':'')+employeeDocTypeLabel(type);
 }
 async function loadEmployeeDocuments(employeeId,type){
@@ -4315,7 +4298,9 @@ async function loadEmployeeDocuments(employeeId,type){
 async function uploadEmployeeDocument(employeeId,type){
  let file=$('contractDocFile')?.files?.[0];if(!file)return alert('업로드할 PDF를 선택하세요.');
  if(!/\.pdf$/i.test(file.name))return alert('PDF 파일만 업로드할 수 있습니다.');
- let date=$('contractDocDate')?.value||guessContractDateFromFilename(file.name)||isoToday();
+ let dateRaw=$('contractDocDate')?.value||'';
+ let date=dateRaw?normalizeCompactDateInput(dateRaw):(guessContractDateFromFilename(file.name)||isoToday());
+ if(dateRaw&&!date)return alert('계약일은 8자리로 입력하세요.\n예: 20260815');
  let title=$('contractDocTitle')?.value?.trim()||`${date.slice(0,4)}년 ${employeeDocTypeLabel(type)}`;
  let path=`store_${storeId()}/employee_${employeeId}/${type}/${Date.now()}_${safeStoragePart(file.name)}`;
  let up=await sb.storage.from(EMPLOYEE_DOC_BUCKET).upload(path,file,{contentType:'application/pdf',upsert:false});
