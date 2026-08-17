@@ -157,7 +157,12 @@ input,select{border:1px solid #d2d7e0;background:white;border-radius:9px;padding
   <button class="btn green" onclick="$('pharmacyTemplateFile').click()">원본 약국급여표에 내보내기</button>
   <button class="btn" onclick="exportPayroll()">노무사 급여 Excel</button>
  </div></div>
- <div class="card" style="margin-top:13px"><div class="infoBox help"><b>관리 방식</b><br>
+ <div class="cards" style="grid-template-columns:repeat(3,1fr);margin-top:13px">
+  <div class="card"><div class="k">이번 지급월 총 입금액</div><div class="v" id="payTotalAll">0원</div></div>
+  <div class="card"><div class="k">지급완료 총액</div><div class="v" id="payTotalPaid">0원</div></div>
+  <div class="card"><div class="k">미지급·예상 총액</div><div class="v" id="payTotalPending">0원</div></div>
+ </div>
+<div class="card" style="margin-top:13px"><div class="infoBox help"><b>관리 방식</b><br>
  <b>지급완료</b>는 빨간색, <b>예상/미지급</b>은 검정색으로 표시합니다. 자동예상은 빈 값만 만들며 수기입력·지급완료 값은 덮어쓰지 않습니다.<br>
  월급직원: 기본 근무분은 익월 10일 지급 / 인센 발생횟수는 실제 근무월에 기록하고 기본값으로 2개월 뒤 지급분에 반영. 파트타임은 당월 말일 지급.<br>
  기존 약국급여표를 가져오면 과거 금액·인센횟수와 빨강/검정 상태를 읽습니다.</div></div>
@@ -182,7 +187,7 @@ input,select{border:1px solid #d2d7e0;background:white;border-radius:9px;padding
    <div class="empTabs"><button id="activeEmpTab" class="empTab active" onclick="setEmployeeView('active')">재직자</button><button id="retiredEmpTab" class="empTab" onclick="setEmployeeView('retired')">퇴사자</button></div>
    <div class="help">연번은 현재 직원순서에 따라 자동 생성됩니다. ↑/↓로 순서만 바꾸면 연번도 자동 재정렬됩니다.</div>
   </div>
-  <div class="tablewrap"><table><thead><tr><th>연번</th><th class="name">이름</th><th>업무</th><th>입사일</th><th>퇴사일</th><th>근무형태</th><th>기본시간</th><th>휴게</th><th>근무요일</th><th>급여형태</th><th>연차 기준</th><th>연차 잔여</th><th>급여 지급규칙</th><th>순서</th><th>출력색</th><th></th></tr></thead><tbody id="employeeBody"></tbody></table></div>
+  <div class="tablewrap"><table><thead><tr><th>연번</th><th class="name">이름</th><th>업무</th><th>입사일</th><th>퇴사일</th><th>근무형태</th><th>기본시간</th><th>휴게</th><th>스케줄방식</th><th>급여형태</th><th>연차 기준</th><th>연차 잔여</th><th>급여 지급규칙</th><th>순서</th><th>출력색</th><th></th></tr></thead><tbody id="employeeBody"></tbody></table></div>
  </div>
 </section>
 
@@ -195,7 +200,7 @@ input,select{border:1px solid #d2d7e0;background:white;border-radius:9px;padding
  <div class="row"><div><h1 class="title">공휴일 관리</h1><div class="sub">대한민국 공휴일은 연도별로 자동 불러옵니다. 공휴일은 주말보다 우선하며, 필요한 경우에만 수동 추가할 수 있습니다.</div></div><button class="btn" onclick="openHoliday()">+ 공휴일 추가</button></div>
  <div class="card" style="margin-top:13px">
   <div class="toolbar"><select id="holidayYear" onchange="renderHolidays()"></select><button class="btn gray" onclick="reloadAutoHolidays()">공휴일 새로고침</button></div>
-  <div class="tablewrap" style="margin-top:10px"><table><thead><tr><th>날짜</th><th>요일</th><th>공휴일명</th><th>구분</th><th></th></tr></thead><tbody id="holidayBody"></tbody></table></div>
+  <div class="tablewrap" style="margin-top:10px"><table><thead><tr><th>날짜</th><th>기본패턴</th><th>공휴일명</th><th>구분</th><th></th></tr></thead><tbody id="holidayBody"></tbody></table></div>
  </div>
 </section>
 
@@ -214,7 +219,7 @@ let employees=[],schedules=[],payroll=[],stores=[],holidays=[],manualHolidays=[]
 const money=n=>Number(n||0).toLocaleString('ko-KR')+'원',esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 function monthRange(){let m=$('monthSelect').value,[y,mo]=m.split('-').map(Number),days=new Date(y,mo,0).getDate();return {m,y,mo,days,first:m+'-01',last:m+'-'+String(days).padStart(2,'0')}}
 function storeId(){return Number($('storeSelect').value)}
-function workType(e){return e.work_type==='36'?'주4일·36h (소정32+추가4)':e.work_type==='40'?'주5일·40h':e.work_type||'기타'}
+function workType(e){return e.work_type==='36'?'주4일 스케줄근무':e.work_type==='40'?'주5일 스케줄근무':e.work_type||'기타'}
 function leaveWeeklyHours(e){return Number(e.leave_weekly_hours ?? (e.work_type==='36'?32:40))}
 function leaveMonthlyHours(e){return Number(e.leave_monthly_hours ?? (e.work_type==='36'?7:8))}
 function leaveDayHours(e){return Number(e.leave_day_hours ?? 8)}
@@ -721,14 +726,14 @@ function expectedWeeklyHolidayHours(e){
 function renderHours(){
  $('hoursBody').innerHTML=employeesForMonth($('monthSelect').value).map(e=>{
   let x=calc(e),c=classifyWork(e),wh=expectedWeeklyHolidayHours(e),p=payrollFor(e),ph=Number(p?.scheduled_hours||0),
-      compare=Math.round((x.worked+wh.hours)*100)/100,diff=p?Math.round((compare-ph)*100)/100:null;
+      compare=round2(x.worked+wh.hours),diff=p?round2(compare-ph):null;
   return `<tr><td class="name">${esc(e.name)}</td><td>${workType(e)}</td>
-  <td>${c.weekday.days}일</td><td>${c.weekday.hours}h</td>
-  <td>${c.weekend.days}일</td><td>${c.weekend.hours}h</td>
-  <td><b>${c.holiday.days}일</b></td><td><b>${c.holiday.hours}h</b></td>
-  <td><b>${x.worked}h</b></td><td title="주휴 ${wh.one}h × ${wh.weeks}주">${wh.hours}h</td><td><b>${compare}h</b></td>
-  <td>${x.ot}h</td><td>${x.leave}h</td><td>${x.sick}h</td><td>${p?ph+'h':'-'}</td>
-  <td class="${diff===0?'ok':diff==null?'':'warn'}">${diff==null?'-':(diff>0?'+':'')+diff+'h'}</td></tr>`}).join('');
+  <td>${c.weekday.days}일</td><td>${hour2(c.weekday.hours)}h</td>
+  <td>${c.weekend.days}일</td><td>${hour2(c.weekend.hours)}h</td>
+  <td><b>${c.holiday.days}일</b></td><td><b>${hour2(c.holiday.hours)}h</b></td>
+  <td><b>${hour2(x.worked)}h</b></td><td title="주휴 ${wh.one}h × ${wh.weeks}주">${hour2(wh.hours)}h</td><td><b>${hour2(compare)}h</b></td>
+  <td>${hour2(x.ot)}h</td><td>${hour2(x.leave)}h</td><td>${hour2(x.sick)}h</td><td>${p?hour2(ph)+'h':'-'}</td>
+  <td class="${diff===0?'ok':diff==null?'':'warn'}">${diff==null?'-':(diff>0?'+':'')+hour2(diff)+'h'}</td></tr>`}).join('');
  $('workDateBody').innerHTML=employeesForMonth($('monthSelect').value).map(e=>{
    let c=classifyWork(e),fmt=a=>a.length?a.map(x=>`${Number(x.date.slice(8))}일(${x.hours}h${x.name?'·'+x.name:''})`).join(', '):'-';
    return `<tr><td class="name">${esc(e.name)}</td><td>${fmt(c.weekday.dates)}</td><td>${fmt(c.weekend.dates)}</td><td><b>${fmt(c.holiday.dates)}</b></td></tr>`;
@@ -740,13 +745,14 @@ async function renderPharmacyPay(){
  const payMonth=$('monthSelect').value,monthEmps=employeesForMonth(payMonth),ids=monthEmps.map(e=>e.id);
  const incMonths=[...new Set(monthEmps.map(e=>shiftMonth(payMonth,-incentiveDelay(e))))];
  let byMonth={};for(const m of incMonths)byMonth[m]=await workRowsForMonth(ids,m);
- let rows=[];
+ let rows=[],totalAll=0,totalPaid=0,totalPending=0;
  for(const e of monthEmps){
    let baseMonth=shiftMonth(payMonth,-salaryDelay(e)),incMonth=shiftMonth(payMonth,-incentiveDelay(e)),pr=paymentRecord(e,payMonth),p=payrollFor(e);
    let ir=incentiveRecord(e,incMonth),ic;
    if(ir)ic={count:Number(ir.count||0),mode:ir.mode,locked:ir.locked};
    else{let c=incentiveEnabled(e)?incentiveCountFromRows(e,incMonth,byMonth[incMonth]||[]):{count:0};ic={count:c.count,mode:'live',locked:false}}
-   let amount=pr?.amount ?? p?.net_pay ?? 0,status=pr?.status ?? (p?'expected':'expected'),cls=statusClass(status);
+   let amount=round2(pr?.amount ?? p?.net_pay ?? 0),status=pr?.status ?? (p?'expected':'expected'),cls=statusClass(status);
+   totalAll+=amount;if(status==='paid')totalPaid+=amount;else totalPending+=amount;
    rows.push(`<tr>
     <td class="name"><b>${esc(e.name)}</b></td><td>${paySlot(e)==='month_end'?'말일지급':'일반지급'}</td><td>${monthLabel(baseMonth)}</td><td>${paymentDateIso(e,payMonth)}</td>
     <td class="money ${amount?cls:''}"><b>${amount?money(amount):'-'}</b>${pr?.locked?'<span class="lockedMark">잠금</span>':''}</td>
@@ -757,17 +763,25 @@ async function renderPharmacyPay(){
    </tr>`);
  }
  $('pharmacyPayBody').innerHTML=rows.join('')||'<tr><td colspan="10">직원이 없습니다.</td></tr>';
+ if($('payTotalAll'))$('payTotalAll').textContent=money(round2(totalAll));
+ if($('payTotalPaid'))$('payTotalPaid').textContent=money(round2(totalPaid));
+ if($('payTotalPending'))$('payTotalPending').textContent=money(round2(totalPending));
 }
 function renderPayroll(){
  let seen=new Set(),rows=[];
- payroll.forEach(p=>{
+ let orderMap=new Map(employeesForMonth($('monthSelect').value).map((e,i)=>[e.id,i]));
+ payroll.slice().sort((a,b)=>{
+   let ai=a.employee_id?orderMap.get(a.employee_id):9999,bi=b.employee_id?orderMap.get(b.employee_id):9999;
+   if(ai!==bi)return (ai??9999)-(bi??9999);
+   return String(a.employee_name||'').localeCompare(String(b.employee_name||''),'ko');
+ }).forEach(p=>{
    seen.add(normalizeName(p.employee_name));
    let e=[...employees,...retiredEmployees].find(x=>x.id===p.employee_id)||employees.find(x=>normalizeName(x.name)===normalizeName(p.employee_name));
    let x=e&&employedInMonth(e,$('monthSelect').value)?calc(e):{worked:0};
    let extra=Number(p.adjustment_pay||0)+Number(p.bonus||0),ded=Number(p.total_deduction||0),
-       diff=e?Math.round((x.worked-Number(p.scheduled_hours||0))*100)/100:null;
+       diff=e?round2(x.worked-Number(p.scheduled_hours||0)):null;
    rows.push(`<tr class="${e?.active===false?'retiredRow':''}"><td class="name">${esc(p.employee_name)}${!e?' <span class="reviewWarn">미매칭</span>':''}</td>
-   <td>${p.scheduled_hours||0}h</td><td class="money">${money(p.base_pay)}</td><td class="money">${money(p.fixed_overtime_pay)}</td>
+   <td>${hour2(p.scheduled_hours)}h</td><td class="money">${money(p.base_pay)}</td><td class="money">${money(p.fixed_overtime_pay)}</td>
    <td class="money">${money(p.holiday_pay)}</td><td class="money">${money(p.overtime_pay)}</td><td class="money">${money(p.meal_allowance)}</td>
    <td class="money">${money(extra)}</td><td class="money">${money(p.gross_pay)}</td><td class="money">${money(ded)}</td>
    <td class="money"><b>${money(p.net_pay)}</b></td><td class="${diff===0?'ok':diff==null?'':'warn'}">${diff==null?'-':(diff>0?'+':'')+diff+'h'}</td></tr>`);
@@ -789,7 +803,7 @@ function renderEmployees(){
    return `<tr class="${employeeView==='retired'?'retiredRow':''}">
    <td><span class="seqBadge">${idx+1}</span></td><td class="name"><b>${esc(e.name)}</b></td><td>${esc(e.role||'')}</td><td>${e.hire_date||''}</td><td>${e.resign_date||'-'}</td><td>${workType(e)}</td>
    <td>${(e.default_start_time||'').slice(0,5)}~${(e.default_end_time||'').slice(0,5)}<br><span class="help">소정 ${e.daily_hours||8}h</span></td>
-   <td>${e.break_minutes||0}분</td><td>${dayNames(e.work_days)}</td>
+   <td>${e.break_minutes||0}분</td><td>${e.work_type==='36'?'주4일':'주5일'}<br><span class="help">요일 변동 스케줄</span></td>
    <td>${e.pay_type==='hourly'?'시급':e.pay_type==='daily'?'일당':e.pay_type==='business'?'사업소득':'월급'}</td>
    <td>주 ${leaveWeeklyHours(e)}h<br><span class="help">월 +${leaveMonthlyHours(e)}h / 1일 -${leaveDayHours(e)}h</span></td>
    <td>${employeeView==='active'?`<b>${ls.balance}h</b><br><button class="btn gray small" onclick="adjustLeave(${e.id})">조정</button>`:'-'}</td>
@@ -940,7 +954,7 @@ async function previewEmployeeImport(file){
  </tr>`).join('');
  modal(`<h2>근로자 Excel 가져오기</h2>
  <div class="help"><b>${esc(file.name)}</b> · ${employeeImportRows.length}명 감지<br>직원은 한 번만 등록합니다. 입사일·퇴사일을 기준으로 월별 화면에 자동 표시됩니다. 기존 이름과 같은 직원은 업데이트합니다. 주민번호는 저장하지 않습니다.</div>
- <div class="importReview"><table><thead><tr><th>선택</th><th class="name">직원</th><th>입사일</th><th>직무</th><th>근무형태</th><th>기본시간</th><th>휴게</th><th>요일</th><th>급여형태</th><th>검토</th></tr></thead><tbody>${rows}</tbody></table></div>
+ <div class="importReview"><table><thead><tr><th>선택</th><th class="name">직원</th><th>입사일</th><th>직무</th><th>근무형태</th><th>기본시간</th><th>휴게</th><th>기본패턴</th><th>급여형태</th><th>검토</th></tr></thead><tbody>${rows}</tbody></table></div>
  <div class="modalActions"><button class="btn gray" onclick="closeModal()">취소</button><button class="btn" onclick="commitEmployeeImport()">선택 직원 등록</button></div>`);
 }
 async function commitEmployeeImport(){
@@ -975,7 +989,7 @@ function openEmployee(id,isRetired=false){
  <div class="field"><label>업무/직책</label><input id="eRole" value="${esc(e.role||'')}"></div>
  <div class="field"><label>입사일</label><input id="eHire" type="date" value="${e.hire_date||''}"></div>
  <div class="field"><label>퇴사일</label><input id="eResign" type="date" value="${e.resign_date||''}"></div>
- <div class="field"><label>근무형태</label><select id="eType" onchange="applyLeavePreset()"><option value="40">주5일·40시간</option><option value="36">주4일·36시간(소정32+추가4)</option><option value="custom">기타</option></select></div>
+ <div class="field"><label>근무형태</label><select id="eType" onchange="applyLeavePreset()"><option value="40">주5일 스케줄근무</option><option value="36">주4일 스케줄근무</option><option value="custom">기타</option></select></div>
  <div class="field"><label>1일 소정시간</label><input id="eDaily" type="number" step=".5" value="${e.daily_hours||8}"></div>
  <div class="field"><label>기본 출근</label><input id="eStart" type="time" value="${(e.default_start_time||'').slice(0,5)}"></div>
  <div class="field"><label>기본 퇴근</label><input id="eEnd" type="time" value="${(e.default_end_time||'').slice(0,5)}"></div>
@@ -990,8 +1004,8 @@ function openEmployee(id,isRetired=false){
  <div class="field"><label>1년 미만 월 발생(h)</label><input id="eLeaveMonthly" type="number" step="1" value="${leaveMonthlyHours(e)}"></div>
  <div class="field"><label>연차 하루 사용(h)</label><input id="eLeaveDay" type="number" step=".5" value="${leaveDayHours(e)}"></div>
  </div>
- <div style="margin-top:10px"><b style="font-size:12px">기본 근무요일</b><div style="margin-top:6px">${checks}</div></div>
- <div class="help" style="margin-top:10px">기본값: 주5일은 주40h / 월 +8h / 하루 연차 -8h, 주4일은 주32h 소정 / 월 +7h / 하루 연차 -8h입니다.</div>
+ <div style="margin-top:10px"><b style="font-size:12px">기본근무 채우기용 패턴 (선택사항)</b><div style="margin-top:6px">${checks}</div></div>
+ <div class="help" style="margin-top:10px">실제 근무요일이 매주 바뀌는 스케줄근무라면 위 요일은 비워두셔도 됩니다. 이 항목은 “기본근무 채우기”를 빠르게 사용할 때만 참고합니다.<br>연차 기본값: 주5일은 월 +8h / 하루 -8h, 주4일은 주32h 소정 기준 월 +7h / 하루 -8h.</div>
  <div class="modalActions"><button class="btn gray" onclick="closeModal()">취소</button><button class="btn" onclick="saveEmployee(${id||'null'})">저장</button></div>`);
  $('eType').value=e.work_type||'40';$('ePay').value=e.pay_type||'monthly';$('ePayDay').value=payDayRule(e);$('eIncentiveOn').value=incentiveEnabled(e)?'1':'0';
 }
@@ -1348,11 +1362,16 @@ async function exportIntoPharmacyTemplate(file){
  let a=document.createElement('a');a.href=URL.createObjectURL(out);a.download=file.name.replace(/(\.xlsm|\.xlsx)$/i,'_대시보드반영$1');a.click();setTimeout(()=>URL.revokeObjectURL(a.href),5000);
 }
 
+
+function round2(v){return Math.round((Number(v||0)+Number.EPSILON)*100)/100}
+function hour2(v){let n=round2(v);return Number.isInteger(n)?String(n):n.toFixed(2).replace(/0+$/,'').replace(/\.$/,'')}
+
 function num(v){return typeof v==='number'?v:(Number(String(v||'').replace(/,/g,''))||0)}
 function exportSchedule(){let r=monthRange(),data=[['업장',stores.find(s=>s.id===storeId())?.name],['월',r.m],[],['직원',...Array.from({length:r.days},(_,i)=>`${i+1}일`),'실근로','연장']];employeesForMonth(r.m).forEach(e=>{let x=calc(e);data.push([e.name,...Array.from({length:r.days},(_,i)=>sched(e,r.m+'-'+String(i+1).padStart(2,'0'))?.work_code||''),x.worked,x.ot])});downloadXlsx(data,`${stores.find(s=>s.id===storeId())?.name}_${r.m}_스케줄.xlsx`)}
 function exportPharmacyPayTable(){$('pharmacyTemplateFile').click()}
 
-function exportPayroll(){let data=[['직원','월근무시간','기본급','고정연장','휴일수당','연장수당','식대','조정수당','상여','총지급액','공제총액','실지급액']];payroll.forEach(p=>data.push([p.employee_name,p.scheduled_hours,p.base_pay,p.fixed_overtime_pay,p.holiday_pay,p.overtime_pay,p.meal_allowance,p.adjustment_pay,p.bonus,p.gross_pay,p.total_deduction,p.net_pay]));downloadXlsx(data,`${stores.find(s=>s.id===storeId())?.name}_${$('monthSelect').value}_급여.xlsx`)}
+function exportPayroll(){let data=[['직원','월근무시간','기본급','고정연장','휴일수당','연장수당','식대','조정수당','상여','총지급액','공제총액','실지급액']];let orderMap=new Map(employeesForMonth($('monthSelect').value).map((e,i)=>[e.id,i]));
+ payroll.slice().sort((a,b)=>(orderMap.get(a.employee_id)??9999)-(orderMap.get(b.employee_id)??9999)).forEach(p=>data.push([p.employee_name,round2(p.scheduled_hours),p.base_pay,p.fixed_overtime_pay,p.holiday_pay,p.overtime_pay,p.meal_allowance,p.adjustment_pay,p.bonus,p.gross_pay,p.total_deduction,p.net_pay]));downloadXlsx(data,`${stores.find(s=>s.id===storeId())?.name}_${$('monthSelect').value}_급여.xlsx`)}
 function downloadXlsx(data,name){let ws=XLSX.utils.aoa_to_sheet(data),wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'내역');XLSX.writeFile(wb,name)}
 function printSchedule(){
  let r=monthRange(),st=stores.find(s=>s.id===storeId()),list=employeesForMonth(r.m);
