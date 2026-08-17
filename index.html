@@ -410,7 +410,7 @@ input,select{border:1px solid #d2d7e0;background:white;border-radius:9px;padding
   <div class="card"><div class="k">급여 실지급</div><div class="v" id="kPay">0원</div></div>
  </div>
  <div class="grid2">
-  <div class="card"><h3>이번 달 연차 발생 직원</h3><div class="sub">연차는 시간으로 관리합니다. 주5일은 1년 미만 월 +8h, 주4일(주32h 소정)은 월 +7h가 기본이며, 스케줄에 ‘연’을 입력하면 8h 차감합니다.</div><div class="tablewrap" style="margin-top:10px"><table><thead><tr><th class="name">직원</th><th>근무형태</th><th>입사일</th><th>이번 달 발생</th><th>누적 발생</th><th>누적 사용</th><th>조정</th><th>잔여</th></tr></thead><tbody id="homeEmployees"></tbody></table></div></div>
+  <div class="card"><h3>이번 달 연차 발생 직원</h3><div class="sub">연차는 시간으로 관리합니다. 1년 미만 월 연차는 입사일부터 1개월 구간의 스케줄이 모두 입력되고 개근이 확인된 뒤 발생합니다. 주5일 +8h, 주4일(주32h 소정) +7h가 기본이며, 스케줄에 ‘연’을 입력하면 8h 차감합니다.</div><div class="tablewrap" style="margin-top:10px"><table><thead><tr><th class="name">직원</th><th>근무형태</th><th>입사일</th><th>이번 달 발생</th><th>누적 발생</th><th>누적 사용</th><th>조정</th><th>잔여</th></tr></thead><tbody id="homeEmployees"></tbody></table></div></div>
   <div class="card"><h3>운영 흐름</h3><p class="help">① 월간 스케줄 작성 → ② 실제 근무시간 필요 시 날짜 클릭해 수정 → ③ 월 근로시간 확인 → ④ 노무사 급여대장 Excel 업로드 → ⑤ 스케줄 시간과 급여대장 시간 차이 검수 → ⑥ 필요 시 스케줄/급여 Excel 출력.</p></div>
  </div>
 </section>
@@ -751,20 +751,99 @@ function addYearsClamped(dateStr,n){
 }
 function annualLeaveDays(serviceYears){return Math.min(25,15+Math.floor(Math.max(0,serviceYears-1)/2))}
 function annualLeaveHours(e,serviceYears){return Math.ceil(annualLeaveDays(serviceYears)*(leaveWeeklyHours(e)/40)*8)}
-function expectedAccruals(e,through=isoToday()){
+function scheduleMapForEmployee(rows,employeeId){
+ let m=new Map();
+ (rows||[]).forEach(s=>{
+   if(s.employee_id===employeeId)m.set(s.work_date,s);
+ });
+ return m;
+}
+function monthlyAttendanceStatus(e,periodStart,periodEnd,scheduleRows){
+ let map=scheduleMapForEmployee(scheduleRows,e.id);
+ let cur=periodStart,entered=0,worked=0,missing=[],sick=[];
+
+ while(cur<=periodEnd){
+   let s=map.get(cur);
+   let code=String(s?.work_code??'').trim();
+
+   // 날짜 하나라도 미입력 상태면 아직 개근 판정 자체를 하지 않음.
+   if(!s || !code){
+     missing.push(cur);
+   }else{
+     entered++;
+     worked+=Number(s.worked_hours||0);
+     // 현재 대시보드에서 '병'은 실제 비근무 병가 코드이므로
+     // 월 개근 자동발생에서는 미발생 처리.
+     if(code==='병')sick.push(cur);
+   }
+   cur=addDaysIso(cur,1);
+ }
+
+ if(missing.length){
+   return {status:'pending',entered,worked,missing,sick,
+     memo:`판정대기 · 스케줄 미입력 ${missing.length}일`};
+ }
+ if(sick.length){
+   return {status:'fail',entered,worked,missing,sick,
+     memo:`미발생 · 병가 ${sick.length}일`};
+ }
+ return {status:'pass',entered,worked,missing,sick,
+   memo:`개근확인 · 실근로 ${Math.round(worked*100)/100}h`};
+}
+function expectedAccruals(e,through=isoToday(),attendanceSchedules=[]){
  let out=[];
  if(!e.hire_date || e.hire_date>through)return out;
+
+ // 1년 미만: 단순 날짜경과가 아니라 각 1개월 구간의 스케줄/개근 확인 후 발생.
+ // 예) 7/16 입사 -> 7/16~8/15 확인 -> 8/16 발생.
  for(let m=1;m<=11;m++){
    let dt=addMonthsClamped(e.hire_date,m);
-   if(dt<=through)out.push({employee_id:e.id,event_date:dt,event_type:'accrual',hours:leaveMonthlyHours(e),source:'auto',source_key:`accrual-month:${e.id}:${dt}`,memo:`입사 ${m}개월차 자동발생`});
+   if(dt>through)break;
+
+   let periodStart=addMonthsClamped(e.hire_date,m-1);
+   let periodEnd=addDaysIso(dt,-1);
+   let att=monthlyAttendanceStatus(e,periodStart,periodEnd,attendanceSchedules);
+
+   if(att.status==='pass'){
+     out.push({
+       employee_id:e.id,
+       event_date:dt,
+       event_type:'accrual',
+       hours:leaveMonthlyHours(e),
+       source:'auto',
+       source_key:`accrual-month:${e.id}:${dt}`,
+       memo:`입사 ${m}개월차 개근확인 자동발생 · ${periodStart}~${periodEnd} · 실근로 ${Math.round(att.worked*100)/100}h`
+     });
+   }
  }
+
+ // 1년 이상 연차 로직은 기존 방식 유지
  for(let y=1;y<=60;y++){
    let dt=addYearsClamped(e.hire_date,y);
    if(dt>through)break;
    let hrs=annualLeaveHours(e,y);
-   out.push({employee_id:e.id,event_date:dt,event_type:'accrual',hours:hrs,source:'auto',source_key:`accrual-year:${e.id}:${dt}`,memo:`입사 ${y}주년 연차 ${annualLeaveDays(y)}일 환산`});
+   out.push({
+     employee_id:e.id,event_date:dt,event_type:'accrual',hours:hrs,source:'auto',
+     source_key:`accrual-year:${e.id}:${dt}`,
+     memo:`입사 ${y}주년 연차 ${annualLeaveDays(y)}일 환산`
+   });
  }
  return out;
+}
+function nextMonthlyAccrualStatus(e,through=isoToday(),attendanceSchedules=schedules){
+ if(!e?.hire_date)return null;
+ for(let m=1;m<=11;m++){
+   let dt=addMonthsClamped(e.hire_date,m);
+   if(dt>through)break;
+   let key=`accrual-month:${e.id}:${dt}`;
+   let already=leaveLedger.some(x=>x.source_key===key);
+   if(already)continue;
+   let periodStart=addMonthsClamped(e.hire_date,m-1);
+   let periodEnd=addDaysIso(dt,-1);
+   let att=monthlyAttendanceStatus(e,periodStart,periodEnd,attendanceSchedules);
+   return {month:m,eventDate:dt,periodStart,periodEnd,...att};
+ }
+ return null;
 }
 async function syncLeaveLedger(){
  if(!employees.length)return;
@@ -776,12 +855,38 @@ async function syncLeaveLedger(){
  }));
  if(opening.length)await sb.from('leave_ledger').upsert(opening,{onConflict:'source_key'});
 
- // 입사일 기준 자동 발생
+ // 입사 1년 미만 월 연차는 실제 스케줄 입력/개근 확인 후 자동 발생.
+ // 판정을 위해 현재 직원들의 스케줄을 한 번 읽는다.
+ let attendanceQ=await sb.from('schedules')
+   .select('employee_id,work_date,work_code,worked_hours')
+   .in('employee_id',ids)
+   .lte('work_date',isoToday());
+ let attendanceSchedules=attendanceQ.data||[];
+
  let accruals=[];
- employees.forEach(e=>accruals.push(...expectedAccruals(e)));
+ employees.forEach(e=>accruals.push(...expectedAccruals(e,isoToday(),attendanceSchedules)));
+
  if(accruals.length){
    let a=await sb.from('leave_ledger').upsert(accruals,{onConflict:'source_key'});
    if(a.error)console.warn(a.error.message);
+ }
+
+ // 과거 코드가 날짜만 지나면 만들어버린 잘못된 1년 미만 월 발생분 제거.
+ // 현재 개근 판정 결과에 없는 accrual-month 키는 자동원장에서 삭제.
+ let autoExisting=await sb.from('leave_ledger')
+   .select('id,source_key')
+   .in('employee_id',ids)
+   .eq('source','auto');
+ let validAutoMonthly=new Set(
+   accruals.filter(x=>String(x.source_key||'').startsWith('accrual-month:'))
+           .map(x=>x.source_key)
+ );
+ let staleMonthly=(autoExisting.data||[])
+   .filter(x=>String(x.source_key||'').startsWith('accrual-month:') && !validAutoMonthly.has(x.source_key))
+   .map(x=>x.id);
+ if(staleMonthly.length){
+   let del=await sb.from('leave_ledger').delete().in('id',staleMonthly);
+   if(del.error)console.warn('잘못된 월 연차 삭제 오류',del.error.message);
  }
 
  // DB에 저장된 모든 '연' 스케줄을 연차사용 원장과 동기화
@@ -1855,7 +1960,13 @@ function renderEmployees(){
    <td>${(e.default_start_time||'').slice(0,5)}~${(e.default_end_time||'').slice(0,5)}<br><span class="help">소정 ${e.daily_hours||8}h</span></td>
    <td>${e.break_minutes||0}분</td><td>${e.work_type==='36'?'주4일':'주5일'}<br><span class="help">요일 변동 스케줄</span></td>
    <td>${e.pay_type==='hourly'?'시급':e.pay_type==='daily'?'일당':e.pay_type==='business'?'사업소득':'월급'}</td>
-   <td>주 ${leaveWeeklyHours(e)}h<br><span class="help">월 +${leaveMonthlyHours(e)}h / 1일 -${leaveDayHours(e)}h</span></td>
+   <td>주 ${leaveWeeklyHours(e)}h<br><span class="help">월 +${leaveMonthlyHours(e)}h / 1일 -${leaveDayHours(e)}h</span>${(()=>{
+     let st=nextMonthlyAccrualStatus(e,isoToday(),schedules);
+     if(!st)return '';
+     if(st.status==='pending')return `<br><span class="reviewWarn">연차 판정대기</span>`;
+     if(st.status==='fail')return `<br><span class="warn">해당월 미발생</span>`;
+     return '';
+   })()}</td>
    <td>${employeeView==='active'?`<b data-leave-balance="${e.id}">${ls.balance}h</b><br><button class="btn gray small" onclick="adjustLeave(${e.id})">조정</button>`:'-'}</td>
    <td class="payRule">${payRuleLabel(e)}</td>
    <td>${employeeView==='active'?`<button class="btn gray small" ${idx===0?'disabled':''} onclick="movePrintOrder(${e.id},-1)">↑</button><button class="btn gray small" ${idx===list.length-1?'disabled':''} onclick="movePrintOrder(${e.id},1)">↓</button>`:'-'}</td>
