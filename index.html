@@ -3331,6 +3331,80 @@ ${names}
  return {added:inserts.length,skipped:0};
 }
 
+
+function payrollDbSafeNumber(v,mode='numeric'){
+ let n=Number(v);
+ if(!Number.isFinite(n))return 0;
+ if(mode==='money')return Math.round(n);
+ if(mode==='rate')return Math.round(n); // DB 호환성: 통상시급은 원 단위 정수 저장
+ // 시간은 소수 허용하되 부동소수점 찌꺼기 제거
+ return Math.round(n*1000)/1000;
+}
+function makePayrollDbRow(x,payrollMonthId,file,parsed){
+ return {
+   payroll_month_id:payrollMonthId,
+   employee_id:x.employee_id||null,
+   employee_name:String(x.employee_name||'').trim(),
+
+   ordinary_hourly_rate:payrollDbSafeNumber(x.ordinary_hourly_rate,'rate'),
+   scheduled_hours:payrollDbSafeNumber(x.scheduled_hours,'hours'),
+   overtime_hours:payrollDbSafeNumber(x.overtime_hours,'hours'),
+   holiday_hours:payrollDbSafeNumber(x.holiday_hours,'hours'),
+
+   base_pay:payrollDbSafeNumber(x.base_pay,'money'),
+   weekly_holiday_pay:payrollDbSafeNumber(x.weekly_holiday_pay,'money'),
+   position_allowance:payrollDbSafeNumber(x.position_allowance,'money'),
+   fixed_overtime_pay:payrollDbSafeNumber(x.fixed_overtime_pay,'money'),
+   fixed_holiday_pay:payrollDbSafeNumber(x.fixed_holiday_pay,'money'),
+   meal_allowance:payrollDbSafeNumber(x.meal_allowance,'money'),
+   vehicle_allowance:payrollDbSafeNumber(x.vehicle_allowance,'money'),
+   childcare_allowance:payrollDbSafeNumber(x.childcare_allowance,'money'),
+   overtime_pay:payrollDbSafeNumber(x.overtime_pay,'money'),
+   holiday_pay:payrollDbSafeNumber(x.holiday_pay,'money'),
+   adjustment_pay:payrollDbSafeNumber(x.adjustment_pay,'money'),
+   bonus:payrollDbSafeNumber(x.bonus,'money'),
+   unused_leave_pay:payrollDbSafeNumber(x.unused_leave_pay,'money'),
+   absence_deduction:payrollDbSafeNumber(x.absence_deduction,'money'),
+
+   gross_pay:payrollDbSafeNumber(x.gross_pay,'money'),
+   income_tax:payrollDbSafeNumber(x.income_tax,'money'),
+   local_income_tax:payrollDbSafeNumber(x.local_income_tax,'money'),
+   national_pension:payrollDbSafeNumber(x.national_pension,'money'),
+   health_insurance:payrollDbSafeNumber(x.health_insurance,'money'),
+   longterm_care:payrollDbSafeNumber(x.longterm_care,'money'),
+   employment_insurance:payrollDbSafeNumber(x.employment_insurance,'money'),
+   other_deduction:payrollDbSafeNumber(x.other_deduction,'money'),
+   total_deduction:payrollDbSafeNumber(x.total_deduction,'money'),
+   net_pay:payrollDbSafeNumber(x.net_pay,'money'),
+
+   source_file:file.name,
+   memo:`weekly_hours=${payrollDbSafeNumber(x._weekly_hours||0,'hours')};weekly_text=${encodeURIComponent(x._weekly_hours_text||'')};pay_date=${parsed.payDate||''};period=${parsed.periodStart||''}~${parsed.periodEnd||''}`
+ };
+}
+
+async function diagnosePayrollInsertRows(dbRows){
+ let goodIds=[],failures=[];
+ for(const row of dbRows){
+   let q=await sb.from('payroll_entries').insert(row).select('id').single();
+   if(q.error){
+     failures.push({
+       employee:row.employee_name,
+       message:q.error.message,
+       code:q.error.code||'',
+       details:q.error.details||'',
+       hint:q.error.hint||''
+     });
+   }else if(q.data?.id){
+     goodIds.push(q.data.id);
+   }
+ }
+ // 진단용으로 들어간 성공 행은 모두 원복
+ if(goodIds.length){
+   await sb.from('payroll_entries').delete().in('id',goodIds);
+ }
+ return failures;
+}
+
 async function importPayrollSimple(file){
  if(!file)return;
  setPayrollLoadState('파일 읽는 중','saving');
@@ -3376,6 +3450,8 @@ async function importPayrollSimple(file){
 
  let message=`Excel 자동분석 결과\n\n사업장명: ${parsed.storeName||'-'}\n→ 등록 업장: ${targetStore.name}\n산정월: ${monthLabel(parsed.payMonth)}\n산정기간: ${parsed.periodStart||'-'} ~ ${parsed.periodEnd||'-'}\n지급일: ${parsed.payDate||'-'}\n본표 지급직원: ${parsed.rows.length}명\n직원매칭: ${parsed.matched}명`;
  if(unmatched.length)message+=`\n미매칭: ${unmatched.join(', ')}`;
+ let fractionalRates=parsed.rows.filter(x=>Math.abs(Number(x.ordinary_hourly_rate||0)-Math.round(Number(x.ordinary_hourly_rate||0)))>0.000001).length;
+ if(fractionalRates)message+=`\n통상시급 소수값 ${fractionalRates}명 → DB 저장 시 원 단위 반올림`;
  message+=`\n\n현재 화면의 업장/월과 관계없이 위 분석결과로 자동 등록합니다.\n계속할까요?`;
  if(!confirm(message)){
    setPayrollLoadState('취소','');
@@ -3424,47 +3500,24 @@ async function importPayrollSimple(file){
 
  // ★ 현재 DB payroll_entries 컬럼에 존재하는 값만 저장
  // weekly_hours는 DB 컬럼이 없으므로 memo에 보관
- let dbRows=parsed.rows.map(x=>({
-   payroll_month_id:pm.data.id,
-   employee_id:x.employee_id,
-   employee_name:x.employee_name,
-   ordinary_hourly_rate:x.ordinary_hourly_rate,
-   scheduled_hours:x.scheduled_hours,
-   overtime_hours:x.overtime_hours,
-   holiday_hours:x.holiday_hours,
-   base_pay:x.base_pay,
-   weekly_holiday_pay:x.weekly_holiday_pay,
-   position_allowance:x.position_allowance,
-   fixed_overtime_pay:x.fixed_overtime_pay,
-   fixed_holiday_pay:x.fixed_holiday_pay,
-   meal_allowance:x.meal_allowance,
-   vehicle_allowance:x.vehicle_allowance,
-   childcare_allowance:x.childcare_allowance,
-   overtime_pay:x.overtime_pay,
-   holiday_pay:x.holiday_pay,
-   adjustment_pay:x.adjustment_pay,
-   bonus:x.bonus,
-   unused_leave_pay:x.unused_leave_pay,
-   absence_deduction:x.absence_deduction,
-   gross_pay:x.gross_pay,
-   income_tax:x.income_tax,
-   local_income_tax:x.local_income_tax,
-   national_pension:x.national_pension,
-   health_insurance:x.health_insurance,
-   longterm_care:x.longterm_care,
-   employment_insurance:x.employment_insurance,
-   other_deduction:0,
-   total_deduction:x.total_deduction,
-   net_pay:x.net_pay,
-   source_file:file.name,
-   memo:`weekly_hours=${Number(x._weekly_hours||0)};weekly_text=${encodeURIComponent(x._weekly_hours_text||'')};pay_date=${parsed.payDate||''};period=${parsed.periodStart||''}~${parsed.periodEnd||''}`
- }));
+ let dbRows=parsed.rows.map(x=>makePayrollDbRow(x,pm.data.id,file,parsed));
 
  let ins=await sb.from('payroll_entries').insert(dbRows);
  if(ins.error){
+   // batch 실패 시 어떤 직원/값이 문제인지 행별 진단
+   let failures=await diagnosePayrollInsertRows(dbRows);
    await sb.from('payroll_months').delete().eq('id',pm.data.id);
    setPayrollLoadState('상세 저장 오류','error');
-   return alert('급여 상세 저장 오류:\n'+ins.error.message);
+
+   let detail='';
+   if(failures.length){
+     detail='\n\n문제 행 진단:\n'+failures.slice(0,10).map(f=>
+       `${f.employee}: ${f.message}${f.code?' ['+f.code+']':''}${f.details?'\n  '+f.details:''}${f.hint?'\n  hint: '+f.hint:''}`
+     ).join('\n');
+   }else{
+     detail='\n\n개별 행은 저장 가능했습니다. 일괄 INSERT/제약조건 문제일 가능성이 있습니다.';
+   }
+   return alert('급여 상세 저장 오류:\n'+ins.error.message+detail);
  }
 
  // 화면도 자동으로 Excel 분석결과 업장 + 월로 이동
