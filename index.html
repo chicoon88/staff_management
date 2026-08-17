@@ -527,6 +527,7 @@ function closeModal(){
 $('monthSelect').value=new Date().toISOString().slice(0,7);
 let employees=[],schedules=[],payroll=[],stores=[],holidays=[],manualHolidays=[],autoHolidays=[],selectedEmployees=new Set(),leaveLedger=[],scheduleSaveQueue=new Map(),scheduleSaveTimer=null,employeeImportRows=[],paymentRegister=[],incentiveRegister=[],retiredEmployees=[],employeeView='active',refreshToken=0,payrollReloadToken=0,employeeDeleteSelection=new Set();
 const money=n=>Number(n||0).toLocaleString('ko-KR')+'원',esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+function normalizeName(v){return String(v??'').normalize('NFKC').trim().replace(/\s+/g,'').replace(/[·ㆍ._-]/g,'').toLowerCase()}
 function monthRange(){let m=$('monthSelect').value,[y,mo]=m.split('-').map(Number),days=new Date(y,mo,0).getDate();return {m,y,mo,days,first:m+'-01',last:m+'-'+String(days).padStart(2,'0')}}
 function storeId(){return Number($('storeSelect').value)}
 function workType(e){return e.work_type==='36'?'주4일 스케줄근무':e.work_type==='40'?'주5일 스케줄근무':e.work_type||'기타'}
@@ -1986,6 +1987,7 @@ function parseOnlySupportedEmployeeTemplates(wb){
 
 async function previewEmployeeImport(file){
  if(!file)return;
+ try{
 
  let buf,wb;
  try{
@@ -2046,8 +2048,11 @@ async function previewEmployeeImport(file){
      <button class="btn gray" onclick="closeModal()">취소</button>
      <button class="btn" onclick="commitEmployeeImport()">선택 직원 등록</button>
    </div>`);
+ }catch(err){
+  console.error(err);
+  alert('직원 Excel 처리 중 오류:\n'+(err?.message||err));
+ }
 }
-
 async function commitEmployeeImport(){
  // 미리보기에서 수정한 입사일 반영
  document.querySelectorAll('.impHire').forEach(inp=>{
