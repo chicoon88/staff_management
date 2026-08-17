@@ -401,7 +401,7 @@ input,select{border:1px solid #d2d7e0;background:white;border-radius:9px;padding
   <button class="btn red" onclick="clearSelectedSchedules()">선택 직원 비우기</button>
   <button class="btn green" onclick="printSchedule()">근무표 인쇄/PDF</button>
   <button class="btn" onclick="exportSchedule()">스케줄 Excel</button>
-  <span id="scheduleSaveState" class="saveState saved">저장완료</span>
+  <span id="scheduleSaveState" class="saveState saved">저장완료</span><span class="help">연차잔여는 입력 즉시 반영</span>
  </div>
  </div>
  <div class="legend"><span class="tag">먼저 직원명 왼쪽 체크박스 선택</span><span class="tag">8 = 8시간</span><span class="tag">9 = 8시간+연장1</span><span class="tag">0 = 휴무</span><span class="tag">연 = 연차</span><span class="tag">병 = 병가</span><span class="tag">숫자 직접입력 가능</span><span class="tag">공휴일: 날짜 빨강 + 공휴일명 표시</span></div>
@@ -686,6 +686,45 @@ function leaveSummary(e,asOf=monthRange().last){
    else if(x.event_type==='adjust')adjust+=h;
  });
  return {accrued,used,adjust,balance:Math.round(total*100)/100};
+}
+function liveLeaveSummary(e,asOf=monthRange().last){
+ // 서버 원장을 기준으로 하되, 현재 화면에서 아직 저장중인 이번 달 스케줄 변경분만 즉시 보정한다.
+ let base=leaveSummary(e,asOf),r=monthRange();
+
+ // 선택월이 asOf보다 뒤라면 보정할 필요 없음
+ if(r.first>asOf)return base;
+
+ let end=r.last<asOf?r.last:asOf;
+
+ // 현재 Supabase 연차원장에 기록된 선택월의 스케줄 연차사용
+ let ledgerUsed=leaveLedger
+   .filter(x=>x.employee_id===e.id && x.source==='schedule' &&
+              x.event_date>=r.first && x.event_date<=end)
+   .reduce((sum,x)=>sum+Number(x.hours||0),0); // 음수
+
+ // 현재 화면의 로컬 스케줄 기준 연차사용
+ let localUsed=schedules
+   .filter(s=>s.employee_id===e.id && s.work_date>=r.first && s.work_date<=end && s.work_code==='연')
+   .reduce((sum,s)=>sum-leaveDayHours(e),0); // 음수
+
+ // 아직 서버 원장에 반영되지 않은 차이만 적용
+ let delta=localUsed-ledgerUsed;
+ let usedDelta=Math.max(0,-delta);
+ let used=Math.round((base.used+usedDelta)*100)/100;
+ let balance=Math.round((base.balance+delta)*100)/100;
+ return {...base,used,balance};
+}
+function refreshLiveLeaveUI(employeeId){
+ // 스케줄표 자체는 절대 다시 그리지 않는다.
+ // 따라서 입력 포커스/Tab/방향키 속도에 영향 없음.
+ if($('employeesPage')?.classList.contains('active'))renderEmployees();
+ if($('homePage')?.classList.contains('active'))renderHome();
+
+ // 향후 다른 화면에 연차 잔여 표시용 DOM을 붙여도 즉시 갱신 가능
+ document.querySelectorAll(`[data-leave-balance="${employeeId}"]`).forEach(el=>{
+   let e=allEmployees().find(x=>x.id===employeeId);
+   if(e)el.textContent=liveLeaveSummary(e,isoToday()).balance+'h';
+ });
 }
 function selectedMonthAccruals(e){
  let r=monthRange();
@@ -1021,7 +1060,7 @@ function renderHome(){
  $('kAnnual').textContent=w4+'명';
  $('kPay').textContent=money(pay);
  $('homeEmployees').innerHTML=monthDue.length?monthDue.map(({e,ev})=>{
-   let s=leaveSummary(e,monthRange().last),mh=ev.reduce((a,x)=>a+Number(x.hours||0),0);
+   let s=liveLeaveSummary(e,monthRange().last),mh=ev.reduce((a,x)=>a+Number(x.hours||0),0);
    let detail=ev.map(x=>x.memo?.includes('주년')?`${x.hours}h(연간)`:`${x.hours}h`).join(' + ');
    return `<tr><td class="name"><b>${esc(e.name)}</b></td><td>${workType(e)}</td><td>${e.hire_date||''}</td>
    <td><span class="pill">+${mh}h</span><br><span class="help">${esc(detail)}</span></td>
@@ -1074,6 +1113,7 @@ function applyLocalSchedule(payload){
    let a=$(`workTotal-${e.id}`),b=$(`otTotal-${e.id}`);
    if(a)a.innerHTML=`<b>${x.worked}h</b>`;
    if(b)b.textContent=`${x.ot}h`;
+   refreshLiveLeaveUI(e.id);
  }
 }
 function setSaveState(type,text){
@@ -1111,7 +1151,7 @@ function scheduleInput(id,date,raw,input){
  let payload=schedulePayload(id,date,raw);
  // 연차 부족 경고는 화면을 막지 않고 처음 입력할 때만 확인
  if(payload.work_code==='연'){
-   let emp=allEmployees().find(e=>e.id===id),existing=sched(emp,date),leaveH=leaveDayHours(emp),current=leaveSummary(emp,date).balance;
+   let emp=allEmployees().find(e=>e.id===id),existing=sched(emp,date),leaveH=leaveDayHours(emp),current=liveLeaveSummary(emp,date).balance;
    if(existing?.work_code==='연')current+=leaveH;
    if(current<leaveH && input.dataset.leaveConfirmed!=='1'){
      if(!confirm(`${emp.name}의 연차 잔여가 ${current}h입니다.\n연차 ${leaveH}h를 입력하면 잔여가 부족합니다.\n그래도 입력할까요?`)){
@@ -1287,7 +1327,7 @@ function renderEmployees(){
  if(!$('employeeBody'))return;
  let list=employeeView==='retired'?[...retiredEmployees].sort((a,b)=>(b.resign_date||'').localeCompare(a.resign_date||'')||a.name.localeCompare(b.name,'ko')):orderedEmployees();
  $('employeeBody').innerHTML=list.map((e,idx)=>{
-   let ls=employeeView==='active'?leaveSummary(e,isoToday()):{balance:0};
+   let ls=employeeView==='active'?liveLeaveSummary(e,isoToday()):{balance:0};
    let colors=PRINT_COLORS.map(([c,n])=>`<option value="${c}" ${employeeColor(e)===c?'selected':''}>${n}</option>`).join('');
    let action=employeeView==='active'
     ?`<button class="btn gray small" onclick="openEmployee(${e.id})">수정</button> <button class="btn red small" onclick="retireEmployee(${e.id},'${esc(e.name).replace(/'/g,"&#39;")}')">퇴사처리</button>`
@@ -1298,7 +1338,7 @@ function renderEmployees(){
    <td>${e.break_minutes||0}분</td><td>${e.work_type==='36'?'주4일':'주5일'}<br><span class="help">요일 변동 스케줄</span></td>
    <td>${e.pay_type==='hourly'?'시급':e.pay_type==='daily'?'일당':e.pay_type==='business'?'사업소득':'월급'}</td>
    <td>주 ${leaveWeeklyHours(e)}h<br><span class="help">월 +${leaveMonthlyHours(e)}h / 1일 -${leaveDayHours(e)}h</span></td>
-   <td>${employeeView==='active'?`<b>${ls.balance}h</b><br><button class="btn gray small" onclick="adjustLeave(${e.id})">조정</button>`:'-'}</td>
+   <td>${employeeView==='active'?`<b data-leave-balance="${e.id}">${ls.balance}h</b><br><button class="btn gray small" onclick="adjustLeave(${e.id})">조정</button>`:'-'}</td>
    <td class="payRule">${payRuleLabel(e)}</td>
    <td>${employeeView==='active'?`<button class="btn gray small" ${idx===0?'disabled':''} onclick="movePrintOrder(${e.id},-1)">↑</button><button class="btn gray small" ${idx===list.length-1?'disabled':''} onclick="movePrintOrder(${e.id},1)">↓</button>`:'-'}</td>
    <td>${employeeView==='active'?`<select onchange="setPrintColor(${e.id},this.value)" style="padding:5px 7px">${colors}</select><span style="display:inline-block;width:18px;height:18px;border-radius:5px;vertical-align:middle;margin-left:4px;background:${employeeColor(e)};border:1px solid #bbb"></span>`:'-'}</td>
