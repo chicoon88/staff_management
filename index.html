@@ -452,6 +452,13 @@ tr[draggable="true"]:active,.empDragHandle:active{cursor:grabbing}
 
 .empInlineDate{min-width:92px;text-align:center}
 #contractDocDate{width:120px;text-align:center;font-weight:800}
+
+.historyAddBox{margin-top:14px;padding:12px;border:1px solid var(--line);border-radius:12px;background:#f8fafc}
+.historyGrid{display:grid;grid-template-columns:130px 130px 150px 1fr auto;gap:8px;align-items:end}
+.historyList{display:grid;gap:8px;margin-top:12px}
+.historyRow{display:flex;justify-content:space-between;align-items:center;gap:12px;border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:#fff}
+@media(max-width:760px){.historyGrid{grid-template-columns:1fr}.historyRow{align-items:flex-start}}
+
 </style>
 </head>
 <body>
@@ -2261,8 +2268,8 @@ function renderEmployees(){
    let delChecked=employeeDeleteSelection.has(e.id);
    let colors=PRINT_COLORS.map(([c,n])=>`<option value="${c}" ${employeeColor(e)===c?'selected':''}>${n}</option>`).join('');
    let action=employeeView==='active'
-    ?`<button class="btn gray small" onclick="openEmployee(${e.id})">상세수정</button> <button class="btn red small" onclick="retireEmployee(${e.id},'${esc(e.name).replace(/'/g,"&#39;")}')">퇴사처리</button>`
-    :`<button class="btn gray small" onclick="openEmployee(${e.id},true)">상세정보</button> <button class="btn green small" onclick="restoreEmployee(${e.id},'${esc(e.name).replace(/'/g,"&#39;")}')">재직복귀</button>`;
+    ?`<button class="btn gray small" onclick="openEmployee(${e.id})">상세수정</button> <button class="btn gray small" onclick="openEmploymentHistory(${e.id})">재직이력</button> <button class="btn red small" onclick="retireEmployee(${e.id},'${esc(e.name).replace(/'/g,"&#39;")}')">퇴사처리</button>`
+    :`<button class="btn gray small" onclick="openEmployee(${e.id},true)">상세정보</button> <button class="btn gray small" onclick="openEmploymentHistory(${e.id})">재직이력</button> <button class="btn green small" onclick="restoreEmployee(${e.id},'${esc(e.name).replace(/'/g,"&#39;")}')">재입사</button>`;
 
    let workTypeCell=employeeView==='active'
      ?`<select class="empInline" onchange="saveEmployeeInline(${e.id},'work_type',this.value)">${employeeWorkTypeOptions(e)}</select>`
@@ -2950,17 +2957,166 @@ async function clearEmployeeMonth(id,name){
 }
 
 
+
+function employmentHistoryKey(employeeId,startDate,endDate,source='manual'){
+ return `${employeeId}:${startDate||'unknown'}:${endDate||'open'}:${source}`;
+}
+async function openEmploymentHistory(employeeId){
+ let e=findEmployeeAny(employeeId);
+ if(!e)return alert('직원정보를 찾지 못했습니다.');
+ modal(`
+  <div class="row">
+   <div><h2 style="margin:0">${esc(e.name)} · 재직이력</h2>
+   <div class="help" style="margin-top:4px">퇴사 후 재입사, 월중 근무형태 변경 등의 이력을 보존합니다.</div></div>
+   <button class="btn gray" onclick="closeModal()">닫기</button>
+  </div>
+  <div class="historyAddBox">
+   <div class="historyGrid">
+    <div class="field"><label>입사일</label><input id="histStart" type="text" inputmode="numeric" maxlength="8" placeholder="YYYYMMDD" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,8)"></div>
+    <div class="field"><label>퇴사일</label><input id="histEnd" type="text" inputmode="numeric" maxlength="8" placeholder="재직중이면 빈칸" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,8)"></div>
+    <div class="field"><label>직책</label><input id="histRole" value="${esc(e.role||'')}"></div>
+    <div class="field"><label>업무/메모</label><input id="histNote" placeholder="예: 파트타임 → 정규직 전환"></div>
+    <button class="btn" onclick="addEmploymentHistory(${employeeId})">이력 추가</button>
+   </div>
+  </div>
+  <div id="historyList" class="historyList"><div class="help">불러오는 중...</div></div>
+ `);
+ await loadEmploymentHistory(employeeId);
+}
+async function loadEmploymentHistory(employeeId){
+ let host=$('historyList');if(!host)return;
+ let q=await sb.from('employee_employment_history').select('*')
+   .eq('employee_id',employeeId)
+   .order('start_date',{ascending:false})
+   .order('created_at',{ascending:false});
+ if(q.error){
+   host.innerHTML=`<div class="warn">재직이력 조회 오류: ${esc(q.error.message)}</div>`;
+   return;
+ }
+ let rows=q.data||[];
+ host.innerHTML=rows.length?rows.map(x=>`
+   <div class="historyRow">
+    <div><b>${x.start_date||'-'} ~ ${x.end_date||'재직중'}</b>
+      <div class="help">${esc(x.role||'')}${x.source==='payroll'?' · 급여대장 자동':' · 수기'}${x.note?' · '+esc(x.note):''}</div>
+    </div>
+    <button class="btn red small" onclick="deleteEmploymentHistory(${x.id},${employeeId})">삭제</button>
+   </div>`).join(''):'<div class="help" style="padding:16px">저장된 재직이력이 없습니다.</div>';
+}
+async function addEmploymentHistory(employeeId){
+ let sRaw=$('histStart')?.value||'',eRaw=$('histEnd')?.value||'';
+ let start=normalizeCompactDateInput(sRaw),end=eRaw?normalizeCompactDateInput(eRaw):null;
+ if(!start)return alert('입사일은 8자리로 입력하세요. 예: 20261221');
+ if(eRaw&&!end)return alert('퇴사일은 8자리로 입력하세요. 예: 20261220');
+ if(end&&end<start)return alert('퇴사일이 입사일보다 빠릅니다.');
+ let e=findEmployeeAny(employeeId);
+ let obj={
+  store_id:e.store_id||storeId(),employee_id:employeeId,
+  start_date:start,end_date:end,
+  role:$('histRole')?.value?.trim()||null,
+  note:$('histNote')?.value?.trim()||null,
+  source:'manual',
+  source_key:employmentHistoryKey(employeeId,start,end,'manual')
+ };
+ let q=await sb.from('employee_employment_history').upsert(obj,{onConflict:'source_key'});
+ if(q.error)return alert('재직이력 저장 오류:\n'+q.error.message);
+ await loadEmploymentHistory(employeeId);
+}
+async function deleteEmploymentHistory(historyId,employeeId){
+ if(!confirm('이 재직이력만 삭제할까요? 직원 자체는 삭제되지 않습니다.'))return;
+ let q=await sb.from('employee_employment_history').delete().eq('id',historyId);
+ if(q.error)return alert(q.error.message);
+ await loadEmploymentHistory(employeeId);
+}
+async function recordEmploymentHistory(employeeId,startDate,endDate,role,note,source='manual'){
+ if(!employeeId||!startDate)return;
+ let e=findEmployeeAny(employeeId);
+ let obj={
+   store_id:e?.store_id||storeId(),
+   employee_id:employeeId,
+   start_date:startDate,
+   end_date:endDate||null,
+   role:role||e?.role||null,
+   note:note||null,
+   source,
+   source_key:employmentHistoryKey(employeeId,startDate,endDate,source)
+ };
+ let q=await sb.from('employee_employment_history').upsert(obj,{onConflict:'source_key'});
+ if(q.error)console.warn('재직이력 저장 오류',q.error.message);
+}
+async function syncEmploymentHistoryFromPayroll(parsed,targetStore,targetEmployees){
+ let byEmployee=new Map();
+ for(const row of parsed.rows){
+   let emp=targetEmployees.find(e=>normalizeName(e.name)===normalizeName(row.employee_name));
+   if(!emp)continue;
+   row.employee_id=emp.id;
+   if(!row.hire_date)continue;
+
+   // 급여대장 각 행을 별도 재직기간으로 그대로 보존
+   let note=[row.role,row.rank].filter(Boolean).join(' / ');
+   let obj={
+     store_id:targetStore.id,
+     employee_id:emp.id,
+     start_date:row.hire_date,
+     end_date:row.resign_date||null,
+     role:row.role||row.rank||emp.role||null,
+     note:note?`급여대장: ${note}`:'급여대장 자동반영',
+     source:'payroll',
+     source_key:employmentHistoryKey(emp.id,row.hire_date,row.resign_date||null,'payroll')
+   };
+   let q=await sb.from('employee_employment_history').upsert(obj,{onConflict:'source_key'});
+   if(q.error)console.warn('급여대장 재직이력 저장 오류',row.employee_name,q.error.message);
+
+   if(!byEmployee.has(emp.id))byEmployee.set(emp.id,[]);
+   byEmployee.get(emp.id).push(row);
+ }
+
+ // 현재 직원정보는 가장 최근 입사행 기준으로 맞춘다.
+ for(const [employeeId,rows] of byEmployee){
+   rows.sort((a,b)=>String(a.hire_date||'').localeCompare(String(b.hire_date||'')));
+   let latest=rows[rows.length-1];
+   if(!latest?.hire_date)continue;
+   let update={
+     hire_date:latest.hire_date,
+     resign_date:latest.resign_date||null,
+     active:!latest.resign_date
+   };
+   if(latest.role||latest.rank)update.role=latest.role||latest.rank;
+   let q=await sb.from('employees').update(update).eq('id',employeeId);
+   if(q.error)console.warn('최신 재직상태 반영 오류',latest.employee_name,q.error.message);
+ }
+}
+
 async function retireEmployee(id,name){
- name=String(name).replace(/&#39;/g,"'");let d=prompt(`${name} 퇴사일을 입력하세요. (YYYY-MM-DD)`,isoToday());
- if(d===null)return;if(!/^\d{4}-\d{2}-\d{2}$/.test(d))return alert('예: 2026-08-31 형식으로 입력하세요.');
- if(!confirm(`${name}을 ${d} 퇴사자로 처리할까요?\n과거 스케줄·급여기록은 그대로 보존됩니다.`))return;
- let q=await sb.from('employees').update({active:false,resign_date:d}).eq('id',id);if(q.error)return alert(q.error.message);
- selectedEmployees.delete(id);await refreshAll();setEmployeeView('active');
+ name=String(name).replace(/&#39;/g,"'");
+ let e=findEmployeeAny(id);
+ let raw=prompt(`${name} 퇴사일을 8자리로 입력하세요.`,isoToday().replace(/-/g,''));
+ if(raw===null)return;
+ let d=normalizeCompactDateInput(raw);
+ if(!d)return alert('예: 20260831처럼 8자리로 입력하세요.');
+ if(!confirm(`${name}을 ${d} 퇴사자로 처리할까요?\n과거 스케줄·급여·재직이력은 그대로 보존됩니다.`))return;
+
+ // 현재 재직기간을 이력으로 닫음
+ if(e?.hire_date)await recordEmploymentHistory(id,e.hire_date,d,e.role,'퇴사처리','manual');
+
+ let q=await sb.from('employees').update({active:false,resign_date:d}).eq('id',id);
+ if(q.error)return alert(q.error.message);
+ selectedEmployees.delete(id);
+ await refreshAll();
+ setEmployeeView('active');
 }
 async function restoreEmployee(id,name){
- name=String(name).replace(/&#39;/g,"'");if(!confirm(`${name}을 재직자로 복귀시킬까요?\n퇴사일도 비웁니다.`))return;
- let q=await sb.from('employees').update({active:true,resign_date:null}).eq('id',id);if(q.error)return alert(q.error.message);
- await refreshAll();setEmployeeView('active');
+ name=String(name).replace(/&#39;/g,"'");
+ let raw=prompt(`${name} 재입사일을 8자리로 입력하세요.`,isoToday().replace(/-/g,''));
+ if(raw===null)return;
+ let d=normalizeCompactDateInput(raw);
+ if(!d)return alert('예: 20261221처럼 8자리로 입력하세요.');
+ if(!confirm(`${name}을 ${d} 재입사자로 처리할까요?\n기존 퇴사 이력은 보존됩니다.`))return;
+
+ let q=await sb.from('employees').update({active:true,hire_date:d,resign_date:null}).eq('id',id);
+ if(q.error)return alert(q.error.message);
+ await recordEmploymentHistory(id,d,null,null,'재입사','manual');
+ await refreshAll();
+ setEmployeeView('active');
 }
 
 function renderStores(){
@@ -3452,6 +3608,15 @@ async function importPayrollSimple(file){
  if(unmatched.length)message+=`\n미매칭: ${unmatched.join(', ')}`;
  let fractionalRates=parsed.rows.filter(x=>Math.abs(Number(x.ordinary_hourly_rate||0)-Math.round(Number(x.ordinary_hourly_rate||0)))>0.000001).length;
  if(fractionalRates)message+=`\n통상시급 소수값 ${fractionalRates}명 → DB 저장 시 원 단위 반올림`;
+ let payrollNameCounts={};
+ parsed.rows.forEach(x=>{
+   let n=normalizeName(x.employee_name);
+   payrollNameCounts[n]=(payrollNameCounts[n]||0)+1;
+ });
+ let multiLineNames=Object.entries(payrollNameCounts).filter(([,cnt])=>cnt>1).map(([name,cnt])=>`${name} ${cnt}행`);
+ if(multiLineNames.length){
+   message+=`\n동일 직원 복수 급여행: ${multiLineNames.join(', ')} (원본 그대로 각각 저장)`;
+ }
  message+=`\n\n현재 화면의 업장/월과 관계없이 위 분석결과로 자동 등록합니다.\n계속할까요?`;
  if(!confirm(message)){
    setPayrollLoadState('취소','');
@@ -3517,7 +3682,24 @@ async function importPayrollSimple(file){
    }else{
      detail='\n\n개별 행은 저장 가능했습니다. 일괄 INSERT/제약조건 문제일 가능성이 있습니다.';
    }
-   return alert('급여 상세 저장 오류:\n'+ins.error.message+detail);
+   let constraintGuide='';
+   if(String(ins.error.message||'').includes('payroll_entries_payroll_month_id_employee_name_key')){
+     constraintGuide='\n\n이 급여대장에는 같은 직원이 한 달에 여러 급여행으로 존재합니다.\n예: 퇴사 전 파트타임 급여 + 재입사/직책변경 후 급여.\nZIP에 포함된 [급여복수행_최초1회_SQL.sql]을 Supabase에서 한 번 실행하세요.';
+   }
+   return alert('급여 상세 저장 오류:\n'+ins.error.message+constraintGuide+detail);
+ }
+
+ // 급여대장의 입사/퇴사 구간을 재직이력으로 자동 반영.
+ // 신규 직원 자동추가가 있었을 수 있으므로 대상 업장 직원을 다시 조회.
+ let empRefresh=await sb.from('employees').select('*').eq('store_id',sid);
+ if(!empRefresh.error){
+   targetEmployees=empRefresh.data||targetEmployees;
+   // employee_id도 새 직원 포함해서 다시 연결
+   parsed.rows.forEach(r=>{
+     let emp=targetEmployees.find(e=>normalizeName(e.name)===normalizeName(r.employee_name));
+     r.employee_id=emp?.id||r.employee_id||null;
+   });
+   await syncEmploymentHistoryFromPayroll(parsed,targetStore,targetEmployees);
  }
 
  // 화면도 자동으로 Excel 분석결과 업장 + 월로 이동
@@ -3540,7 +3722,7 @@ async function importPayrollSimple(file){
 function showPayrollImportInfo(parsed,fileName){
  let el=$('payrollImportInfo');if(!el)return;
  el.style.display='block';
- el.innerHTML=`<b>${monthLabel(parsed.payMonth)} 급여대장 본표 불러오기 완료</b><br><span class="help">파일: ${esc(fileName)} · Excel 사업장: ${esc(parsed.storeName||'-')} · 자동 등록월: ${esc(parsed.payMonth)} · 산정기간: ${esc(parsed.periodStart||'-')} ~ ${esc(parsed.periodEnd||'-')} · 지급일: ${esc(parsed.payDate||'-')} · 직원 ${parsed.rows.length}명 · 직원매칭 ${parsed.matched}명</span>`;
+ el.innerHTML=`<b>${monthLabel(parsed.payMonth)} 급여대장 본표 불러오기 완료</b><br><span class="help">파일: ${esc(fileName)} · Excel 사업장: ${esc(parsed.storeName||'-')} · 자동 등록월: ${esc(parsed.payMonth)} · 산정기간: ${esc(parsed.periodStart||'-')} ~ ${esc(parsed.periodEnd||'-')} · 지급일: ${esc(parsed.payDate||'-')} · 급여행 ${parsed.rows.length}건 · 직원매칭 ${parsed.matched}건</span>`;
 }
 
 function payrollEmployeeOrderMap(){
