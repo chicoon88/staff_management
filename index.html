@@ -371,6 +371,50 @@ input,select{border:1px solid #d2d7e0;background:white;border-radius:9px;padding
 .weekOutsideMonth{opacity:.76}
 .weekHolidayLabel{display:block;font-size:9px;line-height:1.1;margin-top:2px;white-space:normal;font-weight:900}
 
+
+.payrollSummaryGrid{gap:12px}
+.payrollSummaryCard{padding:17px 20px!important}
+.payrollBigMoney{font-size:28px;font-weight:950;margin-top:5px;letter-spacing:-1px}
+#payrollFoot td,#payrollPeriodFoot td{background:#f2f5f9!important;font-weight:950;border-top:2px solid #7b8798}
+.payrollPeriodControls input,.payrollPeriodControls select{min-height:38px}
+.payrollPeriodControls select{min-width:170px}
+.miniStat{background:#f7f9fc;border:1px solid var(--line);border-radius:12px;padding:13px 16px}
+.miniStat span{display:block;font-size:12px;color:#667085;font-weight:800}
+.miniStat b{display:block;font-size:20px;margin-top:4px}
+.periodEmployeeName{font-weight:900}
+@media(max-width:760px){
+ .payrollPeriodControls{width:100%;margin-top:10px}
+ .payrollPeriodControls input,.payrollPeriodControls select{min-width:0;flex:1}
+ .payrollBigMoney{font-size:22px}
+}
+
+
+.payEdit{
+ width:100%;min-width:84px;padding:6px 7px;border:1px solid transparent;border-radius:6px;
+ background:transparent;text-align:right;font:inherit;color:inherit
+}
+.payEdit:hover{background:#fff;border-color:#d9e0ea}
+.payEdit:focus{background:#fff;border-color:#315efb;outline:none;box-shadow:0 0 0 2px rgba(49,94,251,.12)}
+.payEditHours{min-width:62px;text-align:center}
+.payEdited{background:#fff8db!important}
+.paySaving{opacity:.55}
+.payrollSaveNote{font-size:11px;color:#667085;margin-left:8px}
+
+
+.empInline{
+ width:100%;min-width:68px;padding:5px 6px;border:1px solid transparent;border-radius:6px;
+ background:transparent;font:inherit;color:inherit
+}
+.empInline:hover{background:#fff;border-color:#d9e0ea}
+.empInline:focus{background:#fff;border-color:#315efb;outline:none;box-shadow:0 0 0 2px rgba(49,94,251,.10)}
+.empInlineName{font-weight:900;min-width:90px}
+.empInlineSmall{min-width:58px;text-align:center}
+.empInlineTime{min-width:84px}
+.empInlineLeave{width:58px;min-width:58px;text-align:center}
+.empInlineCell{padding:4px!important}
+.empInlineStack{display:flex;gap:4px;align-items:center;justify-content:center;flex-wrap:wrap}
+.empInlineStack .help{width:100%;text-align:center}
+
 </style>
 </head>
 <body>
@@ -456,22 +500,57 @@ input,select{border:1px solid #d2d7e0;background:white;border-radius:9px;padding
 
 <section id="payrollPage" class="page">
  <div class="row">
-  <div><h1 class="title">급여관리</h1><div class="sub">노무사가 보내준 급여대장 Excel을 그대로 불러와 저장합니다. 우선 한 달 자료부터 정확히 작동시키는 단계입니다.</div></div>
+  <div><h1 class="title">급여관리</h1><div class="sub">월별 급여대장을 검산하고, 기간별·직원별 누적 급여도 조회합니다.</div></div>
   <div class="toolbar">
    <input type="file" id="payrollFile" accept=".xlsx,.xls,.xlsm" style="display:none" onchange="importPayrollSimple(this.files[0]);this.value=''">
    <button class="btn" onclick="$('payrollFile').click()">급여대장 불러오기</button>
    <span id="payrollLoadState" class="saveState">대기</span>
   </div>
  </div>
+
  <div id="payrollImportInfo" class="card" style="margin-top:12px;display:none"></div>
+
+ <div class="grid3 payrollSummaryGrid" style="margin-top:12px">
+   <div class="card payrollSummaryCard"><div class="help">선택월 총지급 합계</div><div id="monthGrossTotal" class="payrollBigMoney">0원</div></div>
+   <div class="card payrollSummaryCard"><div class="help">선택월 공제 합계</div><div id="monthDeductionTotal" class="payrollBigMoney">0원</div></div>
+   <div class="card payrollSummaryCard"><div class="help">선택월 실지급 합계</div><div id="monthNetTotal" class="payrollBigMoney">0원</div></div>
+ </div>
+
  <div class="card" style="margin-top:12px">
-  <h3 style="margin-top:0">노무사 급여대장</h3>
+  <div class="row">
+   <div><h3 style="margin:0">노무사 급여대장 · 월별 검산</h3><div class="help">표의 숫자칸을 직접 클릭해 수정할 수 있습니다. 수정 즉시 총지급·실지급·하단 합계가 다시 계산됩니다.</div></div>
+  </div>
   <div class="tablewrap" style="margin-top:10px"><table>
    <thead><tr>
     <th class="name">직원</th><th>월근무</th><th>주휴</th><th>기본급</th><th>주휴수당</th><th>고정연장</th><th>휴일수당</th><th>연장수당</th><th>식대</th><th>상여/조정</th><th>총지급</th><th>공제</th><th>실지급</th>
    </tr></thead>
    <tbody id="payrollBody"></tbody>
+   <tfoot id="payrollFoot"></tfoot>
   </table></div>
+ </div>
+
+ <div class="card" style="margin-top:14px">
+   <div class="row">
+     <div><h3 style="margin:0">급여 기간별 조회</h3><div class="help">전체 직원 누적합계 또는 한 직원의 월별 급여이력을 확인합니다.</div></div>
+     <div class="toolbar payrollPeriodControls">
+       <input id="payrollPeriodFrom" type="month">
+       <span>~</span>
+       <input id="payrollPeriodTo" type="month">
+       <select id="payrollEmployeeFilter"></select>
+       <button class="btn" onclick="loadPayrollPeriodReport()">조회</button>
+     </div>
+   </div>
+   <div class="grid3 payrollSummaryGrid" style="margin-top:12px">
+     <div class="miniStat"><span>기간 총지급</span><b id="periodGrossTotal">0원</b></div>
+     <div class="miniStat"><span>기간 총공제</span><b id="periodDeductionTotal">0원</b></div>
+     <div class="miniStat"><span>기간 실지급</span><b id="periodNetTotal">0원</b></div>
+   </div>
+   <div id="payrollPeriodTitle" class="help" style="margin-top:12px"></div>
+   <div class="tablewrap" style="margin-top:8px"><table>
+     <thead id="payrollPeriodHead"></thead>
+     <tbody id="payrollPeriodBody"><tr><td style="padding:22px">기간과 직원을 선택한 뒤 조회하세요.</td></tr></tbody>
+     <tfoot id="payrollPeriodFoot"></tfoot>
+   </table></div>
  </div>
 </section>
 
@@ -494,7 +573,7 @@ input,select{border:1px solid #d2d7e0;background:white;border-radius:9px;padding
      <button class="btn red small" onclick="deleteSelectedEmployees()">선택 직원 삭제</button>
    </div>
   </div>
-  <div class="help" style="margin-bottom:8px">삭제할 직원 왼쪽 체크박스를 선택하세요. 연번은 현재 직원순서에 따라 자동 생성됩니다.</div>
+  <div class="help" style="margin-bottom:8px">표의 입력칸을 직접 수정하면 즉시 저장됩니다. 주민번호·주소·인센티브·급여규칙 등 세부정보는 오른쪽 상세수정을 사용하세요. 삭제할 직원은 왼쪽 체크박스를 선택하세요.</div>
   <div class="tablewrap"><table><thead><tr><th style="width:44px">선택</th><th>연번</th><th class="name">이름</th><th>직책</th><th>업무</th><th>입사일</th><th>퇴사일</th><th>근무형태</th><th>기본시간</th><th>휴게</th><th>스케줄방식</th><th>급여형태</th><th>연차 기준</th><th>연차 잔여</th><th>급여 지급규칙</th><th>순서</th><th>출력색</th><th>문서</th><th></th></tr></thead><tbody id="employeeBody"></tbody></table></div>
  </div>
 </section>
@@ -1945,37 +2024,155 @@ function setEmployeeView(v){
  employeeView=v;
  employeeDeleteSelection.clear();$('activeEmpTab')?.classList.toggle('active',v==='active');$('retiredEmpTab')?.classList.toggle('active',v==='retired');renderEmployees();
 }
+
+function employeeInlineValue(e,field){
+ let v=e?.[field];
+ return v===null||v===undefined?'':v;
+}
+function employeeWorkTypeOptions(e){
+ return [
+   ['40','주5일 스케줄근무'],
+   ['36','주4일 스케줄근무'],
+   ['custom','기타']
+ ].map(([v,n])=>`<option value="${v}" ${e.work_type===v?'selected':''}>${n}</option>`).join('');
+}
+function employeePayTypeOptions(e){
+ return [
+   ['monthly','월급'],
+   ['hourly','시급/파트타임'],
+   ['daily','일당'],
+   ['business','사업소득']
+ ].map(([v,n])=>`<option value="${v}" ${e.pay_type===v?'selected':''}>${n}</option>`).join('');
+}
+async function saveEmployeeInline(id,field,value){
+ let e=allEmployees().find(x=>x.id===id);
+ if(!e)return;
+
+ let val=value;
+ if(['daily_hours','break_minutes','leave_weekly_hours','leave_monthly_hours','leave_day_hours'].includes(field)){
+   val=Number(value||0);
+   if(!Number.isFinite(val))val=0;
+ }
+ if(['hire_date','resign_date','default_start_time','default_end_time'].includes(field)){
+   val=value||null;
+ }
+
+ let update={};
+ update[field]=val;
+
+ // 퇴사일을 직접 입력하면 퇴사상태, 지우면 기존 재직/퇴사 상태를 함부로 자동복구하지 않음.
+ if(field==='resign_date' && val){
+   update.active=false;
+ }
+
+ let q=await sb.from('employees').update(update).eq('id',id);
+ if(q.error){
+   alert('직원정보 저장 오류:\n'+q.error.message);
+   await refreshAll();
+   return;
+ }
+
+ e[field]=val;
+ if(field==='resign_date' && val)e.active=false;
+
+ // 표에서 바꾼 값이 스케줄/급여/연차 화면에도 즉시 보이게 전체 로컬 갱신
+ await refreshAll();
+
+ // 퇴사일을 직접 입력한 경우 퇴사자 탭으로 이동
+ if(field==='resign_date' && val){
+   setEmployeeView('retired');
+ }
+}
+function employeeInlineText(e,field,cls=''){
+ return `<input class="empInline ${cls}" value="${esc(employeeInlineValue(e,field))}"
+   onfocus="this.select()" onkeydown="if(event.key==='Enter'){this.blur()}"
+   onchange="saveEmployeeInline(${e.id},'${field}',this.value)">`;
+}
+function employeeInlineNumber(e,field,step='1',cls='empInlineSmall'){
+ return `<input type="number" step="${step}" class="empInline ${cls}" value="${esc(employeeInlineValue(e,field))}"
+   onfocus="this.select()" onkeydown="if(event.key==='Enter'){this.blur()}"
+   onchange="saveEmployeeInline(${e.id},'${field}',this.value)">`;
+}
+function employeeInlineDate(e,field){
+ return `<input type="date" class="empInline" value="${esc(employeeInlineValue(e,field))}"
+   onchange="saveEmployeeInline(${e.id},'${field}',this.value)">`;
+}
+function employeeInlineTime(e,field){
+ return `<input type="time" class="empInline empInlineTime" value="${esc(String(employeeInlineValue(e,field)||'').slice(0,5))}"
+   onchange="saveEmployeeInline(${e.id},'${field}',this.value)">`;
+}
+
 function renderEmployees(){
  if(!$('employeeBody'))return;
- let list=employeeView==='retired'?[...retiredEmployees].sort((a,b)=>(b.resign_date||'').localeCompare(a.resign_date||'')||a.name.localeCompare(b.name,'ko')):orderedEmployees();
+ let list=employeeView==='retired'
+   ?[...retiredEmployees].sort((a,b)=>(b.resign_date||'').localeCompare(a.resign_date||'')||a.name.localeCompare(b.name,'ko'))
+   :orderedEmployees();
+
  $('employeeBody').innerHTML=list.map((e,idx)=>{
-   let ls=employeeView==='active'?liveLeaveSummary(e,isoToday()):{balance:0};let delChecked=employeeDeleteSelection.has(e.id);
+   let ls=employeeView==='active'?liveLeaveSummary(e,isoToday()):{balance:0};
+   let delChecked=employeeDeleteSelection.has(e.id);
    let colors=PRINT_COLORS.map(([c,n])=>`<option value="${c}" ${employeeColor(e)===c?'selected':''}>${n}</option>`).join('');
    let action=employeeView==='active'
-    ?`<button class="btn gray small" onclick="openEmployee(${e.id})">수정</button> <button class="btn red small" onclick="retireEmployee(${e.id},'${esc(e.name).replace(/'/g,"&#39;")}')">퇴사처리</button>`
-    :`<button class="btn gray small" onclick="openEmployee(${e.id},true)">정보보기</button> <button class="btn green small" onclick="restoreEmployee(${e.id},'${esc(e.name).replace(/'/g,"&#39;")}')">재직복귀</button>`;
+    ?`<button class="btn gray small" onclick="openEmployee(${e.id})">상세수정</button> <button class="btn red small" onclick="retireEmployee(${e.id},'${esc(e.name).replace(/'/g,"&#39;")}')">퇴사처리</button>`
+    :`<button class="btn gray small" onclick="openEmployee(${e.id},true)">상세정보</button> <button class="btn green small" onclick="restoreEmployee(${e.id},'${esc(e.name).replace(/'/g,"&#39;")}')">재직복귀</button>`;
+
+   let workTypeCell=employeeView==='active'
+     ?`<select class="empInline" onchange="saveEmployeeInline(${e.id},'work_type',this.value)">${employeeWorkTypeOptions(e)}</select>`
+     :workType(e);
+
+   let payTypeCell=employeeView==='active'
+     ?`<select class="empInline" onchange="saveEmployeeInline(${e.id},'pay_type',this.value)">${employeePayTypeOptions(e)}</select>`
+     :(e.pay_type==='hourly'?'시급/파트타임':e.pay_type==='daily'?'일당':e.pay_type==='business'?'사업소득':'월급');
+
    return `<tr class="${employeeView==='retired'?'retiredRow':''}">
    <td style="text-align:center"><input type="checkbox" class="empDeleteCheck" data-id="${e.id}" ${delChecked?'checked':''} onchange="toggleEmployeeDeleteSelection(${e.id},this.checked)"></td>
-   <td><span class="seqBadge">${idx+1}</span></td><td class="name"><b>${esc(e.name)}</b></td><td>${esc(e.role||'')}</td><td>${esc(e.department||'')}</td><td>${e.hire_date||''}</td><td>${e.resign_date||'-'}</td><td>${workType(e)}</td>
-   <td>${(e.default_start_time||'').slice(0,5)}~${(e.default_end_time||'').slice(0,5)}<br><span class="help">소정 ${e.daily_hours||8}h</span></td>
-   <td>${e.break_minutes||0}분</td><td>${e.work_type==='36'?'주4일':'주5일'}<br><span class="help">요일 변동 스케줄</span></td>
-   <td>${e.pay_type==='hourly'?'시급':e.pay_type==='daily'?'일당':e.pay_type==='business'?'사업소득':'월급'}</td>
-   <td>주 ${leaveWeeklyHours(e)}h<br><span class="help">월 +${leaveMonthlyHours(e)}h / 1일 -${leaveDayHours(e)}h</span>${(()=>{
-     let st=nextMonthlyAccrualStatus(e,isoToday(),schedules);
-     if(!st)return '';
-     if(st.status==='pending')return `<br><span class="reviewWarn">연차 판정대기</span>`;
-     if(st.status==='fail')return `<br><span class="warn">해당월 미발생</span>`;
-     return '';
-   })()}</td>
+   <td><span class="seqBadge">${idx+1}</span></td>
+
+   <td class="name empInlineCell">${employeeView==='active'?employeeInlineText(e,'name','empInlineName'):`<b>${esc(e.name)}</b>`}</td>
+   <td class="empInlineCell">${employeeView==='active'?employeeInlineText(e,'role'):esc(e.role||'')}</td>
+   <td class="empInlineCell">${employeeView==='active'?employeeInlineText(e,'department'):esc(e.department||'')}</td>
+   <td class="empInlineCell">${employeeView==='active'?employeeInlineDate(e,'hire_date'):(e.hire_date||'')}</td>
+   <td class="empInlineCell">${employeeView==='active'?employeeInlineDate(e,'resign_date'):(e.resign_date||'-')}</td>
+
+   <td class="empInlineCell">${workTypeCell}</td>
+
+   <td class="empInlineCell">
+     ${employeeView==='active'
+       ?`<div class="empInlineStack">
+          ${employeeInlineTime(e,'default_start_time')}
+          <span>~</span>
+          ${employeeInlineTime(e,'default_end_time')}
+          <span class="help">소정 ${employeeInlineNumber(e,'daily_hours','.5','empInlineSmall')}</span>
+        </div>`
+       :`${(e.default_start_time||'').slice(0,5)}~${(e.default_end_time||'').slice(0,5)}<br><span class="help">소정 ${e.daily_hours||8}h</span>`}
+   </td>
+
+   <td class="empInlineCell">${employeeView==='active'?employeeInlineNumber(e,'break_minutes','1','empInlineSmall'):(e.break_minutes||0)}${employeeView==='active'?'':'분'}</td>
+
+   <td>${e.work_type==='36'?'주4일':e.work_type==='40'?'주5일':'기타'}<br><span class="help">요일 변동 스케줄</span></td>
+
+   <td class="empInlineCell">${payTypeCell}</td>
+
+   <td class="empInlineCell">
+     ${employeeView==='active'
+       ?`<div class="empInlineStack">
+          <span>주</span>${employeeInlineNumber(e,'leave_weekly_hours','.5','empInlineLeave')}
+          <span>월+</span>${employeeInlineNumber(e,'leave_monthly_hours','.5','empInlineLeave')}
+          <span>1일-</span>${employeeInlineNumber(e,'leave_day_hours','.5','empInlineLeave')}
+        </div>`
+       :`주 ${leaveWeeklyHours(e)}h<br><span class="help">월 +${leaveMonthlyHours(e)}h / 1일 -${leaveDayHours(e)}h</span>`}
+   </td>
+
    <td>${employeeView==='active'?`<b data-leave-balance="${e.id}">${ls.balance}h</b><br><button class="btn gray small" onclick="adjustLeave(${e.id})">조정</button>`:'-'}</td>
    <td class="payRule">${payRuleLabel(e)}</td>
+
    <td>${employeeView==='active'?`<button class="btn gray small" ${idx===0?'disabled':''} onclick="movePrintOrder(${e.id},-1)">↑</button><button class="btn gray small" ${idx===list.length-1?'disabled':''} onclick="movePrintOrder(${e.id},1)">↓</button>`:'-'}</td>
    <td>${employeeView==='active'?`<select onchange="setPrintColor(${e.id},this.value)" style="padding:5px 7px">${colors}</select><span style="display:inline-block;width:18px;height:18px;border-radius:5px;vertical-align:middle;margin-left:4px;background:${employeeColor(e)};border:1px solid #bbb"></span>`:'-'}</td>
+
    <td><div class="docActions"><button class="btn green small" onclick="printEmploymentCertificate(${e.id})">재직증명서</button><button class="btn gray small" onclick="printResignation(${e.id})">사직서</button></div></td>
    <td>${action}</td></tr>`;
  }).join('')||`<tr><td colspan="18">${employeeView==='active'?'재직자가':'퇴사자가'} 없습니다.</td></tr>`;
 }
-
 function toggleEmployeeDeleteSelection(id,on){
  if(on)employeeDeleteSelection.add(id);
  else employeeDeleteSelection.delete(id);
@@ -3166,32 +3363,183 @@ function sortPayrollByEmployeeOrder(rows){
  });
 }
 
+function payrollSum(rows,field){
+ return (rows||[]).reduce((a,x)=>a+Number(x?.[field]||0),0);
+}
+function payrollCombinedExtra(p){
+ return Number(p.adjustment_pay||0)+Number(p.bonus||0)+Number(p.unused_leave_pay||0);
+}
+
+function payrollEditableNumber(p,field,kind='money'){
+ let v=Number(p?.[field]||0);
+ if(kind==='hours')return Number.isFinite(v)?String(Math.round(v*100)/100):'0';
+ return String(Math.round(v||0));
+}
+function payrollRecalcRow(p){
+ // 총지급 = 저장된 급여 세부항목 합계.
+ // DB에 존재하는 주요 지급항목만 합산하고 결근공제는 제외.
+ let gross =
+   Number(p.base_pay||0)+
+   Number(p.weekly_holiday_pay||0)+
+   Number(p.position_allowance||0)+
+   Number(p.fixed_overtime_pay||0)+
+   Number(p.fixed_holiday_pay||0)+
+   Number(p.meal_allowance||0)+
+   Number(p.vehicle_allowance||0)+
+   Number(p.childcare_allowance||0)+
+   Number(p.overtime_pay||0)+
+   Number(p.holiday_pay||0)+
+   Number(p.adjustment_pay||0)+
+   Number(p.bonus||0)+
+   Number(p.unused_leave_pay||0)-
+   Number(p.absence_deduction||0);
+
+ // 공제 = 현재 저장된 총공제. 사용자가 공제셀을 직접 수정 가능.
+ // 실지급은 총지급-공제
+ p.gross_pay=Math.round(gross);
+ p.net_pay=Math.round(Number(p.gross_pay||0)-Number(p.total_deduction||0));
+}
+function updatePayrollLocalField(id,field,value,recalc=true){
+ let p=payroll.find(x=>String(x.id)===String(id));
+ if(!p)return;
+ let n=Number(String(value).replace(/,/g,''));
+ if(!Number.isFinite(n))n=0;
+ p[field]=n;
+ if(recalc)payrollRecalcRow(p);
+ renderPayrollSimple();
+}
+async function savePayrollField(id,field,value,recalc=true){
+ let p=payroll.find(x=>String(x.id)===String(id));
+ if(!p)return;
+ let n=Number(String(value).replace(/,/g,''));
+ if(!Number.isFinite(n))n=0;
+ p[field]=n;
+ if(recalc)payrollRecalcRow(p);
+
+ let updateObj={};
+ updateObj[field]=p[field];
+ if(recalc){
+   updateObj.gross_pay=Math.round(Number(p.gross_pay||0));
+   updateObj.net_pay=Math.round(Number(p.net_pay||0));
+ }
+ let q=await sb.from('payroll_entries').update(updateObj).eq('id',p.id);
+ if(q.error){
+   alert('급여 수정 저장 오류:\n'+q.error.message);
+   await loadPayrollSimple();
+   return;
+ }
+ renderPayrollSimple();
+}
+function payrollInput(p,field,kind='money',recalc=true){
+ let cls=kind==='hours'?'payEdit payEditHours':'payEdit';
+ return `<input class="${cls}" value="${payrollEditableNumber(p,field,kind)}"
+   onfocus="this.select()"
+   onkeydown="if(event.key==='Enter'){this.blur()}"
+   onchange="savePayrollField('${p.id}','${field}',this.value,${recalc?'true':'false'})">`;
+}
+
 function renderPayrollSimple(){
  if(!$('payrollBody'))return;
- let rows=sortPayrollByEmployeeOrder(payroll).map(p=>`<tr>
+ let ordered=sortPayrollByEmployeeOrder(payroll);
+
+ let rows=ordered.map(p=>`<tr>
   <td class="name"><b>${esc(p.employee_name)}</b>${p.employee_id?'':' <span class="reviewWarn">미매칭</span>'}</td>
-  <td>${Number(p.scheduled_hours||0).toFixed(2).replace(/\.00$/,'')}h</td>
+  <td>${payrollInput(p,'scheduled_hours','hours',false)}</td>
   <td>${(()=>{
    let mm=String(p.memo||'').match(/weekly_text=([^;]*)/),txt='';
    try{txt=mm?decodeURIComponent(mm[1]):''}catch(e){}
    if(p._weekly_hours_text)txt=p._weekly_hours_text;
    if(txt)return esc(txt);
-   return formatWeeklyHours(p._weekly_hours ?? payrollWeeklyHoursFromMemo(p.memo));
+   let wh=p._weekly_hours ?? payrollWeeklyHoursFromMemo(p.memo);
+   return `<input class="payEdit payEditHours" value="${Number(wh||0).toFixed(1)}"
+      onfocus="this.select()" onkeydown="if(event.key==='Enter'){this.blur()}"
+      onchange="savePayrollWeeklyHours('${p.id}',this.value)">`;
   })()}</td>
-  <td class="money">${money(p.base_pay)}</td>
-  <td class="money">${money(p.weekly_holiday_pay)}</td>
-  <td class="money">${money(p.fixed_overtime_pay)}</td>
-  <td class="money">${money(p.holiday_pay)}</td>
-  <td class="money">${money(p.overtime_pay)}</td>
-  <td class="money">${money(p.meal_allowance)}</td>
-  <td class="money">${money(Number(p.adjustment_pay||0)+Number(p.bonus||0)+Number(p.unused_leave_pay||0))}</td>
+  <td>${payrollInput(p,'base_pay')}</td>
+  <td>${payrollInput(p,'weekly_holiday_pay')}</td>
+  <td>${payrollInput(p,'fixed_overtime_pay')}</td>
+  <td>${payrollInput(p,'holiday_pay')}</td>
+  <td>${payrollInput(p,'overtime_pay')}</td>
+  <td>${payrollInput(p,'meal_allowance')}</td>
+  <td><input class="payEdit" value="${Math.round(payrollCombinedExtra(p))}"
+      onfocus="this.select()" onkeydown="if(event.key==='Enter'){this.blur()}"
+      onchange="savePayrollCombinedExtra('${p.id}',this.value)"></td>
   <td class="money"><b>${money(p.gross_pay)}</b></td>
-  <td class="money">${money(p.total_deduction)}</td>
+  <td>${payrollInput(p,'total_deduction','money',true)}</td>
   <td class="money"><b>${money(p.net_pay)}</b></td>
  </tr>`).join('');
+
  $('payrollBody').innerHTML=rows||`<tr><td colspan="13" style="padding:26px">${monthLabel($('monthSelect').value)} 급여자료가 없습니다. 위의 <b>급여대장 불러오기</b>를 눌러 Excel을 등록하세요.</td></tr>`;
+
+ let total={
+   scheduled:payrollSum(ordered,'scheduled_hours'),
+   weekly:ordered.reduce((a,p)=>a+Number((p._weekly_hours ?? payrollWeeklyHoursFromMemo(p.memo) ?? 0)),0),
+   base:payrollSum(ordered,'base_pay'),
+   weeklyPay:payrollSum(ordered,'weekly_holiday_pay'),
+   fixedOT:payrollSum(ordered,'fixed_overtime_pay'),
+   holiday:payrollSum(ordered,'holiday_pay'),
+   overtime:payrollSum(ordered,'overtime_pay'),
+   meal:payrollSum(ordered,'meal_allowance'),
+   extra:ordered.reduce((a,p)=>a+payrollCombinedExtra(p),0),
+   gross:payrollSum(ordered,'gross_pay'),
+   ded:payrollSum(ordered,'total_deduction'),
+   net:payrollSum(ordered,'net_pay')
+ };
+
+ if($('monthGrossTotal'))$('monthGrossTotal').textContent=money(total.gross);
+ if($('monthDeductionTotal'))$('monthDeductionTotal').textContent=money(total.ded);
+ if($('monthNetTotal'))$('monthNetTotal').textContent=money(total.net);
+
+ if($('payrollFoot')){
+   $('payrollFoot').innerHTML=ordered.length?`<tr>
+     <td class="name">합계 · ${ordered.length}명</td>
+     <td>${Math.round(total.scheduled*100)/100}h</td>
+     <td>${total.weekly.toFixed(1)}h</td>
+     <td>${money(total.base)}</td>
+     <td>${money(total.weeklyPay)}</td>
+     <td>${money(total.fixedOT)}</td>
+     <td>${money(total.holiday)}</td>
+     <td>${money(total.overtime)}</td>
+     <td>${money(total.meal)}</td>
+     <td>${money(total.extra)}</td>
+     <td>${money(total.gross)}</td>
+     <td>${money(total.ded)}</td>
+     <td>${money(total.net)}</td>
+   </tr>`:'';
+ }
 }
+
+async function savePayrollWeeklyHours(id,value){
+ let p=payroll.find(x=>String(x.id)===String(id));if(!p)return;
+ let n=Number(value);if(!Number.isFinite(n))n=0;
+ p._weekly_hours=n;
+ let old=String(p.memo||'').replace(/weekly_hours=[^;]*/,'').replace(/^;+|;+$/g,'');
+ p.memo=`weekly_hours=${n};${old}`;
+ let q=await sb.from('payroll_entries').update({memo:p.memo}).eq('id',p.id);
+ if(q.error){alert('주휴시간 저장 오류:\n'+q.error.message);await loadPayrollSimple();return}
+ renderPayrollSimple();
+}
+async function savePayrollCombinedExtra(id,value){
+ let p=payroll.find(x=>String(x.id)===String(id));if(!p)return;
+ let n=Number(String(value).replace(/,/g,''));if(!Number.isFinite(n))n=0;
+ // 합산칸을 수동 수정하면 adjustment_pay에만 저장하고 bonus/unused_leave_pay는 0으로 정리.
+ p.adjustment_pay=Math.round(n);
+ p.bonus=0;
+ p.unused_leave_pay=0;
+ payrollRecalcRow(p);
+ let q=await sb.from('payroll_entries').update({
+   adjustment_pay:p.adjustment_pay,
+   bonus:0,
+   unused_leave_pay:0,
+   gross_pay:p.gross_pay,
+   net_pay:p.net_pay
+ }).eq('id',p.id);
+ if(q.error){alert('상여/조정 저장 오류:\n'+q.error.message);await loadPayrollSimple();return}
+ renderPayrollSimple();
+}
+
 async function loadPayrollSimple(){
+ initPayrollPeriodControls();
  payroll=[];
  let ym=$('monthSelect').value,sid=storeId();
  let pm=await sb.from('payroll_months').select('id').eq('store_id',sid).eq('pay_month',ym+'-01').order('id',{ascending:false});
