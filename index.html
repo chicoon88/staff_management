@@ -583,6 +583,75 @@ tr[draggable="true"]:active,.empDragHandle:active{cursor:grabbing}
   opacity:.7;
 }
 
+
+/* 직원관리 열폭 직접 조절 */
+#employeesPage .empColResize{
+  position:absolute;
+  top:0;
+  right:-4px;
+  width:8px;
+  height:100%;
+  cursor:col-resize;
+  z-index:8;
+  user-select:none;
+}
+#employeesPage .empColResize::after{
+  content:'';
+  position:absolute;
+  top:22%;
+  bottom:22%;
+  left:3px;
+  width:1px;
+  background:#cfd6e2;
+  opacity:.55;
+}
+#employeesPage th:hover .empColResize::after{
+  background:#315efb;
+  opacity:1;
+  width:2px;
+}
+body.resizingEmployeeColumn,
+body.resizingEmployeeColumn *{
+  cursor:col-resize!important;
+  user-select:none!important;
+}
+
+/* 비고 여러 줄 */
+#employeesPage .empNoteInput{
+  resize:vertical;
+  min-height:44px;
+  max-height:120px;
+  line-height:1.35;
+  white-space:pre-wrap!important;
+  overflow:auto;
+}
+#employeesPage .empNoteRead{
+  white-space:pre-wrap!important;
+  line-height:1.35;
+  text-align:left;
+  overflow:visible;
+  text-overflow:clip;
+}
+
+/* 비고는 기본값도 더 넓게 */
+#employeesPage th:nth-child(15),
+#employeesPage td:nth-child(15){
+  width:240px;
+  min-width:240px;
+}
+
+/* 문서 버튼은 2줄까지 자연스럽게 */
+#employeesPage .docActions{
+  display:flex;
+  flex-wrap:wrap;
+  gap:4px;
+  align-items:center;
+}
+#employeesPage th:nth-child(17),
+#employeesPage td:nth-child(17){
+  width:205px;
+}
+
 </style>
 </head>
 <body>
@@ -739,9 +808,10 @@ tr[draggable="true"]:active,.empDragHandle:active{cursor:grabbing}
      <button class="btn gray small" onclick="selectAllEmployeeRows(true)">전체선택</button>
      <button class="btn gray small" onclick="selectAllEmployeeRows(false)">선택해제</button>
      <button class="btn red small" onclick="deleteSelectedEmployees()">선택 직원 삭제</button>
+     <button class="btn gray small" onclick="resetEmployeeColumnWidths()">표 폭 초기화</button>
    </div>
   </div>
-  <div class="help" style="margin-bottom:8px">이름·직책·업무·입사일·근무형태·휴게·급여형태·비고는 표에서 바로 수정할 수 있습니다. 기본시간과 연차기준은 오른쪽 상세수정에서 변경하세요. PC에서는 연번 옆 ☰ 손잡이만 잡아서 순서를 이동할 수 있습니다. 다른 칸은 드래그 이동되지 않습니다.</div>
+  <div class="help" style="margin-bottom:8px">이름·직책·업무·입사일·근무형태·휴게·급여형태·비고는 표에서 바로 수정할 수 있습니다. 기본시간과 연차기준은 오른쪽 상세수정에서 변경하세요. PC에서는 연번 옆 ☰ 손잡이만 잡아서 순서를 이동할 수 있습니다. 표 머리글의 오른쪽 경계선을 좌우로 끌면 열 폭을 직접 조절할 수 있고 자동 저장됩니다. 비고는 여러 줄로 입력할 수 있습니다.</div>
   <div class="tablewrap"><table><thead><tr><th style="width:44px">선택</th><th>연번</th><th class="name">이름</th><th>직책</th><th>업무</th><th>입사일</th><th>퇴사일</th><th>근무형태</th><th>기본시간</th><th>휴게시간(분)</th><th>스케줄방식</th><th>급여형태</th><th>연차 기준</th><th>연차 잔여</th><th>비고</th><th>출력색</th><th>문서</th><th></th></tr></thead><tbody id="employeeBody"></tbody></table></div>
  </div>
 </section>
@@ -2325,6 +2395,13 @@ function employeeInlineTime(e,field){
 }
 
 
+
+function autoGrowEmployeeNote(el){
+ if(!el)return;
+ el.style.height='auto';
+ el.style.height=Math.min(Math.max(el.scrollHeight,44),120)+'px';
+}
+
 async function saveEmployeeNote(id,value){
  let e=allEmployees().find(x=>x.id===id);if(!e)return;
  // 기존 스키마에 별도 note 컬럼이 없으므로 role/department 등과 분리된
@@ -2417,6 +2494,104 @@ async function moveEmployeeToPosition(dragId,targetId,after){
  if($('payrollPage')?.classList.contains('active'))renderPayrollSimple();
 }
 
+
+const EMPLOYEE_COL_WIDTH_KEY='staff_dashboard_employee_col_widths_v1';
+
+function getEmployeeTable(){
+ return document.querySelector('#employeesPage .tablewrap table');
+}
+function loadEmployeeColumnWidths(){
+ try{return JSON.parse(localStorage.getItem(EMPLOYEE_COL_WIDTH_KEY)||'{}')||{}}catch(e){return {}}
+}
+function saveEmployeeColumnWidths(widths){
+ localStorage.setItem(EMPLOYEE_COL_WIDTH_KEY,JSON.stringify(widths||{}));
+}
+function applyEmployeeColumnWidths(){
+ const table=getEmployeeTable();
+ if(!table)return;
+ const widths=loadEmployeeColumnWidths();
+ const headers=[...table.querySelectorAll('thead th')];
+ headers.forEach((th,i)=>{
+   const w=Number(widths[i]);
+   if(w>=42){
+     th.style.width=w+'px';
+     th.style.minWidth=w+'px';
+     th.style.maxWidth=w+'px';
+     table.querySelectorAll(`tbody tr > *:nth-child(${i+1})`).forEach(td=>{
+       td.style.width=w+'px';
+       td.style.minWidth=w+'px';
+       td.style.maxWidth=w+'px';
+     });
+   }
+ });
+}
+function resetEmployeeColumnWidths(){
+ localStorage.removeItem(EMPLOYEE_COL_WIDTH_KEY);
+ const table=getEmployeeTable();
+ if(!table)return;
+ table.querySelectorAll('th,td').forEach(cell=>{
+   cell.style.removeProperty('width');
+   cell.style.removeProperty('min-width');
+   cell.style.removeProperty('max-width');
+ });
+ initEmployeeColumnResizers(true);
+}
+function initEmployeeColumnResizers(force=false){
+ const table=getEmployeeTable();
+ if(!table)return;
+ const headers=[...table.querySelectorAll('thead th')];
+
+ headers.forEach((th,index)=>{
+   if(th.querySelector('.empColResize'))return;
+
+   th.style.position='relative';
+   const handle=document.createElement('span');
+   handle.className='empColResize';
+   handle.title='좌우로 드래그해 열 폭 조절 · 더블클릭하면 전체 폭 초기화';
+
+   handle.addEventListener('mousedown',ev=>{
+     ev.preventDefault();
+     ev.stopPropagation();
+     const startX=ev.clientX;
+     const startW=th.getBoundingClientRect().width;
+     document.body.classList.add('resizingEmployeeColumn');
+
+     const move=e=>{
+       const newW=Math.max(42,Math.min(420,Math.round(startW+(e.clientX-startX))));
+       th.style.width=newW+'px';
+       th.style.minWidth=newW+'px';
+       th.style.maxWidth=newW+'px';
+       table.querySelectorAll(`tbody tr > *:nth-child(${index+1})`).forEach(td=>{
+         td.style.width=newW+'px';
+         td.style.minWidth=newW+'px';
+         td.style.maxWidth=newW+'px';
+       });
+     };
+     const up=()=>{
+       document.removeEventListener('mousemove',move);
+       document.removeEventListener('mouseup',up);
+       document.body.classList.remove('resizingEmployeeColumn');
+       const widths=loadEmployeeColumnWidths();
+       widths[index]=Math.round(th.getBoundingClientRect().width);
+       saveEmployeeColumnWidths(widths);
+     };
+     document.addEventListener('mousemove',move);
+     document.addEventListener('mouseup',up);
+   });
+
+   handle.addEventListener('dblclick',ev=>{
+     ev.preventDefault();
+     ev.stopPropagation();
+     resetEmployeeColumnWidths();
+   });
+   th.appendChild(handle);
+ });
+
+ if(force || Object.keys(loadEmployeeColumnWidths()).length){
+   applyEmployeeColumnWidths();
+ }
+}
+
 function renderEmployees(){
  if(!$('employeeBody'))return;
  let list=employeeView==='retired'
@@ -2473,21 +2648,27 @@ function renderEmployees(){
 
    <!-- 급여 지급규칙 대신 비고 -->
    <td class="empInlineCell">${employeeView==='active'
-     ?`<input class="empInline empNoteInput" draggable="false" ondragstart="event.preventDefault()" ondrop="event.preventDefault()" placeholder="비고 입력" value="${esc(e.memo||'')}" onfocus="this.select()" onkeydown="if(event.key==='Enter'){this.blur()}" onchange="saveEmployeeNote(${e.id},this.value)">`
-     :esc(e.memo||'')}</td>
+     ?`<textarea class="empInline empNoteInput" draggable="false" ondragstart="event.preventDefault()" ondrop="event.preventDefault()" placeholder="비고 입력" rows="2"
+       oninput="autoGrowEmployeeNote(this)"
+       onblur="saveEmployeeNote(${e.id},this.value)">${esc(e.memo||'')}</textarea>`
+     :`<div class="empNoteRead">${esc(e.memo||'').replace(/\n/g,'<br>')}</div>`}</td>
 
    <td>${employeeView==='active'?`<select onchange="setPrintColor(${e.id},this.value)" style="padding:5px 7px">${colors}</select><span style="display:inline-block;width:18px;height:18px;border-radius:5px;vertical-align:middle;margin-left:4px;background:${employeeColor(e)};border:1px solid #bbb"></span>`:'-'}</td>
 
    <td><div class="docActions">
 <button class="btn green small" onclick="printEmploymentCertificate(${e.id})">재직증명서</button>
 <button class="btn gray small" onclick="printResignation(${e.id})">사직서</button>
-<button class="btn small" onclick="openEmployeeDocuments(${e.id},'work_contract')">근로계약서</button>
 <button class="btn small" onclick="openEmployeeDocuments(${e.id},'salary_contract')">연봉계약서</button>
+<button class="btn small" onclick="openEmployeeDocuments(${e.id},'work_contract')">근로계약서</button>
 </div></td>
    <td>${action}</td></tr>`;
  }).join('')||`<tr><td colspan="17">${employeeView==='active'?'재직자가':'퇴사자가'} 없습니다.</td></tr>`;
 
  if(employeeView==='active')setupEmployeeDragDrop();
+ requestAnimationFrame(()=>{
+   document.querySelectorAll('#employeeBody .empNoteInput').forEach(autoGrowEmployeeNote);
+   initEmployeeColumnResizers();
+ });
 }
 function toggleEmployeeDeleteSelection(id,on){
  if(on)employeeDeleteSelection.add(id);
