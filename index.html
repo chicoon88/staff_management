@@ -6,6 +6,7 @@
 <title>직원관리 대시보드</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
 <style>
 :root{--bg:#f3f5f8;--card:#fff;--line:#e3e7ee;--text:#172033;--muted:#70798c;--nav:#111827;--blue:#315efb;--soft:#eef3ff;--green:#087451;--red:#b42318;--amber:#a15c00}
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR",Arial,sans-serif;background:var(--bg);color:var(--text)}
@@ -39,6 +40,14 @@ input,select{border:1px solid #d2d7e0;background:white;border-radius:9px;padding
 .reviewOk{color:#087451;font-weight:800}
 .code{transition:none!important}
 .code:focus{outline:2px solid #315efb;outline-offset:-1px;background:#fff!important}
+
+
+.statusPaid{color:#d00000!important;font-weight:900}
+.statusExpected{color:#111!important;font-weight:800}
+.statusManual{color:#111!important;font-weight:900;text-decoration:underline dotted}
+.payActions{display:flex;gap:4px;flex-wrap:wrap}
+.tinyBtn{border:1px solid var(--line);background:#fff;border-radius:7px;padding:4px 7px;font-size:10px;font-weight:800;cursor:pointer}
+.lockedMark{font-size:10px;color:#8a5d00;background:#fff3cd;border-radius:999px;padding:2px 5px}
 
 #printArea{display:none}
 @media(max-width:900px){.layout{display:block}.side{display:none}.main{padding:11px}.mobileNav{display:flex;overflow:auto;gap:5px;padding:7px;background:#fff;border-bottom:1px solid var(--line);position:sticky;top:66px;z-index:20}.mobileNav .nav{min-width:max-content;width:auto;border:1px solid var(--line);padding:8px 10px}.cards{grid-template-columns:repeat(2,1fr)}.grid2,.grid3{grid-template-columns:1fr}.formgrid{grid-template-columns:1fr 1fr}.brand small{display:none}.title{font-size:20px}}
@@ -129,10 +138,26 @@ input,select{border:1px solid #d2d7e0;background:white;border-radius:9px;padding
 </section>
 
 <section id="payrollPage" class="page">
- <div class="row"><div><h1 class="title">급여 · 지급관리</h1><div class="sub">상단의 월은 <b>지급월</b>입니다. 직원별 지급규칙에 따라 실제 근무월과 공휴일 인센 귀속월을 자동으로 역산합니다.</div></div>
- <div class="toolbar"><input type="file" id="payrollFile" accept=".xlsx,.xls,.xlsm" style="display:none" onchange="importPayroll(this.files[0])"><button class="btn gray" onclick="$('payrollFile').click()">노무사 Excel 불러오기</button><button class="btn green" onclick="exportPharmacyPayTable()">약국 지급표 Excel</button><button class="btn" onclick="exportPayroll()">노무사 급여 Excel</button></div></div>
- <div class="card" style="margin-top:13px"><div class="infoBox help"><b>자동 연결 규칙</b><br>월급직원 기본값: 근무월 +1개월의 10일 지급 / 공휴일 인센은 근무월 +2개월 급여에 반영.<br>파트타임 기본값: 당월 말일 지급. 직원별로 지급시차·지급일·인센 시차·단가를 수정할 수 있습니다.<br>노무사 파일명에 <b>202607</b>, <b>2026-07</b>, <b>2026년 7월</b> 같은 월과 업장명이 있으면 먼저 자동 확인합니다.</div></div>
- <div class="card" style="margin-top:10px"><h3>지급월 기준 약국 급여표</h3><div class="tablewrap" style="margin-top:10px"><table><thead><tr><th class="name">직원</th><th>지급규칙</th><th>기본급 귀속 근무월</th><th>지급예정일</th><th>노무사 실지급액</th><th>인센 귀속월</th><th>주말/공휴일 출근</th><th>인센 단가</th><th>인센 관리액</th><th>비고</th></tr></thead><tbody id="pharmacyPayBody"></tbody></table></div></div>
+ <div class="row"><div><h1 class="title">급여 · 지급관리</h1><div class="sub">과거 실제지급 · 현재 예상 · 수기확정 · 인센 발생월을 따로 관리합니다.</div></div>
+ <div class="toolbar">
+  <input type="file" id="payrollFile" accept=".xlsx,.xls,.xlsm" style="display:none" onchange="importPayroll(this.files[0])">
+  <input type="file" id="payrollBulkFile" accept=".xlsx,.xls,.xlsm" multiple style="display:none" onchange="importPayrollHistory(this.files);this.value=''">
+  <input type="file" id="pharmacyHistoryFile" accept=".xlsx,.xlsm" style="display:none" onchange="importPharmacyHistory(this.files[0]);this.value=''">
+  <input type="file" id="pharmacyTemplateFile" accept=".xlsm,.xlsx" style="display:none" onchange="exportIntoPharmacyTemplate(this.files[0]);this.value=''">
+  <button class="btn gray" onclick="$('payrollFile').click()">노무사 Excel 불러오기</button>
+  <button class="btn gray" onclick="$('payrollBulkFile').click()">과거 노무사파일 일괄</button>
+  <button class="btn gray" onclick="$('pharmacyHistoryFile').click()">기존 약국급여표 가져오기</button>
+  <button class="btn green" onclick="autoForecastPaymentMonth()">선택월 예상 자동생성</button>
+  <button class="btn green" onclick="$('pharmacyTemplateFile').click()">원본 약국급여표에 내보내기</button>
+  <button class="btn" onclick="exportPayroll()">노무사 급여 Excel</button>
+ </div></div>
+ <div class="card" style="margin-top:13px"><div class="infoBox help"><b>관리 방식</b><br>
+ <b>지급완료</b>는 빨간색, <b>예상/미지급</b>은 검정색으로 표시합니다. 자동예상은 빈 값만 만들며 수기입력·지급완료 값은 덮어쓰지 않습니다.<br>
+ 월급직원: 기본 근무분은 익월 10일 지급 / 인센 발생횟수는 실제 근무월에 기록하고 기본값으로 2개월 뒤 지급분에 반영. 파트타임은 당월 말일 지급.<br>
+ 기존 약국급여표를 가져오면 과거 금액·인센횟수와 빨강/검정 상태를 읽습니다.</div></div>
+ <div class="card" style="margin-top:10px"><h3>지급월 기준 약국 급여표</h3><div class="tablewrap" style="margin-top:10px"><table><thead><tr>
+<th class="name">직원</th><th>지급구분</th><th>근무 귀속월</th><th>지급예정일</th><th>지급금액</th><th>상태</th><th>인센 발생월</th><th>주말/공휴일 횟수</th><th>인센 관리액</th><th>관리</th>
+</tr></thead><tbody id="pharmacyPayBody"></tbody></table></div></div>
  <div class="card" style="margin-top:10px"><h3>노무사 급여대장 상세</h3><div class="tablewrap" style="margin-top:10px"><table><thead><tr><th class="name">직원</th><th>월근무</th><th>기본급</th><th>고정연장</th><th>휴일수당</th><th>연장수당</th><th>식대</th><th>상여/조정</th><th>총지급</th><th>공제</th><th>실지급</th><th>시간차이</th></tr></thead><tbody id="payrollBody"></tbody></table></div></div>
 </section>
 
@@ -173,7 +198,7 @@ const SUPABASE_URL="https://gxdimhvslurvniwughrs.supabase.co";
 const SUPABASE_KEY="sb_publishable_KQm77StbhQkIZv5UjZnoXQ_OWZ7HHzF";
 const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY),$=id=>document.getElementById(id);
 $('monthSelect').value=new Date().toISOString().slice(0,7);
-let employees=[],schedules=[],payroll=[],stores=[],holidays=[],manualHolidays=[],autoHolidays=[],selectedEmployees=new Set(),leaveLedger=[],scheduleSaveQueue=new Map(),scheduleSaveTimer=null,employeeImportRows=[];
+let employees=[],schedules=[],payroll=[],stores=[],holidays=[],manualHolidays=[],autoHolidays=[],selectedEmployees=new Set(),leaveLedger=[],scheduleSaveQueue=new Map(),scheduleSaveTimer=null,employeeImportRows=[],paymentRegister=[],incentiveRegister=[];
 const money=n=>Number(n||0).toLocaleString('ko-KR')+'원',esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 function monthRange(){let m=$('monthSelect').value,[y,mo]=m.split('-').map(Number),days=new Date(y,mo,0).getDate();return {m,y,mo,days,first:m+'-01',last:m+'-'+String(days).padStart(2,'0')}}
 function storeId(){return Number($('storeSelect').value)}
@@ -220,6 +245,7 @@ async function refreshAll(){
  await syncLeaveLedger();
  await loadLeaveLedger();
  await loadPayroll();
+ await loadPaymentRegisters();
  renderAll();
 }
 
@@ -324,6 +350,68 @@ async function adjustLeave(id){
 }
 
 async function loadPayroll(){payroll=[];let pm=await sb.from('payroll_months').select('id').eq('store_id',storeId()).eq('pay_month',$('monthSelect').value+'-01').maybeSingle();if(pm.data){let p=await sb.from('payroll_entries').select('*').eq('payroll_month_id',pm.data.id);payroll=p.data||[]}}
+
+async function loadPaymentRegisters(){
+ paymentRegister=[];incentiveRegister=[];
+ let p=await sb.from('payment_register').select('*').eq('store_id',storeId()).order('payment_month');
+ if(!p.error)paymentRegister=p.data||[];
+ let i=await sb.from('incentive_register').select('*').eq('store_id',storeId()).order('work_month');
+ if(!i.error)incentiveRegister=i.data||[];
+}
+function paySlot(e){return payDayRule(e)==='month_end'?'month_end':'regular'}
+function paymentRecord(e,ym,slot=paySlot(e)){return paymentRegister.find(x=>x.employee_id===e.id&&x.payment_month===ym+'-01'&&x.pay_slot===slot)}
+function incentiveRecord(e,ym){return incentiveRegister.find(x=>x.employee_id===e.id&&x.work_month===ym+'-01')}
+function statusLabel(s){return s==='paid'?'지급완료':s==='manual'?'수기예상':'자동예상'}
+function statusClass(s){return s==='paid'?'statusPaid':s==='manual'?'statusManual':'statusExpected'}
+function paymentDateIso(e,ym){
+ let [y,m]=ym.split('-').map(Number),day=payDayRule(e)==='month_end'?new Date(y,m,0).getDate():Number(payDayRule(e)||10);
+ return `${y}-${String(m).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+}
+async function savePaymentRecord(e,ym,amount,status='manual',locked=true,source='manual'){
+ let obj={store_id:storeId(),employee_id:e.id,payment_month:ym+'-01',pay_slot:paySlot(e),work_month:shiftMonth(ym,-salaryDelay(e))+'-01',
+   payment_date:paymentDateIso(e,ym),amount:Number(amount||0),status,locked,source_type:source};
+ let q=await sb.from('payment_register').upsert(obj,{onConflict:'store_id,employee_id,payment_month,pay_slot'});
+ if(q.error)return alert(q.error.message);await loadPaymentRegisters();renderPharmacyPay();
+}
+async function editPayment(id){
+ let e=employees.find(x=>x.id===id),ym=$('monthSelect').value,r=paymentRecord(e,ym),v=prompt(`${e.name} ${monthLabel(ym)} 지급금액`,r?.amount??'');
+ if(v===null)return;let n=Number(String(v).replace(/,/g,''));if(!isFinite(n))return alert('숫자로 입력하세요.');
+ await savePaymentRecord(e,ym,n,'manual',true,'manual');
+}
+async function togglePaid(id){
+ let e=employees.find(x=>x.id===id),ym=$('monthSelect').value,r=paymentRecord(e,ym);
+ if(!r)return alert('먼저 지급금액을 입력하거나 예상생성하세요.');
+ let next=r.status==='paid'?'manual':'paid',q=await sb.from('payment_register').update({status:next,locked:next==='paid'?true:r.locked,paid_at:next==='paid'?new Date().toISOString():null}).eq('id',r.id);
+ if(q.error)return alert(q.error.message);await loadPaymentRegisters();renderPharmacyPay();
+}
+async function editIncentive(id){
+ let e=employees.find(x=>x.id===id),ym=shiftMonth($('monthSelect').value,-incentiveDelay(e)),r=incentiveRecord(e,ym),v=prompt(`${e.name} ${monthLabel(ym)} 주말·공휴일 출근횟수`,r?.count??'');
+ if(v===null)return;let n=Number(v);if(!Number.isInteger(n)||n<0)return alert('0 이상의 정수로 입력하세요.');
+ let q=await sb.from('incentive_register').upsert({store_id:storeId(),employee_id:e.id,work_month:ym+'-01',count:n,unit_amount:incentiveUnit(e),mode:'manual',locked:true,source_type:'manual'},{onConflict:'store_id,employee_id,work_month'});
+ if(q.error)return alert(q.error.message);await loadPaymentRegisters();renderPharmacyPay();
+}
+async function setIncentiveAuto(id){
+ let e=employees.find(x=>x.id===id),ym=shiftMonth($('monthSelect').value,-incentiveDelay(e)),rows=await workRowsForMonth([e.id],ym),ic=incentiveCountFromRows(e,ym,rows);
+ let q=await sb.from('incentive_register').upsert({store_id:storeId(),employee_id:e.id,work_month:ym+'-01',count:ic.count,unit_amount:incentiveUnit(e),mode:'auto',locked:false,source_type:'schedule'},{onConflict:'store_id,employee_id,work_month'});
+ if(q.error)return alert(q.error.message);await loadPaymentRegisters();renderPharmacyPay();
+}
+function latestPaid(e,beforeYm){
+ let rows=paymentRegister.filter(x=>x.employee_id===e.id&&x.pay_slot===paySlot(e)&&x.status==='paid'&&x.payment_month.slice(0,7)<beforeYm).sort((a,b)=>b.payment_month.localeCompare(a.payment_month));
+ return rows[0];
+}
+async function autoForecastPaymentMonth(){
+ let ym=$('monthSelect').value,created=0;
+ for(const e of employees){
+   if(paymentRecord(e,ym))continue;
+   let p=payrollFor(e),amount=p?.net_pay||latestPaid(e,ym)?.amount||0;
+   if(!amount)continue;
+   let obj={store_id:storeId(),employee_id:e.id,payment_month:ym+'-01',pay_slot:paySlot(e),work_month:shiftMonth(ym,-salaryDelay(e))+'-01',
+     payment_date:paymentDateIso(e,ym),amount:Number(amount),status:'expected',locked:false,source_type:p?'labor_file':'forecast_previous'};
+   let q=await sb.from('payment_register').upsert(obj,{onConflict:'store_id,employee_id,payment_month,pay_slot'});if(!q.error)created++;
+ }
+ await loadPaymentRegisters();renderPharmacyPay();alert(`자동예상 ${created}건 생성했습니다.\n기존 수기/지급완료 값은 건드리지 않았습니다.`);
+}
+
 
 async function loadHolidays(force=false){
  let y=monthRange().y;
@@ -588,13 +676,24 @@ function renderHours(){
 async function renderPharmacyPay(){
  if(!$('pharmacyPayBody'))return;
  const payMonth=$('monthSelect').value,ids=employees.map(e=>e.id);
- const months=[...new Set(employees.flatMap(e=>[shiftMonth(payMonth,-salaryDelay(e)),shiftMonth(payMonth,-incentiveDelay(e))]))];
- let byMonth={};for(const m of months)byMonth[m]=await workRowsForMonth(ids,m);
- let rows=employees.map(e=>{
-   let baseMonth=shiftMonth(payMonth,-salaryDelay(e)),incMonth=shiftMonth(payMonth,-incentiveDelay(e)),p=payrollFor(e),ic=incentiveEnabled(e)?incentiveCountFromRows(e,incMonth,byMonth[incMonth]||[]):{count:0,dates:[]},inc=ic.count*incentiveUnit(e);
-   let note=ic.dates.length?ic.dates.map(d=>Number(d.slice(8))+'일').join(', ')+' 출근':'-';
-   return `<tr><td class="name"><b>${esc(e.name)}</b></td><td class="payRule">${payRuleLabel(e)}</td><td>${monthLabel(baseMonth)}</td><td>${payDateFor(e,payMonth)}</td><td class="money"><b>${p?money(p.net_pay):'-'}</b></td><td>${incentiveEnabled(e)?monthLabel(incMonth):'미사용'}</td><td><b>${ic.count}회</b></td><td class="money">${incentiveEnabled(e)?money(incentiveUnit(e)):'-'}</td><td class="money accentMoney">${incentiveEnabled(e)?money(inc):'-'}</td><td class="help">${note}</td></tr>`;
- });
+ const incMonths=[...new Set(employees.map(e=>shiftMonth(payMonth,-incentiveDelay(e))))];
+ let byMonth={};for(const m of incMonths)byMonth[m]=await workRowsForMonth(ids,m);
+ let rows=[];
+ for(const e of employees){
+   let baseMonth=shiftMonth(payMonth,-salaryDelay(e)),incMonth=shiftMonth(payMonth,-incentiveDelay(e)),pr=paymentRecord(e,payMonth),p=payrollFor(e);
+   let ir=incentiveRecord(e,incMonth),ic;
+   if(ir)ic={count:Number(ir.count||0),mode:ir.mode,locked:ir.locked};
+   else{let c=incentiveEnabled(e)?incentiveCountFromRows(e,incMonth,byMonth[incMonth]||[]):{count:0};ic={count:c.count,mode:'live',locked:false}}
+   let amount=pr?.amount ?? p?.net_pay ?? 0,status=pr?.status ?? (p?'expected':'expected'),cls=statusClass(status);
+   rows.push(`<tr>
+    <td class="name"><b>${esc(e.name)}</b></td><td>${paySlot(e)==='month_end'?'말일지급':'일반지급'}</td><td>${monthLabel(baseMonth)}</td><td>${paymentDateIso(e,payMonth)}</td>
+    <td class="money ${amount?cls:''}"><b>${amount?money(amount):'-'}</b>${pr?.locked?'<span class="lockedMark">잠금</span>':''}</td>
+    <td class="${cls}">${pr?statusLabel(status):(p?'노무사자료':'미입력')}</td><td>${monthLabel(incMonth)}</td>
+    <td><b>${ic.count}회</b><br><span class="help">${ir?(ir.mode==='manual'?'수기':'저장된 자동'):'현재 스케줄'}</span></td>
+    <td class="money">${money(ic.count*incentiveUnit(e))}</td>
+    <td><div class="payActions"><button class="tinyBtn" onclick="editPayment(${e.id})">금액수기</button><button class="tinyBtn" onclick="togglePaid(${e.id})">${status==='paid'?'미지급으로':'지급완료'}</button><button class="tinyBtn" onclick="editIncentive(${e.id})">인센수기</button><button class="tinyBtn" onclick="setIncentiveAuto(${e.id})">인센자동</button></div></td>
+   </tr>`);
+ }
  $('pharmacyPayBody').innerHTML=rows.join('')||'<tr><td colspan="10">직원이 없습니다.</td></tr>';
 }
 function renderPayroll(){$('payrollBody').innerHTML=employees.map(e=>{let p=payrollFor(e),x=calc(e);if(!p)return `<tr><td class="name">${esc(e.name)}</td><td colspan="11">급여자료 없음</td></tr>`;let extra=Number(p.adjustment_pay||0)+Number(p.bonus||0),ded=Number(p.total_deduction||0),diff=Math.round((x.worked-Number(p.scheduled_hours||0))*100)/100;return `<tr><td class="name">${esc(e.name)}</td><td>${p.scheduled_hours||0}h</td><td class="money">${money(p.base_pay)}</td><td class="money">${money(p.fixed_overtime_pay)}</td><td class="money">${money(p.holiday_pay)}</td><td class="money">${money(p.overtime_pay)}</td><td class="money">${money(p.meal_allowance)}</td><td class="money">${money(extra)}</td><td class="money">${money(p.gross_pay)}</td><td class="money">${money(ded)}</td><td class="money"><b>${money(p.net_pay)}</b></td><td class="${diff===0?'ok':'warn'}">${diff>0?'+':''}${diff}h</td></tr>`}).join('')}
@@ -927,45 +1026,173 @@ function inferPayrollMeta(filename){
  let matchedStore=stores.find(st=>normalizeName(base).includes(normalizeName(st.name)));
  return {payMonth:ym,store:matchedStore};
 }
-async function importPayroll(file){
- if(!file)return;
- let meta=inferPayrollMeta(file.name),messages=[];
- if(meta.payMonth)messages.push(`파일 귀속/지급월 추정: ${monthLabel(meta.payMonth)}`);else messages.push('파일명에서 연도·월을 찾지 못함 → 현재 선택월 사용');
- if(meta.store)messages.push(`업장 추정: ${meta.store.name}`);else messages.push('파일명에서 등록 업장을 찾지 못함 → 현재 선택업장 사용');
- let targetMonth=meta.payMonth||$('monthSelect').value,targetStore=meta.store?.id||storeId();
- if(!confirm(`${file.name}\n\n${messages.join('\n')}\n\n이 기준으로 급여자료를 불러올까요?`)){ $('payrollFile').value=''; return; }
- if(String(targetStore)!==String(storeId()) || targetMonth!==$('monthSelect').value){$('storeSelect').value=String(targetStore);$('monthSelect').value=targetMonth;await refreshAll();}
- let buf=await file.arrayBuffer(),wb=XLSX.read(buf,{type:'array',cellDates:true}),sheetName=wb.SheetNames.find(n=>n.includes('급여대장')&&!n.includes('명세서'))||wb.SheetNames.find(n=>n.includes('급여대장'));
- if(!sheetName)return alert('급여대장 시트를 찾지 못했습니다. 새 노무사 양식이면 열 제목 매핑 기능을 추가해야 합니다.');
+
+async function parsePayrollWorkbook(file){
+ let meta=inferPayrollMeta(file.name),buf=await file.arrayBuffer(),wb=XLSX.read(buf,{type:'array',cellDates:true}),
+ sheetName=wb.SheetNames.find(n=>n.includes('급여대장')&&!n.includes('명세서'))||wb.SheetNames.find(n=>n.includes('급여대장'));
+ if(!sheetName)return {error:'급여대장 시트 없음',meta};
  let a=XLSX.utils.sheet_to_json(wb.Sheets[sheetName],{header:1,defval:null,raw:true}),header=-1;
  for(let i=0;i<Math.min(a.length,30);i++){let row=(a[i]||[]).map(x=>String(x||'').replace(/\s/g,''));if(row.some(x=>['성명','직원명','근로자명'].includes(x))){header=i;break}}
- if(header<0)return alert('직원명 헤더를 찾지 못했습니다. 처음 보는 급여양식입니다.');
- // 기존 노무사 양식은 고정 열 위치를 우선 사용. 구조가 크게 바뀌면 다음 단계에서 매핑 화면으로 연결.
+ if(header<0)return {error:'직원명 헤더 없음',meta};
  let rows=[];
  for(let i=header+1;i<a.length;i++){
    let r=a[i],name=String(r?.[1]||'').trim();if(!name||name.includes('합계'))continue;
-   let emp=employees.find(e=>normalizeName(e.name)===normalizeName(name));
-   if(!emp && !r?.some(v=>typeof v==='number'))continue;
+   let emp=employees.find(e=>normalizeName(e.name)===normalizeName(name));if(!emp&&!r?.some(v=>typeof v==='number'))continue;
    rows.push({employee_id:emp?.id||null,employee_name:name,ordinary_hourly_rate:num(r[8]),scheduled_hours:num(r[9]),overtime_hours:num(r[11]),holiday_hours:num(r[12]),base_pay:num(r[14]),weekly_holiday_pay:num(r[15]),position_allowance:num(r[16]),fixed_overtime_pay:num(r[18]),fixed_holiday_pay:num(r[19]),meal_allowance:num(r[27]),vehicle_allowance:num(r[29]),childcare_allowance:num(r[31]),holiday_pay:num(r[39]),overtime_pay:num(r[41]),adjustment_pay:num(r[44]),bonus:num(r[45]),unused_leave_pay:num(r[46]),absence_deduction:num(r[48]),gross_pay:num(r[49]),income_tax:num(r[51]),local_income_tax:num(r[52]),national_pension:num(r[53]),health_insurance:num(r[54]),longterm_care:num(r[55]),employment_insurance:num(r[56]),net_pay:num(r[66]),source_file:file.name});
  }
- if(!rows.length)return alert('급여 직원행을 찾지 못했습니다. 파일 구조가 기존과 달라졌을 수 있습니다.');
- let existing=await sb.from('payroll_months').select('id').eq('store_id',storeId()).eq('pay_month',$('monthSelect').value+'-01').maybeSingle();
- if(existing.data && !confirm(`${monthLabel($('monthSelect').value)} 급여자료가 이미 있습니다. 같은 직원 자료는 새 파일로 업데이트할까요?`))return;
- let pm=await sb.from('payroll_months').upsert({store_id:storeId(),pay_month:$('monthSelect').value+'-01'},{onConflict:'store_id,pay_month'}).select().single();if(pm.error)return alert(pm.error.message);
- rows.forEach(r=>{r.payroll_month_id=pm.data.id;r.total_deduction=Math.max(0,r.gross_pay-r.net_pay)});
- let q=await sb.from('payroll_entries').upsert(rows,{onConflict:'payroll_month_id,employee_name'});if(q.error)return alert(q.error.message);
- let unmatched=rows.filter(r=>!r.employee_id).map(r=>r.employee_name);
- alert(`${rows.length}명의 급여자료를 ${monthLabel($('monthSelect').value)}에 저장했습니다.${unmatched.length?`\n직원 미매칭: ${unmatched.join(', ')}`:''}`);$('payrollFile').value='';refreshAll();
+ return {meta,rows};
 }
+async function persistPayrollParsed(parsed,file,forcePaid=false){
+ let targetMonth=parsed.meta.payMonth||$('monthSelect').value,targetStore=parsed.meta.store?.id||storeId();
+ if(targetStore!==storeId())return {error:'다른 업장 파일'};
+ let pm=await sb.from('payroll_months').upsert({store_id:targetStore,pay_month:targetMonth+'-01'},{onConflict:'store_id,pay_month'}).select().single();
+ if(pm.error)return {error:pm.error.message};
+ parsed.rows.forEach(r=>{r.payroll_month_id=pm.data.id;r.total_deduction=Math.max(0,r.gross_pay-r.net_pay)});
+ let q=await sb.from('payroll_entries').upsert(parsed.rows,{onConflict:'payroll_month_id,employee_name'});if(q.error)return {error:q.error.message};
+ let payRows=[];
+ for(const r of parsed.rows){
+   let e=employees.find(x=>x.id===r.employee_id);if(!e)continue;
+   let paid=forcePaid || paymentDateIso(e,targetMonth)<=isoToday();
+   payRows.push({store_id:targetStore,employee_id:e.id,payment_month:targetMonth+'-01',pay_slot:paySlot(e),work_month:shiftMonth(targetMonth,-salaryDelay(e))+'-01',
+     payment_date:paymentDateIso(e,targetMonth),amount:Number(r.net_pay||0),status:paid?'paid':'expected',locked:paid,paid_at:paid?new Date().toISOString():null,source_type:'labor_file',source_file:file.name});
+ }
+ if(payRows.length){let pq=await sb.from('payment_register').upsert(payRows,{onConflict:'store_id,employee_id,payment_month,pay_slot'});if(pq.error)return {error:pq.error.message}}
+ return {count:parsed.rows.length,month:targetMonth};
+}
+async function importPayrollHistory(fileList){
+ let files=[...fileList];if(!files.length)return;
+ if(!confirm(`${files.length}개 급여파일을 과거 실제지급 자료로 일괄 등록합니다.\n파일명에서 연도·월을 읽으며 기존 같은 월/직원 자료는 업데이트합니다.\n계속할까요?`))return;
+ let ok=[],fail=[];
+ for(const f of files){
+   let p=await parsePayrollWorkbook(f);
+   if(p.error||!p.meta.payMonth||!p.rows?.length){fail.push(`${f.name}: ${p.error||'월/직원자료 인식 실패'}`);continue}
+   let r=await persistPayrollParsed(p,f,true);if(r.error)fail.push(`${f.name}: ${r.error}`);else ok.push(`${f.name} → ${r.month} (${r.count}명)`);
+ }
+ await refreshAll();alert(`과거자료 등록 완료 ${ok.length}개\n\n${ok.join('\n')}${fail.length?'\n\n실패:\n'+fail.join('\n'):''}`);
+}
+
+async function importPayroll(file){
+ if(!file)return;
+ let parsed=await parsePayrollWorkbook(file);if(parsed.error)return alert(parsed.error);
+ let meta=parsed.meta,messages=[];
+ if(meta.payMonth)messages.push(`파일 지급월 추정: ${monthLabel(meta.payMonth)}`);else messages.push('파일명에서 월 인식 실패 → 현재 선택월');
+ if(meta.store)messages.push(`업장 추정: ${meta.store.name}`);else messages.push('업장 인식 실패 → 현재 선택업장');
+ if(!confirm(`${file.name}\n\n${messages.join('\n')}\n\n${parsed.rows.length}명 자료를 반영할까요?`))return;
+ let r=await persistPayrollParsed(parsed,file,false);if(r.error)return alert(r.error);
+ if(meta.payMonth)$('monthSelect').value=meta.payMonth;
+ await refreshAll();alert(`${r.count}명의 급여자료를 ${monthLabel(r.month)}에 저장했습니다.`);
+}
+
+function cellAddress(col,row){let s='';while(col>0){let m=(col-1)%26;s=String.fromCharCode(65+m)+s;col=Math.floor((col-1)/26)}return s+row}
+function pharmacyMonthMap(headers){
+ let now=new Date(),first=null,res=[],year=now.getFullYear(),lastMonth=null;
+ for(let c=0;c<headers.length;c++){
+   let s=String(headers[c]||'').trim(),m=s.match(/^(\d{1,2})월$/);if(!m)continue;
+   let mon=Number(m[1]);if(first===null){first=mon;if(mon>now.getMonth()+1)year--}
+   if(lastMonth!==null&&mon<lastMonth)year++;
+   let ym=`${year}-${String(mon).padStart(2,'0')}`;
+   res.push({ym,baseCol:c+1,month:mon});lastMonth=mon;
+ }
+ for(const x of res){
+   let base=x.baseCol,inc=null,end=null;
+   for(let c=base+1;c<=Math.min(base+3,headers.length);c++){
+     let s=String(headers[c-1]||'');
+     if(s.includes('인센')&&inc===null)inc=c;
+     if(new RegExp(`^${x.month}월(28|29|30|31)일`).test(s)&&end===null)end=c;
+   }
+   x.incentiveCol=inc;x.endCol=end;
+ }
+ return res;
+}
+function workbookCellColor(ws,addr){
+ let c=ws[addr];if(!c||!c.s||!c.s.font||!c.s.font.color)return 'black';
+ let rgb=(c.s.font.color.rgb||'').toUpperCase();return rgb.endsWith('FF0000')?'red':'black';
+}
+async function importPharmacyHistory(file){
+ if(!file)return;
+ let buf=await file.arrayBuffer(),wb=XLSX.read(buf,{type:'array',cellStyles:true,cellDates:true}),sn=wb.SheetNames.find(n=>n.includes('약국급여표'))||wb.SheetNames[0],ws=wb.Sheets[sn],
+ range=XLSX.utils.decode_range(ws['!ref']),headers=[];
+ for(let c=range.s.c;c<=range.e.c;c++)headers[c]=ws[cellAddress(c+1,5)]?.v??'';
+ let timeline=pharmacyMonthMap(headers);
+ if(!timeline.length)return alert('5행에서 월별 급여열을 찾지 못했습니다.');
+ let payRows=[],incRows=[],matched=0;
+ for(let r=6;r<=range.e.r+1;r++){
+   let name=String(ws[`C${r}`]?.v||'').trim();if(!name)continue;
+   let e=employees.find(x=>normalizeName(x.name)===normalizeName(name));if(!e)continue;matched++;
+   for(const t of timeline){
+     let baddr=cellAddress(t.baseCol,r),v=num(ws[baddr]?.v);
+     if(v)payRows.push({store_id:storeId(),employee_id:e.id,payment_month:t.ym+'-01',pay_slot:'regular',work_month:shiftMonth(t.ym,-salaryDelay(e))+'-01',payment_date:paymentDateIso(e,t.ym),amount:v,status:workbookCellColor(ws,baddr)==='red'?'paid':'manual',locked:true,source_type:'pharmacy_sheet',source_file:file.name});
+     if(t.endCol){let a=cellAddress(t.endCol,r),ev=num(ws[a]?.v);if(ev)payRows.push({store_id:storeId(),employee_id:e.id,payment_month:t.ym+'-01',pay_slot:'month_end',work_month:t.ym+'-01',payment_date:paymentDateIso({...e,salary_pay_day:'month_end'},t.ym),amount:ev,status:workbookCellColor(ws,a)==='red'?'paid':'manual',locked:true,source_type:'pharmacy_sheet',source_file:file.name})}
+     if(t.incentiveCol){let a=cellAddress(t.incentiveCol,r),cnt=num(ws[a]?.v);if(cnt||ws[a]?.v===0)incRows.push({store_id:storeId(),employee_id:e.id,work_month:t.ym+'-01',count:cnt,unit_amount:incentiveUnit(e),mode:'imported',locked:true,source_type:'pharmacy_sheet',source_file:file.name})}
+   }
+ }
+ if(!confirm(`${file.name}\n직원 ${matched}명 매칭\n지급기록 ${payRows.length}건 / 인센기록 ${incRows.length}건을 가져올까요?`))return;
+ if(payRows.length){let q=await sb.from('payment_register').upsert(payRows,{onConflict:'store_id,employee_id,payment_month,pay_slot'});if(q.error)return alert(q.error.message)}
+ if(incRows.length){let q=await sb.from('incentive_register').upsert(incRows,{onConflict:'store_id,employee_id,work_month'});if(q.error)return alert(q.error.message)}
+ await refreshAll();alert('기존 약국급여표 과거기록을 반영했습니다.');
+}
+async function exportIntoPharmacyTemplate(file){
+ if(!file)return;
+ if(!window.JSZip)return alert('JSZip 로드 실패');
+ let buf=await file.arrayBuffer(),zip=await JSZip.loadAsync(buf),parser=new DOMParser(),ser=new XMLSerializer(),
+ wbXml=parser.parseFromString(await zip.file('xl/workbook.xml').async('text'),'application/xml'),
+ relXml=parser.parseFromString(await zip.file('xl/_rels/workbook.xml.rels').async('text'),'application/xml');
+ let ns='http://schemas.openxmlformats.org/spreadsheetml/2006/main',rns='http://schemas.openxmlformats.org/officeDocument/2006/relationships',
+ sheets=[...wbXml.getElementsByTagNameNS(ns,'sheet')],sheet=sheets.find(s=>(s.getAttribute('name')||'').includes('약국급여표'))||sheets[0],
+ rid=sheet.getAttributeNS(rns,'id'),rels=[...relXml.getElementsByTagName('Relationship')],target=rels.find(x=>x.getAttribute('Id')===rid)?.getAttribute('Target');
+ if(!target)return alert('약국급여표 시트 경로를 찾지 못했습니다.');
+ let sheetPath='xl/'+target.replace(/^\/?/,'').replace(/^xl\//,''),sx=parser.parseFromString(await zip.file(sheetPath).async('text'),'application/xml');
+ let shared=[];
+ if(zip.file('xl/sharedStrings.xml')){
+   let ss=parser.parseFromString(await zip.file('xl/sharedStrings.xml').async('text'),'application/xml');
+   [...ss.getElementsByTagNameNS(ns,'si')].forEach(si=>shared.push([...si.getElementsByTagNameNS(ns,'t')].map(t=>t.textContent||'').join('')));
+ }
+ function val(c){let t=c.getAttribute('t'),v=c.getElementsByTagNameNS(ns,'v')[0];if(!v)return '';let x=v.textContent;return t==='s'?shared[Number(x)]:x}
+ function getCell(addr){return [...sx.getElementsByTagNameNS(ns,'c')].find(c=>c.getAttribute('r')===addr)}
+ let headers=[];for(let c=1;c<=80;c++){let cell=getCell(cellAddress(c,5));headers[c-1]=cell?val(cell):''}
+ let timeline=pharmacyMonthMap(headers),styles=parser.parseFromString(await zip.file('xl/styles.xml').async('text'),'application/xml'),
+ fonts=[...styles.getElementsByTagNameNS(ns,'fonts')[0].children],xfs=[...styles.getElementsByTagNameNS(ns,'cellXfs')[0].children];
+ function fontKind(xf){let f=fonts[Number(xf.getAttribute('fontId')||0)],col=f?.getElementsByTagNameNS(ns,'color')[0],rgb=(col?.getAttribute('rgb')||'').toUpperCase();return rgb.endsWith('FF0000')?'red':'black'}
+ function sig(xf){return ['numFmtId','fillId','borderId','xfId'].map(k=>xf.getAttribute(k)||'').join('|')+'|'+[...xf.children].map(n=>ser.serializeToString(n)).join('')}
+ function colorStyle(base,want){
+   let b=xfs[Number(base||0)];if(!b)return base;let bs=sig(b);
+   let idx=xfs.findIndex(x=>sig(x)===bs&&fontKind(x)===want);return idx>=0?String(idx):base;
+ }
+ function ensureCell(addr){
+   let c=getCell(addr);if(c)return c;
+   let rowNum=Number(addr.match(/\d+/)[0]),sheetData=sx.getElementsByTagNameNS(ns,'sheetData')[0],row=[...sheetData.children].find(r=>Number(r.getAttribute('r'))===rowNum);
+   if(!row){row=sx.createElementNS(ns,'row');row.setAttribute('r',rowNum);sheetData.appendChild(row)}
+   c=sx.createElementNS(ns,'c');c.setAttribute('r',addr);row.appendChild(c);return c;
+ }
+ function setNum(addr,n,color){
+   let c=ensureCell(addr),base=c.getAttribute('s')||'0';c.removeAttribute('t');
+   [...c.children].forEach(ch=>c.removeChild(ch));
+   let v=sx.createElementNS(ns,'v');v.textContent=String(n);c.appendChild(v);
+   if(color)c.setAttribute('s',colorStyle(base,color));
+ }
+ // names
+ let nameRows=new Map();
+ for(let r=6;r<=200;r++){let c=getCell(`C${r}`);if(c){let n=String(val(c)||'').trim();if(n)nameRows.set(normalizeName(n),r)}}
+ for(const e of employees){
+   let row=nameRows.get(normalizeName(e.name));if(!row)continue;
+   for(const t of timeline){
+     let reg=paymentRegister.find(x=>x.employee_id===e.id&&x.payment_month===t.ym+'-01'&&x.pay_slot==='regular');
+     let end=paymentRegister.find(x=>x.employee_id===e.id&&x.payment_month===t.ym+'-01'&&x.pay_slot==='month_end');
+     let inc=incentiveRegister.find(x=>x.employee_id===e.id&&x.work_month===t.ym+'-01');
+     if(reg)setNum(cellAddress(t.baseCol,row),reg.amount,reg.status==='paid'?'red':'black');
+     if(end&&t.endCol)setNum(cellAddress(t.endCol,row),end.amount,end.status==='paid'?'red':'black');
+     if(inc&&t.incentiveCol)setNum(cellAddress(t.incentiveCol,row),inc.count,'black');
+   }
+ }
+ zip.file(sheetPath,ser.serializeToString(sx));zip.file('xl/styles.xml',ser.serializeToString(styles));
+ let out=await zip.generateAsync({type:'blob',mimeType:'application/vnd.ms-excel.sheet.macroEnabled.12'});
+ let a=document.createElement('a');a.href=URL.createObjectURL(out);a.download=file.name.replace(/(\.xlsm|\.xlsx)$/i,'_대시보드반영$1');a.click();setTimeout(()=>URL.revokeObjectURL(a.href),5000);
+}
+
 function num(v){return typeof v==='number'?v:(Number(String(v||'').replace(/,/g,''))||0)}
 function exportSchedule(){let r=monthRange(),data=[['업장',stores.find(s=>s.id===storeId())?.name],['월',r.m],[],['직원',...Array.from({length:r.days},(_,i)=>`${i+1}일`),'실근로','연장']];employees.forEach(e=>{let x=calc(e);data.push([e.name,...Array.from({length:r.days},(_,i)=>sched(e,r.m+'-'+String(i+1).padStart(2,'0'))?.work_code||''),x.worked,x.ot])});downloadXlsx(data,`${stores.find(s=>s.id===storeId())?.name}_${r.m}_스케줄.xlsx`)}
-async function exportPharmacyPayTable(){
- let payMonth=$('monthSelect').value,ids=employees.map(e=>e.id),months=[...new Set(employees.flatMap(e=>[shiftMonth(payMonth,-salaryDelay(e)),shiftMonth(payMonth,-incentiveDelay(e))]))],byMonth={};
- for(const m of months)byMonth[m]=await workRowsForMonth(ids,m);
- let data=[['지급월',monthLabel(payMonth)],['업장',stores.find(s=>s.id===storeId())?.name||''],[],['성명','지급규칙','기본급 귀속 근무월','지급예정일','노무사 실지급액','인센 귀속월','주말/공휴일 출근횟수','인센 단가','인센 관리액','출근일']];
- employees.forEach(e=>{let p=payrollFor(e),base=shiftMonth(payMonth,-salaryDelay(e)),incm=shiftMonth(payMonth,-incentiveDelay(e)),ic=incentiveEnabled(e)?incentiveCountFromRows(e,incm,byMonth[incm]||[]):{count:0,dates:[]};data.push([e.name,payRuleLabel(e),base,payDateFor(e,payMonth),p?.net_pay||0,incentiveEnabled(e)?incm:'',ic.count,incentiveEnabled(e)?incentiveUnit(e):0,incentiveEnabled(e)?ic.count*incentiveUnit(e):0,ic.dates.join(', ')])});
- downloadXlsx(data,`${stores.find(s=>s.id===storeId())?.name||'업장'}_${payMonth}_약국지급표.xlsx`);
-}
+function exportPharmacyPayTable(){$('pharmacyTemplateFile').click()}
+
 function exportPayroll(){let data=[['직원','월근무시간','기본급','고정연장','휴일수당','연장수당','식대','조정수당','상여','총지급액','공제총액','실지급액']];payroll.forEach(p=>data.push([p.employee_name,p.scheduled_hours,p.base_pay,p.fixed_overtime_pay,p.holiday_pay,p.overtime_pay,p.meal_allowance,p.adjustment_pay,p.bonus,p.gross_pay,p.total_deduction,p.net_pay]));downloadXlsx(data,`${stores.find(s=>s.id===storeId())?.name}_${$('monthSelect').value}_급여.xlsx`)}
 function downloadXlsx(data,name){let ws=XLSX.utils.aoa_to_sheet(data),wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'내역');XLSX.writeFile(wb,name)}
 function printSchedule(){
