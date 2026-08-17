@@ -3579,6 +3579,54 @@ async function diagnosePayrollInsertRows(dbRows){
  return failures;
 }
 
+
+function simpleNameDistance(a,b){
+ a=normalizeName(a);b=normalizeName(b);
+ if(a===b)return 0;
+ let m=a.length,n=b.length,dp=Array.from({length:m+1},()=>Array(n+1).fill(0));
+ for(let i=0;i<=m;i++)dp[i][0]=i;
+ for(let j=0;j<=n;j++)dp[0][j]=j;
+ for(let i=1;i<=m;i++)for(let j=1;j<=n;j++){
+   dp[i][j]=Math.min(
+     dp[i-1][j]+1,
+     dp[i][j-1]+1,
+     dp[i-1][j-1]+(a[i-1]===b[j-1]?0:1)
+   );
+ }
+ return dp[m][n];
+}
+function findLikelyEmployeeNameMatch(sourceName,employees){
+ let candidates=(employees||[])
+   .map(e=>({e,d:simpleNameDistance(sourceName,e.name)}))
+   .filter(x=>x.d===1);
+ return candidates.length===1?candidates[0].e:null;
+}
+async function resolvePayrollUnmatchedRows(parsed,targetEmployees){
+ let unresolved=[];
+ for(const r of parsed.rows){
+   if(r.employee_id)continue;
+
+   let likely=findLikelyEmployeeNameMatch(r.employee_name,targetEmployees);
+   if(likely){
+     let ok=confirm(
+       `급여대장 이름 "${r.employee_name}"과 직원관리 "${likely.name}"이 한 글자 차이입니다.\n\n`+
+       `[확인] ${likely.name} 직원의 급여로 연결\n`+
+       `[취소] 서로 다른 직원으로 처리`
+     );
+     if(ok){
+       r.employee_id=likely.id;
+       r._source_employee_name=r.employee_name;
+       // 급여표에는 직원관리의 확정된 이름을 표시하되 원본명은 memo에 남긴다.
+       r.employee_name=likely.name;
+       continue;
+     }
+   }
+   unresolved.push(r);
+ }
+ parsed.matched=parsed.rows.filter(x=>x.employee_id).length;
+ return unresolved;
+}
+
 async function importPayrollSimple(file){
  if(!file)return;
  setPayrollLoadState('파일 읽는 중','saving');
@@ -3595,57 +3643,55 @@ async function importPayrollSimple(file){
    return alert(parsed.error);
  }
 
- // ① 업장은 현재 대시보드 선택값이 아니라 Excel 내부 사업장명으로 자동판별
  let targetStore=askPayrollTargetStore(parsed.storeName);
  if(!targetStore){
    setPayrollLoadState('업장 선택 취소','');
    return;
  }
 
- // ② 대상 업장의 직원 DB를 다시 직접 조회하여 이름 매칭
- let eq=await sb.from('employees').select('id,name,active').eq('store_id',targetStore.id);
+ // 항상 현재 업장의 직원 DB를 새로 읽는다.
+ let eq=await sb.from('employees').select('id,name,active,hire_date,resign_date').eq('store_id',targetStore.id);
  if(eq.error){
    setPayrollLoadState('직원 조회 오류','error');
    return alert('대상 업장 직원 조회 오류:\n'+eq.error.message);
  }
  let targetEmployees=eq.data||[];
+
+ // 1차: 정확한 이름만 매칭. 아직 신규직원 팝업은 띄우지 않는다.
  parsed.rows.forEach(r=>{
    let emp=targetEmployees.find(e=>normalizeName(e.name)===normalizeName(r.employee_name));
    r.employee_id=emp?.id||null;
  });
  parsed.matched=parsed.rows.filter(x=>x.employee_id).length;
 
- // 미매칭 직원은 급여대장 한 번 업로드로 직원관리에도 추가 가능
- let addResult=await addMissingEmployeesFromPayroll(parsed,targetStore);
- if(addResult?.error){
-   alert('신규 직원 자동추가 오류:\n'+addResult.error.message);
- }
- let unmatched=parsed.rows.filter(x=>!x.employee_id).map(x=>x.employee_name);
+ // 가장 먼저 "이번에 올린 Excel에서 실제 읽은 내용"을 사용자에게 보여준다.
+ let sourceNames=parsed.rows.map(x=>String(x.employee_name||'').trim());
+ let sourcePreview=sourceNames.slice(0,30).join(', ');
+ let exactUnmatched=parsed.rows.filter(x=>!x.employee_id).map(x=>x.employee_name);
+ let preview=
+   `새 급여대장 분석 결과\n\n`+
+   `파일: ${file.name}\n`+
+   `읽은 시트: ${parsed.sheetName||'-'}\n`+
+   `사업장: ${parsed.storeName||'-'} → ${targetStore.name}\n`+
+   `산정월: ${monthLabel(parsed.payMonth)}\n`+
+   `산정기간: ${parsed.periodStart||'-'} ~ ${parsed.periodEnd||'-'}\n`+
+   `급여행: ${parsed.rows.length}건\n\n`+
+   `이번 Excel에서 실제 읽은 직원명:\n${sourcePreview}${sourceNames.length>30?' ...':''}`;
 
- let parsedNamePreview=parsed.rows.map(x=>x.employee_name).slice(0,20).join(', ');
- let message=`Excel 자동분석 결과\n\n읽은 시트: ${parsed.sheetName||'-'}\n사업장명: ${parsed.storeName||'-'}\n→ 등록 업장: ${targetStore.name}\n산정월: ${monthLabel(parsed.payMonth)}\n산정기간: ${parsed.periodStart||'-'} ~ ${parsed.periodEnd||'-'}\n지급일: ${parsed.payDate||'-'}\n본표 급여행: ${parsed.rows.length}건\n직원매칭: ${parsed.matched}건\n\nExcel에서 실제 읽은 이름:\n${parsedNamePreview}${parsed.rows.length>20?' ...':''}`;
- if(unmatched.length)message+=`\n미매칭: ${unmatched.join(', ')}`;
- let fractionalRates=parsed.rows.filter(x=>Math.abs(Number(x.ordinary_hourly_rate||0)-Math.round(Number(x.ordinary_hourly_rate||0)))>0.000001).length;
- if(fractionalRates)message+=`\n통상시급 소수값 ${fractionalRates}명 → DB 저장 시 원 단위 반올림`;
- let payrollNameCounts={};
- parsed.rows.forEach(x=>{
-   let n=normalizeName(x.employee_name);
-   payrollNameCounts[n]=(payrollNameCounts[n]||0)+1;
- });
- let multiLineNames=Object.entries(payrollNameCounts).filter(([,cnt])=>cnt>1).map(([name,cnt])=>`${name} ${cnt}행`);
- if(multiLineNames.length){
-   message+=`\n동일 직원 복수 급여행: ${multiLineNames.join(', ')} (원본 그대로 각각 저장)`;
+ if(exactUnmatched.length){
+   preview+=`\n\n현재 직원관리와 정확히 일치하지 않는 이름:\n${exactUnmatched.join(', ')}`;
  }
- message+=`\n\n현재 화면의 업장/월과 관계없이 위 분석결과로 자동 등록합니다.\n계속할까요?`;
- if(!confirm(message)){
+
+ preview+=`\n\n이 새 Excel을 기준으로 ${monthLabel(parsed.payMonth)} 급여자료를 교체할까요?`;
+
+ if(!confirm(preview)){
    setPayrollLoadState('취소','');
    return;
  }
 
- let sid=targetStore.id, ym=parsed.payMonth;
+ let sid=targetStore.id,ym=parsed.payMonth;
 
- // 같은 업장 + 같은 산정월 기존자료는 "전부" 제거 후 새 파일로 교체.
- // 과거 버전에서 payroll_months 중복 레코드가 생긴 경우까지 모두 청소한다.
+ // 기존 동일월 자료를 전부 삭제하기 전에 사용자에게 마지막으로 교체 확인.
  let oldm=await sb.from('payroll_months')
    .select('id')
    .eq('store_id',sid)
@@ -3658,11 +3704,19 @@ async function importPayrollSimple(file){
  let oldIds=(oldm.data||[]).map(x=>x.id);
 
  if(oldIds.length){
-   let olde=await sb.from('payroll_entries').select('id,employee_name,source_file').in('payroll_month_id',oldIds);
-   let count=olde.error?0:(olde.data||[]).length;
-   let oldNames=[...new Set((olde.data||[]).map(x=>x.employee_name).filter(Boolean))];
+   let olde=await sb.from('payroll_entries')
+     .select('id,employee_name,source_file')
+     .in('payroll_month_id',oldIds);
+   if(olde.error)return alert('기존 급여자료 조회 오류:\n'+olde.error.message);
 
-   if(!confirm(`${targetStore.name} ${monthLabel(ym)} 급여자료가 이미 ${count}건 있습니다.\n\n기존 이름 예: ${oldNames.slice(0,8).join(', ')||'-'}\n\n[확인] 기존 ${monthLabel(ym)} 자료를 완전히 삭제하고 새 Excel로 교체\n[취소] 기존 자료 유지`)){
+   let oldRows=olde.data||[];
+   let oldNames=[...new Set(oldRows.map(x=>x.employee_name).filter(Boolean))];
+
+   if(!confirm(
+     `${targetStore.name} ${monthLabel(ym)} 기존 급여자료 ${oldRows.length}건을 완전히 삭제합니다.\n\n`+
+     `기존 이름 예: ${oldNames.slice(0,12).join(', ')||'-'}\n\n`+
+     `삭제 후 방금 선택한 "${file.name}" 내용으로 새로 저장할까요?`
+   )){
      setPayrollLoadState('기존자료 유지','saved');
      return;
    }
@@ -3678,32 +3732,49 @@ async function importPayrollSimple(file){
      return alert('기존 급여월 삭제 오류:\n'+dm.error.message);
    }
 
-   // 삭제 검증: 찌꺼기가 하나라도 있으면 새 자료를 넣지 않는다.
    let verifyMonth=await sb.from('payroll_months')
      .select('id')
      .eq('store_id',sid)
      .eq('pay_month',ym+'-01');
-
-   if(verifyMonth.error){
-     setPayrollLoadState('삭제 검증 오류','error');
-     return alert('기존 급여월 삭제 검증 오류:\n'+verifyMonth.error.message);
-   }
+   if(verifyMonth.error)return alert('삭제 검증 오류:\n'+verifyMonth.error.message);
    if((verifyMonth.data||[]).length){
      setPayrollLoadState('기존자료 잔존','error');
-     return alert(`기존 ${monthLabel(ym)} 급여월 레코드가 ${verifyMonth.data.length}건 남아 있어 교체를 중단했습니다.`);
+     return alert(`기존 ${monthLabel(ym)} 급여월 레코드가 남아 있어 교체를 중단했습니다.`);
    }
 
-   let verifyEntries=await sb.from('payroll_entries')
-     .select('id')
-     .in('payroll_month_id',oldIds);
-
+   let verifyEntries=await sb.from('payroll_entries').select('id').in('payroll_month_id',oldIds);
    if(!verifyEntries.error && (verifyEntries.data||[]).length){
      setPayrollLoadState('기존상세 잔존','error');
-     return alert(`기존 ${monthLabel(ym)} 급여 상세가 ${verifyEntries.data.length}건 남아 있어 교체를 중단했습니다.`);
+     return alert(`기존 ${monthLabel(ym)} 급여상세가 남아 있어 교체를 중단했습니다.`);
    }
  }
 
- // 급여월 생성
+ // 기존 데이터 삭제가 끝난 뒤에만 이름 오타/신규직원 문제를 처리한다.
+ // 하선령 ↔ 하선영처럼 한 글자 차이이며 후보가 한 명뿐이면 기존 직원 연결을 먼저 제안.
+ let unresolved=await resolvePayrollUnmatchedRows(parsed,targetEmployees);
+
+ // 정말 매칭되지 않는 이름만 신규직원 추가 여부를 묻는다.
+ if(unresolved.length){
+   let addResult=await addMissingEmployeesFromPayroll(parsed,targetStore);
+   if(addResult?.error){
+     alert('신규 직원 자동추가 오류:\n'+addResult.error.message);
+   }
+
+   // 신규 추가 후 직원목록/employee_id 재연결
+   let rq=await sb.from('employees').select('*').eq('store_id',sid);
+   if(!rq.error){
+     targetEmployees=rq.data||targetEmployees;
+     parsed.rows.forEach(r=>{
+       if(r.employee_id)return;
+       let emp=targetEmployees.find(e=>normalizeName(e.name)===normalizeName(r.employee_name));
+       if(emp)r.employee_id=emp.id;
+     });
+   }
+ }
+
+ parsed.matched=parsed.rows.filter(x=>x.employee_id).length;
+
+ // 새 급여월 생성
  let pm=await sb.from('payroll_months')
    .insert({store_id:sid,pay_month:ym+'-01'})
    .select('id')
@@ -3713,93 +3784,78 @@ async function importPayrollSimple(file){
    return alert('급여월 저장 오류:\n'+pm.error.message);
  }
 
- // ★ 현재 DB payroll_entries 컬럼에 존재하는 값만 저장
- // weekly_hours는 DB 컬럼이 없으므로 memo에 보관
- let dbRows=parsed.rows.map(x=>makePayrollDbRow(x,pm.data.id,file,parsed));
+ let dbRows=parsed.rows.map(x=>{
+   let row=makePayrollDbRow(x,pm.data.id,file,parsed);
+   if(x._source_employee_name && x._source_employee_name!==x.employee_name){
+     row.memo=(row.memo||'')+`;source_employee_name=${encodeURIComponent(x._source_employee_name)}`;
+   }
+   return row;
+ });
 
  let ins=await sb.from('payroll_entries').insert(dbRows);
  if(ins.error){
-   // batch 실패 시 어떤 직원/값이 문제인지 행별 진단
    let failures=await diagnosePayrollInsertRows(dbRows);
+   await sb.from('payroll_entries').delete().eq('payroll_month_id',pm.data.id);
    await sb.from('payroll_months').delete().eq('id',pm.data.id);
    setPayrollLoadState('상세 저장 오류','error');
 
-   let detail='';
-   if(failures.length){
-     detail='\n\n문제 행 진단:\n'+failures.slice(0,10).map(f=>
-       `${f.employee}: ${f.message}${f.code?' ['+f.code+']':''}${f.details?'\n  '+f.details:''}${f.hint?'\n  hint: '+f.hint:''}`
-     ).join('\n');
-   }else{
-     detail='\n\n개별 행은 저장 가능했습니다. 일괄 INSERT/제약조건 문제일 가능성이 있습니다.';
-   }
-   let constraintGuide='';
-   if(String(ins.error.message||'').includes('payroll_entries_payroll_month_id_employee_name_key')){
-     constraintGuide='\n\n이 급여대장에는 같은 직원이 한 달에 여러 급여행으로 존재합니다.\n예: 퇴사 전 파트타임 급여 + 재입사/직책변경 후 급여.\nZIP에 포함된 [급여복수행_최초1회_SQL.sql]을 Supabase에서 한 번 실행하세요.';
-   }
-   return alert('급여 상세 저장 오류:\n'+ins.error.message+constraintGuide+detail);
+   let detail=failures.length
+     ?'\n\n문제 행:\n'+failures.slice(0,10).map(f=>`${f.employee}: ${f.message}${f.code?' ['+f.code+']':''}`).join('\n')
+     :'';
+   return alert('급여 상세 저장 오류:\n'+ins.error.message+detail);
  }
 
- // 새 파일 저장 검증: DB에 저장된 employee_name이 Excel 원본과 정확히 같은지 확인.
+ // 저장 후 새 파일 기준 이름 검증.
  let savedCheck=await sb.from('payroll_entries')
-   .select('id,employee_name,source_file')
+   .select('id,employee_name')
    .eq('payroll_month_id',pm.data.id)
    .order('id',{ascending:true});
-
  if(savedCheck.error){
-   setPayrollLoadState('저장 검증 오류','error');
-   return alert('새 급여자료 저장 검증 오류:\n'+savedCheck.error.message);
+   return alert('저장 검증 오류:\n'+savedCheck.error.message);
  }
 
- let sourceNames=parsed.rows.map(x=>String(x.employee_name||'').trim());
- let savedNames=(savedCheck.data||[]).map(x=>String(x.employee_name||'').trim());
-
- // 동일 이름 복수행을 고려해 정렬 후 비교
- let srcSorted=[...sourceNames].sort((a,b)=>a.localeCompare(b,'ko'));
- let dbSorted=[...savedNames].sort((a,b)=>a.localeCompare(b,'ko'));
- let nameMismatch=srcSorted.length!==dbSorted.length ||
-   srcSorted.some((n,i)=>n!==dbSorted[i]);
-
- if(nameMismatch){
-   // 잘못 저장된 새 월은 그대로 두지 않고 즉시 롤백
+ let expectedNames=parsed.rows.map(x=>String(x.employee_name||'').trim()).sort((a,b)=>a.localeCompare(b,'ko'));
+ let savedNames=(savedCheck.data||[]).map(x=>String(x.employee_name||'').trim()).sort((a,b)=>a.localeCompare(b,'ko'));
+ let mismatch=expectedNames.length!==savedNames.length || expectedNames.some((n,i)=>n!==savedNames[i]);
+ if(mismatch){
    await sb.from('payroll_entries').delete().eq('payroll_month_id',pm.data.id);
    await sb.from('payroll_months').delete().eq('id',pm.data.id);
    setPayrollLoadState('이름 검증 실패','error');
    return alert(
-     '급여대장 교체 후 직원명 검증에 실패하여 새 저장을 취소했습니다.\n\n'+
-     'Excel 이름: '+sourceNames.join(', ')+'\n\n'+
-     'DB 저장 이름: '+savedNames.join(', ')
+     '새 급여대장 이름과 DB 저장 이름이 일치하지 않아 저장을 취소했습니다.\n\n'+
+     '예상: '+expectedNames.join(', ')+'\n\n저장: '+savedNames.join(', ')
    );
  }
 
- // 급여대장의 입사/퇴사 구간을 재직이력으로 자동 반영.
- // 신규 직원 자동추가가 있었을 수 있으므로 대상 업장 직원을 다시 조회.
+ // 급여대장 재직이력 반영
  let empRefresh=await sb.from('employees').select('*').eq('store_id',sid);
  if(!empRefresh.error){
    targetEmployees=empRefresh.data||targetEmployees;
-   // employee_id도 새 직원 포함해서 다시 연결
    parsed.rows.forEach(r=>{
-     let emp=targetEmployees.find(e=>normalizeName(e.name)===normalizeName(r.employee_name));
+     let emp=r.employee_id
+       ?targetEmployees.find(e=>e.id===r.employee_id)
+       :targetEmployees.find(e=>normalizeName(e.name)===normalizeName(r.employee_name));
      r.employee_id=emp?.id||r.employee_id||null;
    });
    await syncEmploymentHistoryFromPayroll(parsed,targetStore,targetEmployees);
  }
 
- // 화면도 자동으로 Excel 분석결과 업장 + 월로 이동
  $('storeSelect').value=String(sid);
  localStorage.setItem('staff_dashboard_store_id',String(sid));
  $('monthSelect').value=ym;
 
- // 화면용 데이터에는 주휴시간 임시값 유지
- payroll=parsed.rows.map(x=>({...x,memo:`weekly_hours=${Number(x._weekly_hours||0)};weekly_text=${encodeURIComponent(x._weekly_hours_text||'')}`}));
- renderPayrollSimple();
- showPayrollImportInfo(parsed,file.name);
- setPayrollLoadState(`${targetStore.name} · ${ym} · ${parsed.rows.length}명`,'saved');
-
- // 직원/스케줄도 대상 업장·월로 다시 로드하되, 저장완료 표시 후 실행
  await refreshAll();
+ showPage('payroll');
  await loadPayrollSimple();
 
- alert(`${targetStore.name}\n${monthLabel(ym)} 급여대장 ${parsed.rows.length}명 저장 완료`);
+ setPayrollLoadState(`${ym} · ${parsed.rows.length}건`,'saved');
+ if($('payrollImportInfo')){
+   $('payrollImportInfo').style.display='block';
+   $('payrollImportInfo').innerHTML=
+     `<b>${monthLabel(ym)} 급여대장 교체 완료</b><br>`+
+     `<span class="help">파일: ${esc(file.name)} · 읽은 시트: ${esc(parsed.sheetName||'-')} · `+
+     `새 급여행 ${parsed.rows.length}건 · 직원매칭 ${parsed.matched}건</span>`;
+ }
 }
 function showPayrollImportInfo(parsed,fileName){
  let el=$('payrollImportInfo');if(!el)return;
