@@ -373,7 +373,7 @@ input,select{border:1px solid #d2d7e0;background:white;border-radius:9px;padding
 <div class="toolbar" style="margin-bottom:12px">
  <select id="storeSelect" onchange="switchStore()"></select>
  <button class="btn gray small" onclick="renameCurrentStore()">업장명 수정</button>
- <input id="monthSelect" type="month" onchange="refreshAll()">
+ <input id="monthSelect" type="month" onchange="switchMonth()">
 </div>
 
 <section id="homePage" class="page active">
@@ -401,7 +401,7 @@ input,select{border:1px solid #d2d7e0;background:white;border-radius:9px;padding
   <button class="btn red" onclick="clearSelectedSchedules()">선택 직원 비우기</button>
   <button class="btn green" onclick="printSchedule()">근무표 인쇄/PDF</button>
   <button class="btn" onclick="exportSchedule()">스케줄 Excel</button>
-  <span id="scheduleStoreState" class="saveState"></span><span id="scheduleSaveState" class="saveState saved">저장완료</span><span class="help">연차잔여는 입력 즉시 반영</span>
+  <span id="scheduleStoreState" class="saveState"></span><span id="scheduleLoadState" class="saveState saved">준비</span><span id="scheduleSaveState" class="saveState saved">저장완료</span><span class="help">연차잔여는 입력 즉시 반영</span>
  </div>
  </div>
  <div class="legend"><span class="tag">먼저 직원명 왼쪽 체크박스 선택</span><span class="tag">8 = 8시간</span><span class="tag">9 = 8시간+연장1</span><span class="tag">0 = 휴무</span><span class="tag">연 = 연차</span><span class="tag">병 = 병가</span><span class="tag">숫자 직접입력 가능</span><span class="tag">공휴일: 날짜 빨강 + 공휴일명 표시</span></div>
@@ -562,97 +562,140 @@ function employeesForMonth(ym){
 
 async function signIn(){let {error}=await sb.auth.signInWithPassword({email:$('loginEmail').value.trim(),password:$('loginPassword').value});$('loginMsg').textContent=error?error.message:'';if(!error)openApp()}
 async function signOut(){await sb.auth.signOut();location.reload()}async function boot(){let {data}=await sb.auth.getSession();if(data.session)openApp()}
-async function openApp(){$('login').classList.add('hidden');$('app').classList.remove('hidden');await loadStores();await loadHolidays();await refreshAll()}
+async function openApp(){$('login').classList.add('hidden');$('app').classList.remove('hidden');await loadStores();await refreshAll()}
 document.querySelectorAll('.nav').forEach(b=>b.onclick=()=>{
  document.querySelectorAll('.nav').forEach(x=>x.classList.remove('active'));
  document.querySelectorAll(`[data-page="${b.dataset.page}"]`).forEach(x=>x.classList.add('active'));
  document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
  let page=$(b.dataset.page+'Page');if(page)page.classList.add('active');
- if(b.dataset.page==='employees'){
+
+ if(b.dataset.page==='schedule')renderSchedule();
+ else if(b.dataset.page==='employees'){
    employeeView='active';
    $('activeEmpTab')?.classList.add('active');
    $('retiredEmpTab')?.classList.remove('active');
-   renderEmployees();
+   loadEmployeesPageData();
  }
- if(b.dataset.page==='holidays')renderHolidays();
- if(b.dataset.page==='payroll')reloadPayrollScreen();
+ else if(b.dataset.page==='hours')loadHoursPageData();
+ else if(b.dataset.page==='payroll')reloadPayrollScreen();
+ else if(b.dataset.page==='holidays')loadHolidayManagementYear();
+ else if(b.dataset.page==='home')loadHomePageData();
 })
-$('monthSelect').addEventListener('change',()=>{refreshAll().then(()=>{if($('payrollPage')?.classList.contains('active'))reloadPayrollScreen()})});
-async function loadStores(){let q=await sb.from('stores').select('*').order('id');if(q.error)return alert(q.error.message);stores=q.data||[];let cur=$('storeSelect').value;$('storeSelect').innerHTML=stores.map(s=>`<option value="${s.id}">${esc(s.name)}</option>`).join('');if(stores.some(s=>String(s.id)===cur))$('storeSelect').value=cur}
+async function loadStores(){
+ let q=await sb.from('stores').select('*').order('id');
+ if(q.error){alert(q.error.message);return}
+ stores=q.data||[];
+ let previous=$('storeSelect').value;
+ $('storeSelect').innerHTML=stores.map(s=>`<option value="${s.id}">${esc(s.name)}</option>`).join('');
+ let saved=localStorage.getItem('staff_dashboard_store_id');
+ let target=stores.some(s=>String(s.id)===String(previous))?String(previous):
+            stores.some(s=>String(s.id)===String(saved))?String(saved):
+            (stores[0]?String(stores[0].id):'');
+ if(target)$('storeSelect').value=target;
+}
 
 function clearStoreScopedUI(){
  employees=[];retiredEmployees=[];schedules=[];payroll=[];leaveLedger=[];paymentRegister=[];incentiveRegister=[];
  selectedEmployees.clear();
- if($('schBody'))$('schBody').innerHTML='<tr><td style="padding:20px">업장 자료 불러오는 중...</td></tr>';
- if($('employeeBody'))$('employeeBody').innerHTML='<tr><td colspan="16" style="padding:20px">업장 자료 불러오는 중...</td></tr>';
- if($('hoursBody'))$('hoursBody').innerHTML='<tr><td colspan="16" style="padding:20px">업장 자료 불러오는 중...</td></tr>';
- if($('payrollBody'))$('payrollBody').innerHTML='<tr><td colspan="12" style="padding:20px">업장 자료 불러오는 중...</td></tr>';
+ if($('schBody'))$('schBody').innerHTML='<tr><td colspan="40" style="padding:20px;text-align:center">직원·스케줄 불러오는 중...</td></tr>';
+ if($('employeeBody'))$('employeeBody').innerHTML='<tr><td colspan="17" style="padding:20px;text-align:center">직원 불러오는 중...</td></tr>';
+ if($('hoursBody'))$('hoursBody').innerHTML='<tr><td colspan="16" style="padding:20px;text-align:center">근로자료는 근로 탭에서 불러옵니다.</td></tr>';
+ if($('payrollBody'))$('payrollBody').innerHTML='<tr><td colspan="12" style="padding:20px;text-align:center">급여자료는 급여 탭에서 불러옵니다.</td></tr>';
+}
 
- let saved=localStorage.getItem('staff_dashboard_store_id');
- if(saved && stores.some(s=>String(s.id)===String(saved)))$('storeSelect').value=String(saved);
+async function switchMonth(){
+ ++payrollReloadToken;
+ clearStoreScopedUI();
+ await refreshAll();
 }
 async function switchStore(){
- ++refreshToken; // 기존 업장 진행 중 요청 무효화
- clearStoreScopedUI();
- let sid=storeId();
+ const sid=storeId();
  localStorage.setItem('staff_dashboard_store_id',String(sid));
- await refreshAll({skipLeaveSync:true});
- // 선택 화면이 급여면 급여만 한 번 더 빠르게 검증
- if($('payrollPage')?.classList.contains('active'))await reloadPayrollScreen();
+ ++payrollReloadToken;
+ clearStoreScopedUI();
+ await refreshAll();
 }
 
-async function refreshAll(options={}){
+async function refreshAll(){
  if(!$('storeSelect')?.value)return;
- const myToken=++refreshToken;
- const sid=storeId();
- const skipLeaveSync=!!options.skipLeaveSync;
+ const token=++refreshToken,sid=storeId(),r=monthRange(),started=performance.now();
+ seedCurrentYearHolidaysSync();
+ if($('scheduleLoadState')){$('scheduleLoadState').textContent='불러오는 중';$('scheduleLoadState').className='saveState saving'}
 
- await loadHolidays();
- if(myToken!==refreshToken || sid!==storeId())return;
-
- let r=monthRange();
-
- // 반드시 현재 선택 업장의 직원만 조회
+ // 현재 업장 직원만
  let q=await sb.from('employees').select('*').eq('store_id',sid).order('name');
- if(myToken!==refreshToken || sid!==storeId())return;
- if(q.error){alert('직원자료 조회 오류\n'+q.error.message);return}
-
+ if(token!==refreshToken || sid!==storeId())return;
+ if(q.error){
+   if($('schBody'))$('schBody').innerHTML=`<tr><td style="padding:20px;color:#b42318">직원 조회 오류: ${esc(q.error.message)}</td></tr>`;
+   return;
+ }
  let all=(q.data||[]).sort((a,b)=>(Number(a.print_order??9999)-Number(b.print_order??9999))||a.name.localeCompare(b.name,'ko'));
  employees=all.filter(x=>x.active!==false);
  retiredEmployees=all.filter(x=>x.active===false);
 
- let monthEmps=employeesForMonth(r.m),ids=monthEmps.map(x=>x.id);
+ renderEmployees();renderStores();
+
+ // 선택월 스케줄만
+ let ids=employeesForMonth(r.m).map(x=>x.id);
  schedules=[];
  if(ids.length){
    let ss=await sb.from('schedules').select('*').in('employee_id',ids).gte('work_date',r.first).lte('work_date',r.last);
-   if(myToken!==refreshToken || sid!==storeId())return;
-   if(!ss.error)schedules=ss.data||[];
+   if(token!==refreshToken || sid!==storeId())return;
+   if(ss.error){
+     if($('schBody'))$('schBody').innerHTML=`<tr><td style="padding:20px;color:#b42318">스케줄 조회 오류: ${esc(ss.error.message)}</td></tr>`;
+     return;
+   }
+   schedules=ss.data||[];
  }
+ renderSchedule();
+ if($('scheduleLoadState')){$('scheduleLoadState').textContent=`완료 ${Math.round(performance.now()-started)}ms`;$('scheduleLoadState').className='saveState saved'}
 
- // 화면 표시를 막지 않도록 급여/지급자료를 먼저 병렬 조회
- await Promise.all([loadPayroll(),loadPaymentRegisters()]);
- if(myToken!==refreshToken || sid!==storeId())return;
+ // 공휴일 수동/API는 스케줄을 막지 않음
+ Promise.resolve().then(async()=>{
+   try{
+     await loadHolidays(false);
+     if(token!==refreshToken || sid!==storeId())return;
+     renderSchedule();
+     if($('hoursPage')?.classList.contains('active'))renderHours();
+   }catch(err){console.warn('holiday background',err)}
+ });
 
- // 연차는 기존 데이터부터 읽어 즉시 표시
- await loadLeaveLedger();
- if(myToken!==refreshToken || sid!==storeId())return;
-
- renderAll();
-
- // 무거운 연차원장 동기화는 뒤에서. 업장 전환/급여조회 속도를 막지 않음.
- if(!skipLeaveSync){
-   Promise.resolve().then(async()=>{
-     try{
-       await syncLeaveLedger();
-       if(sid!==storeId())return;
-       await loadLeaveLedger();
-       if(sid!==storeId())return;
-       if($('employeesPage')?.classList.contains('active'))renderEmployees();
-       if($('homePage')?.classList.contains('active'))renderHome();
-     }catch(err){console.warn('leave background sync',err)}
-   });
- }
+ // 현재 열린 화면에 필요한 것만 lazy load
+ let active=document.querySelector('.page.active')?.id||'homePage';
+ if(active==='homePage')loadHomePageData(token,sid);
+ else if(active==='hoursPage')loadHoursPageData(token,sid);
+ else if(active==='payrollPage')reloadPayrollScreen();
+ else if(active==='employeesPage')loadEmployeesPageData(token,sid);
+ else if(active==='holidaysPage')loadHolidayManagementYear();
 }
+
+async function loadHomePageData(token=refreshToken,sid=storeId()){
+ await Promise.all([loadPayroll(),loadLeaveLedger()]);
+ if(token!==refreshToken || sid!==storeId())return;
+ renderHome();
+ Promise.resolve().then(async()=>{
+   try{
+     await syncLeaveLedger();
+     if(token!==refreshToken || sid!==storeId())return;
+     await loadLeaveLedger();
+     if(token!==refreshToken || sid!==storeId())return;
+     renderHome();
+     if($('employeesPage')?.classList.contains('active'))renderEmployees();
+   }catch(err){console.warn(err)}
+ });
+}
+async function loadHoursPageData(token=refreshToken,sid=storeId()){
+ await loadPayroll();
+ if(token!==refreshToken || sid!==storeId())return;
+ renderHours();
+}
+async function loadEmployeesPageData(token=refreshToken,sid=storeId()){
+ renderEmployees();
+ await loadLeaveLedger();
+ if(token!==refreshToken || sid!==storeId())return;
+ renderEmployees();
+}
+
 function isoToday(){
  const d=new Date(),y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0'),day=String(d.getDate()).padStart(2,'0');
  return `${y}-${m}-${day}`;
@@ -807,6 +850,18 @@ async function loadPayroll(){
  console.log(`급여조회 ${ym}: ${payroll.length}건 (${Math.round(performance.now()-t0)}ms)`);
  return {count:payroll.length,error:null,monthId:pm.data.id};
 }
+async function loadPaymentRegisters(){
+ paymentRegister=[];incentiveRegister=[];
+ const sid=storeId();
+ let [p,i]=await Promise.all([
+   sb.from('payment_register').select('*').eq('store_id',sid).order('payment_month'),
+   sb.from('incentive_register').select('*').eq('store_id',sid).order('work_month')
+ ]);
+ if(!p.error)paymentRegister=p.data||[];else console.warn('payment_register',p.error);
+ if(!i.error)incentiveRegister=i.data||[];else console.warn('incentive_register',i.error);
+ return {paymentCount:paymentRegister.length,incentiveCount:incentiveRegister.length};
+}
+
 function paySlot(e){return payDayRule(e)==='month_end'?'month_end':'regular'}
 function paymentRecord(e,ym,slot=paySlot(e)){return paymentRegister.find(x=>x.employee_id===e.id&&x.payment_month===ym+'-01'&&x.pay_slot===slot)}
 function incentiveRecord(e,ym){return incentiveRegister.find(x=>x.employee_id===e.id&&x.work_month===ym+'-01')}
@@ -953,6 +1008,17 @@ async function loadHolidayYear(y,force=false){
  setHolidayState(auto.length?`${y} 공휴일 ${auto.length}일 + 수동 ${manual.length}일`:`${y} 자동자료 없음 · 수동 ${manual.length}일`,auto.length?'saved':'error');
  return merged;
 }
+function seedCurrentYearHolidaysSync(){
+ let y=monthRange().y;
+ if(y===2026 && typeof KR_HOLIDAY_OFFICIAL_2026!=='undefined'){
+   let existing=holidayYearData[y]?.merged||[];
+   let map=new Map(existing.map(h=>[h.holiday_date,h]));
+   KR_HOLIDAY_OFFICIAL_2026.forEach(h=>map.set(h.holiday_date,h));
+   holidays=[...map.values()].sort((a,b)=>a.holiday_date.localeCompare(b.holiday_date));
+   holidayYearData[y]={...(holidayYearData[y]||{}),merged:holidays,
+     auto:holidayYearData[y]?.auto||KR_HOLIDAY_OFFICIAL_2026,manual:holidayYearData[y]?.manual||[]};
+ }
+}
 async function loadHolidays(force=false){
  let y=monthRange().y;
  holidays=await loadHolidayYear(y,force);
@@ -1076,10 +1142,7 @@ async function deleteHoliday(id){
 
 function sched(emp,date){return schedules.find(x=>x.employee_id===emp.id&&x.work_date===date)}
 function calc(emp){let r=monthRange(),o={days:0,scheduled:0,worked:0,ot:0,leave:0,sick:0};for(let d=1;d<=r.days;d++){let date=r.m+'-'+String(d).padStart(2,'0'),s=sched(emp,date);if(!s)continue;let code=s.work_code||'';if(code==='연'){o.leave+=Number(s.scheduled_hours||emp.daily_hours||8);o.scheduled+=Number(s.scheduled_hours||emp.daily_hours||8)}else if(code==='병'){o.sick+=Number(s.scheduled_hours||emp.daily_hours||8);o.scheduled+=Number(s.scheduled_hours||emp.daily_hours||8)}else if(code!=='0'&&code!==''){o.days++;o.scheduled+=Number(s.scheduled_hours||0);o.worked+=Number(s.worked_hours||0);o.ot+=Number(s.overtime_hours||0)}}return o}
-function renderAll(){
- renderHome();renderSchedule();renderHours();renderPayroll();renderEmployees();renderStores();renderHolidays();renderPharmacyPay();
- if($('employeesPage')?.classList.contains('active'))renderEmployees();
-}
+function renderAll(){renderSchedule();renderEmployees();renderStores();}
 
 function leaveDueInfo(e){
  const r=monthRange();
@@ -1355,30 +1418,38 @@ async function checkSavedPayrollData(){
 }
 
 
+function withTimeout(promise,ms,label='요청'){
+ return Promise.race([promise,new Promise((_,reject)=>setTimeout(()=>reject(new Error(`${label} 시간초과`)),ms))]);
+}
 function setPayrollLoadState(text,type=''){
  let el=$('payrollLoadState');if(!el)return;
  el.textContent=text;el.className='saveState '+type;
 }
 async function reloadPayrollScreen(){
  const token=++payrollReloadToken,sid=storeId(),ym=$('monthSelect').value;
- setPayrollLoadState('불러오는 중','saving');
-
- let r=await loadPayroll();
- if(token!==payrollReloadToken || sid!==storeId() || ym!==$('monthSelect').value)return;
- if(r?.error){
-   setPayrollLoadState('불러오기 오류','error');
-   if($('payrollBody'))$('payrollBody').innerHTML=`<tr><td colspan="12" style="padding:22px;color:#b42318">급여자료 불러오기 오류: ${esc(r.error.message)}</td></tr>`;
+ setPayrollLoadState('급여 불러오는 중','saving');
+ if($('payrollBody'))$('payrollBody').innerHTML='<tr><td colspan="12" style="padding:20px;text-align:center">급여자료 불러오는 중...</td></tr>';
+ let r;
+ try{r=await withTimeout(loadPayroll(),12000,'급여 조회')}
+ catch(err){
+   if(token!==payrollReloadToken)return;
+   setPayrollLoadState('시간초과','error');
+   $('payrollBody').innerHTML=`<tr><td colspan="12" style="padding:20px;color:#b42318">${esc(err.message)} <button class="btn gray small" onclick="reloadPayrollScreen()">다시 시도</button></td></tr>`;
    return;
  }
-
+ if(token!==payrollReloadToken||sid!==storeId()||ym!==$('monthSelect').value)return;
+ if(r?.error){
+   setPayrollLoadState('불러오기 오류','error');
+   $('payrollBody').innerHTML=`<tr><td colspan="12" style="padding:20px;color:#b42318">${esc(r.error.message)}</td></tr>`;
+   return;
+ }
  renderPayroll();
  setPayrollLoadState(`${ym} · ${r.count}건`,'saved');
 
- // 지급관리 표는 별도 DB를 사용하므로 비동기 갱신. 급여대장 표 표시를 기다리게 하지 않음.
  Promise.resolve().then(async()=>{
    try{
-     await loadPaymentRegisters();
-     if(token!==payrollReloadToken || sid!==storeId() || ym!==$('monthSelect').value)return;
+     await withTimeout(loadPaymentRegisters(),12000,'지급관리 조회');
+     if(token!==payrollReloadToken||sid!==storeId()||ym!==$('monthSelect').value)return;
      await renderPharmacyPay();
    }catch(err){console.warn(err)}
  });
