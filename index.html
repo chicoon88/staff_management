@@ -348,6 +348,29 @@ input,select{border:1px solid #d2d7e0;background:white;border-radius:9px;padding
 }
 
 .empDeleteCheck{width:18px!important;height:18px!important;cursor:pointer;accent-color:#315efb}
+
+/* ===== 주간 스케줄 편성 ===== */
+.weekBlock{background:#fff;border:1px solid var(--line);border-radius:14px;margin:12px 0;overflow:hidden}
+.weekBlockHead{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 13px;background:#0f5367;color:#fff}
+.weekBlockHead b{font-size:15px}
+.weekBlockHead .weekMeta{font-size:11px;opacity:.9}
+.weekTable{min-width:1050px!important}
+.weekTable th,.weekTable td{padding:6px 7px}
+.weekTable th.weekDayHead{min-width:90px}
+.weekTable th.weekHoliday{background:#ffe8e8!important;color:#b42318!important;border-top:3px solid #d92d20}
+.weekTable th.weekWeekend{background:#edf5ff!important;color:#1456b8!important}
+.weekTable td.weekHolidayCell{background:#fff3f3!important}
+.weekTable td.weekWeekendCell{background:#f5f9ff!important}
+.weekTarget{font-weight:900}
+.weekTotal{font-weight:900;font-size:13px}
+.weekDiff.exact{color:#087451;background:#e4f6ef}
+.weekDiff.under{color:#9a6700;background:#fff3cd}
+.weekDiff.over{color:#b42318;background:#fdecec}
+.weekDiff{display:inline-block;padding:4px 7px;border-radius:999px;font-weight:900;min-width:54px}
+.weekCode{width:48px;height:32px;padding:4px;text-align:center;font-weight:900;border:1px solid #dde2ea;border-radius:6px}
+.weekOutsideMonth{opacity:.76}
+.weekHolidayLabel{display:block;font-size:9px;line-height:1.1;margin-top:2px;white-space:normal;font-weight:900}
+
 </style>
 </head>
 <body>
@@ -394,8 +417,10 @@ input,select{border:1px solid #d2d7e0;background:white;border-radius:9px;padding
 
 <section id="schedulePage" class="page">
  <div class="row">
-  <div><h1 class="title">월간 스케줄</h1><div class="sub">빠른 입력은 8 / 9 / 0 / 연 / 병, 세부 시간은 날짜 셀을 두 번 누르거나 상세수정 버튼을 이용하세요.</div></div>
+  <div><h1 class="title">스케줄 관리</h1><div class="sub">주간 편성에서 월~일 기준으로 근무시간을 맞추고, 월간표에서는 한 달 전체를 확인합니다. 두 화면은 같은 스케줄 데이터를 사용합니다.</div></div>
   <div class="toolbar">
+   <button id="monthlyViewBtn" class="btn" onclick="setScheduleView('monthly')">월간 스케줄</button>
+   <button id="weeklyViewBtn" class="btn gray" onclick="setScheduleView('weekly')">주간 편성</button>
   <button class="btn gray" onclick="toggleAllEmployees(true)">전체 선택</button>
   <button class="btn gray" onclick="toggleAllEmployees(false)">선택 해제</button>
   <button class="btn" onclick="fillDefaults()">선택 직원 기본근무 채우기</button>
@@ -405,9 +430,21 @@ input,select{border:1px solid #d2d7e0;background:white;border-radius:9px;padding
   <span id="scheduleStoreState" class="saveState"></span><span id="scheduleLoadState" class="saveState saved">준비</span><span id="scheduleSaveState" class="saveState saved">저장완료</span><span class="help">연차잔여는 입력 즉시 반영</span>
  </div>
  </div>
- <div class="legend"><span class="tag">먼저 직원명 왼쪽 체크박스 선택</span><span class="tag">8 = 8시간</span><span class="tag">9 = 8시간+연장1</span><span class="tag">0 = 휴무</span><span class="tag">연 = 연차</span><span class="tag">병 = 병가</span><span class="tag">숫자 직접입력 가능</span><span class="tag">공휴일: 날짜 빨강 + 공휴일명 표시</span></div>
- <div class="tablewrap"><table><thead id="schHead"></thead><tbody id="schBody"></tbody></table></div>
- <div class="help" style="margin-top:7px">※ 직원마다 기본 출퇴근시간·휴게시간·근무요일을 따로 설정할 수 있습니다. 예외 근무는 날짜 셀의 ‘상세’에서 그날만 변경합니다.</div>
+ <div class="legend"><span class="tag">8 = 8시간</span><span class="tag">9 = 9시간</span><span class="tag">0 = 휴무</span><span class="tag">연 = 연차</span><span class="tag">병 = 병가</span><span class="tag">주5일 목표 40h</span><span class="tag">주4일 목표 36h</span><span class="tag">공휴일은 주말보다 우선</span></div>
+
+ <div id="monthlyScheduleWrap">
+   <div class="tablewrap"><table><thead id="schHead"></thead><tbody id="schBody"></tbody></table></div>
+   <div class="help" style="margin-top:7px">※ 월간표는 선택한 달의 전체 스케줄을 표시합니다.</div>
+ </div>
+
+ <div id="weeklyScheduleWrap" class="hidden">
+   <div class="infoBox help" style="margin-bottom:10px">
+     <b>주간 편성 방식</b> · 월요일~일요일을 한 주로 계산합니다.
+     선택한 달의 첫 주와 마지막 주는 이전달/다음달 날짜까지 함께 표시합니다.
+     주5일 직원은 40h, 주4일 직원은 36h에 맞춰 편성할 수 있습니다.
+   </div>
+   <div id="weeklyPlanner"></div>
+ </div>
 </section>
 
 <section id="hoursPage" class="page">
@@ -517,7 +554,7 @@ function closeModal(){
  document.body.style.overflow='';
 }
 $('monthSelect').value=new Date().toISOString().slice(0,7);
-let employees=[],schedules=[],payroll=[],stores=[],holidays=[],manualHolidays=[],autoHolidays=[],selectedEmployees=new Set(),leaveLedger=[],scheduleSaveQueue=new Map(),scheduleSaveTimer=null,employeeImportRows=[],paymentRegister=[],incentiveRegister=[],retiredEmployees=[],employeeView='active',refreshToken=0,payrollReloadToken=0,employeeDeleteSelection=new Set();
+let employees=[],schedules=[],payroll=[],stores=[],holidays=[],manualHolidays=[],autoHolidays=[],selectedEmployees=new Set(),leaveLedger=[],scheduleSaveQueue=new Map(),scheduleSaveTimer=null,employeeImportRows=[],paymentRegister=[],incentiveRegister=[],retiredEmployees=[],employeeView='active',refreshToken=0,payrollReloadToken=0,employeeDeleteSelection=new Set(),scheduleView='monthly';
 const money=n=>Number(n||0).toLocaleString('ko-KR')+'원',esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 function normalizeName(v){return String(v??'').normalize('NFKC').trim().replace(/\s+/g,'').replace(/[·ㆍ._-]/g,'').toLowerCase()}
 function monthRange(){let m=$('monthSelect').value,[y,mo]=m.split('-').map(Number),days=new Date(y,mo,0).getDate();return {m,y,mo,days,first:m+'-01',last:m+'-'+String(days).padStart(2,'0')}}
@@ -568,7 +605,7 @@ document.querySelectorAll('.nav').forEach(b=>b.onclick=()=>{
  document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
  let page=$(b.dataset.page+'Page');if(page)page.classList.add('active');
 
- if(b.dataset.page==='schedule')renderSchedule();
+ if(b.dataset.page==='schedule'){if(scheduleView==='weekly')renderWeeklyPlanner();else renderSchedule();}
  else if(b.dataset.page==='employees'){
    employeeView='active';
    $('activeEmpTab')?.classList.add('active');
@@ -634,11 +671,12 @@ async function refreshAll(){
 
  renderEmployees();renderStores();
 
- // 선택월 스케줄만
- let ids=employeesForMonth(r.m).map(x=>x.id);
+ // 선택월 + 월 경계를 걸치는 주간편성 범위까지 스케줄 조회
+ let pr=plannerRange(),plannerEmpIds=allEmployees().filter(e=>e.hire_date<=pr.end&&(!e.resign_date||e.resign_date>=pr.start)).map(x=>x.id);
+ let ids=[...new Set([...employeesForMonth(r.m).map(x=>x.id),...plannerEmpIds])];
  schedules=[];
  if(ids.length){
-   let ss=await sb.from('schedules').select('*').in('employee_id',ids).gte('work_date',r.first).lte('work_date',r.last);
+   let ss=await sb.from('schedules').select('*').in('employee_id',ids).gte('work_date',pr.start).lte('work_date',pr.end);
    if(token!==refreshToken || sid!==storeId())return;
    if(ss.error){
      if($('schBody'))$('schBody').innerHTML=`<tr><td style="padding:20px;color:#b42318">스케줄 조회 오류: ${esc(ss.error.message)}</td></tr>`;
@@ -647,6 +685,7 @@ async function refreshAll(){
    schedules=ss.data||[];
  }
  renderSchedule();
+ if(scheduleView==='weekly')renderWeeklyPlanner();
  if($('scheduleLoadState')){$('scheduleLoadState').textContent=`완료 ${Math.round(performance.now()-started)}ms`;$('scheduleLoadState').className='saveState saved'}
 
  // 공휴일 수동/API는 스케줄을 막지 않음
@@ -655,6 +694,7 @@ async function refreshAll(){
      await loadHolidays(false);
      if(token!==refreshToken || sid!==storeId())return;
      renderSchedule();
+     if(scheduleView==='weekly')renderWeeklyPlanner();
      if($('hoursPage')?.classList.contains('active'))renderHours();
    }catch(err){console.warn('holiday background',err)}
  });
@@ -1215,6 +1255,144 @@ function renderHome(){
    <td>${s.accrued}h</td><td>${s.used}h</td><td>${s.adjust>=0?'+':''}${s.adjust}h</td><td><b>${s.balance}h</b></td></tr>`;
  }).join(''):'<tr><td colspan="8">이번 달 연차 발생 직원이 없습니다.</td></tr>';
 }
+
+function isoFromDateLocal(d){
+ return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+function mondayOf(dateStr){
+ let [y,m,d]=dateStr.split('-').map(Number),dt=new Date(y,m-1,d),wd=dt.getDay();
+ let back=(wd+6)%7;
+ dt.setDate(dt.getDate()-back);
+ return isoFromDateLocal(dt);
+}
+function addDaysIso(dateStr,n){
+ let [y,m,d]=dateStr.split('-').map(Number),dt=new Date(y,m-1,d);
+ dt.setDate(dt.getDate()+n);
+ return isoFromDateLocal(dt);
+}
+function plannerRange(){
+ let r=monthRange(),start=mondayOf(r.first),end=addDaysIso(mondayOf(r.last),6);
+ return {start,end};
+}
+function plannerWeeks(){
+ let pr=plannerRange(),out=[],cur=pr.start,i=0;
+ while(cur<=pr.end && i<7){
+   out.push(cur);cur=addDaysIso(cur,7);i++;
+ }
+ return out;
+}
+function weeklyTargetHours(e){
+ if(e.work_type==='40')return 40;
+ if(e.work_type==='36')return 36;
+ let days=Array.isArray(e.work_days)?e.work_days.length:0;
+ if(days && Number(e.daily_hours||0))return Math.round(days*Number(e.daily_hours||0)*100)/100;
+ return 0;
+}
+function weeklyWorkedHours(e,weekStart){
+ let end=addDaysIso(weekStart,6),total=0;
+ schedules.forEach(s=>{
+   if(s.employee_id===e.id && s.work_date>=weekStart && s.work_date<=end){
+     total+=Number(s.worked_hours||0);
+   }
+ });
+ return Math.round(total*100)/100;
+}
+function weeklyPlannerEmployees(){
+ let pr=plannerRange();
+ return allEmployees().filter(e=>{
+   if(!e.hire_date)return false;
+   return e.hire_date<=pr.end && (!e.resign_date || e.resign_date>=pr.start);
+ }).sort((a,b)=>(Number(a.print_order??9999)-Number(b.print_order??9999))||a.name.localeCompare(b.name,'ko'));
+}
+function setScheduleView(v){
+ scheduleView=v;
+ let monthly=v==='monthly';
+ $('monthlyScheduleWrap')?.classList.toggle('hidden',!monthly);
+ $('weeklyScheduleWrap')?.classList.toggle('hidden',monthly);
+ if($('monthlyViewBtn'))$('monthlyViewBtn').className=monthly?'btn':'btn gray';
+ if($('weeklyViewBtn'))$('weeklyViewBtn').className=monthly?'btn gray':'btn';
+ if(monthly)renderSchedule();
+ else renderWeeklyPlanner();
+}
+function renderWeeklyPlanner(){
+ let host=$('weeklyPlanner');if(!host)return;
+ let weeks=plannerWeeks(),list=weeklyPlannerEmployees(),selectedMonth=$('monthSelect').value;
+ if(!weeks.length||!list.length){
+   host.innerHTML='<div class="card">표시할 직원 또는 주간 데이터가 없습니다.</div>';return;
+ }
+ host.innerHTML=weeks.map((ws,wi)=>{
+   let we=addDaysIso(ws,6);
+   let head=`<div class="weekBlock"><div class="weekBlockHead"><b>${Number(ws.slice(5,7))}/${Number(ws.slice(8,10))} ~ ${Number(we.slice(5,7))}/${Number(we.slice(8,10))}</b><span class="weekMeta">월요일 ~ 일요일 · 주간 실근로 기준</span></div>`;
+   let th='<tr><th class="name">직원</th><th>형태</th><th>목표</th>';
+   for(let d=0;d<7;d++){
+     let date=addDaysIso(ws,d),[yy,mm,dd]=date.split('-').map(Number),wd=new Date(yy,mm-1,dd).getDay(),hol=holidayFor(date);
+     let out=!date.startsWith(selectedMonth),cl=hol?'weekHoliday':(wd===0||wd===6?'weekWeekend':'');
+     th+=`<th class="weekDayHead ${cl} ${out?'weekOutsideMonth':''}">${mm}/${dd}<br>${'일월화수목금토'[wd]}${hol?`<span class="weekHolidayLabel">${esc(hol.name)}</span>`:''}</th>`;
+   }
+   th+='<th>주간합계</th><th>기준대비</th></tr>';
+
+   let body=list.map((e,ri)=>{
+     let target=weeklyTargetHours(e),total=weeklyWorkedHours(e,ws),diff=Math.round((total-target)*100)/100;
+     let diffClass=target===0?'':(diff===0?'exact':(diff<0?'under':'over'));
+     let diffText=target===0?'-':(diff===0?'맞음':`${diff>0?'+':''}${diff}h`);
+     let row=`<tr><td class="name"><b>${esc(e.name)}</b></td><td>${workType(e)}</td><td class="weekTarget">${target?target+'h':'-'}</td>`;
+     for(let d=0;d<7;d++){
+       let date=addDaysIso(ws,d),valid=employedOn(e,date),s=sched(e,date),v=s?.work_code||'';
+       let [yy,mm,dd]=date.split('-').map(Number),wd=new Date(yy,mm-1,dd).getDay(),hol=holidayFor(date);
+       let out=!date.startsWith(selectedMonth),cl=hol?'weekHolidayCell':(wd===0||wd===6?'weekWeekendCell':'');
+       if(!valid){
+         row+=`<td class="${cl} ${out?'weekOutsideMonth':''}" style="background:#eceff3!important"><input class="weekCode" disabled value=""></td>`;
+       }else{
+         row+=`<td class="${cl} ${out?'weekOutsideMonth':''}" ondblclick="openShift(${e.id},'${date}')" title="${hol?esc(hol.name):date}">
+           <input class="weekCode code${esc(v)}" data-weekstart="${ws}" data-emp="${e.id}" data-date="${date}" value="${esc(v)}" maxlength="4"
+             oninput="weeklyScheduleInput(${e.id},'${date}',this.value,this)" onkeydown="weeklyScheduleKey(event,this)">
+         </td>`;
+       }
+     }
+     row+=`<td id="weekTotal-${e.id}-${ws}" class="weekTotal">${total}h</td><td id="weekDiff-${e.id}-${ws}"><span class="weekDiff ${diffClass}">${diffText}</span></td></tr>`;
+     return row;
+   }).join('');
+   return head+`<div class="tablewrap"><table class="weekTable"><thead>${th}</thead><tbody>${body}</tbody></table></div></div>`;
+ }).join('');
+}
+function refreshWeeklyRow(employeeId,date){
+ if(scheduleView!=='weekly')return;
+ let ws=mondayOf(date),e=allEmployees().find(x=>x.id===employeeId);if(!e)return;
+ let target=weeklyTargetHours(e),total=weeklyWorkedHours(e,ws),diff=Math.round((total-target)*100)/100;
+ let totalEl=$(`weekTotal-${employeeId}-${ws}`),diffEl=$(`weekDiff-${employeeId}-${ws}`);
+ if(totalEl)totalEl.textContent=total+'h';
+ if(diffEl){
+   let cls=target===0?'':(diff===0?'exact':(diff<0?'under':'over'));
+   let txt=target===0?'-':(diff===0?'맞음':`${diff>0?'+':''}${diff}h`);
+   diffEl.innerHTML=`<span class="weekDiff ${cls}">${txt}</span>`;
+ }
+}
+function weeklyScheduleInput(id,date,raw,input){
+ let payload=schedulePayload(id,date,raw);
+ input.className=`weekCode code${payload.work_code}`;
+ applyLocalSchedule(payload);
+ queueScheduleSave(payload);
+ refreshWeeklyRow(id,date);
+}
+function weeklyScheduleKey(ev,input){
+ const key=ev.key;
+ if(!['Enter','ArrowRight','ArrowLeft','ArrowUp','ArrowDown'].includes(key))return;
+ ev.preventDefault();
+ let td=input.closest('td'),tr=td?.parentElement,table=tr?.closest('table');
+ if(!td||!tr||!table)return;
+ let r=[...table.tBodies[0].rows].indexOf(tr),c=td.cellIndex;
+ let nr=r,nc=c;
+ if(key==='Enter'||key==='ArrowRight')nc++;
+ if(key==='ArrowLeft')nc--;
+ if(key==='ArrowDown')nr++;
+ if(key==='ArrowUp')nr--;
+ let rows=[...table.tBodies[0].rows];
+ if(nr<0||nr>=rows.length)return;
+ let cell=rows[nr].cells[nc];
+ let next=cell?.querySelector('input.weekCode:not([disabled])');
+ if(next){next.focus();next.select()}
+}
+
 function renderSchedule(){
  let r=monthRange(),list=employeesForMonth(r.m),st=stores.find(s=>s.id===storeId());if($('scheduleStoreState'))$('scheduleStoreState').textContent=st?.name||'업장';h='<tr><th class="name">선택 · 직원</th>';
  for(let d=1;d<=r.days;d++){
@@ -1262,6 +1440,7 @@ function applyLocalSchedule(payload){
    if(a)a.innerHTML=`<b>${x.worked}h</b>`;
    if(b)b.textContent=`${x.ot}h`;
    refreshLiveLeaveUI(e.id);
+   refreshWeeklyRow(e.id,payload.work_date);
  }
 }
 function setSaveState(type,text){
