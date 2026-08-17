@@ -3112,19 +3112,12 @@ async function syncEmploymentHistoryFromPayroll(parsed,targetStore,targetEmploye
    byEmployee.get(emp.id).push(row);
  }
 
- // 현재 직원정보는 가장 최근 입사행 기준으로 맞춘다.
+ // 중요: 급여대장 업로드는 기존 employees 정보를 절대 덮어쓰지 않는다.
+ // 직원관리에서 수기로 확정한 입사일/퇴사일/재직상태/직책/업무/근무설정이 최우선이다.
+ // 급여대장의 입퇴사 정보는 employee_employment_history에 참고 이력으로만 남긴다.
+ // 따라서 이미 퇴사처리한 직원이 급여대장에 다시 등장해도 active=true로 복구되지 않는다.
  for(const [employeeId,rows] of byEmployee){
-   rows.sort((a,b)=>String(a.hire_date||'').localeCompare(String(b.hire_date||'')));
-   let latest=rows[rows.length-1];
-   if(!latest?.hire_date)continue;
-   let update={
-     hire_date:latest.hire_date,
-     resign_date:latest.resign_date||null,
-     active:!latest.resign_date
-   };
-   if(latest.role||latest.rank)update.role=latest.role||latest.rank;
-   let q=await sb.from('employees').update(update).eq('id',employeeId);
-   if(q.error)console.warn('최신 재직상태 반영 오류',latest.employee_name,q.error.message);
+   console.info('급여대장 재직이력만 기록 - 직원 현재정보 보존',employeeId,rows.length);
  }
 }
 
@@ -3807,9 +3800,11 @@ async function importPayrollSimple(file){
    let oldNames=[...new Set(oldRows.map(x=>x.employee_name).filter(Boolean))];
 
    if(!confirm(
-     `${targetStore.name} ${monthLabel(ym)} 기존 급여자료 ${oldRows.length}건을 완전히 삭제합니다.\n\n`+
+     `${targetStore.name} ${monthLabel(ym)} 기존 급여자료 ${oldRows.length}건만 교체합니다.\n\n`+
      `기존 이름 예: ${oldNames.slice(0,12).join(', ')||'-'}\n\n`+
-     `삭제 후 방금 선택한 "${file.name}" 내용으로 새로 저장할까요?`
+     `직원관리 정보는 변경하지 않습니다.\n`+
+     `이미 수정한 퇴사일·재직상태·입사일·직책·업무·근무설정은 그대로 유지됩니다.\n\n`+
+     `방금 선택한 "${file.name}" 내용으로 이 달 급여자료만 교체할까요?`
    )){
      setPayrollLoadState('기존자료 유지','saved');
      return;
@@ -3948,7 +3943,7 @@ async function importPayrollSimple(file){
    $('payrollImportInfo').innerHTML=
      `<b>${monthLabel(ym)} 급여대장 교체 완료</b><br>`+
      `<span class="help">파일: ${esc(file.name)} · 읽은 시트: ${esc(parsed.sheetName||'-')} · `+
-     `새 급여행 ${parsed.rows.length}건 · 직원매칭 ${parsed.matched}건</span>`;
+     `새 급여행 ${parsed.rows.length}건 · 직원매칭 ${parsed.matched}건 · 기존 직원정보 보존</span>`;
  }
 }
 function showPayrollImportInfo(parsed,fileName){
