@@ -252,6 +252,44 @@ input,select{border:1px solid #d2d7e0;background:white;border-radius:9px;padding
  #printArea .printEmployeeName{border-left:7px solid var(--empColor)!important}
  #printArea .pHolidayName{display:block;font-size:6.5px;line-height:1.05;margin-top:1px;white-space:normal}.printLegend{font-size:9px;margin-top:6px}.printFoot{font-size:8px;margin-top:4px;text-align:right}
 }
+
+/* ===== 공통 팝업 복구 ===== */
+.modalBack{
+ position:fixed!important;
+ inset:0!important;
+ z-index:9999!important;
+ background:rgba(15,23,42,.62)!important;
+ display:none;
+ place-items:center!important;
+ padding:18px!important;
+ overflow:auto!important;
+}
+.modalBack>.modal{
+ position:relative!important;
+ width:min(680px,calc(100vw - 36px))!important;
+ max-height:calc(100vh - 36px)!important;
+ overflow:auto!important;
+ margin:auto!important;
+ background:#fff!important;
+ border-radius:18px!important;
+ padding:20px!important;
+ box-sizing:border-box!important;
+ box-shadow:0 24px 70px rgba(0,0,0,.28)!important;
+}
+@media(max-width:560px){
+ .modalBack{padding:10px!important;align-items:center!important}
+ .modalBack>.modal{
+   width:calc(100vw - 20px)!important;
+   max-height:calc(100vh - 20px)!important;
+   padding:16px!important;
+   border-radius:16px!important;
+ }
+ .modalBack>.modal .formgrid{grid-template-columns:1fr 1fr!important}
+}
+@media(max-width:390px){
+ .modalBack>.modal .formgrid{grid-template-columns:1fr!important}
+}
+
 </style>
 </head>
 <body>
@@ -394,32 +432,35 @@ const SUPABASE_KEY="sb_publishable_KQm77StbhQkIZv5UjZnoXQ_OWZ7HHzF";
 const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY),$=id=>document.getElementById(id);
 
 function modal(content){
- let wrap=document.getElementById('modal');
+ // 바깥은 화면 전체 오버레이(.modalBack), 안쪽만 실제 팝업(.modal)
+ let wrap=document.getElementById('modalOverlay');
  if(!wrap){
    wrap=document.createElement('div');
-   wrap.id='modal';
-   wrap.className='modal';
-   wrap.innerHTML='<div class="modalBox" id="modalBox"></div>';
+   wrap.id='modalOverlay';
+   wrap.className='modalBack';
+   wrap.style.display='none';
+   wrap.innerHTML='<div class="modal" id="modalBox" role="dialog" aria-modal="true"></div>';
    document.body.appendChild(wrap);
+
+   // 팝업 바깥 어두운 영역 클릭 시 닫기
+   wrap.addEventListener('click',function(ev){
+     if(ev.target===wrap)closeModal();
+   });
  }
- let box=document.getElementById('modalBox')||wrap.querySelector('.modalBox');
- if(!box){
-   box=document.createElement('div');
-   box.id='modalBox';
-   box.className='modalBox';
-   wrap.appendChild(box);
- }
+ let box=document.getElementById('modalBox');
  box.innerHTML=content;
- wrap.style.display='flex';
- wrap.classList.add('show');
+ wrap.style.display='grid';
+ document.body.style.overflow='hidden';
+
+ // 모바일에서 팝업을 열 때 항상 맨 위부터 보이게
+ box.scrollTop=0;
 }
 function closeModal(){
- let wrap=document.getElementById('modal');
+ let wrap=document.getElementById('modalOverlay');
  if(!wrap)return;
- wrap.classList.remove('show');
  wrap.style.display='none';
+ document.body.style.overflow='';
 }
-
 $('monthSelect').value=new Date().toISOString().slice(0,7);
 let employees=[],schedules=[],payroll=[],stores=[],holidays=[],manualHolidays=[],autoHolidays=[],selectedEmployees=new Set(),leaveLedger=[],scheduleSaveQueue=new Map(),scheduleSaveTimer=null,employeeImportRows=[],paymentRegister=[],incentiveRegister=[],retiredEmployees=[],employeeView='active';
 const money=n=>Number(n||0).toLocaleString('ko-KR')+'원',esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
