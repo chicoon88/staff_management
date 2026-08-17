@@ -70,6 +70,167 @@ input,select{border:1px solid #d2d7e0;background:white;border-radius:9px;padding
  .docPaper{width:194mm;min-height:279mm;padding:12mm 10mm;margin:0 auto}
 }
 
+
+/* ===== 공휴일 표시 강화 ===== */
+#schHead th.holidayHead,
+#schBody td.holidayHead{
+ background:#fff0f0!important;
+ color:#c81414!important;
+}
+#schHead th.holidayHead{
+ border-top:3px solid #df1d1d!important;
+}
+#schHead .holidayName{
+ display:block!important;
+ margin-top:3px!important;
+ font-size:9px!important;
+ line-height:1.12!important;
+ font-weight:900!important;
+ color:#c81414!important;
+ white-space:normal!important;
+ max-width:68px!important;
+}
+#schHead th.weekendHead{
+ background:#eef5ff!important;
+ color:#1761b9!important;
+}
+
+
+/* ===== HWP 양식 기반 A4 세로 문서 ===== */
+@media screen{
+ .docPaper{
+   width:210mm!important;
+   min-height:297mm!important;
+   margin:10px auto!important;
+   box-shadow:0 4px 22px rgba(0,0,0,.12);
+ }
+}
+.docPaper{
+ box-sizing:border-box!important;
+ width:210mm!important;
+ min-height:297mm!important;
+ padding:18mm 17mm 16mm!important;
+ background:#fff!important;
+ color:#111!important;
+ font-family:"Malgun Gothic","Apple SD Gothic Neo",sans-serif!important;
+ display:flex!important;
+ flex-direction:column!important;
+}
+.docTitle{
+ text-align:center!important;
+ font-size:30px!important;
+ font-weight:900!important;
+ letter-spacing:12px!important;
+ margin:4mm 0 14mm!important;
+ line-height:1.2!important;
+}
+.docSection{
+ border:2px solid #222!important;
+ margin-bottom:7mm!important;
+}
+.docSectionTitle{
+ height:12mm!important;
+ display:flex!important;
+ align-items:center!important;
+ justify-content:center!important;
+ background:#ececec!important;
+ border-bottom:1.5px solid #222!important;
+ font-size:15px!important;
+ font-weight:900!important;
+ letter-spacing:3px!important;
+}
+.docGrid{
+ display:grid!important;
+ grid-template-columns:31mm 1fr 31mm 1fr!important;
+}
+.docCellLabel,.docCellValue{
+ min-height:15mm!important;
+ box-sizing:border-box!important;
+ display:flex!important;
+ align-items:center!important;
+ padding:3mm 4mm!important;
+ font-size:14px!important;
+ border-bottom:1px solid #555!important;
+}
+.docCellLabel{
+ justify-content:center!important;
+ font-weight:800!important;
+ background:#f7f7f7!important;
+ border-right:1px solid #555!important;
+}
+.docCellValue{
+ border-right:1px solid #555!important;
+}
+.docGrid > :nth-child(4n){border-right:none!important}
+.docGrid .docWideLabel{grid-column:1/2!important}
+.docGrid .docWideValue{grid-column:2/5!important;border-right:none!important}
+.docGrid > :nth-last-child(-n+4){ }
+.docNoBottom{border-bottom:none!important}
+.docStatement{
+ margin-top:6mm!important;
+ text-align:center!important;
+ font-size:16px!important;
+ line-height:2.1!important;
+ font-weight:600!important;
+}
+.docSpacer{flex:1!important;min-height:18mm!important}
+.docIssueDate{
+ text-align:center!important;
+ font-size:16px!important;
+ letter-spacing:1px!important;
+ margin-bottom:9mm!important;
+}
+.docRepresentative{
+ text-align:right!important;
+ font-size:16px!important;
+ margin-right:7mm!important;
+ line-height:2!important;
+}
+.docCompanyName{
+ text-align:center!important;
+ font-size:20px!important;
+ font-weight:900!important;
+ margin-top:7mm!important;
+ letter-spacing:1px!important;
+}
+.docReasonBox{
+ min-height:48mm!important;
+ padding:6mm!important;
+ border-top:1px solid #555!important;
+ font-size:14px!important;
+}
+.docResignStatement{
+ margin:14mm 3mm 0!important;
+ font-size:16px!important;
+ line-height:2.25!important;
+ text-align:center!important;
+}
+.docSignature{
+ margin-top:auto!important;
+ padding-top:18mm!important;
+ text-align:right!important;
+ font-size:16px!important;
+ line-height:2.2!important;
+ margin-right:8mm!important;
+}
+.docUnderline{
+ display:inline-block!important;
+ min-width:25mm!important;
+ height:7mm!important;
+ border-bottom:1px solid #222!important;
+ vertical-align:bottom!important;
+}
+@media print{
+ .docPaper{
+   width:194mm!important;
+   min-height:279mm!important;
+   padding:13mm 12mm 11mm!important;
+   margin:0 auto!important;
+   box-shadow:none!important;
+ }
+ .docTitle{margin-top:2mm!important}
+}
+
 #printArea{display:none}
 @media(max-width:900px){.layout{display:block}.side{display:none}.main{padding:11px}.mobileNav{display:flex;overflow:auto;gap:5px;padding:7px;background:#fff;border-bottom:1px solid var(--line);position:sticky;top:66px;z-index:20}.mobileNav .nav{min-width:max-content;width:auto;border:1px solid var(--line);padding:8px 10px}.cards{grid-template-columns:repeat(2,1fr)}.grid2,.grid3{grid-template-columns:1fr}.formgrid{grid-template-columns:1fr 1fr}.brand small{display:none}.title{font-size:20px}}
 @media(max-width:560px){.formgrid{grid-template-columns:1fr}.top{padding:0 10px}.v{font-size:21px}}
@@ -508,20 +669,30 @@ async function autoForecastPaymentMonth(){
 }
 
 
-const KR_HOLIDAY_FALLBACK_2026=[
- {holiday_date:'2026-01-01',name:'신정'},
- {holiday_date:'2026-02-16',name:'설날 연휴'},{holiday_date:'2026-02-17',name:'설날'},{holiday_date:'2026-02-18',name:'설날 연휴'},
- {holiday_date:'2026-03-01',name:'삼일절'},{holiday_date:'2026-03-02',name:'삼일절 대체공휴일',is_substitute:true},
- {holiday_date:'2026-05-01',name:'근로자의 날'},{holiday_date:'2026-05-05',name:'어린이날'},
- {holiday_date:'2026-05-24',name:'부처님오신날'},{holiday_date:'2026-05-25',name:'부처님오신날 대체공휴일',is_substitute:true},
- {holiday_date:'2026-06-03',name:'전국동시지방선거일'},{holiday_date:'2026-06-06',name:'현충일'},
+const KR_HOLIDAY_OFFICIAL_2026=[
+ {holiday_date:'2026-01-01',name:'1월 1일'},
+ {holiday_date:'2026-02-16',name:'설날 연휴'},
+ {holiday_date:'2026-02-17',name:'설날'},
+ {holiday_date:'2026-02-18',name:'설날 연휴'},
+ {holiday_date:'2026-03-01',name:'3·1절'},
+ {holiday_date:'2026-03-02',name:'대체공휴일(3·1절)',is_substitute:true},
+ {holiday_date:'2026-05-01',name:'노동절'},
+ {holiday_date:'2026-05-05',name:'어린이날'},
+ {holiday_date:'2026-05-24',name:'부처님오신날'},
+ {holiday_date:'2026-05-25',name:'대체공휴일(부처님오신날)',is_substitute:true},
+ {holiday_date:'2026-06-03',name:'전국동시지방선거'},
+ {holiday_date:'2026-06-06',name:'현충일'},
  {holiday_date:'2026-07-17',name:'제헌절'},
- {holiday_date:'2026-08-15',name:'광복절'},{holiday_date:'2026-08-17',name:'광복절 대체공휴일',is_substitute:true},
- {holiday_date:'2026-09-24',name:'추석 연휴'},{holiday_date:'2026-09-25',name:'추석'},{holiday_date:'2026-09-26',name:'추석 연휴'},
- {holiday_date:'2026-10-03',name:'개천절'},{holiday_date:'2026-10-05',name:'개천절 대체공휴일',is_substitute:true},
+ {holiday_date:'2026-08-15',name:'광복절'},
+ {holiday_date:'2026-08-17',name:'대체공휴일(광복절)',is_substitute:true},
+ {holiday_date:'2026-09-24',name:'추석 연휴'},
+ {holiday_date:'2026-09-25',name:'추석'},
+ {holiday_date:'2026-09-26',name:'추석 연휴'},
+ {holiday_date:'2026-10-03',name:'개천절'},
+ {holiday_date:'2026-10-05',name:'대체공휴일(개천절)',is_substitute:true},
  {holiday_date:'2026-10-09',name:'한글날'},
  {holiday_date:'2026-12-25',name:'기독탄신일'}
-];
+].map(x=>({...x,id:`official-${x.holiday_date}`,auto:true,official:true}));
 let holidayYearData={};
 
 function setHolidayState(text,type=''){
@@ -538,31 +709,39 @@ function normalizeNagerHoliday(x){
  };
 }
 async function fetchAutoHolidayYear(y,force=false){
- const cacheKey=`kr_public_holidays_v2_${y}`;
- if(!force){
-   try{
-     const c=JSON.parse(localStorage.getItem(cacheKey)||'null');
-     if(Array.isArray(c)&&c.length)return c;
-   }catch(e){}
- }
- // Nager.Date: browser CORS 지원 공개 API
+ y=Number(y);
+ const cacheKey=`kr_public_holidays_v3_${y}`;
+
+ // 2026은 한국천문연구원/우주항공청 공식 월력요항 내장자료를 기준값으로 사용.
+ // 외부 API가 원일(8/15) 등을 빠뜨려도 공식자료가 항상 남는다.
+ let api=[];
  try{
-   const res=await fetch(`https://date.nager.at/api/v3/PublicHolidays/${y}/KR`,{cache:'no-store'});
-   if(!res.ok)throw new Error(`HTTP ${res.status}`);
-   const arr=(await res.json()).map(normalizeNagerHoliday);
-   if(!arr.length)throw new Error('empty holiday result');
-   localStorage.setItem(cacheKey,JSON.stringify(arr));
-   return arr;
- }catch(err){
-   console.warn('공휴일 API 실패:',err);
-   // 현재 운영연도는 API 장애 시에도 업무가 멈추지 않도록 공식 일정 fallback
-   if(Number(y)===2026)return KR_HOLIDAY_FALLBACK_2026.map(x=>({...x,id:`fallback-${x.holiday_date}`,auto:true,fallback:true}));
-   try{
+   if(!force){
      const c=JSON.parse(localStorage.getItem(cacheKey)||'null');
-     if(Array.isArray(c)&&c.length)return c;
-   }catch(e){}
-   return [];
+     if(Array.isArray(c))api=c;
+   }
+ }catch(e){}
+
+ if(force || !api.length){
+   try{
+     const res=await fetch(`https://date.nager.at/api/v3/PublicHolidays/${y}/KR`,{cache:'no-store'});
+     if(res.ok){
+       api=(await res.json()).map(normalizeNagerHoliday);
+       localStorage.setItem(cacheKey,JSON.stringify(api));
+     }
+   }catch(err){
+     console.warn('외부 공휴일 API 실패:',err);
+   }
  }
+
+ let map=new Map();
+ api.forEach(h=>map.set(h.holiday_date,h));
+
+ if(y===2026){
+   // 공식자료가 API보다 우선하며 원 공휴일 + 대체공휴일 모두 보장.
+   KR_HOLIDAY_OFFICIAL_2026.forEach(h=>map.set(h.holiday_date,h));
+ }
+ return [...map.values()].sort((a,b)=>a.holiday_date.localeCompare(b.holiday_date));
 }
 async function loadHolidayYear(y,force=false){
  y=Number(y);
@@ -578,7 +757,7 @@ async function loadHolidayYear(y,force=false){
  manual.forEach(h=>map.set(h.holiday_date,{...h,auto:false}));
  let merged=[...map.values()].sort((a,b)=>a.holiday_date.localeCompare(b.holiday_date));
  holidayYearData[y]={manual,auto,merged};
- setHolidayState(auto.length?`${y} 자동 ${auto.length}일 + 수동 ${manual.length}일`:`${y} 자동자료 없음 · 수동 ${manual.length}일`,auto.length?'saved':'error');
+ setHolidayState(auto.length?`${y} 공휴일 ${auto.length}일 + 수동 ${manual.length}일`:`${y} 자동자료 없음 · 수동 ${manual.length}일`,auto.length?'saved':'error');
  return merged;
 }
 async function loadHolidays(force=false){
@@ -644,21 +823,40 @@ function renderHolidays(){
  }).join(''):'<tr><td colspan="5">공휴일 자료가 없습니다. “공휴일 새로고침”을 눌러주세요.</td></tr>';
 }
 function openHoliday(id=null){
- let h=null;
- if(id){
-   let y=Number($('holidayYear')?.value||monthRange().y);
-   h=(holidayYearData[y]?.manual||[]).find(x=>String(x.id)===String(id));
+ let y=Number($('holidayYear')?.value||monthRange().y),h=null;
+ if(id)h=(holidayYearData[y]?.manual||[]).find(x=>String(x.id)===String(id));
+
+ // 가장 단순하고 깨지지 않는 브라우저 입력 방식.
+ // 공통 modal 함수가 고장나도 수동 공휴일 추가/수정은 항상 작동한다.
+ let defaultDate=h?.holiday_date || `${$('monthSelect').value}-01`;
+ let date=prompt('공휴일 날짜를 입력하세요. (YYYY-MM-DD)',defaultDate);
+ if(date===null)return;
+ date=date.trim();
+ if(!/^\d{4}-\d{2}-\d{2}$/.test(date))return alert('날짜 형식이 올바르지 않습니다. 예: 2026-08-15');
+
+ let name=prompt('공휴일명을 입력하세요.',h?.name||'');
+ if(name===null)return;
+ name=name.trim();
+ if(!name)return alert('공휴일명을 입력하세요.');
+
+ let sub=confirm('대체공휴일입니까?\n확인 = 대체공휴일 / 취소 = 일반 공휴일');
+ saveHolidayDirect(id,{holiday_date:date,name,is_substitute:sub});
+}
+async function saveHolidayDirect(id,obj){
+ let q=id
+   ?await sb.from('holidays').update(obj).eq('id',id)
+   :await sb.from('holidays').upsert(obj,{onConflict:'holiday_date'});
+ if(q.error)return alert('공휴일 저장 오류:\n'+q.error.message);
+ let y=Number(obj.holiday_date.slice(0,4));
+ await loadHolidayYear(y,true);
+ if(y===monthRange().y){
+   holidays=holidayYearData[y].merged;
+   manualHolidays=holidayYearData[y].manual;
+   autoHolidays=holidayYearData[y].auto;
  }
- let base=h||{holiday_date:`${$('monthSelect').value}-01`,name:'',is_substitute:false};
- modal(`<h2>${id?'공휴일 수정':'공휴일 추가'}</h2>
- <div class="formgrid">
-  <div class="field"><label>날짜</label><input id="hDate" type="date" value="${base.holiday_date||''}"></div>
-  <div class="field"><label>공휴일명</label><input id="hName" value="${esc(base.name||'')}"></div>
-  <div class="field"><label>구분</label><select id="hSub"><option value="0">일반 공휴일</option><option value="1">대체공휴일</option></select></div>
- </div>
- <div class="help">자동자료에 없는 임시공휴일이나 업장 자체 휴일을 추가할 때 사용하세요. 같은 날짜가 자동자료와 겹치면 수동 입력명이 우선합니다.</div>
- <div class="modalActions"><button class="btn gray" onclick="closeModal()">취소</button><button class="btn" onclick="saveHoliday(${id||'null'})">저장</button></div>`);
- $('hSub').value=base.is_substitute?'1':'0';
+ if($('holidayYear'))$('holidayYear').value=String(y);
+ renderHolidays();renderSchedule();renderHours();
+ alert(`${obj.holiday_date} ${obj.name} 저장완료`);
 }
 async function saveHoliday(id){
  let date=$('hDate').value,name=$('hName').value.trim(),sub=$('hSub').value==='1';
@@ -1746,48 +1944,87 @@ window.addEventListener('afterprint',()=>{
 function printEmploymentCertificate(id){
  setPrintPageOrientation('portrait');
  let e=findEmployeeAny(id),s=currentStore();if(!e)return;
- let purpose=prompt('발급용도를 입력하세요. 비워두면 출력 후 수기로 작성할 수 있습니다.','')??'';
+ let purpose=prompt('발급용도를 입력하세요. 비워두면 출력 후 수기로 작성할 수 있습니다.','');
+ if(purpose===null)return;
  let today=isoToday();
+ const v=x=>esc(x||'');
  $('printArea').innerHTML=`<div class="docPaper">
-  <div class="docTitle">재 직 증 명 서</div>
-  <table class="docTable">
-   <tr><th colspan="4">인적사항</th></tr>
-   <tr><th>성 명</th><td>${esc(e.name||'')}</td><th>생년월일</th><td>${e.birth_date?fmtDateKo(e.birth_date):''}</td></tr>
-   <tr><th>전화번호</th><td>${esc(e.phone||'')}</td><th>이 메 일</th><td>${esc(e.email||'')}</td></tr>
-   <tr><th>현 주 소</th><td colspan="3">${esc(e.address||'')}</td></tr>
-   <tr><th colspan="4">재직사항</th></tr>
-   <tr><th>회 사 명</th><td>${esc(s.name||'')}</td><th>사업자번호</th><td>${esc(s.business_number||'')}</td></tr>
-   <tr><th>근무부서</th><td>${esc(e.department||'')}</td><th>직위/직급</th><td>${esc(e.role||'')}</td></tr>
-   <tr><th>입사일자</th><td>${fmtDateKo(e.hire_date)}</td><th>담당업무</th><td>${esc(e.role||'')}</td></tr>
-   <tr><th>발급용도</th><td colspan="3">${esc(purpose)}</td></tr>
-  </table>
-  <div class="docText">상기인은 위와 같이 근무하고 있음을 증명합니다.</div>
-  <div class="docDate">${fmtDateKo(today)}</div>
-  <div class="docSign">대표자&nbsp;&nbsp; ${esc(s.representative_name||'')}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (인)</div>
-  <div class="docCompany">${esc(s.name||'')}</div>
+   <div class="docTitle">재 직 증 명 서</div>
+
+   <div class="docSection">
+    <div class="docSectionTitle">인 적 사 항</div>
+    <div class="docGrid">
+      <div class="docCellLabel">성&nbsp;&nbsp;&nbsp;&nbsp;명</div><div class="docCellValue">${v(e.name)}</div>
+      <div class="docCellLabel">생년월일</div><div class="docCellValue">${e.birth_date?fmtDateKo(e.birth_date):''}</div>
+
+      <div class="docCellLabel">전화번호</div><div class="docCellValue">${v(e.phone)}</div>
+      <div class="docCellLabel">이 메 일</div><div class="docCellValue">${v(e.email)}</div>
+
+      <div class="docCellLabel docWideLabel docNoBottom">현 주 소</div>
+      <div class="docCellValue docWideValue docNoBottom">${v(e.address)}</div>
+    </div>
+   </div>
+
+   <div class="docSection">
+    <div class="docSectionTitle">재 직 사 항</div>
+    <div class="docGrid">
+      <div class="docCellLabel">회 사 명</div><div class="docCellValue">${v(s.name)}</div>
+      <div class="docCellLabel">사업자번호</div><div class="docCellValue">${v(s.business_number)}</div>
+
+      <div class="docCellLabel">근무부서</div><div class="docCellValue">${v(e.department)}</div>
+      <div class="docCellLabel">직위/직급</div><div class="docCellValue">${v(e.role)}</div>
+
+      <div class="docCellLabel">입사일자</div><div class="docCellValue">${e.hire_date?fmtDateKo(e.hire_date):''}</div>
+      <div class="docCellLabel">담당업무</div><div class="docCellValue">${v(e.role)}</div>
+
+      <div class="docCellLabel docWideLabel docNoBottom">발급용도</div>
+      <div class="docCellValue docWideValue docNoBottom">${v(purpose)}</div>
+    </div>
+   </div>
+
+   <div class="docStatement">상기인은 위와 같이 근무하고 있음을 증명합니다.</div>
+   <div class="docSpacer"></div>
+   <div class="docIssueDate">${fmtDateKo(today)}</div>
+   <div class="docRepresentative">대표자&nbsp;&nbsp;&nbsp; ${v(s.representative_name)} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (인)</div>
+   <div class="docCompanyName">${v(s.name)}</div>
  </div>`;
  window.print();
 }
 function printResignation(id){
  setPrintPageOrientation('portrait');
  let e=findEmployeeAny(id),s=currentStore();if(!e)return;
+ const v=x=>esc(x||'');
  let last=e.resign_date||'';
+ let lastText=last?fmtDateKo(last):
+   `<span class="docUnderline"></span>년&nbsp;&nbsp;<span class="docUnderline" style="min-width:13mm"></span>월&nbsp;&nbsp;<span class="docUnderline" style="min-width:13mm"></span>일`;
  $('printArea').innerHTML=`<div class="docPaper">
-  <div class="docTitle">사 직 서</div>
-  <table class="docTable">
-   <tr><th>성 명</th><td>${esc(e.name||'')}</td><th>생년월일</th><td>${e.birth_date?fmtDateKo(e.birth_date):''}</td></tr>
-   <tr><th>담당업무</th><td>${esc(e.role||'')}</td><th>입사일</th><td>${fmtDateKo(e.hire_date)}</td></tr>
-   <tr><th>사직사유</th><td colspan="3" style="height:90px"></td></tr>
-  </table>
-  <div class="docText">상기 본인은 마지막 근무일인 ${last?fmtDateKo(last):'<span class="docBlank"></span> 년 <span class="docBlank" style="min-width:45px"></span> 월 <span class="docBlank" style="min-width:45px"></span> 일'}자로<br>
-  귀사에서 사직하고자 하오니 수락하여 주시기 바랍니다.</div>
-  <div class="docDate">${fmtDateKo(isoToday())}</div>
-  <div class="docSign">제출자&nbsp;&nbsp; ${esc(e.name||'')}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (서명 또는 인)</div>
-  <div class="docCompany">${esc(s.name||'')} 귀하</div>
+   <div class="docTitle">사 직 서</div>
+
+   <div class="docSection">
+    <div class="docGrid">
+      <div class="docCellLabel">성&nbsp;&nbsp;&nbsp;&nbsp;명</div><div class="docCellValue">${v(e.name)}</div>
+      <div class="docCellLabel">생년월일</div><div class="docCellValue">${e.birth_date?fmtDateKo(e.birth_date):''}</div>
+
+      <div class="docCellLabel">담당업무</div><div class="docCellValue">${v(e.role)}</div>
+      <div class="docCellLabel">입 사 일</div><div class="docCellValue">${e.hire_date?fmtDateKo(e.hire_date):''}</div>
+
+      <div class="docCellLabel docWideLabel docNoBottom" style="min-height:48mm">사직사유</div>
+      <div class="docCellValue docWideValue docNoBottom" style="min-height:48mm"></div>
+    </div>
+   </div>
+
+   <div class="docResignStatement">
+      상기 본인은 마지막 근무일인 ${lastText}자로<br>
+      귀사에서 사직하고자 하오니 수락하여 주시기 바랍니다.
+   </div>
+
+   <div class="docSpacer"></div>
+   <div class="docIssueDate">${fmtDateKo(isoToday())}</div>
+   <div class="docSignature">제출자&nbsp;&nbsp;&nbsp; ${v(e.name)} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (서명 또는 인)</div>
+   <div class="docCompanyName">${v(s.name)} 귀하</div>
  </div>`;
  window.print();
 }
-
 function printSchedule(){
  setPrintPageOrientation('landscape');
  let r=monthRange(),st=stores.find(s=>s.id===storeId()),list=employeesForMonth(r.m);
