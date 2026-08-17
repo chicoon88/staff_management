@@ -119,7 +119,7 @@ input,select{border:1px solid #d2d7e0;background:white;border-radius:9px;padding
  <div class="row"><div><h1 class="title">급여 · 지급관리</h1><div class="sub">상단의 월은 <b>지급월</b>입니다. 직원별 지급규칙에 따라 실제 근무월과 공휴일 인센 귀속월을 자동으로 역산합니다.</div></div>
  <div class="toolbar"><input type="file" id="payrollFile" accept=".xlsx,.xls,.xlsm" style="display:none" onchange="importPayroll(this.files[0])"><button class="btn gray" onclick="$('payrollFile').click()">노무사 Excel 불러오기</button><button class="btn green" onclick="exportPharmacyPayTable()">약국 지급표 Excel</button><button class="btn" onclick="exportPayroll()">노무사 급여 Excel</button></div></div>
  <div class="card" style="margin-top:13px"><div class="infoBox help"><b>자동 연결 규칙</b><br>월급직원 기본값: 근무월 +1개월의 10일 지급 / 공휴일 인센은 근무월 +2개월 급여에 반영.<br>파트타임 기본값: 당월 말일 지급. 직원별로 지급시차·지급일·인센 시차·단가를 수정할 수 있습니다.<br>노무사 파일명에 <b>202607</b>, <b>2026-07</b>, <b>2026년 7월</b> 같은 월과 업장명이 있으면 먼저 자동 확인합니다.</div></div>
- <div class="card" style="margin-top:10px"><h3>지급월 기준 약국 급여표</h3><div class="tablewrap" style="margin-top:10px"><table><thead><tr><th class="name">직원</th><th>지급규칙</th><th>기본급 귀속 근무월</th><th>지급예정일</th><th>노무사 실지급액</th><th>인센 귀속월</th><th>빨간날/공휴일 출근</th><th>인센 단가</th><th>인센 관리액</th><th>비고</th></tr></thead><tbody id="pharmacyPayBody"></tbody></table></div></div>
+ <div class="card" style="margin-top:10px"><h3>지급월 기준 약국 급여표</h3><div class="tablewrap" style="margin-top:10px"><table><thead><tr><th class="name">직원</th><th>지급규칙</th><th>기본급 귀속 근무월</th><th>지급예정일</th><th>노무사 실지급액</th><th>인센 귀속월</th><th>주말/공휴일 출근</th><th>인센 단가</th><th>인센 관리액</th><th>비고</th></tr></thead><tbody id="pharmacyPayBody"></tbody></table></div></div>
  <div class="card" style="margin-top:10px"><h3>노무사 급여대장 상세</h3><div class="tablewrap" style="margin-top:10px"><table><thead><tr><th class="name">직원</th><th>월근무</th><th>기본급</th><th>고정연장</th><th>휴일수당</th><th>연장수당</th><th>식대</th><th>상여/조정</th><th>총지급</th><th>공제</th><th>실지급</th><th>시간차이</th></tr></thead><tbody id="payrollBody"></tbody></table></div></div>
 </section>
 
@@ -444,7 +444,7 @@ function incentiveCountFromRows(emp,ym,rows){
  let seen=new Set(),dates=[];
  rows.filter(s=>s.employee_id===emp.id&&Number(s.worked_hours||0)>0).forEach(s=>{
    let wd=new Date(s.work_date+'T12:00:00').getDay(),hol=holidayFor(s.work_date);
-   if((wd===0||hol)&&!seen.has(s.work_date)){seen.add(s.work_date);dates.push(s.work_date)}
+   if((wd===0||wd===6||hol)&&!seen.has(s.work_date)){seen.add(s.work_date);dates.push(s.work_date)}
  });
  return {count:dates.length,dates};
 }
@@ -694,7 +694,7 @@ function exportSchedule(){let r=monthRange(),data=[['업장',stores.find(s=>s.id
 async function exportPharmacyPayTable(){
  let payMonth=$('monthSelect').value,ids=employees.map(e=>e.id),months=[...new Set(employees.flatMap(e=>[shiftMonth(payMonth,-salaryDelay(e)),shiftMonth(payMonth,-incentiveDelay(e))]))],byMonth={};
  for(const m of months)byMonth[m]=await workRowsForMonth(ids,m);
- let data=[['지급월',monthLabel(payMonth)],['업장',stores.find(s=>s.id===storeId())?.name||''],[],['성명','지급규칙','기본급 귀속 근무월','지급예정일','노무사 실지급액','인센 귀속월','빨간날/공휴일 출근횟수','인센 단가','인센 관리액','출근일']];
+ let data=[['지급월',monthLabel(payMonth)],['업장',stores.find(s=>s.id===storeId())?.name||''],[],['성명','지급규칙','기본급 귀속 근무월','지급예정일','노무사 실지급액','인센 귀속월','주말/공휴일 출근횟수','인센 단가','인센 관리액','출근일']];
  employees.forEach(e=>{let p=payrollFor(e),base=shiftMonth(payMonth,-salaryDelay(e)),incm=shiftMonth(payMonth,-incentiveDelay(e)),ic=incentiveEnabled(e)?incentiveCountFromRows(e,incm,byMonth[incm]||[]):{count:0,dates:[]};data.push([e.name,payRuleLabel(e),base,payDateFor(e,payMonth),p?.net_pay||0,incentiveEnabled(e)?incm:'',ic.count,incentiveEnabled(e)?incentiveUnit(e):0,incentiveEnabled(e)?ic.count*incentiveUnit(e):0,ic.dates.join(', ')])});
  downloadXlsx(data,`${stores.find(s=>s.id===storeId())?.name||'업장'}_${payMonth}_약국지급표.xlsx`);
 }
