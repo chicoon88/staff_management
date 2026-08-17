@@ -54,6 +54,22 @@ input,select{border:1px solid #d2d7e0;background:white;border-radius:9px;padding
 .empTab.active{background:#111827;color:#fff;border-color:#111827}
 .retiredRow td{background:#eeeeee!important;color:#666}
 .seqBadge{display:inline-grid;place-items:center;min-width:25px;height:25px;padding:0 6px;border-radius:7px;background:#eef1f6;font-weight:900;color:#485266}
+
+.docActions{display:flex;gap:4px;flex-wrap:wrap}
+.docPaper{width:210mm;min-height:297mm;margin:0 auto;background:#fff;padding:18mm 16mm;color:#111;font-family:"Malgun Gothic","Apple SD Gothic Neo",sans-serif}
+.docTitle{text-align:center;font-size:28px;font-weight:900;letter-spacing:8px;margin:8mm 0 12mm}
+.docTable{width:100%;border-collapse:collapse;table-layout:fixed}
+.docTable th,.docTable td{border:1px solid #222;padding:9px 8px;font-size:14px;height:42px;white-space:normal}
+.docTable th{background:#f3f3f3;font-weight:800;width:17%}
+.docText{font-size:15px;line-height:1.9;text-align:center;margin:16mm 0 10mm}
+.docDate{text-align:center;font-size:15px;margin:12mm 0}
+.docSign{text-align:right;font-size:15px;line-height:2}
+.docCompany{text-align:center;font-size:18px;font-weight:800;margin-top:7mm}
+.docBlank{display:inline-block;min-width:110px;border-bottom:1px solid #555;height:20px}
+@media print{
+ .docPaper{width:auto;min-height:auto;padding:10mm 8mm}
+}
+
 #printArea{display:none}
 @media(max-width:900px){.layout{display:block}.side{display:none}.main{padding:11px}.mobileNav{display:flex;overflow:auto;gap:5px;padding:7px;background:#fff;border-bottom:1px solid var(--line);position:sticky;top:66px;z-index:20}.mobileNav .nav{min-width:max-content;width:auto;border:1px solid var(--line);padding:8px 10px}.cards{grid-template-columns:repeat(2,1fr)}.grid2,.grid3{grid-template-columns:1fr}.formgrid{grid-template-columns:1fr 1fr}.brand small{display:none}.title{font-size:20px}}
 @media(max-width:560px){.formgrid{grid-template-columns:1fr}.top{padding:0 10px}.v{font-size:21px}}
@@ -187,12 +203,12 @@ input,select{border:1px solid #d2d7e0;background:white;border-radius:9px;padding
    <div class="empTabs"><button id="activeEmpTab" class="empTab active" onclick="setEmployeeView('active')">재직자</button><button id="retiredEmpTab" class="empTab" onclick="setEmployeeView('retired')">퇴사자</button></div>
    <div class="help">연번은 현재 직원순서에 따라 자동 생성됩니다. ↑/↓로 순서만 바꾸면 연번도 자동 재정렬됩니다.</div>
   </div>
-  <div class="tablewrap"><table><thead><tr><th>연번</th><th class="name">이름</th><th>업무</th><th>입사일</th><th>퇴사일</th><th>근무형태</th><th>기본시간</th><th>휴게</th><th>스케줄방식</th><th>급여형태</th><th>연차 기준</th><th>연차 잔여</th><th>급여 지급규칙</th><th>순서</th><th>출력색</th><th></th></tr></thead><tbody id="employeeBody"></tbody></table></div>
+  <div class="tablewrap"><table><thead><tr><th>연번</th><th class="name">이름</th><th>업무</th><th>입사일</th><th>퇴사일</th><th>근무형태</th><th>기본시간</th><th>휴게</th><th>스케줄방식</th><th>급여형태</th><th>연차 기준</th><th>연차 잔여</th><th>급여 지급규칙</th><th>순서</th><th>출력색</th><th>문서</th><th></th></tr></thead><tbody id="employeeBody"></tbody></table></div>
  </div>
 </section>
 
 <section id="storesPage" class="page">
- <div class="row"><div><h1 class="title">업장관리</h1><div class="sub">A 업장처럼 임시로 만든 이름도 여기서 바로 수정할 수 있습니다.</div></div><button class="btn" onclick="addStore()">+ 업장 추가</button></div>
+ <div class="row"><div><h1 class="title">업장관리</h1><div class="sub">업장명뿐 아니라 사업자번호·대표자·주소·전화번호를 저장하면 증명서에 자동 반영됩니다.</div></div><button class="btn" onclick="addStore()">+ 업장 추가</button></div>
  <div id="storeCards" class="grid3" style="margin-top:13px"></div>
 </section>
 
@@ -810,6 +826,7 @@ function renderEmployees(){
    <td class="payRule">${payRuleLabel(e)}</td>
    <td>${employeeView==='active'?`<button class="btn gray small" ${idx===0?'disabled':''} onclick="movePrintOrder(${e.id},-1)">↑</button><button class="btn gray small" ${idx===list.length-1?'disabled':''} onclick="movePrintOrder(${e.id},1)">↓</button>`:'-'}</td>
    <td>${employeeView==='active'?`<select onchange="setPrintColor(${e.id},this.value)" style="padding:5px 7px">${colors}</select><span style="display:inline-block;width:18px;height:18px;border-radius:5px;vertical-align:middle;margin-left:4px;background:${employeeColor(e)};border:1px solid #bbb"></span>`:'-'}</td>
+   <td><div class="docActions"><button class="btn green small" onclick="printEmploymentCertificate(${e.id})">재직증명서</button><button class="btn gray small" onclick="printResignation(${e.id})">사직서</button></div></td>
    <td>${action}</td></tr>`;
  }).join('')||`<tr><td colspan="16">${employeeView==='active'?'재직자가':'퇴사자가'} 없습니다.</td></tr>`;
 }
@@ -987,6 +1004,11 @@ function openEmployee(id,isRetired=false){
  modal(`<h2>${id?'직원 수정':'직원 추가'}</h2><div class="formgrid">
  <div class="field"><label>이름</label><input id="eName" value="${esc(e.name||'')}"></div>
  <div class="field"><label>업무/직책</label><input id="eRole" value="${esc(e.role||'')}"></div>
+ <div class="field"><label>부서</label><input id="eDept" value="${esc(e.department||'')}"></div>
+ <div class="field"><label>생년월일</label><input id="eBirth" type="date" value="${e.birth_date||''}"></div>
+ <div class="field"><label>전화번호</label><input id="ePhone" value="${esc(e.phone||'')}"></div>
+ <div class="field"><label>이메일</label><input id="eEmail" type="email" value="${esc(e.email||'')}"></div>
+ <div class="field"><label>현 주소</label><input id="eAddress" value="${esc(e.address||'')}"></div>
  <div class="field"><label>입사일</label><input id="eHire" type="date" value="${e.hire_date||''}"></div>
  <div class="field"><label>퇴사일</label><input id="eResign" type="date" value="${e.resign_date||''}"></div>
  <div class="field"><label>근무형태</label><select id="eType" onchange="applyLeavePreset()"><option value="40">주5일 스케줄근무</option><option value="36">주4일 스케줄근무</option><option value="custom">기타</option></select></div>
@@ -1019,7 +1041,7 @@ function applyPayPreset(){
  $('eSalaryDelay').value=p.salary_delay_months;$('ePayDay').value=p.salary_pay_day;$('eIncentiveDelay').value=p.incentive_delay_months;$('eIncentiveUnit').value=p.holiday_incentive_unit;$('eIncentiveOn').value=p.holiday_incentive_enabled?'1':'0';
 }
 async function saveEmployee(id){
- let resign=$('eResign')?.value||null;let obj={store_id:storeId(),name:$('eName').value.trim(),role:$('eRole').value.trim(),hire_date:$('eHire').value,resign_date:resign,work_type:$('eType').value,
+ let resign=$('eResign')?.value||null;let obj={store_id:storeId(),name:$('eName').value.trim(),role:$('eRole').value.trim(),department:$('eDept').value.trim(),birth_date:$('eBirth').value||null,phone:$('ePhone').value.trim(),email:$('eEmail').value.trim(),address:$('eAddress').value.trim(),hire_date:$('eHire').value,resign_date:resign,work_type:$('eType').value,
  daily_hours:Number($('eDaily').value||8),default_start_time:$('eStart').value||null,default_end_time:$('eEnd').value||null,
  break_minutes:Number($('eBreak').value||0),work_days:[...document.querySelectorAll('.wd:checked')].map(x=>Number(x.value)),pay_type:$('ePay').value,
  salary_delay_months:Number($('eSalaryDelay').value||0),salary_pay_day:$('ePayDay').value,incentive_delay_months:Number($('eIncentiveDelay').value||0),holiday_incentive_unit:Number($('eIncentiveUnit').value||0),holiday_incentive_enabled:$('eIncentiveOn').value==='1',
@@ -1112,17 +1134,41 @@ async function restoreEmployee(id,name){
  await refreshAll();setEmployeeView('active');
 }
 
-function renderStores(){$('storeCards').innerHTML=stores.map(s=>`<div class="card"><h3>${esc(s.name)}</h3><div class="sub">직원 ${s.id===storeId()?employees.length:'-'}명</div><div class="toolbar" style="margin-top:12px"><button class="btn gray small" onclick="renameStore(${s.id},'${esc(s.name).replace(/'/g,"&#39;")}')">이름 수정</button><button class="btn green small" onclick="$('storeSelect').value='${s.id}';refreshAll()">이 업장 보기</button></div></div>`).join('')}
-async function addStore(){let n=prompt('새 업장 이름');if(!n)return;let q=await sb.from('stores').insert({name:n});if(q.error)alert(q.error.message);else{await loadStores();refreshAll()}}
-async function renameStore(id,old){let n=prompt('업장 이름 수정',old.replace(/&#39;/g,"'"));if(!n)return;let q=await sb.from('stores').update({name:n}).eq('id',id);if(q.error)alert(q.error.message);else{await loadStores();refreshAll()}}
-function modal(html){$('modalHost').innerHTML=`<div class="modalBack" onclick="if(event.target===this)closeModal()"><div class="modal">${html}</div></div>`}function closeModal(){$('modalHost').innerHTML=''}
-function normalizeName(s){return String(s||'').toLowerCase().replace(/\s|_|-|\(|\)|주식회사|㈜/g,'')}
-function inferPayrollMeta(filename){
- let base=filename.replace(/\.(xlsx|xlsm|xls)$/i,''),ym=null;
- let m=base.match(/(20\d{2})[._\-\s]?(0?[1-9]|1[0-2])/);if(m)ym=`${m[1]}-${String(Number(m[2])).padStart(2,'0')}`;
- let matchedStore=stores.find(st=>normalizeName(base).includes(normalizeName(st.name)));
- return {payMonth:ym,store:matchedStore};
+function renderStores(){
+ $('storeCards').innerHTML=stores.map(s=>`<div class="card">
+  <h3>${esc(s.name)}</h3>
+  <div class="sub">${esc(s.business_number||'사업자번호 미입력')} · 대표 ${esc(s.representative_name||'미입력')}</div>
+  <div class="help" style="margin-top:8px">${esc(s.address||'주소 미입력')}<br>${esc(s.phone||'')}</div>
+  <div class="toolbar" style="margin-top:12px">
+   <button class="btn gray small" onclick="editStore(${s.id})">업장정보 수정</button>
+   <button class="btn green small" onclick="$('storeSelect').value='${s.id}';refreshAll()">이 업장 보기</button>
+  </div>
+ </div>`).join('')
 }
+async function addStore(){
+ modal(`<h2>업장 추가</h2>${storeFormHtml({})}<div class="modalActions"><button class="btn gray" onclick="closeModal()">취소</button><button class="btn" onclick="saveStore(null)">저장</button></div>`)
+}
+function storeFormHtml(s){
+ return `<div class="formgrid">
+  <div class="field"><label>업장명</label><input id="sName" value="${esc(s.name||'')}"></div>
+  <div class="field"><label>사업자번호</label><input id="sBiz" value="${esc(s.business_number||'')}"></div>
+  <div class="field"><label>대표자명</label><input id="sRep" value="${esc(s.representative_name||'')}"></div>
+  <div class="field"><label>전화번호</label><input id="sPhone" value="${esc(s.phone||'')}"></div>
+  <div class="field" style="grid-column:span 2"><label>주소</label><input id="sAddress" value="${esc(s.address||'')}"></div>
+ </div>`
+}
+function editStore(id){
+ let s=stores.find(x=>x.id===id);if(!s)return;
+ modal(`<h2>업장정보 수정</h2>${storeFormHtml(s)}<div class="modalActions"><button class="btn gray" onclick="closeModal()">취소</button><button class="btn" onclick="saveStore(${id})">저장</button></div>`)
+}
+async function saveStore(id){
+ let obj={name:$('sName').value.trim(),business_number:$('sBiz').value.trim(),representative_name:$('sRep').value.trim(),phone:$('sPhone').value.trim(),address:$('sAddress').value.trim()};
+ if(!obj.name)return alert('업장명을 입력하세요.');
+ let q=id?await sb.from('stores').update(obj).eq('id',id):await sb.from('stores').insert(obj);
+ if(q.error)return alert(q.error.message);
+ closeModal();await loadStores();if(id)$('storeSelect').value=String(id);await refreshAll();
+}
+async function renameStore(id,old){editStore(id)}
 
 
 function monthFromExcelValue(v){
@@ -1373,6 +1419,56 @@ function exportPharmacyPayTable(){$('pharmacyTemplateFile').click()}
 function exportPayroll(){let data=[['직원','월근무시간','기본급','고정연장','휴일수당','연장수당','식대','조정수당','상여','총지급액','공제총액','실지급액']];let orderMap=new Map(employeesForMonth($('monthSelect').value).map((e,i)=>[e.id,i]));
  payroll.slice().sort((a,b)=>(orderMap.get(a.employee_id)??9999)-(orderMap.get(b.employee_id)??9999)).forEach(p=>data.push([p.employee_name,round2(p.scheduled_hours),p.base_pay,p.fixed_overtime_pay,p.holiday_pay,p.overtime_pay,p.meal_allowance,p.adjustment_pay,p.bonus,p.gross_pay,p.total_deduction,p.net_pay]));downloadXlsx(data,`${stores.find(s=>s.id===storeId())?.name}_${$('monthSelect').value}_급여.xlsx`)}
 function downloadXlsx(data,name){let ws=XLSX.utils.aoa_to_sheet(data),wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'내역');XLSX.writeFile(wb,name)}
+
+function fmtDateKo(s){
+ if(!s)return '       년     월     일';
+ let [y,m,d]=s.split('-');return `${y}년 ${Number(m)}월 ${Number(d)}일`;
+}
+function currentStore(){return stores.find(s=>s.id===storeId())||{}}
+function findEmployeeAny(id){return [...employees,...retiredEmployees].find(e=>e.id===id)}
+function printEmploymentCertificate(id){
+ let e=findEmployeeAny(id),s=currentStore();if(!e)return;
+ let purpose=prompt('발급용도를 입력하세요. 비워두면 출력 후 수기로 작성할 수 있습니다.','')??'';
+ let today=isoToday();
+ $('printArea').innerHTML=`<div class="docPaper">
+  <div class="docTitle">재 직 증 명 서</div>
+  <table class="docTable">
+   <tr><th colspan="4">인적사항</th></tr>
+   <tr><th>성 명</th><td>${esc(e.name||'')}</td><th>생년월일</th><td>${e.birth_date?fmtDateKo(e.birth_date):''}</td></tr>
+   <tr><th>전화번호</th><td>${esc(e.phone||'')}</td><th>이 메 일</th><td>${esc(e.email||'')}</td></tr>
+   <tr><th>현 주 소</th><td colspan="3">${esc(e.address||'')}</td></tr>
+   <tr><th colspan="4">재직사항</th></tr>
+   <tr><th>회 사 명</th><td>${esc(s.name||'')}</td><th>사업자번호</th><td>${esc(s.business_number||'')}</td></tr>
+   <tr><th>근무부서</th><td>${esc(e.department||'')}</td><th>직위/직급</th><td>${esc(e.role||'')}</td></tr>
+   <tr><th>입사일자</th><td>${fmtDateKo(e.hire_date)}</td><th>담당업무</th><td>${esc(e.role||'')}</td></tr>
+   <tr><th>발급용도</th><td colspan="3">${esc(purpose)}</td></tr>
+  </table>
+  <div class="docText">상기인은 위와 같이 근무하고 있음을 증명합니다.</div>
+  <div class="docDate">${fmtDateKo(today)}</div>
+  <div class="docSign">대표자&nbsp;&nbsp; ${esc(s.representative_name||'')}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (인)</div>
+  <div class="docCompany">${esc(s.name||'')}</div>
+ </div>`;
+ window.print();
+}
+function printResignation(id){
+ let e=findEmployeeAny(id),s=currentStore();if(!e)return;
+ let last=e.resign_date||'';
+ $('printArea').innerHTML=`<div class="docPaper">
+  <div class="docTitle">사 직 서</div>
+  <table class="docTable">
+   <tr><th>성 명</th><td>${esc(e.name||'')}</td><th>생년월일</th><td>${e.birth_date?fmtDateKo(e.birth_date):''}</td></tr>
+   <tr><th>담당업무</th><td>${esc(e.role||'')}</td><th>입사일</th><td>${fmtDateKo(e.hire_date)}</td></tr>
+   <tr><th>사직사유</th><td colspan="3" style="height:90px"></td></tr>
+  </table>
+  <div class="docText">상기 본인은 마지막 근무일인 ${last?fmtDateKo(last):'<span class="docBlank"></span> 년 <span class="docBlank" style="min-width:45px"></span> 월 <span class="docBlank" style="min-width:45px"></span> 일'}자로<br>
+  귀사에서 사직하고자 하오니 수락하여 주시기 바랍니다.</div>
+  <div class="docDate">${fmtDateKo(isoToday())}</div>
+  <div class="docSign">제출자&nbsp;&nbsp; ${esc(e.name||'')}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (서명 또는 인)</div>
+  <div class="docCompany">${esc(s.name||'')} 귀하</div>
+ </div>`;
+ window.print();
+}
+
 function printSchedule(){
  let r=monthRange(),st=stores.find(s=>s.id===storeId()),list=employeesForMonth(r.m);
  let h=`<div class="printHead"><div><h1>${esc(st?.name||'')} 월간 근무표</h1><div class="meta">${r.y}년 ${r.mo}월</div></div><div class="meta">출력일 ${new Date().toLocaleDateString('ko-KR')}</div></div>
