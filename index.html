@@ -569,6 +569,7 @@ tr[draggable="true"]:active,.empDragHandle:active{cursor:grabbing}
 #employeesPage th:nth-child(16),#employeesPage td:nth-child(16){width:86px}
 #employeesPage th:nth-child(17),#employeesPage td:nth-child(17){width:220px}
 #employeesPage th:nth-child(18),#employeesPage td:nth-child(18){width:210px}
+#employeesPage .empManageActions{display:flex;gap:4px;flex-wrap:wrap;align-items:center;justify-content:center}
 
 #employeesPage .empDragHandle{
   cursor:grab!important;
@@ -2627,7 +2628,7 @@ function renderEmployees(){
    let colors=PRINT_COLORS.map(([c,n])=>`<option value="${c}" ${employeeColor(e)===c?'selected':''}>${n}</option>`).join('');
    let action=employeeView==='active'
     ?`<button class="btn gray small" onclick="openEmployee(${e.id})">상세수정</button> <button class="btn gray small" onclick="openEmploymentHistory(${e.id})">재직이력</button> <button class="btn red small" onclick="retireEmployee(${e.id},'${esc(e.name).replace(/'/g,"&#39;")}')">퇴사처리</button>`
-    :`<button class="btn gray small" onclick="openEmployee(${e.id},true)">상세정보</button> <button class="btn gray small" onclick="openEmploymentHistory(${e.id})">재직이력</button> <button class="btn green small" onclick="restoreEmployee(${e.id},'${esc(e.name).replace(/'/g,"&#39;")}')">재입사</button>`;
+    :`<button class="btn gray small" onclick="openEmployee(${e.id},true)">상세정보</button> <button class="btn gray small" onclick="openEmploymentHistory(${e.id})">재직이력</button> <button class="btn green small" onclick="reactivateEmployee(${e.id},'${esc(e.name).replace(/'/g,"&#39;")}')">복귀</button> <button class="btn gray small" onclick="restoreEmployee(${e.id},'${esc(e.name).replace(/'/g,"&#39;")}')">재입사</button>`;
 
    let workTypeCell=employeeView==='active'
      ?`<input class="empInline" list="employeeWorkTypeSuggestions" value="${esc(workType(e))}" draggable="false" ondragstart="event.preventDefault()" ondrop="event.preventDefault()" onfocus="this.select()" onkeydown="if(event.key==='Enter'){this.blur()}" onchange="saveEmployeeInline(${e.id},'work_type',this.value)">`
@@ -2684,8 +2685,8 @@ function renderEmployees(){
 <button class="btn small" onclick="openEmployeeDocuments(${e.id},'salary_contract')">연봉계약서</button>
 <button class="btn small" onclick="openEmployeeDocuments(${e.id},'work_contract')">근로계약서</button>
 </div></td>
-   <td>${action}</td></tr>`;
- }).join('')||`<tr><td colspan="17">${employeeView==='active'?'재직자가':'퇴사자가'} 없습니다.</td></tr>`;
+   <td><div class="empManageActions">${action}</div></td></tr>`;
+ }).join('')||`<tr><td colspan="18">${employeeView==='active'?'재직자가':'퇴사자가'} 없습니다.</td></tr>`;
 
  if(dragEnabled)setupEmployeeDragDrop();
  requestAnimationFrame(()=>{
@@ -3182,7 +3183,7 @@ async function openEmployee(id,isRetired=false){
  <div class="field"><label>연차 하루 사용(h)</label><input id="eLeaveDay" type="number" step=".5" value="${leaveDayHours(e)}"></div>
  </div>
  <div style="margin-top:10px"><b style="font-size:12px">기본근무 채우기용 패턴 (선택사항)</b><div style="margin-top:6px">${checks}</div></div>
- <div class="help" style="margin-top:10px"><b>직책과 업무를 구분해서 입력하세요.</b> 예: 직책=과장 / 업무=매장관리·조제·전산 등<br><b>이 화면의 모든 항목은 수기로 수정 후 저장할 수 있습니다.</b><br>퇴사자 정보를 수정해도 자동으로 재직복귀되지 않습니다.<br>실제 근무요일이 매주 바뀌는 스케줄근무라면 위 요일은 비워두셔도 됩니다. 이 항목은 “기본근무 채우기”를 빠르게 사용할 때만 참고합니다.<br>연차 기본값: 주5일은 월 +8h / 하루 -8h, 주4일은 주32h 소정 기준 월 +7h / 하루 -8h.</div>
+ <div class="help" style="margin-top:10px"><b>직책과 업무를 구분해서 입력하세요.</b> 예: 직책=과장 / 업무=매장관리·조제·전산 등<br><b>이 화면의 모든 항목은 수기로 수정 후 저장할 수 있습니다.</b><br><b>퇴사자의 퇴사일을 비워 저장하면 기존 입사일·연번을 유지한 채 재직자로 복귀합니다.</b> 실제 퇴사 후 다시 입사한 경우에는 퇴사자 목록의 “재입사”를 사용하세요.<br>실제 근무요일이 매주 바뀌는 스케줄근무라면 위 요일은 비워두셔도 됩니다. 이 항목은 “기본근무 채우기”를 빠르게 사용할 때만 참고합니다.<br>연차 기본값: 주5일은 월 +8h / 하루 -8h, 주4일은 주32h 소정 기준 월 +7h / 하루 -8h.</div>
  <div class="modalActions"><button class="btn gray" onclick="closeModal()">취소</button><button class="btn" onclick="saveEmployee(${id||'null'})">저장</button></div>`);
  $('eType').value=workType(e);$('ePay').value=e.pay_type||'monthly';$('ePayDay').value=payDayRule(e);$('eIncentiveOn').value=incentiveEnabled(e)?'1':'0';
 }
@@ -3230,12 +3231,15 @@ async function saveEmployee(id){
 
  if(!obj.name||!obj.hire_date)return alert('이름과 입사일은 필수입니다.');
 
- // 상태 보존:
- // - 기존 퇴사자는 정보수정만 했다고 자동 복직하지 않음
- // - 퇴사일을 직접 입력하면 퇴사상태
- // - 신규 직원은 재직상태
+ // 상태 처리:
+ // - 퇴사일이 있으면 퇴사상태
+ // - 퇴사자의 퇴사일을 비워 저장하면 '복귀'로 간주하여 재직상태로 되돌림
+ // - 복귀 시 기존 입사일과 print_order(연번)는 건드리지 않음
+ // - 신규 직원은 퇴사일 유무에 따라 상태 결정
+ let restoredFromRetired=!!(existing && existing.active===false && !resign);
+ let previousResignDate=existing?.resign_date||null;
  if(existing){
-   obj.active=resign?false:(existing.active!==false);
+   obj.active=!resign;
  }else{
    obj.active=!resign;
    obj.print_order=(Math.max(0,...employees.map(e=>Number(e.print_order||0)),...retiredEmployees.map(e=>Number(e.print_order||0)))+1);
@@ -3248,15 +3252,29 @@ async function saveEmployee(id){
 
  if(q.error)return alert('직원정보 저장 오류:\n'+q.error.message);
 
+ // 잘못된 퇴사처리를 되돌리는 경우, 퇴사처리 버튼이 자동 생성했던 수기 이력만 함께 취소한다.
+ // 사용자가 별도로 만든 재직이력이나 급여대장 이력은 건드리지 않는다.
+ if(restoredFromRetired && existing?.hire_date && previousResignDate){
+   let sourceKey=employmentHistoryKey(id,existing.hire_date,previousResignDate,'manual');
+   let h=await sb.from('employee_employment_history').delete()
+     .eq('employee_id',id)
+     .eq('source_key',sourceKey)
+     .eq('note','퇴사처리');
+   if(h.error)console.warn('복귀 시 퇴사처리 이력 정리 오류',h.error.message);
+ }
+
  closeModal();
  await refreshAll();
 
- // 기존 직원 수정은 작업하던 탭을 유지한다.
- // 재직자에게 퇴사일을 입력하면 직원은 퇴사자로 이동하지만 화면은 재직자 탭에 남는다.
- if(existing)setEmployeeView(returnEmployeeView);
+ // 기존 직원 수정은 작업하던 탭을 유지하되,
+ // 퇴사자에서 퇴사일을 비워 복귀한 경우에는 재직자 탭으로 즉시 이동한다.
+ if(restoredFromRetired)setEmployeeView('active');
+ else if(existing)setEmployeeView(returnEmployeeView);
  else setEmployeeView(obj.active===false?'retired':'active');
 
- alert(`${obj.name} 직원정보를 저장했습니다.`);
+ alert(restoredFromRetired
+   ?`${obj.name} 직원을 재직자로 복귀했습니다.\n퇴사일은 삭제되고 기존 입사일·연번은 유지됩니다.`
+   :`${obj.name} 직원정보를 저장했습니다.`);
 }
 
 function toggleEmployee(id,checked){
@@ -3464,6 +3482,32 @@ async function retireEmployee(id,name){
  await refreshAll();
  setEmployeeView('active');
 }
+async function reactivateEmployee(id,name){
+ name=String(name).replace(/&#39;/g,"'");
+ let e=findEmployeeAny(id);
+ if(!e)return alert('직원정보를 찾지 못했습니다.');
+ if(!confirm(`${name}을 재직자로 복귀 처리할까요?\n\n- 기존 입사일 유지\n- 기존 연번(print_order) 유지\n- 퇴사일 삭제\n- 과거 스케줄·급여 자료 유지\n\n실제 퇴사 후 다시 입사한 경우에는 “재입사”를 사용하세요.`))return;
+
+ let previousResignDate=e.resign_date||null;
+ let q=await sb.from('employees').update({active:true,resign_date:null}).eq('id',id);
+ if(q.error)return alert('복귀 처리 오류:\n'+q.error.message);
+
+ // 퇴사처리 버튼으로 생성된 현재 재직기간의 종료 이력만 취소한다.
+ // 별도로 작성한 이력과 급여대장 이력은 보존한다.
+ if(e.hire_date && previousResignDate){
+   let sourceKey=employmentHistoryKey(id,e.hire_date,previousResignDate,'manual');
+   let h=await sb.from('employee_employment_history').delete()
+     .eq('employee_id',id)
+     .eq('source_key',sourceKey)
+     .eq('note','퇴사처리');
+   if(h.error)console.warn('복귀 시 퇴사처리 이력 정리 오류',h.error.message);
+ }
+
+ await refreshAll();
+ setEmployeeView('active');
+ alert(`${name} 직원을 재직자로 복귀했습니다.\n퇴사일은 삭제되고 기존 입사일·연번은 그대로 유지됩니다.`);
+}
+
 async function restoreEmployee(id,name){
  name=String(name).replace(/&#39;/g,"'");
  let raw=prompt(`${name} 재입사일을 8자리로 입력하세요.`,isoToday().replace(/-/g,''));
