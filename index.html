@@ -653,6 +653,35 @@ body.resizingEmployeeColumn *{
   width:205px;
 }
 
+
+/* ===== 급여 원본 핵심정보 표 ===== */
+#payrollMainTable{
+  min-width:1420px!important;
+  table-layout:fixed!important;
+}
+#payrollMainTable th,#payrollMainTable td{
+  padding:7px 6px!important;
+  font-size:11px!important;
+  white-space:nowrap!important;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+#payrollMainTable th:nth-child(1),#payrollMainTable td:nth-child(1){width:52px!important}
+#payrollMainTable th:nth-child(2),#payrollMainTable td:nth-child(2){width:86px!important}
+#payrollMainTable th:nth-child(3),#payrollMainTable td:nth-child(3){width:118px!important}
+#payrollMainTable th:nth-child(4),#payrollMainTable td:nth-child(4){width:92px!important}
+#payrollMainTable th:nth-child(5),#payrollMainTable td:nth-child(5){width:78px!important}
+#payrollMainTable th:nth-child(6),#payrollMainTable td:nth-child(6){width:94px!important}
+#payrollMainTable th:nth-child(7),#payrollMainTable td:nth-child(7){width:76px!important}
+#payrollMainTable th:nth-child(8),#payrollMainTable td:nth-child(8){width:96px!important}
+#payrollMainTable th:nth-child(9),#payrollMainTable td:nth-child(9){width:110px!important}
+#payrollMainTable th:nth-child(10),#payrollMainTable td:nth-child(10){width:110px!important}
+#payrollMainTable th:nth-child(11),#payrollMainTable td:nth-child(11){width:112px!important}
+#payrollMainTable th:nth-child(12),#payrollMainTable td:nth-child(12){width:112px!important}
+#payrollMainTable th:nth-child(13),#payrollMainTable td:nth-child(13){width:104px!important}
+#payrollMainTable th:nth-child(14),#payrollMainTable td:nth-child(14){width:112px!important}
+#payrollMainTable .payName{font-weight:900;text-align:left}
+#payrollMainTable .residentNo{font-variant-numeric:tabular-nums;letter-spacing:.15px}
 </style>
 </head>
 <body>
@@ -742,6 +771,7 @@ body.resizingEmployeeColumn *{
   <div class="toolbar">
    <input type="file" id="payrollFile" accept=".xlsx,.xls,.xlsm" style="display:none" onchange="importPayrollSimple(this.files[0]);this.value=''">
    <button class="btn" onclick="$('payrollFile').click()">급여대장 불러오기</button>
+   <button id="payrollReapplyBtn" class="btn gray" onclick="reapplyStoredPayrollSource()" title="서버에 보관된 이 달 급여대장 원본을 최신 로직으로 다시 적용합니다.">⟳ 원본 새로고침</button>
    <span id="payrollLoadState" class="saveState">대기</span>
   </div>
  </div>
@@ -749,7 +779,7 @@ body.resizingEmployeeColumn *{
  <div id="payrollImportInfo" class="card" style="margin-top:12px;display:none"></div>
 
  <div class="grid3 payrollSummaryGrid" style="margin-top:12px">
-   <div class="card payrollSummaryCard"><div class="help">선택월 총지급 합계</div><div id="monthGrossTotal" class="payrollBigMoney">0원</div></div>
+   <div class="card payrollSummaryCard"><div class="help">선택월 월지급총액 합계</div><div id="monthGrossTotal" class="payrollBigMoney">0원</div></div>
    <div class="card payrollSummaryCard"><div class="help">선택월 공제내역합계</div><div id="monthDeductionTotal" class="payrollBigMoney">0원</div></div>
    <div class="card payrollSummaryCard"><div class="help">선택월 실지급 합계</div><div id="monthNetTotal" class="payrollBigMoney">0원</div></div>
  </div>
@@ -758,9 +788,9 @@ body.resizingEmployeeColumn *{
   <div class="row">
    <div><h3 style="margin:0">노무사 급여대장 · 월별 검산</h3><div class="help">노무사 Excel에서 불러온 급여자료를 그대로 표시합니다. 표 맨 아래 합계행으로 원본 급여대장과 검산할 수 있습니다.</div></div>
   </div>
-  <div class="tablewrap" style="margin-top:10px"><table>
+  <div class="tablewrap" style="margin-top:10px"><table id="payrollMainTable">
    <thead><tr>
-    <th class="name">직원</th><th>월근무</th><th>주휴</th><th>기본급</th><th>주휴수당</th><th>고정연장</th><th>휴일수당</th><th>연장수당</th><th>식대</th><th>상여/조정</th><th>총지급</th><th>선지급공제</th><th>실지급</th>
+    <th>순번</th><th>성명</th><th>주민번호</th><th>업무</th><th>직급</th><th>입사일</th><th>재직일수</th><th>통상시급</th><th>월근무시간(기본)</th><th>월근무시간(휴일)</th><th>월급여(계약서)</th><th>월지급총액</th><th>선지급공제</th><th>실지급</th>
    </tr></thead>
    <tbody id="payrollBody"></tbody>
    <tfoot id="payrollFoot"></tfoot>
@@ -779,7 +809,7 @@ body.resizingEmployeeColumn *{
      </div>
    </div>
    <div class="grid3 payrollSummaryGrid" style="margin-top:12px">
-     <div class="miniStat"><span>기간 총지급</span><b id="periodGrossTotal">0원</b></div>
+     <div class="miniStat"><span>기간 월지급총액</span><b id="periodGrossTotal">0원</b></div>
      <div class="miniStat"><span>기간 공제내역합계</span><b id="periodDeductionTotal">0원</b></div>
      <div class="miniStat"><span>기간 실지급</span><b id="periodNetTotal">0원</b></div>
    </div>
@@ -980,7 +1010,7 @@ function clearStoreScopedUI(){
  if($('schBody'))$('schBody').innerHTML='<tr><td colspan="40" style="padding:20px;text-align:center">직원·스케줄 불러오는 중...</td></tr>';
  if($('employeeBody'))$('employeeBody').innerHTML='<tr><td colspan="17" style="padding:20px;text-align:center">직원 불러오는 중...</td></tr>';
  if($('hoursBody'))$('hoursBody').innerHTML='<tr><td colspan="16" style="padding:20px;text-align:center">근로자료는 근로 탭에서 불러옵니다.</td></tr>';
- if($('payrollBody'))$('payrollBody').innerHTML='<tr><td colspan="12" style="padding:20px;text-align:center">급여자료는 급여 탭에서 불러옵니다.</td></tr>';
+ if($('payrollBody'))$('payrollBody').innerHTML='<tr><td colspan="14" style="padding:20px;text-align:center">급여자료는 급여 탭에서 불러옵니다.</td></tr>';
 }
 
 async function switchMonth(){
@@ -2177,7 +2207,7 @@ function setPayrollLoadState(text,type=''){
 async function reloadPayrollScreen(){
  const token=++payrollReloadToken,sid=storeId(),ym=$('monthSelect').value;
  setPayrollLoadState('급여 조회중','saving');
- if($('payrollBody'))$('payrollBody').innerHTML='<tr><td colspan="12" style="padding:24px;text-align:center">급여 DB 직접 조회중...</td></tr>';
+ if($('payrollBody'))$('payrollBody').innerHTML='<tr><td colspan="14" style="padding:24px;text-align:center">급여 DB 직접 조회중...</td></tr>';
 
  let result;
  try{
@@ -2185,7 +2215,7 @@ async function reloadPayrollScreen(){
  }catch(err){
    if(token!==payrollReloadToken)return;
    setPayrollLoadState('조회 시간초과','error');
-   $('payrollBody').innerHTML=`<tr><td colspan="12" style="padding:24px;text-align:center;color:#b42318">
+   $('payrollBody').innerHTML=`<tr><td colspan="14" style="padding:24px;text-align:center;color:#b42318">
       ${esc(err.message)}<br><button class="btn gray small" onclick="reloadPayrollScreen()">다시 시도</button>
     </td></tr>`;
    return;
@@ -2195,7 +2225,7 @@ async function reloadPayrollScreen(){
 
  if(result?.error){
    setPayrollLoadState(`DB 오류: ${result.stage||''}`,'error');
-   $('payrollBody').innerHTML=`<tr><td colspan="12" style="padding:24px;color:#b42318">
+   $('payrollBody').innerHTML=`<tr><td colspan="14" style="padding:24px;color:#b42318">
      <b>급여 DB 조회 오류</b><br>${esc(result.error.message||String(result.error))}
    </td></tr>`;
    return;
@@ -2221,59 +2251,9 @@ async function reloadPayrollScreen(){
 }
 
 function renderPayroll(){
- if(!$('payrollBody'))return;
- let rows=[],ym=$('monthSelect').value;
- let orderMap=new Map(employeesForMonth(ym).map((e,i)=>[e.id,i]));
-
- let sorted=payroll.slice().sort((a,b)=>{
-   let ai=a.employee_id?(orderMap.get(a.employee_id)??9000):9500;
-   let bi=b.employee_id?(orderMap.get(b.employee_id)??9000):9500;
-   if(ai!==bi)return ai-bi;
-   return String(a.employee_name||'').localeCompare(String(b.employee_name||''),'ko');
- });
-
- for(const p of sorted){
-   let emp=allEmployees().find(x=>x.id===p.employee_id)
-       ||allEmployees().find(x=>normalizeName(x.name)===normalizeName(p.employee_name));
-   let extra=Number(p.adjustment_pay||0)+Number(p.bonus||0);
-   // 월별 표의 공제 칸은 '선지급공제'만 표시한다.
-   let ded=Number(p.other_deduction||0);
-
-   // 급여대장을 표시하는 데 스케줄 계산이 실패해도 영향 없게 한다.
-   let diff='-';
-   try{
-     if(emp && employedInMonth(emp,ym)){
-       let x=calc(emp);
-       let d=round2(Number(x.worked||0)-Number(p.scheduled_hours||0));
-       diff=(d>0?'+':'')+hour2(d)+'h';
-     }
-   }catch(err){
-     console.warn('시간차이 계산 생략',p.employee_name,err);
-   }
-
-   rows.push(`<tr class="${emp?.active===false?'retiredRow':''}">
-    <td class="name"><b>${esc(p.employee_name||'이름없음')}</b>${!emp?' <span class="reviewWarn">직원 미매칭</span>':''}</td>
-    <td>${hour2(p.scheduled_hours)}h</td>
-    <td class="money">${money(p.base_pay)}</td>
-    <td class="money">${money(p.fixed_overtime_pay)}</td>
-    <td class="money">${money(p.holiday_pay)}</td>
-    <td class="money">${money(p.overtime_pay)}</td>
-    <td class="money">${money(p.meal_allowance)}</td>
-    <td class="money">${money(extra)}</td>
-    <td class="money">${money(p.gross_pay)}</td>
-    <td class="money">${money(ded)}</td>
-    <td class="money"><b>${money(p.net_pay)}</b></td>
-    <td>${diff}</td>
-   </tr>`);
- }
-
- $('payrollBody').innerHTML=rows.length
-   ?rows.join('')
-   :`<tr><td colspan="12" style="padding:28px;text-align:center">
-      <b>${esc(ym)}</b> 급여자료가 없습니다.<br>
-      <span class="help">다른 월을 선택하거나 노무사 Excel을 불러오세요.</span>
-    </td></tr>`;
+ renderPayrollSimple();
 }
+
 function setEmployeeView(v){
  employeeView=v;
  employeeDeleteSelection.clear();$('activeEmpTab')?.classList.toggle('active',v==='active');$('retiredEmpTab')?.classList.toggle('active',v==='retired');renderEmployees();
@@ -3630,6 +3610,99 @@ function payrollWeeklyHoursFromMemo(memo){
  let m=String(memo||'').match(/weekly_hours=([0-9.]+)/);
  return m?Number(m[1]):0;
 }
+function payrollSourceMetaFromMemo(memo){
+ let m=String(memo||'').match(/(?:^|;)source_meta=([^;]*)/);
+ if(!m)return {};
+ try{
+   let obj=JSON.parse(decodeURIComponent(m[1]));
+   return obj&&typeof obj==='object'?obj:{};
+ }catch(err){
+   console.warn('급여 원본표시정보 해석 실패',err);
+   return {};
+ }
+}
+
+// ===== 급여대장 원본 서버 보관 / 최신 파서 재적용 =====
+// 계약서 PDF 저장소와 분리된 급여 Excel 전용 private bucket 사용.
+const PAYROLL_SOURCE_BUCKET='payroll-sources';
+function payrollMemoEncodedValue(memo,key){
+ let re=new RegExp('(?:^|;)'+key+'=([^;]*)');
+ let m=String(memo||'').match(re);
+ if(!m)return '';
+ try{return decodeURIComponent(m[1]||'')}catch(_){return m[1]||''}
+}
+function payrollSourceStorageFromMemo(memo){return payrollMemoEncodedValue(memo,'source_storage_path')}
+function payrollSourceOriginalNameFromMemo(memo){return payrollMemoEncodedValue(memo,'source_original_name')}
+function payrollSafeExt(name){
+ let m=String(name||'').toLowerCase().match(/\.(xlsx|xlsm|xls)$/);
+ return m?'.'+m[1]:'.xlsx';
+}
+function payrollSourceArchivePath(sid,ym,file){
+ let stamp=Date.now(),rand=Math.random().toString(36).slice(2,8);
+ return `store_${Number(sid)}/${String(ym||'unknown')}/${stamp}_${rand}_payroll${payrollSafeExt(file?.name)}`;
+}
+function payrollSourceContentType(file){
+ if(file?.type && /excel|spreadsheet|macroenabled/i.test(file.type))return file.type;
+ let ext=payrollSafeExt(file?.name);
+ if(ext==='.xls')return 'application/vnd.ms-excel';
+ if(ext==='.xlsm')return 'application/vnd.ms-excel.sheet.macroEnabled.12';
+ return 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+}
+async function archivePayrollSourceFile(file,sid,ym){
+ let path=payrollSourceArchivePath(sid,ym,file);
+ let up=await sb.storage.from(PAYROLL_SOURCE_BUCKET).upload(path,file,{contentType:payrollSourceContentType(file),upsert:false});
+ if(up.error)throw new Error(up.error.message);
+ return path;
+}
+async function getStoredPayrollSourceForMonth(sid,ym){
+ let pm=await sb.from('payroll_months').select('id').eq('store_id',sid).eq('pay_month',ym+'-01').order('id',{ascending:false}).limit(1);
+ if(pm.error)return {error:pm.error.message};
+ let monthId=pm.data?.[0]?.id;
+ if(!monthId)return {missing:true};
+ let pe=await sb.from('payroll_entries').select('source_file,memo').eq('payroll_month_id',monthId).order('id',{ascending:true}).limit(1);
+ if(pe.error)return {error:pe.error.message};
+ let row=pe.data?.[0];
+ if(!row)return {missing:true};
+ let path=payrollSourceStorageFromMemo(row.memo);
+ if(!path)return {missing:true,legacy:true,source_file:row.source_file||''};
+ return {path,source_file:payrollSourceOriginalNameFromMemo(row.memo)||row.source_file||'급여대장.xlsx',monthId};
+}
+function updatePayrollReapplyButtonState(){
+ let b=$('payrollReapplyBtn');if(!b)return;
+ let path=payroll[0]?payrollSourceStorageFromMemo(payroll[0].memo):'';
+ b.classList.toggle('green',!!path);
+ b.classList.toggle('gray',!path);
+ b.title=path
+   ?'서버에 보관된 이 달 급여대장 원본을 최신 로직으로 다시 적용합니다.'
+   :'이 달은 서버 원본이 없을 수 있습니다. 버튼을 눌러 확인하세요.';
+}
+async function reapplyStoredPayrollSource(){
+ let sid=storeId(),ym=$('monthSelect').value;
+ if(!sid||!ym)return alert('업장과 월을 먼저 선택하세요.');
+ setPayrollLoadState('서버 원본 확인 중','saving');
+ let info=await getStoredPayrollSourceForMonth(sid,ym);
+ if(info.error){setPayrollLoadState('원본 조회 오류','error');return alert('급여대장 원본 조회 오류:\n'+info.error)}
+ if(info.missing){
+   setPayrollLoadState(`${ym} · 서버 원본 없음`,'saved');
+   return alert(
+     `${monthLabel(ym)} 급여대장은 원본 Excel 서버 보관 기능을 적용하기 전에 등록된 자료입니다.\n\n`+
+     `이 월의 원본 파일 자체가 서버에 남아 있지 않아 버튼만으로 다시 분석할 수 없습니다.\n`+
+     `같은 급여대장을 딱 한 번만 다시 불러와 주세요.\n\n`+
+     `그 업로드부터 원본 Excel도 서버에 보관되며, 이후에는 이 "원본 새로고침" 버튼만 눌러 최신 로직으로 다시 적용할 수 있습니다.`
+   );
+ }
+ let store=stores.find(s=>s.id===sid);
+ if(!confirm(
+   `${store?.name||'현재 업장'} ${monthLabel(ym)}\n\n`+
+   `서버에 보관된 원본 급여대장 "${info.source_file}"을 다시 읽어\n`+
+   `현재 최신 급여 파싱 규칙으로 이 달 급여자료를 다시 적용할까요?\n\n`+
+   `직원관리의 입사일·퇴사일·직책·업무·근무설정은 변경하지 않습니다.`
+ )){setPayrollLoadState(`${ym} · 취소`,'saved');return}
+ let dl=await sb.storage.from(PAYROLL_SOURCE_BUCKET).download(info.path);
+ if(dl.error){setPayrollLoadState('원본 다운로드 오류','error');return alert('서버 급여대장 원본 다운로드 오류:\n'+dl.error.message)}
+ let sourceFile=new File([dl.data],info.source_file,{type:dl.data?.type||payrollSourceContentType({name:info.source_file})});
+ await importPayrollSimple(sourceFile,{reapply:true,targetStoreId:sid,expectedMonth:ym,sourceStoragePath:info.path});
+}
 
 async function parseLaborPayrollExact(file){
  let buf=await file.arrayBuffer();
@@ -3806,10 +3879,13 @@ async function parseLaborPayrollExact(file){
    rows.push({
      employee_id:null,
      employee_name:name,
+     source_seq:seq,
+     resident_number:text(cell(`C${r}`)),
      role:text(cell(`D${r}`)),
      rank:text(cell(`E${r}`)),
      hire_date:date(cell(`F${r}`)),
      resign_date:date(cell(`G${r}`)),
+     employment_days:num(cell(`H${r}`)),
 
      ordinary_hourly_rate:num(cell(`I${r}`)),
      scheduled_hours:num(cell(`J${r}`)),
@@ -3833,6 +3909,7 @@ async function parseLaborPayrollExact(file){
      bonus:intMoney(cell(`AT${r}`)),
      unused_leave_pay:intMoney(cell(`AU${r}`)),
      absence_deduction:intMoney(cell(`AW${r}`)),
+     contract_salary:intMoney(cell(`AK${r}`)),
 
      gross_pay:gross,
      income_tax:intMoney(cell(`AZ${r}`)),
@@ -3950,7 +4027,17 @@ function payrollDbSafeNumber(v,mode='numeric'){
  // 시간은 소수 허용하되 부동소수점 찌꺼기 제거
  return Math.round(n*1000)/1000;
 }
-function makePayrollDbRow(x,payrollMonthId,file,parsed){
+function makePayrollDbRow(x,payrollMonthId,file,parsed,sourceStoragePath=''){
+ let sourceMeta={
+   seq:Number(x.source_seq||0),
+   resident_number:String(x.resident_number||''),
+   role:String(x.role||''),
+   rank:String(x.rank||''),
+   hire_date:x.hire_date||'',
+   resign_date:x.resign_date||'',
+   employment_days:Number(x.employment_days||0),
+   contract_salary:payrollDbSafeNumber(x.contract_salary||0,'money')
+ };
  return {
    payroll_month_id:payrollMonthId,
    employee_id:x.employee_id||null,
@@ -3989,7 +4076,7 @@ function makePayrollDbRow(x,payrollMonthId,file,parsed){
 
    source_file:file.name,
    // Excel 원본 총지급/실지급 값을 memo에도 남겨 DB 저장 후 검증할 수 있게 한다.
-   memo:`weekly_hours=${payrollDbSafeNumber(x._weekly_hours||0,'hours')};weekly_text=${encodeURIComponent(x._weekly_hours_text||'')};pay_date=${parsed.payDate||''};period=${parsed.periodStart||''}~${parsed.periodEnd||''};gross_col=${parsed.grossCol||''};net_col=${parsed.netCol||''};source_gross=${payrollDbSafeNumber(x.gross_pay,'money')};source_net=${payrollDbSafeNumber(x.net_pay,'money')}`
+   memo:`weekly_hours=${payrollDbSafeNumber(x._weekly_hours||0,'hours')};weekly_text=${encodeURIComponent(x._weekly_hours_text||'')};pay_date=${parsed.payDate||''};period=${parsed.periodStart||''}~${parsed.periodEnd||''};gross_col=${parsed.grossCol||''};net_col=${parsed.netCol||''};source_gross=${payrollDbSafeNumber(x.gross_pay,'money')};source_net=${payrollDbSafeNumber(x.net_pay,'money')};source_storage_path=${encodeURIComponent(sourceStoragePath||'')};source_original_name=${encodeURIComponent(file?.name||'')};source_meta=${encodeURIComponent(JSON.stringify(sourceMeta))}`
  };
 }
 
@@ -4064,7 +4151,7 @@ async function resolvePayrollUnmatchedRows(parsed,targetEmployees){
  return unresolved;
 }
 
-async function importPayrollSimple(file){
+async function importPayrollSimple(file,options={}){
  if(!file)return;
  setPayrollLoadState('파일 읽는 중','saving');
 
@@ -4080,10 +4167,16 @@ async function importPayrollSimple(file){
    return alert(parsed.error);
  }
 
- let targetStore=askPayrollTargetStore(parsed.storeName);
+ let targetStore=options.targetStoreId
+   ?stores.find(s=>s.id===Number(options.targetStoreId))
+   :askPayrollTargetStore(parsed.storeName);
  if(!targetStore){
    setPayrollLoadState('업장 선택 취소','');
    return;
+ }
+ if(options.expectedMonth && parsed.payMonth!==options.expectedMonth){
+   setPayrollLoadState('산정월 불일치','error');
+   return alert(`서버 원본의 산정월(${parsed.payMonth})이 현재 선택월(${options.expectedMonth})과 달라 재적용을 중단했습니다.`);
  }
 
  // 항상 현재 업장의 직원 DB를 새로 읽는다.
@@ -4125,12 +4218,29 @@ async function importPayrollSimple(file){
 
  preview+=`\n\n이 새 Excel을 기준으로 ${monthLabel(parsed.payMonth)} 급여자료를 교체할까요?`;
 
- if(!confirm(preview)){
+ if(!options.reapply && !confirm(preview)){
    setPayrollLoadState('취소','');
    return;
  }
 
  let sid=targetStore.id,ym=parsed.payMonth;
+ let sourceStoragePath=String(options.sourceStoragePath||'');
+ async function ensurePayrollSourceArchived(){
+   if(sourceStoragePath)return true;
+   setPayrollLoadState('원본 서버 보관 중','saving');
+   try{
+     sourceStoragePath=await archivePayrollSourceFile(file,sid,ym);
+     return true;
+   }catch(err){
+     setPayrollLoadState('원본 보관 오류','error');
+     alert(
+       '급여대장 원본 Excel을 서버에 보관하지 못해 급여 DB 교체를 중단했습니다.\n\n'+
+       (err.message||err)+
+       '\n\n최초 1회 "급여원본보관_최초1회_SQL.sql"을 Supabase SQL Editor에서 실행했는지 확인하세요.\n기존 급여자료는 삭제하지 않았습니다.'
+     );
+     return false;
+   }
+ }
 
  // 기존 동일월 자료를 전부 삭제하기 전에 사용자에게 마지막으로 교체 확인.
  let oldm=await sb.from('payroll_months')
@@ -4153,7 +4263,7 @@ async function importPayrollSimple(file){
    let oldRows=olde.data||[];
    let oldNames=[...new Set(oldRows.map(x=>x.employee_name).filter(Boolean))];
 
-   if(!confirm(
+   if(!options.reapply && !confirm(
      `${targetStore.name} ${monthLabel(ym)} 기존 급여자료 ${oldRows.length}건만 교체합니다.\n\n`+
      `기존 이름 예: ${oldNames.slice(0,12).join(', ')||'-'}\n\n`+
      `직원관리 정보는 변경하지 않습니다.\n`+
@@ -4163,6 +4273,9 @@ async function importPayrollSimple(file){
      setPayrollLoadState('기존자료 유지','saved');
      return;
    }
+
+   // 중요: 기존 급여 DB를 지우기 전에 원본 Excel 서버 보관 성공부터 확인한다.
+   if(!await ensurePayrollSourceArchived())return;
 
    let d=await sb.from('payroll_entries').delete().in('payroll_month_id',oldIds);
    if(d.error){
@@ -4191,6 +4304,9 @@ async function importPayrollSimple(file){
      return alert(`기존 ${monthLabel(ym)} 급여상세가 남아 있어 교체를 중단했습니다.`);
    }
  }
+
+ // 기존 자료가 없었던 신규 월도 원본 Excel을 서버에 먼저 보관한다.
+ if(!await ensurePayrollSourceArchived())return;
 
  // 기존 데이터 삭제가 끝난 뒤에만 이름 오타/신규직원 문제를 처리한다.
  // 하선령 ↔ 하선영처럼 한 글자 차이이며 후보가 한 명뿐이면 기존 직원 연결을 먼저 제안.
@@ -4228,7 +4344,7 @@ async function importPayrollSimple(file){
  }
 
  let dbRows=parsed.rows.map(x=>{
-   let row=makePayrollDbRow(x,pm.data.id,file,parsed);
+   let row=makePayrollDbRow(x,pm.data.id,file,parsed,sourceStoragePath);
    if(x._source_employee_name && x._source_employee_name!==x.employee_name){
      row.memo=(row.memo||'')+`;source_employee_name=${encodeURIComponent(x._source_employee_name)}`;
    }
@@ -4483,51 +4599,58 @@ function payrollInput(p,field,kind='money',recalc=true){
 function renderPayrollSimple(){
  if(!$('payrollBody'))return;
  let ordered=sortPayrollByEmployeeOrder(payroll);
- let rows=ordered.map(p=>`<tr>
-  <td class="name"><b>${esc(p.employee_name)}</b>${p.employee_id?'':' <span class="reviewWarn">미매칭</span>'}</td>
-  <td>${Number(p.scheduled_hours||0).toFixed(2).replace(/\.00$/,'')}h</td>
-  <td>${(()=>{
-   let mm=String(p.memo||'').match(/weekly_text=([^;]*)/),txt='';
-   try{txt=mm?decodeURIComponent(mm[1]):''}catch(e){}
-   if(p._weekly_hours_text)txt=p._weekly_hours_text;
-   if(txt)return esc(txt);
-   return formatWeeklyHours(p._weekly_hours ?? payrollWeeklyHoursFromMemo(p.memo));
-  })()}</td>
-  <td class="money">${money(p.base_pay)}</td>
-  <td class="money">${money(p.weekly_holiday_pay)}</td>
-  <td class="money">${money(p.fixed_overtime_pay)}</td>
-  <td class="money">${money(p.holiday_pay)}</td>
-  <td class="money">${money(p.overtime_pay)}</td>
-  <td class="money">${money(p.meal_allowance)}</td>
-  <td class="money">${money(payrollCombinedExtra(p))}</td>
-  <td class="money"><b>${money(p.gross_pay)}</b></td>
-  <td class="money">${money(p.other_deduction)}</td>
-  <td class="money"><b>${money(p.net_pay)}</b></td>
- </tr>`).join('');
- $('payrollBody').innerHTML=rows||`<tr><td colspan="13" style="padding:26px">${monthLabel($('monthSelect').value)} 급여자료가 없습니다. 위의 <b>급여대장 불러오기</b>를 눌러 Excel을 등록하세요.</td></tr>`;
+ let contractTotal=0;
+
+ let rows=ordered.map((p,idx)=>{
+   let meta=payrollSourceMetaFromMemo(p.memo);
+   let emp=allEmployees().find(x=>x.id===p.employee_id)
+     ||allEmployees().find(x=>normalizeName(x.name)===normalizeName(p.employee_name));
+   let seq=Number(meta.seq||0)||idx+1;
+   let resident=String(meta.resident_number||'');
+   let role=String(meta.role||emp?.department||'');
+   let rank=String(meta.rank||emp?.role||'');
+   let hire=String(meta.hire_date||emp?.hire_date||'');
+   let days=Number(meta.employment_days||0);
+   let contractSalary=Number(meta.contract_salary||0);
+   contractTotal+=contractSalary;
+
+   return `<tr>
+    <td>${seq}</td>
+    <td class="payName"><b>${esc(p.employee_name)}</b>${p.employee_id?'':' <span class="reviewWarn">미매칭</span>'}</td>
+    <td class="residentNo">${resident?esc(resident):'-'}</td>
+    <td>${role?esc(role):'-'}</td>
+    <td>${rank?esc(rank):'-'}</td>
+    <td>${hire?esc(hire):'-'}</td>
+    <td>${days?Math.round(days)+'일':'-'}</td>
+    <td class="money">${money(p.ordinary_hourly_rate)}</td>
+    <td>${Number(p.scheduled_hours||0).toFixed(2).replace(/\.00$/,'')}h</td>
+    <td>${Number(p.holiday_hours||0).toFixed(2).replace(/\.00$/,'')}h</td>
+    <td class="money">${contractSalary?money(contractSalary):'-'}</td>
+    <td class="money"><b>${money(p.gross_pay)}</b></td>
+    <td class="money">${money(p.other_deduction)}</td>
+    <td class="money"><b>${money(p.net_pay)}</b></td>
+   </tr>`;
+ }).join('');
+
+ $('payrollBody').innerHTML=rows||`<tr><td colspan="14" style="padding:26px">${monthLabel($('monthSelect').value)} 급여자료가 없습니다. 위의 <b>급여대장 불러오기</b>를 눌러 Excel을 등록하세요.</td></tr>`;
+
  let total={
   scheduled:payrollSum(ordered,'scheduled_hours'),
-  weekly:ordered.reduce((a,p)=>a+Number((p._weekly_hours ?? payrollWeeklyHoursFromMemo(p.memo) ?? 0)),0),
-  base:payrollSum(ordered,'base_pay'),
-  weeklyPay:payrollSum(ordered,'weekly_holiday_pay'),
-  fixedOT:payrollSum(ordered,'fixed_overtime_pay'),
-  holiday:payrollSum(ordered,'holiday_pay'),
-  overtime:payrollSum(ordered,'overtime_pay'),
-  meal:payrollSum(ordered,'meal_allowance'),
-  extra:ordered.reduce((a,p)=>a+payrollCombinedExtra(p),0),
+  holiday:payrollSum(ordered,'holiday_hours'),
+  contract:contractTotal,
   gross:payrollSum(ordered,'gross_pay'),
   ded:payrollSum(ordered,'total_deduction'),
-   advanceDed:payrollSum(ordered,'other_deduction'),
+  advanceDed:payrollSum(ordered,'other_deduction'),
   net:payrollSum(ordered,'net_pay')
  };
  if($('monthGrossTotal'))$('monthGrossTotal').textContent=money(total.gross);
  if($('monthDeductionTotal'))$('monthDeductionTotal').textContent=money(total.ded);
  if($('monthNetTotal'))$('monthNetTotal').textContent=money(total.net);
  if($('payrollFoot'))$('payrollFoot').innerHTML=ordered.length?`<tr>
-  <td class="name">합계 · ${ordered.length}명</td><td>${Math.round(total.scheduled*100)/100}h</td><td>${total.weekly.toFixed(1)}h</td>
-  <td>${money(total.base)}</td><td>${money(total.weeklyPay)}</td><td>${money(total.fixedOT)}</td><td>${money(total.holiday)}</td>
-  <td>${money(total.overtime)}</td><td>${money(total.meal)}</td><td>${money(total.extra)}</td><td>${money(total.gross)}</td>
-  <td>${money(total.advanceDed)}</td><td>${money(total.net)}</td></tr>`:'';
+  <td></td><td><b>합계 · ${ordered.length}명</b></td><td></td><td></td><td></td><td></td><td></td><td></td>
+  <td>${Math.round(total.scheduled*100)/100}h</td><td>${Math.round(total.holiday*100)/100}h</td>
+  <td class="money">${money(total.contract)}</td><td class="money">${money(total.gross)}</td>
+  <td class="money">${money(total.advanceDed)}</td><td class="money">${money(total.net)}</td></tr>`:'';
 }
 
 async function savePayrollWeeklyHours(id,value){
@@ -4699,7 +4822,7 @@ async function loadPayrollPeriodReport(){
    let name=selectedEmp?.name||rows[0]?.employee_name||'선택 직원';
    rows.sort((a,b)=>a._ym.localeCompare(b._ym));
    $('payrollPeriodTitle').textContent=`${name} · ${monthLabel(from)} ~ ${monthLabel(to)} · ${rows.length}개월 자료`;
-   $('payrollPeriodHead').innerHTML='<tr><th>월</th><th>월근무</th><th>기본급</th><th>주휴수당</th><th>수당/상여</th><th>총지급</th><th>공제내역합계</th><th>실지급</th></tr>';
+   $('payrollPeriodHead').innerHTML='<tr><th>월</th><th>월근무</th><th>기본급</th><th>주휴수당</th><th>수당/상여</th><th>월지급총액</th><th>공제내역합계</th><th>실지급</th></tr>';
    $('payrollPeriodBody').innerHTML=rows.length?rows.map(p=>`<tr>
      <td><b>${esc(p._ym)}</b></td>
      <td>${Number(p.scheduled_hours||0).toFixed(2).replace(/\.00$/,'')}h</td>
@@ -4746,7 +4869,7 @@ async function loadPayrollPeriodReport(){
    });
 
    $('payrollPeriodTitle').textContent=`전체 직원 · ${monthLabel(from)} ~ ${monthLabel(to)} · ${list.length}명`;
-   $('payrollPeriodHead').innerHTML='<tr><th class="name">직원</th><th>급여월 수</th><th>총지급 누계</th><th>공제내역합계 누계</th><th>실지급 누계</th><th>월평균 실지급</th></tr>';
+   $('payrollPeriodHead').innerHTML='<tr><th class="name">직원</th><th>급여월 수</th><th>월지급총액 누계</th><th>공제내역합계 누계</th><th>실지급 누계</th><th>월평균 실지급</th></tr>';
    $('payrollPeriodBody').innerHTML=list.length?list.map(x=>`<tr>
      <td class="name periodEmployeeName">${esc(x.name)}</td>
      <td>${x.months.size}개월</td>
@@ -4785,6 +4908,7 @@ async function loadPayrollSimple(){
  let monthId=pm.data?.[0]?.id;
  if(!monthId){
    renderPayrollSimple();
+   updatePayrollReapplyButtonState();
    setPayrollLoadState(`${ym} · 0명`,'saved');
    return;
  }
@@ -4801,6 +4925,7 @@ async function loadPayrollSimple(){
  });
  payroll=sortPayrollByEmployeeOrder(payroll);
  renderPayrollSimple();
+ updatePayrollReapplyButtonState();
  setPayrollLoadState(`${ym} · ${payroll.length}건`,'saved');
 }
 async function parsePayrollWorkbook(file){
@@ -5139,7 +5264,7 @@ function num(v){return typeof v==='number'?v:(Number(String(v||'').replace(/,/g,
 function exportSchedule(){let r=monthRange(),data=[['업장',stores.find(s=>s.id===storeId())?.name],['월',r.m],[],['직원',...Array.from({length:r.days},(_,i)=>`${i+1}일`),'실근로','연장']];employeesForMonth(r.m).forEach(e=>{let x=calc(e);data.push([e.name,...Array.from({length:r.days},(_,i)=>sched(e,r.m+'-'+String(i+1).padStart(2,'0'))?.work_code||''),x.worked,x.ot])});downloadXlsx(data,`${stores.find(s=>s.id===storeId())?.name}_${r.m}_스케줄.xlsx`)}
 function exportPharmacyPayTable(){$('pharmacyTemplateFile').click()}
 
-function exportPayroll(){let data=[['직원','월근무시간','기본급','고정연장','휴일수당','연장수당','식대','조정수당','상여','총지급액','공제총액','실지급액']];let orderMap=new Map(employeesForMonth($('monthSelect').value).map((e,i)=>[e.id,i]));
+function exportPayroll(){let data=[['직원','월근무시간','기본급','고정연장','휴일수당','연장수당','식대','조정수당','상여','월지급총액','공제총액','실지급액']];let orderMap=new Map(employeesForMonth($('monthSelect').value).map((e,i)=>[e.id,i]));
  payroll.slice().sort((a,b)=>(orderMap.get(a.employee_id)??9999)-(orderMap.get(b.employee_id)??9999)).forEach(p=>data.push([p.employee_name,round2(p.scheduled_hours),p.base_pay,p.fixed_overtime_pay,p.holiday_pay,p.overtime_pay,p.meal_allowance,p.adjustment_pay,p.bonus,p.gross_pay,p.total_deduction,p.net_pay]));downloadXlsx(data,`${stores.find(s=>s.id===storeId())?.name}_${$('monthSelect').value}_급여.xlsx`)}
 function downloadXlsx(data,name){let ws=XLSX.utils.aoa_to_sheet(data),wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'내역');XLSX.writeFile(wb,name)}
 
@@ -5169,7 +5294,18 @@ window.addEventListener('afterprint',()=>{
 const EMPLOYEE_DOC_BUCKET='employee-contracts';
 const EMPLOYEE_DOC_TYPES={work_contract:'근로계약서',salary_contract:'연봉계약서'};
 function employeeDocTypeLabel(t){return EMPLOYEE_DOC_TYPES[t]||t}
-function safeStoragePart(s){return String(s||'file').normalize('NFKC').replace(/[^\w가-힣.\-]+/g,'_').replace(/^_+|_+$/g,'')||'file'}
+function safeStoragePart(s){
+ return String(s||'file').normalize('NFKD')
+   .replace(/[^A-Za-z0-9._-]+/g,'_')
+   .replace(/^_+|_+$/g,'')||'file';
+}
+function contractStoragePath(employeeId,type,file){
+ let ext='.pdf';
+ let stamp=Date.now(),rand=Math.random().toString(36).slice(2,8);
+ // Supabase Storage object key에는 한글 원본파일명을 넣지 않는다.
+ // 원래 파일명은 employee_documents.file_name에 별도로 보존한다.
+ return `store_${storeId()}/employee_${employeeId}/${type}/${stamp}_${rand}_contract${ext}`;
+}
 function guessContractDateFromFilename(name){
  let s=String(name||''),m=s.match(/(20\d{2})[.\-_ ]?(\d{1,2})[.\-_ ]?(\d{1,2})/);
  if(m)return `${m[1]}-${String(Number(m[2])).padStart(2,'0')}-${String(Number(m[3])).padStart(2,'0')}`;
@@ -5179,7 +5315,7 @@ async function openEmployeeDocuments(employeeId,type){
  let e=findEmployeeAny(employeeId);if(!e)return alert('직원정보를 찾지 못했습니다.');
  let label=employeeDocTypeLabel(type);
  modal(`<div class="contractVaultHead"><div><h2 style="margin:0">${esc(e.name)} · ${label}</h2>
- <div class="help" style="margin-top:4px">노무사가 보내준 최종 PDF 원본을 그대로 보관합니다.</div></div>
+ <div class="help" style="margin-top:4px">PDF 원본은 서버에 누적 보관합니다. 계약 변경·갱신 때 새 파일을 올려도 이전 계약서는 삭제하지 않는 한 계속 남아 언제든 내려받을 수 있습니다.</div></div>
  <button class="btn gray" onclick="closeModal()">닫기</button></div>
  <div class="contractUploadBox"><div style="font-weight:900;margin-bottom:8px">새 ${label} 업로드</div>
  <div class="contractUploadGrid">
@@ -5214,7 +5350,7 @@ async function uploadEmployeeDocument(employeeId,type){
  let date=dateRaw?normalizeCompactDateInput(dateRaw):(guessContractDateFromFilename(file.name)||isoToday());
  if(dateRaw&&!date)return alert('계약일은 8자리로 입력하세요.\n예: 20260815');
  let title=$('contractDocTitle')?.value?.trim()||`${date.slice(0,4)}년 ${employeeDocTypeLabel(type)}`;
- let path=`store_${storeId()}/employee_${employeeId}/${type}/${Date.now()}_${safeStoragePart(file.name)}`;
+ let path=contractStoragePath(employeeId,type,file);
  let up=await sb.storage.from(EMPLOYEE_DOC_BUCKET).upload(path,file,{contentType:'application/pdf',upsert:false});
  if(up.error)return alert('계약서 파일 업로드 오류:\n'+up.error.message);
  let ins=await sb.from('employee_documents').insert({store_id:storeId(),employee_id:employeeId,document_type:type,title,document_date:date||null,file_name:file.name,storage_path:path});
