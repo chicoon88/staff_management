@@ -811,7 +811,7 @@ body.resizingEmployeeColumn *{
 
 <section id="payrollPage" class="page">
  <div class="row">
-  <div><h1 class="title">급여관리 <span style="font-size:12px;color:#315efb;background:#eef3ff;border-radius:999px;padding:4px 8px;vertical-align:middle">v2026.08.19-1725</span></h1><div class="sub">월별 급여대장을 검산하고, 기간별·직원별 누적 급여도 조회합니다.</div></div>
+  <div><h1 class="title">급여관리 <span style="font-size:12px;color:#315efb;background:#eef3ff;border-radius:999px;padding:4px 8px;vertical-align:middle">v2026.08.19-1736</span></h1><div class="sub">월별 급여대장을 검산하고, 기간별·직원별 누적 급여도 조회합니다.</div></div>
   <div class="toolbar">
    <input type="file" id="payrollFile" accept=".xlsx,.xls,.xlsm" multiple style="display:none" onchange="importPayrollFiles(this.files);this.value=''">
    <button class="btn" onclick="$('payrollFile').click()">급여대장 여러개 불러오기</button>
@@ -997,7 +997,19 @@ function updateEmployeeSortControls(){
  let mb=$('employeeManualSortBtn'),hb=$('employeeHireSortBtn'),st=$('employeeSortState');
  if(mb){mb.disabled=!active;mb.classList.toggle('gray',!manual||!active)}
  if(hb){hb.disabled=!active;hb.classList.toggle('gray',manual||!active)}
- if(st)st.textContent=active?(manual?'연번순 · 드래그 가능':'입사일 ↑ · 보기 정렬'):'퇴사일 ↑ · 자동';
+ let ym=$('monthSelect')?.value||'';
+ let scope=ym?monthLabel(ym)+' 기준 · ':'';
+ if(st)st.textContent=active?scope+(manual?'연번순 · 드래그 가능':'입사일 ↑ · 보기 정렬'):'퇴사일 ↑ · 자동';
+}
+function employeeManagementActiveEmployees(){
+ let list=[...employees],ym=$('monthSelect')?.value||'';
+ if(ym){
+   let r=monthRange();
+   // 선택월 이후에 입사한 직원은 직원관리 재직자 명단에서 숨긴다.
+   // 입사일 미입력 직원은 기존 화면에서 갑자기 사라지지 않도록 유지한다.
+   list=list.filter(e=>!e.hire_date || e.hire_date<=r.last);
+ }
+ return list;
 }
 function allEmployees(){return [...employees,...retiredEmployees]}
 function employedOn(e,date){
@@ -2735,11 +2747,12 @@ function initEmployeeColumnResizers(force=false){
 
 function renderEmployees(){
  if(!$('employeeBody'))return;
+ let monthActive=employeeManagementActiveEmployees();
  let list=employeeView==='retired'
    ?[...retiredEmployees].sort((a,b)=>compareEmployeeDateAsc(a,b,'resign_date'))
    :(employeeActiveSort==='hire_asc'
-      ?[...employees].sort((a,b)=>compareEmployeeDateAsc(a,b,'hire_date'))
-      :orderedEmployees());
+      ?monthActive.sort((a,b)=>compareEmployeeDateAsc(a,b,'hire_date'))
+      :monthActive.sort((a,b)=>(Number(a.print_order??9999)-Number(b.print_order??9999))||String(a.name||'').localeCompare(String(b.name||''),'ko')));
  let dragEnabled=employeeView==='active'&&employeeActiveSort==='manual';
  updateEmployeeSortControls();
 
@@ -2822,7 +2835,7 @@ function toggleEmployeeDeleteSelection(id,on){
  else employeeDeleteSelection.delete(id);
 }
 function selectAllEmployeeRows(on){
- let list=employeeView==='retired'?retiredEmployees:employees;
+ let list=employeeView==='retired'?retiredEmployees:employeeManagementActiveEmployees();
  if(on)list.forEach(e=>employeeDeleteSelection.add(e.id));
  else list.forEach(e=>employeeDeleteSelection.delete(e.id));
  renderEmployees();
@@ -4799,7 +4812,14 @@ async function importPayrollSimple(file,options={}){
  $('monthSelect').value=ym;
 
  await refreshAll();
- showPage('payroll');
+ // 업로드는 급여관리 화면에서 실행되므로 별도 showPage() 호출이 필요하지 않습니다.
+ // 이전 코드의 showPage('payroll')는 이 앱에 존재하지 않는 함수라 일괄 업로드 중 ReferenceError를 만들었습니다.
+ if(!$('payrollPage')?.classList.contains('active')){
+   document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+   $('payrollPage')?.classList.add('active');
+   document.querySelectorAll('.nav').forEach(x=>x.classList.remove('active'));
+   document.querySelectorAll('[data-page="payroll"]').forEach(x=>x.classList.add('active'));
+ }
  await loadPayrollSimple();
 
  setPayrollLoadState(`${ym} · ${parsed.rows.length}건`,'saved');
