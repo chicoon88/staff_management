@@ -595,7 +595,10 @@ tr[draggable="true"]:active,.empDragHandle:active{cursor:grabbing}
 #employeesPage th:nth-child(16),#employeesPage td:nth-child(16){width:72px}
 
 /* 비고를 넓게 */
-#employeesPage th:nth-child(17),#employeesPage td:nth-child(17){width:240px;min-width:240px}
+#employeesPage th:nth-child(17),#employeesPage td:nth-child(17){
+  width:240px;
+  min-width:240px;
+}
 
 /* 출력색 / 문서 / 관리 */
 #employeesPage th:nth-child(18),#employeesPage td:nth-child(18){width:86px}
@@ -808,7 +811,7 @@ body.resizingEmployeeColumn *{
 
 <section id="payrollPage" class="page">
  <div class="row">
-  <div><h1 class="title">급여관리 <span style="font-size:12px;color:#315efb;background:#eef3ff;border-radius:999px;padding:4px 8px;vertical-align:middle">v2026.08.19-1248</span></h1><div class="sub">월별 급여대장을 검산하고, 기간별·직원별 누적 급여도 조회합니다.</div></div>
+  <div><h1 class="title">급여관리 <span style="font-size:12px;color:#315efb;background:#eef3ff;border-radius:999px;padding:4px 8px;vertical-align:middle">v2026.08.19-1705</span></h1><div class="sub">월별 급여대장을 검산하고, 기간별·직원별 누적 급여도 조회합니다.</div></div>
   <div class="toolbar">
    <input type="file" id="payrollFile" accept=".xlsx,.xls,.xlsm" multiple style="display:none" onchange="importPayrollFiles(this.files);this.value=''">
    <button class="btn" onclick="$('payrollFile').click()">급여대장 여러개 불러오기</button>
@@ -827,7 +830,7 @@ body.resizingEmployeeColumn *{
 
  <div class="card" style="margin-top:12px">
   <div class="row">
-   <div><h3 style="margin:0">노무사 급여대장 · 월별 검산</h3><div class="help">노무사 Excel에서 불러온 급여자료를 그대로 표시합니다. <b>순번은 직원관리 연번 순서대로 정렬한 뒤 위에서부터 1, 2, 3…으로 표시합니다.</b> 계좌번호는 직원관리에서 입력한 값을 주민번호 오른쪽에 표시합니다. 표 머리글 경계선을 좌우로 드래그하면 열 폭을 조절할 수 있고 자동 저장됩니다. <b>주민번호가 “원본 재적용 필요”로 보이는 과거월은 위의 ⟳ 원본 새로고침을 누르면 서버에 보관된 원본 Excel에서 다시 반영됩니다.</b></div></div>
+   <div><h3 style="margin:0">노무사 급여대장 · 월별 검산</h3><div class="help">노무사 Excel에서 불러온 급여자료를 그대로 표시합니다. <b>순번은 직원관리 연번 순서대로 정렬한 뒤 위에서부터 1, 2, 3…으로 표시합니다.</b> 계좌번호는 직원관리에서 입력한 값을 표시합니다. 표 머리글 경계선을 좌우로 드래그하면 열 폭을 조절할 수 있고 자동 저장됩니다. <b>주민번호가 “원본 재적용 필요”로 보이는 과거월은 위의 ⟳ 원본 새로고침을 누르면 서버에 보관된 원본 Excel에서 다시 반영됩니다.</b></div></div>
    <div class="toolbar" style="margin-left:auto"><button class="btn gray small" onclick="resetPayrollColumnWidths()">표 폭 초기화</button></div>
   </div>
   <div class="tablewrap" style="margin-top:10px"><table id="payrollMainTable">
@@ -873,7 +876,7 @@ body.resizingEmployeeColumn *{
    <button class="btn" onclick="openEmployee()">+ 직원 추가</button>
   </div>
  </div>
- <div class="card" style="margin-top:10px"><div class="help"><b>직원은 한 번만 등록하면 됩니다.</b> 과거월은 입사일·퇴사일로 자동 판별합니다.<br>지원 파일은 근로자현황파악 양식과 약국급여표 양식 두 가지뿐입니다. 파일명은 보지 않고 Excel 내부 헤더만 판별합니다. 등록할 업장은 업로드할 때 직접 확인합니다. <b>주민등록번호는 급여대장을 불러올 때 직원명과 매칭되면 직원정보에도 자동 반영되며 직원관리에서 직접 수정할 수 있습니다. 계좌번호는 직원관리에서 직접 입력·수정하고 급여관리에도 함께 표시됩니다.</b> 애매한 행은 ‘확인 필요’로 표시합니다.</div></div>
+ <div class="card" style="margin-top:10px"><div class="help"><b>직원은 한 번만 등록하면 됩니다.</b> 과거월은 입사일·퇴사일로 자동 판별합니다.<br>지원 파일은 근로자현황파악 양식과 약국급여표 양식 두 가지뿐입니다. 파일명은 보지 않고 Excel 내부 헤더만 판별합니다. 등록할 업장은 업로드할 때 직접 확인합니다. <b>주민등록번호는 이미 저장된 과거 급여대장까지 확인해서 빈 직원만 자동으로 채우며, 직원관리에서 직접 수정한 값은 급여대장으로 덮어쓰지 않습니다. 계좌번호는 직원관리에서 직접 입력·수정하고 급여관리에도 함께 표시됩니다.</b> 애매한 행은 ‘확인 필요’로 표시합니다.</div></div>
  <div class="card" style="margin-top:13px">
   <div class="row" style="margin-bottom:10px">
    <div class="empTabs"><button id="activeEmpTab" class="empTab active" onclick="setEmployeeView('active')">재직자</button><button id="retiredEmpTab" class="empTab" onclick="setEmployeeView('retired')">퇴사자</button></div>
@@ -948,7 +951,7 @@ function closeModal(){
  document.body.style.overflow='';
 }
 $('monthSelect').value=new Date().toISOString().slice(0,7);
-let employees=[],schedules=[],payroll=[],stores=[],holidays=[],manualHolidays=[],autoHolidays=[],selectedEmployees=new Set(),leaveLedger=[],scheduleSaveQueue=new Map(),scheduleSaveTimer=null,employeeImportRows=[],paymentRegister=[],incentiveRegister=[],retiredEmployees=[],employeeView='active',employeeActiveSort='manual',refreshToken=0,payrollReloadToken=0,employeeDeleteSelection=new Set(),scheduleView='monthly';
+let employees=[],schedules=[],payroll=[],stores=[],holidays=[],manualHolidays=[],autoHolidays=[],selectedEmployees=new Set(),leaveLedger=[],scheduleSaveQueue=new Map(),scheduleSaveTimer=null,employeeImportRows=[],paymentRegister=[],incentiveRegister=[],retiredEmployees=[],employeeView='active',employeeActiveSort='manual',refreshToken=0,payrollReloadToken=0,employeeDeleteSelection=new Set(),scheduleView='monthly',employeeResidentBackfillDoneStores=new Set();
 const money=n=>Math.round(Number(n||0)).toLocaleString('ko-KR')+'원',esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 function normalizeName(v){return String(v??'').normalize('NFKC').trim().replace(/\s+/g,'').replace(/[·ㆍ._-]/g,'').toLowerCase()}
 function monthRange(){let m=$('monthSelect').value,[y,mo]=m.split('-').map(Number),days=new Date(y,mo,0).getDate();return {m,y,mo,days,first:m+'-01',last:m+'-'+String(days).padStart(2,'0')}}
@@ -1144,8 +1147,84 @@ async function loadHoursPageData(token=refreshToken,sid=storeId()){
  if(token!==refreshToken || sid!==storeId())return;
  renderHours();
 }
+async function backfillBlankEmployeeResidentsFromStoredPayroll(sid,{force=false}={}){
+ sid=Number(sid||0);
+ if(!sid)return {updated:0};
+ if(!force && employeeResidentBackfillDoneStores.has(sid))return {updated:0,skipped:true};
+
+ // 직원관리에서 이미 직접 입력/수정한 주민번호는 절대 덮어쓰지 않는다.
+ let blankEmployees=allEmployees().filter(e=>!String(e.resident_number||'').trim());
+ if(!blankEmployees.length){
+   employeeResidentBackfillDoneStores.add(sid);
+   return {updated:0};
+ }
+
+ let pm=await sb.from('payroll_months')
+   .select('id,pay_month')
+   .eq('store_id',sid)
+   .order('pay_month',{ascending:false});
+ if(pm.error)return {updated:0,error:pm.error};
+ let months=pm.data||[],monthIds=months.map(x=>x.id);
+ if(!monthIds.length){
+   employeeResidentBackfillDoneStores.add(sid);
+   return {updated:0};
+ }
+
+ let pe=await sb.from('payroll_entries')
+   .select('id,payroll_month_id,employee_id,employee_name,memo')
+   .in('payroll_month_id',monthIds)
+   .limit(5000);
+ if(pe.error)return {updated:0,error:pe.error};
+
+ // 가장 최근 급여월의 주민번호를 우선 사용한다.
+ let monthMap=new Map(months.map(x=>[String(x.id),String(x.pay_month||'')]));
+ let rows=[...(pe.data||[])].sort((a,b)=>{
+   let ma=monthMap.get(String(a.payroll_month_id))||'',mb=monthMap.get(String(b.payroll_month_id))||'';
+   return mb.localeCompare(ma)||Number(b.id||0)-Number(a.id||0);
+ });
+ let byId=new Map(),byName=new Map();
+ for(const row of rows){
+   let resident=payrollResidentNumberFromRow(row);
+   if(!resident)continue;
+   if(row.employee_id!=null && !byId.has(String(row.employee_id)))byId.set(String(row.employee_id),resident);
+   let nn=normalizeName(row.employee_name);
+   if(nn && !byName.has(nn))byName.set(nn,resident);
+ }
+
+ let updated=0;
+ for(const emp of blankEmployees){
+   let resident=byId.get(String(emp.id))||byName.get(normalizeName(emp.name))||'';
+   if(!resident)continue;
+
+   // 자동채움 직전에 DB 값을 다시 확인해 사용자가 방금 수정한 값을 보호한다.
+   let chk=await sb.from('employees').select('resident_number').eq('id',emp.id).eq('store_id',sid).maybeSingle();
+   if(chk.error)return {updated,error:chk.error};
+   let current=String(chk.data?.resident_number||'').trim();
+   if(current){
+     emp.resident_number=current;
+     continue;
+   }
+
+   let uq=await sb.from('employees').update({resident_number:resident}).eq('id',emp.id).eq('store_id',sid);
+   if(uq.error)return {updated,error:uq.error};
+   emp.resident_number=resident;
+   updated++;
+ }
+
+ employeeResidentBackfillDoneStores.add(sid);
+ return {updated};
+}
+
 async function loadEmployeesPageData(token=refreshToken,sid=storeId()){
  renderEmployees();
+ let residentSync=await backfillBlankEmployeeResidentsFromStoredPayroll(sid);
+ if(token!==refreshToken || sid!==storeId())return;
+ if(residentSync?.error){
+   console.warn('급여대장 주민번호 자동채움 오류',residentSync.error);
+ }else if(residentSync?.updated){
+   console.log(`직원관리 주민번호 자동채움: ${residentSync.updated}건`);
+   renderEmployees();
+ }
  await loadLeaveLedger();
  if(token!==refreshToken || sid!==storeId())return;
  renderEmployees();
@@ -2389,7 +2468,11 @@ function employeeInlineText(e,field,cls=''){
    onchange="${quick?`saveEmployeeInlineQuick(${e.id},'${field}',this.value,this)`:`saveEmployeeInline(${e.id},'${field}',this.value)`}">`;
 }
 function employeeInlineSensitiveText(e,field,placeholder=''){
- return `<input class="empInline" value="${esc(employeeInlineValue(e,field))}" placeholder="${esc(placeholder)}" autocomplete="off" draggable="false" ondragstart="event.preventDefault()" ondrop="event.preventDefault()" onfocus="this.select()" onkeydown="if(event.key==='Enter'){this.blur()}" onchange="saveEmployeeInlineQuick(${e.id},'${field}',this.value,this)">`;
+ return `<input class="empInline" value="${esc(employeeInlineValue(e,field))}"
+   placeholder="${esc(placeholder)}" autocomplete="off"
+   draggable="false" ondragstart="event.preventDefault()" ondrop="event.preventDefault()"
+   onfocus="this.select()" onkeydown="if(event.key==='Enter'){this.blur()}"
+   onchange="saveEmployeeInlineQuick(${e.id},'${field}',this.value,this)">`;
 }
 
 function employeeInlineNumber(e,field,step='1',cls='empInlineSmall'){
@@ -4229,17 +4312,27 @@ async function syncEmployeeResidentsFromPayroll(parsed,targetEmployees,targetSto
    if(!resident || !row.employee_id || seen.has(row.employee_id))continue;
    seen.add(row.employee_id);
    let emp=(targetEmployees||[]).find(e=>String(e.id)===String(row.employee_id));
-   if(String(emp?.resident_number||'').trim()===resident)continue;
+   // 급여대장은 주민번호가 비어 있는 직원만 자동으로 채운다.
+   // 직원관리에서 직접 입력/수정한 값은 이후 급여 업로드로 덮어쓰지 않는다.
+   if(String(emp?.resident_number||'').trim())continue;
    changes.push({id:row.employee_id,name:row.employee_name,resident_number:resident});
  }
+ let updated=0;
  for(const ch of changes){
-   let q=await sb.from('employees').update({resident_number:ch.resident_number}).eq('id',ch.id).eq('store_id',targetStoreId);
-   if(q.error)return {error:q.error,employee:ch.name};
+   let chk=await sb.from('employees').select('resident_number').eq('id',ch.id).eq('store_id',targetStoreId).maybeSingle();
+   if(chk.error)return {error:chk.error,employee:ch.name,updated};
+   if(String(chk.data?.resident_number||'').trim())continue;
+   let q=await sb.from('employees').update({resident_number:ch.resident_number})
+     .eq('id',ch.id).eq('store_id',targetStoreId);
+   if(q.error)return {error:q.error,employee:ch.name,updated};
    let emp=(targetEmployees||[]).find(e=>String(e.id)===String(ch.id));
    if(emp)emp.resident_number=ch.resident_number;
+   updated++;
  }
- return {updated:changes.length};
+ employeeResidentBackfillDoneStores.add(Number(targetStoreId));
+ return {updated};
 }
+
 async function importPayrollFiles(fileList){
  const files=[...(fileList||[])].filter(Boolean);
  if(!files.length)return;
@@ -4247,11 +4340,17 @@ async function importPayrollFiles(fileList){
  if(!confirm(`급여대장 ${files.length}개를 선택했습니다.\n\n각 파일의 내부 산정월/업장을 확인하면서 순서대로 적용합니다.\n같은 월 파일이 여러 개면 뒤에 처리되는 파일이 최종자료가 됩니다.\n\n계속할까요?`))return;
  let completed=0;
  for(let i=0;i<files.length;i++){
-   const f=files[i]; setPayrollLoadState(`일괄 ${i+1}/${files.length} · ${f.name}`,'saving');
-   try{const ok=await importPayrollSimple(f,{batchIndex:i+1,batchTotal:files.length}); if(ok===true)completed++;}
-   catch(err){console.error('급여대장 일괄 처리 오류',f.name,err);alert(`${f.name} 처리 중 오류가 발생했습니다.\n\n${err.message||err}\n\n다음 파일 처리는 계속합니다.`);}
+   const f=files[i];
+   setPayrollLoadState(`일괄 ${i+1}/${files.length} · ${f.name}`,'saving');
+   try{
+     await importPayrollSimple(f,{batchIndex:i+1,batchTotal:files.length});
+     completed++;
+   }catch(err){
+     console.error('급여대장 일괄 처리 오류',f.name,err);
+     alert(`${f.name} 처리 중 오류가 발생했습니다.\n\n${err.message||err}\n\n다음 파일 처리는 계속합니다.`);
+   }
  }
- setPayrollLoadState(`일괄 처리 종료 · 성공 ${completed}/${files.length}`,'saved');
+ setPayrollLoadState(`일괄 처리 완료 · ${completed}/${files.length}`,'saved');
 }
 
 async function importPayrollSimple(file,options={}){
@@ -4287,7 +4386,9 @@ async function importPayrollSimple(file,options={}){
  if(eq.error){
    setPayrollLoadState('직원 조회 오류','error');
    let msg=String(eq.error.message||eq.error);
-   if(/resident_number|bank_account|column/i.test(msg))return alert('직원 주민등록번호/계좌번호 컬럼이 아직 DB에 없습니다.\n\n아래 SQL을 Supabase SQL Editor에서 1회 실행한 뒤 다시 시도하세요.\n\n'+msg);
+   if(/resident_number|bank_account|column/i.test(msg)){
+     return alert('직원 주민등록번호/계좌번호 컬럼이 아직 DB에 없습니다.\n\n제가 함께 드린 SQL을 Supabase SQL Editor에서 1회 실행한 뒤 다시 시도하세요.\n\n'+msg);
+   }
    return alert('대상 업장 직원 조회 오류:\n'+msg);
  }
  let targetEmployees=eq.data||[];
@@ -4613,9 +4714,14 @@ async function importPayrollSimple(file,options={}){
    );
  }
 
- // 급여대장 주민번호를 직원 마스터에도 자동 동기화한다. 계좌번호는 직원관리 수기입력만 사용한다.
+ // 급여대장 주민번호를 직원 마스터에도 자동 동기화한다.
+ // 계좌번호는 급여대장에서 건드리지 않고 직원관리 수기입력만 사용한다.
  let residentSync=await syncEmployeeResidentsFromPayroll(parsed,targetEmployees,sid);
- if(residentSync?.error){setPayrollLoadState('주민번호 직원반영 오류','error');return alert(`급여자료는 저장됐지만 직원관리 주민번호 자동반영에 실패했습니다.\n\n${residentSync.employee||''}\n${residentSync.error.message||residentSync.error}`);}
+ if(residentSync?.error){
+   setPayrollLoadState('주민번호 직원반영 오류','error');
+   return alert(`급여자료는 저장됐지만 직원관리 주민번호 자동반영에 실패했습니다.\n\n${residentSync.employee||''}\n${residentSync.error.message||residentSync.error}`);
+ }
+
  // 급여대장 재직이력 반영
  let empRefresh=await sb.from('employees').select('*').eq('store_id',sid);
  if(!empRefresh.error){
@@ -4648,9 +4754,8 @@ async function importPayrollSimple(file,options={}){
      `<b>${monthLabel(ym)} 급여대장 교체 완료 · 원본 금액 DB 재검증 통과</b><br>`+
      `<span class="help">파일: ${esc(file.name)} · 읽은 시트: ${esc(parsed.sheetName||'-')} · `+
      `월지급총액 ${esc(parsed.grossCol||'-')}열 · 실지급액 ${esc(parsed.netCol||'-')}열 · `+
-     `새 급여행 ${parsed.rows.length}건 · 직원매칭 ${parsed.matched}건 · 주민번호 직원정보 자동반영 · 기존 수기 직원정보 보존</span>${audit}`;
+     `새 급여행 ${parsed.rows.length}건 · 직원매칭 ${parsed.matched}건 · 기존 직원정보 보존</span>${audit}`;
  }
- return true;
 }
 function showPayrollImportInfo(parsed,fileName){
  let el=$('payrollImportInfo');if(!el)return;
@@ -4928,7 +5033,7 @@ function renderPayrollSimple(){
    </tr>`;
  }).join('');
 
- $('payrollBody').innerHTML=rows||`<tr><td colspan="23" style="padding:26px">${monthLabel($('monthSelect').value)} 급여자료가 없습니다. 위의 <b>급여대장 여러개 불러오기</b>를 눌러 Excel을 등록하세요.</td></tr>`;
+ $('payrollBody').innerHTML=rows||`<tr><td colspan="23" style="padding:26px">${monthLabel($('monthSelect').value)} 급여자료가 없습니다. 위의 <b>급여대장 불러오기</b>를 눌러 Excel을 등록하세요.</td></tr>`;
 
  let total={
   scheduled:payrollSum(ordered,'scheduled_hours'),
