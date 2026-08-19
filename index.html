@@ -805,13 +805,17 @@ body.resizingEmployeeColumn *{
   <div class="row" style="margin-bottom:10px">
    <div class="empTabs"><button id="activeEmpTab" class="empTab active" onclick="setEmployeeView('active')">재직자</button><button id="retiredEmpTab" class="empTab" onclick="setEmployeeView('retired')">퇴사자</button></div>
    <div class="toolbar" style="margin-left:auto">
+     <button id="employeeManualSortBtn" class="btn small" onclick="setEmployeeActiveSort('manual')">재직 연번순</button>
+     <button id="employeeHireSortBtn" class="btn gray small" onclick="setEmployeeActiveSort('hire_asc')">재직 입사일 ↑</button>
+     <span id="employeeSortState" class="saveState saved">연번순</span>
      <button class="btn gray small" onclick="selectAllEmployeeRows(true)">전체선택</button>
      <button class="btn gray small" onclick="selectAllEmployeeRows(false)">선택해제</button>
      <button class="btn red small" onclick="deleteSelectedEmployees()">선택 직원 삭제</button>
      <button class="btn gray small" onclick="resetEmployeeColumnWidths()">표 폭 초기화</button>
    </div>
   </div>
-  <div class="help" style="margin-bottom:8px">이름·직책·업무·입사일·근무형태·휴게·급여형태·비고는 표에서 바로 수정할 수 있습니다. 기본시간과 연차기준은 오른쪽 상세수정에서 변경하세요. PC에서는 연번 옆 ☰ 손잡이만 잡아서 순서를 이동할 수 있습니다. 표 머리글의 오른쪽 경계선을 좌우로 끌면 열 폭을 직접 조절할 수 있고 자동 저장됩니다. 비고는 여러 줄로 입력할 수 있습니다.</div>
+  <div class="help" style="margin-bottom:8px">이름·직책·업무·입사일·근무형태·휴게·급여형태·비고는 표에서 바로 수정할 수 있습니다. <b>재직자는 기본적으로 내가 정한 연번순</b>이며 필요할 때만 입사일 오름차순으로 볼 수 있습니다. <b>퇴사자는 퇴사일 오름차순으로 자동 정렬</b>됩니다. 입사일 정렬 중에는 순서 드래그가 잠기며 “재직 연번순”으로 돌아오면 다시 ☰ 손잡이로 순서를 바꿀 수 있습니다. 기본시간과 연차기준은 오른쪽 상세수정에서 변경하세요. 표 머리글의 오른쪽 경계선을 좌우로 끌면 열 폭을 직접 조절할 수 있고 자동 저장됩니다. 비고는 여러 줄로 입력할 수 있습니다.</div>
+  <datalist id="employeeWorkTypeSuggestions"><option value="주5일 스케줄근무"></option><option value="주4일 스케줄근무"></option><option value="기타"></option></datalist>
   <div class="tablewrap"><table><thead><tr><th style="width:44px">선택</th><th>연번</th><th class="name">이름</th><th>직책</th><th>업무</th><th>입사일</th><th>퇴사일</th><th>근무형태</th><th>기본시간</th><th>휴게시간(분)</th><th>스케줄방식</th><th>급여형태</th><th>연차 기준</th><th>연차 잔여</th><th>비고</th><th>출력색</th><th>문서</th><th></th></tr></thead><tbody id="employeeBody"></tbody></table></div>
  </div>
 </section>
@@ -871,12 +875,19 @@ function closeModal(){
  document.body.style.overflow='';
 }
 $('monthSelect').value=new Date().toISOString().slice(0,7);
-let employees=[],schedules=[],payroll=[],stores=[],holidays=[],manualHolidays=[],autoHolidays=[],selectedEmployees=new Set(),leaveLedger=[],scheduleSaveQueue=new Map(),scheduleSaveTimer=null,employeeImportRows=[],paymentRegister=[],incentiveRegister=[],retiredEmployees=[],employeeView='active',refreshToken=0,payrollReloadToken=0,employeeDeleteSelection=new Set(),scheduleView='monthly';
+let employees=[],schedules=[],payroll=[],stores=[],holidays=[],manualHolidays=[],autoHolidays=[],selectedEmployees=new Set(),leaveLedger=[],scheduleSaveQueue=new Map(),scheduleSaveTimer=null,employeeImportRows=[],paymentRegister=[],incentiveRegister=[],retiredEmployees=[],employeeView='active',employeeActiveSort='manual',refreshToken=0,payrollReloadToken=0,employeeDeleteSelection=new Set(),scheduleView='monthly';
 const money=n=>Math.round(Number(n||0)).toLocaleString('ko-KR')+'원',esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 function normalizeName(v){return String(v??'').normalize('NFKC').trim().replace(/\s+/g,'').replace(/[·ㆍ._-]/g,'').toLowerCase()}
 function monthRange(){let m=$('monthSelect').value,[y,mo]=m.split('-').map(Number),days=new Date(y,mo,0).getDate();return {m,y,mo,days,first:m+'-01',last:m+'-'+String(days).padStart(2,'0')}}
 function storeId(){return Number($('storeSelect').value)}
-function workType(e){return e.work_type==='36'?'주4일 스케줄근무':e.work_type==='40'?'주5일 스케줄근무':e.work_type||'기타'}
+function normalizeWorkTypeValue(v){
+ let s=String(v??'').trim(),k=s.replace(/\s+/g,'').toLowerCase();
+ if(['40','주5일','주5일근무','주5일스케줄근무'].includes(k))return '40';
+ if(['36','주4일','주4일근무','주4일스케줄근무'].includes(k))return '36';
+ if(k==='custom'||k==='기타')return 'custom';
+ return s||'custom';
+}
+function workType(e){return e.work_type==='36'?'주4일 스케줄근무':e.work_type==='40'?'주5일 스케줄근무':e.work_type==='custom'?'기타':(e.work_type||'기타')}
 function leaveWeeklyHours(e){return Number(e.leave_weekly_hours ?? (e.work_type==='36'?32:40))}
 function leaveMonthlyHours(e){return Number(e.leave_monthly_hours ?? (e.work_type==='36'?7:8))}
 function leaveDayHours(e){return Number(e.leave_day_hours ?? 8)}
@@ -897,6 +908,21 @@ const PRINT_COLORS=[
 ];
 function employeeColor(e){return e.print_color||PRINT_COLORS[(employees.indexOf(e)+PRINT_COLORS.length)%PRINT_COLORS.length][0]}
 function orderedEmployees(){return [...employees].sort((a,b)=>(Number(a.print_order??9999)-Number(b.print_order??9999))||a.name.localeCompare(b.name,'ko'))}
+function compareEmployeeDateAsc(a,b,field){
+ let av=String(a?.[field]||'9999-12-31'),bv=String(b?.[field]||'9999-12-31');
+ return av.localeCompare(bv)||(Number(a.print_order??9999)-Number(b.print_order??9999))||String(a.name||'').localeCompare(String(b.name||''),'ko');
+}
+function setEmployeeActiveSort(mode){
+ employeeActiveSort=mode==='hire_asc'?'hire_asc':'manual';
+ renderEmployees();
+}
+function updateEmployeeSortControls(){
+ let active=employeeView==='active',manual=employeeActiveSort==='manual';
+ let mb=$('employeeManualSortBtn'),hb=$('employeeHireSortBtn'),st=$('employeeSortState');
+ if(mb){mb.disabled=!active;mb.classList.toggle('gray',!manual||!active)}
+ if(hb){hb.disabled=!active;hb.classList.toggle('gray',manual||!active)}
+ if(st)st.textContent=active?(manual?'연번순 · 드래그 가능':'입사일 ↑ · 보기 정렬'):'퇴사일 ↑ · 자동';
+}
 function allEmployees(){return [...employees,...retiredEmployees]}
 function employedOn(e,date){
  if(!e?.hire_date)return false;
@@ -2256,13 +2282,6 @@ function employeeInlineValue(e,field){
  let v=e?.[field];
  return v===null||v===undefined?'':v;
 }
-function employeeWorkTypeOptions(e){
- return [
-   ['40','주5일 스케줄근무'],
-   ['36','주4일 스케줄근무'],
-   ['custom','기타']
- ].map(([v,n])=>`<option value="${v}" ${e.work_type===v?'selected':''}>${n}</option>`).join('');
-}
 function employeePayTypeOptions(e){
  return [
    ['monthly','월급'],
@@ -2274,8 +2293,9 @@ function employeePayTypeOptions(e){
 async function saveEmployeeInline(id,field,value){
  let e=allEmployees().find(x=>x.id===id);
  if(!e)return;
+ let returnEmployeeView=employeeView;
 
- let val=value;
+ let val=field==='work_type'?normalizeWorkTypeValue(value):value;
  if(['daily_hours','break_minutes','leave_weekly_hours','leave_monthly_hours','leave_day_hours'].includes(field)){
    val=Number(value||0);
    if(!Number.isFinite(val))val=0;
@@ -2305,10 +2325,9 @@ async function saveEmployeeInline(id,field,value){
  // 표에서 바꾼 값이 스케줄/급여/연차 화면에도 즉시 보이게 전체 로컬 갱신
  await refreshAll();
 
- // 퇴사일을 직접 입력한 경우 퇴사자 탭으로 이동
- if(field==='resign_date' && val){
-   setEmployeeView('retired');
- }
+ // 재직자에서 퇴사일을 입력해도 현재 작업 탭은 유지한다.
+ // 해당 직원은 재직 목록에서는 빠지지만 다른 직원 수정을 바로 이어갈 수 있다.
+ setEmployeeView(returnEmployeeView);
 }
 
 async function saveEmployeeInlineQuick(id,field,value,input){
@@ -2595,8 +2614,12 @@ function initEmployeeColumnResizers(force=false){
 function renderEmployees(){
  if(!$('employeeBody'))return;
  let list=employeeView==='retired'
-   ?[...retiredEmployees].sort((a,b)=>(b.resign_date||'').localeCompare(a.resign_date||'')||a.name.localeCompare(b.name,'ko'))
-   :orderedEmployees();
+   ?[...retiredEmployees].sort((a,b)=>compareEmployeeDateAsc(a,b,'resign_date'))
+   :(employeeActiveSort==='hire_asc'
+      ?[...employees].sort((a,b)=>compareEmployeeDateAsc(a,b,'hire_date'))
+      :orderedEmployees());
+ let dragEnabled=employeeView==='active'&&employeeActiveSort==='manual';
+ updateEmployeeSortControls();
 
  $('employeeBody').innerHTML=list.map((e,idx)=>{
    let ls=employeeView==='active'?liveLeaveSummary(e,isoToday()):{balance:0};
@@ -2607,7 +2630,7 @@ function renderEmployees(){
     :`<button class="btn gray small" onclick="openEmployee(${e.id},true)">상세정보</button> <button class="btn gray small" onclick="openEmploymentHistory(${e.id})">재직이력</button> <button class="btn green small" onclick="restoreEmployee(${e.id},'${esc(e.name).replace(/'/g,"&#39;")}')">재입사</button>`;
 
    let workTypeCell=employeeView==='active'
-     ?`<select class="empInline" onchange="saveEmployeeInline(${e.id},'work_type',this.value)">${employeeWorkTypeOptions(e)}</select>`
+     ?`<input class="empInline" list="employeeWorkTypeSuggestions" value="${esc(workType(e))}" draggable="false" ondragstart="event.preventDefault()" ondrop="event.preventDefault()" onfocus="this.select()" onkeydown="if(event.key==='Enter'){this.blur()}" onchange="saveEmployeeInline(${e.id},'work_type',this.value)">`
      :workType(e);
 
    let payTypeCell=employeeView==='active'
@@ -2616,7 +2639,7 @@ function renderEmployees(){
 
    return `<tr class="${employeeView==='retired'?'retiredRow':''}" ${employeeView==='active'?'data-emp-id="'+e.id+'"':''}>
    <td style="text-align:center"><input type="checkbox" class="empDeleteCheck" data-id="${e.id}" ${delChecked?'checked':''} onchange="toggleEmployeeDeleteSelection(${e.id},this.checked)"></td>
-   <td><span class="empDragHandle" draggable="true" data-emp-id="${e.id}" title="이 손잡이만 잡아서 순서 이동">☰</span> <span class="seqBadge">${idx+1}</span></td>
+   <td><span class="empDragHandle" draggable="${dragEnabled?'true':'false'}" data-emp-id="${e.id}" title="${dragEnabled?'이 손잡이만 잡아서 순서 이동':'연번순 보기에서만 순서 이동 가능'}">☰</span> <span class="seqBadge">${idx+1}</span></td>
 
    <td class="name empInlineCell">${employeeView==='active'?employeeInlineText(e,'name','empInlineName'):`<b>${esc(e.name)}</b>`}</td>
    <td class="empInlineCell">${employeeView==='active'?employeeInlineText(e,'role'):esc(e.role||'')}</td>
@@ -2664,7 +2687,7 @@ function renderEmployees(){
    <td>${action}</td></tr>`;
  }).join('')||`<tr><td colspan="17">${employeeView==='active'?'재직자가':'퇴사자가'} 없습니다.</td></tr>`;
 
- if(employeeView==='active')setupEmployeeDragDrop();
+ if(dragEnabled)setupEmployeeDragDrop();
  requestAnimationFrame(()=>{
    document.querySelectorAll('#employeeBody .empNoteInput').forEach(autoGrowEmployeeNote);
    initEmployeeColumnResizers();
@@ -3143,7 +3166,7 @@ async function openEmployee(id,isRetired=false){
  <div class="field"><label>현 주소</label><input id="eAddress" value="${esc(e.address||'')}"></div>
  <div class="field"><label>입사일</label><input id="eHire" type="text" inputmode="numeric" maxlength="8" placeholder="YYYYMMDD" value="${(e.hire_date||'').replace(/-/g,'')}" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,8)"></div>
  <div class="field"><label>퇴사일</label><input id="eResign" type="text" inputmode="numeric" maxlength="8" placeholder="YYYYMMDD" value="${(e.resign_date||'').replace(/-/g,'')}" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,8)"></div>
- <div class="field"><label>근무형태</label><select id="eType" onchange="applyLeavePreset()"><option value="40">주5일 스케줄근무</option><option value="36">주4일 스케줄근무</option><option value="custom">기타</option></select></div>
+ <div class="field"><label>근무형태</label><input id="eType" list="employeeWorkTypeSuggestions" value="${esc(workType(e))}" placeholder="직접 입력 가능" onchange="applyLeavePreset()"></div>
  <div class="field"><label>1일 소정시간</label><input id="eDaily" type="number" step=".5" value="${e.daily_hours||8}"></div>
  <div class="field"><label>기본 출근</label><input id="eStart" type="time" value="${(e.default_start_time||'').slice(0,5)}"></div>
  <div class="field"><label>기본 퇴근</label><input id="eEnd" type="time" value="${(e.default_end_time||'').slice(0,5)}"></div>
@@ -3161,10 +3184,10 @@ async function openEmployee(id,isRetired=false){
  <div style="margin-top:10px"><b style="font-size:12px">기본근무 채우기용 패턴 (선택사항)</b><div style="margin-top:6px">${checks}</div></div>
  <div class="help" style="margin-top:10px"><b>직책과 업무를 구분해서 입력하세요.</b> 예: 직책=과장 / 업무=매장관리·조제·전산 등<br><b>이 화면의 모든 항목은 수기로 수정 후 저장할 수 있습니다.</b><br>퇴사자 정보를 수정해도 자동으로 재직복귀되지 않습니다.<br>실제 근무요일이 매주 바뀌는 스케줄근무라면 위 요일은 비워두셔도 됩니다. 이 항목은 “기본근무 채우기”를 빠르게 사용할 때만 참고합니다.<br>연차 기본값: 주5일은 월 +8h / 하루 -8h, 주4일은 주32h 소정 기준 월 +7h / 하루 -8h.</div>
  <div class="modalActions"><button class="btn gray" onclick="closeModal()">취소</button><button class="btn" onclick="saveEmployee(${id||'null'})">저장</button></div>`);
- $('eType').value=e.work_type||'40';$('ePay').value=e.pay_type||'monthly';$('ePayDay').value=payDayRule(e);$('eIncentiveOn').value=incentiveEnabled(e)?'1':'0';
+ $('eType').value=workType(e);$('ePay').value=e.pay_type||'monthly';$('ePayDay').value=payDayRule(e);$('eIncentiveOn').value=incentiveEnabled(e)?'1':'0';
 }
 function applyLeavePreset(){
- let t=$('eType').value;
+ let t=normalizeWorkTypeValue($('eType').value);
  if(t==='40'){$('eDaily').value=8;$('eLeaveWeekly').value=40;$('eLeaveMonthly').value=8;$('eLeaveDay').value=8}
  if(t==='36'){$('eDaily').value=8;$('eLeaveWeekly').value=32;$('eLeaveMonthly').value=7;$('eLeaveDay').value=8}
 }
@@ -3174,6 +3197,7 @@ function applyPayPreset(){
 }
 async function saveEmployee(id){
  let existing=id?[...employees,...retiredEmployees].find(x=>x.id===id):null;
+ let returnEmployeeView=employeeView;
  let resign=$('eResign')?.value||null;
 
  let obj={
@@ -3187,7 +3211,7 @@ async function saveEmployee(id){
    address:$('eAddress').value.trim(),
    hire_date:$('eHire').value,
    resign_date:resign,
-   work_type:$('eType').value,
+   work_type:normalizeWorkTypeValue($('eType').value),
    daily_hours:Number($('eDaily').value||8),
    default_start_time:$('eStart').value||null,
    default_end_time:$('eEnd').value||null,
@@ -3227,8 +3251,10 @@ async function saveEmployee(id){
  closeModal();
  await refreshAll();
 
- if(existing?.active===false || obj.active===false)setEmployeeView('retired');
- else setEmployeeView('active');
+ // 기존 직원 수정은 작업하던 탭을 유지한다.
+ // 재직자에게 퇴사일을 입력하면 직원은 퇴사자로 이동하지만 화면은 재직자 탭에 남는다.
+ if(existing)setEmployeeView(returnEmployeeView);
+ else setEmployeeView(obj.active===false?'retired':'active');
 
  alert(`${obj.name} 직원정보를 저장했습니다.`);
 }
@@ -3649,52 +3675,35 @@ async function parseLaborPayrollExact(file){
    }
  }
 
- // ===== 본표 시작 검증 =====
- // 모든 급여대장이 동일한 양식: A7 순번 / B7 성명 / AX7 월지급총액 / BO7 실지급액
+ // ===== 본표 시작 검증 / 금액열 동적 탐색 =====
+ // A/B의 순번·성명 구조는 유지하되 금액열은 A열부터 실제 시트 끝까지 헤더명으로 찾는다.
+ // 숨김열도 SheetJS 셀 데이터에는 포함되므로 월지급총액/실지급액/선지급공제를 빠뜨리지 않는다.
  let seqHeader=text(cell('A7')).replace(/\s/g,''),
-     nameHeader=text(cell('B7')).replace(/\s/g,''),
-     grossHeader=text(cell('AX7')).replace(/\s/g,''),
-     netHeader=text(cell('BO7')).replace(/\s/g,'');
- if(seqHeader!=='순번' || !nameHeader.includes('성명') ||
-    !grossHeader.includes('월지급총액') || !netHeader.includes('실지급액')){
-   return {error:`급여대장 본표 위치가 예상과 다릅니다.\nA7=${seqHeader||'-'} / B7=${nameHeader||'-'} / AX7=${grossHeader||'-'} / BO7=${netHeader||'-'}`};
+     nameHeader=text(cell('B7')).replace(/\s/g,'');
+ if(seqHeader!=='순번' || !nameHeader.includes('성명')){
+   return {error:`급여대장 본표 위치가 예상과 다릅니다.\nA7=${seqHeader||'-'} / B7=${nameHeader||'-'}`};
  }
 
- // 급여 계산용 '공제내역합계'와 화면 표시용 '선지급공제'를 각각 찾는다.
- // 열 위치는 고정하지 않고 실제 헤더명으로 탐색한다.
- let deductionTotalCol='', advanceDeductionCol='';
- for(let c=0;c<=XLSX.utils.decode_col('BN');c++){
-   let header=text(ws[XLSX.utils.encode_cell({r:6,c})]?.v).replace(/\s/g,'');
-   if(!deductionTotalCol && (
-      header.includes('공제내역합계') ||
-      header==='공제합계' ||
-      header==='공제액합계' ||
-      header==='공제총액'
-   )){
-     deductionTotalCol=XLSX.utils.encode_col(c);
-   }
-   if(!advanceDeductionCol && (header.includes('선지급공제') || header==='선지급')){
-     advanceDeductionCol=XLSX.utils.encode_col(c);
-   }
- }
- // 일부 양식은 공제내역합계가 2단 헤더 아래에 있으므로 7~8행도 보조 탐색
- if(!deductionTotalCol || !advanceDeductionCol){
-   for(let rr=6;rr<=8;rr++){
-     for(let c=0;c<=XLSX.utils.decode_col('BN');c++){
-       let header=text(ws[XLSX.utils.encode_cell({r:rr,c})]?.v).replace(/\s/g,'');
-       if(!deductionTotalCol && (
-          header.includes('공제내역합계') ||
-          header==='공제합계' ||
-          header==='공제액합계' ||
-          header==='공제총액'
-       )) deductionTotalCol=XLSX.utils.encode_col(c);
-       if(!advanceDeductionCol && (header.includes('선지급공제') || header==='선지급')){
-         advanceDeductionCol=XLSX.utils.encode_col(c);
-       }
+ const compactHeader=(v)=>text(v).replace(/\s/g,'');
+ function findPayrollHeaderCol(test){
+   for(let rr=6;rr<=Math.min(8,range.e.r);rr++){
+     for(let c=range.s.c;c<=range.e.c;c++){
+       let header=compactHeader(ws[XLSX.utils.encode_cell({r:rr,c})]?.v);
+       if(header && test(header))return XLSX.utils.encode_col(c);
      }
    }
+   return '';
  }
- if(!deductionTotalCol)console.warn('공제내역합계 헤더를 찾지 못했습니다.');
+ let grossCol=findPayrollHeaderCol(h=>h.includes('월지급총액')),
+     netCol=findPayrollHeaderCol(h=>h.includes('실지급액')),
+     deductionTotalCol=findPayrollHeaderCol(h=>h.includes('공제내역합계')||h==='공제합계'||h==='공제액합계'||h==='공제총액'),
+     advanceDeductionCol=findPayrollHeaderCol(h=>h.includes('선지급공제')||h==='선지급'),
+     scanEndCol=XLSX.utils.encode_col(range.e.c);
+
+ if(!grossCol || !netCol){
+   return {error:`급여대장에서 필수 금액열을 찾지 못했습니다.\n월지급총액=${grossCol||'미발견'} / 실지급액=${netCol||'미발견'}\n탐색범위: ${XLSX.utils.encode_col(range.s.c)}~${scanEndCol} (숨김열 포함)`};
+ }
+ if(!deductionTotalCol)console.info('공제합계 단일열 없음 → 월지급총액-실지급액으로 총공제를 산출합니다.');
  if(!advanceDeductionCol)console.warn('선지급공제 헤더를 찾지 못했습니다.');
 
  let rows=[],blankNames=0;
@@ -3719,34 +3728,26 @@ async function parseLaborPayrollExact(file){
    if(!Number.isFinite(seq) || seq<=0)continue;
    if(/합계|총계|세부\s*사항/.test(name))continue;
 
-   // 정확한 본표 컬럼
-   // J 기본근로, K 주휴, L 연장시간, M 휴일시간
-   // O 기본급, P 주휴수당, S 고정연장, T 고정휴일
-   // AB 식대
-   // AN 휴일근로수당 금액, AP 연장근로수당 금액
-   // AS 조정수당, AT 추가상여, AU 미사용연차수당
-   // AX 월지급총액
-   // AZ~BE 6대 기본공제, BG~BN 기타공제
-   // BO 실지급액
-   let gross=intMoney(cell(`AX${r}`));
-
-   // 계산 기준:
-   // 월지급총액 - 공제내역합계 = 실지급액
-   let deductionTotal=deductionTotalCol
-     ? intMoney(cell(`${deductionTotalCol}${r}`))
-     : 0;
+   // 근로/수당 세부열은 기존 양식을 유지하고, 총지급/실지급은 헤더명으로 찾은 원본열을 사용한다.
+   let grossRaw=cell(`${grossCol}${r}`),
+       sourceNetRaw=cell(`${netCol}${r}`),
+       gross=intMoney(grossRaw),
+       hasSourceNet=sourceNetRaw!==null&&sourceNetRaw!==undefined&&String(sourceNetRaw).trim()!==''&&String(sourceNetRaw).trim()!=='-',
+       sourceNet=hasSourceNet?intMoney(sourceNetRaw):null;
 
    // 월별 표에 별도 표시할 선지급공제
    let advanceDeduction=advanceDeductionCol
      ? intMoney(cell(`${advanceDeductionCol}${r}`))
      : 0;
 
-   // 사용자가 확인한 노무사 급여대장 공식대로 계산.
-   // BO 원본 실지급액도 검산용으로 읽되 대시보드 저장값은 공식으로 통일.
-   let sourceNet=intMoney(cell(`BO${r}`)),
-       net=Math.round(gross-deductionTotal);
-   if(sourceNet!==net){
-     console.warn('실지급 검산 차이',name,{gross,deductionTotal,calculated:net,sourceNet});
+   // 실지급액은 Excel 원본값을 최우선으로 저장한다.
+   // 공제 세부항목에 숨김열/정산/음수 조정이 있어도 원본 실지급액을 임의 재계산해 덮어쓰지 않는다.
+   let explicitDeduction=deductionTotalCol?intMoney(cell(`${deductionTotalCol}${r}`)):null,
+       net=hasSourceNet?sourceNet:Math.round(gross-(explicitDeduction||0)),
+       deductionTotal=hasSourceNet?Math.round(gross-net):Math.round(explicitDeduction||0);
+
+   if(deductionTotalCol && hasSourceNet && Math.round(explicitDeduction)!==deductionTotal){
+     console.info('공제 검산 차이 - Excel 실지급액 우선',name,{gross,explicitDeduction,derivedFromSourceNet:deductionTotal,sourceNet:net});
    }
 
    let weeklyRaw=cell(`K${r}`);
@@ -3793,9 +3794,10 @@ async function parseLaborPayrollExact(file){
      employment_insurance:intMoney(cell(`BE${r}`)),
      // other_deduction 컬럼은 월별표의 '선지급공제' 저장용으로 사용
      other_deduction:Math.round(advanceDeduction),
-     // total_deduction은 Excel의 '공제내역합계'
+     // total_deduction은 원본 월지급총액-원본 실지급액으로 산출하여 숨김 공제/정산까지 포함
      total_deduction:Math.round(deductionTotal),
-     net_pay:net
+     // net_pay는 Excel의 '실지급액' 원본값
+     net_pay:Math.round(net)
    });
  }
 
@@ -3814,7 +3816,7 @@ async function parseLaborPayrollExact(file){
  return {
    sheetName,storeName,payMonth,periodStart,periodEnd,payDate,
    rows,matched:0,
-   deductionTotalCol,advanceDeductionCol,
+   grossCol,netCol,deductionTotalCol,advanceDeductionCol,scanEndCol,
    tableOnly:true
  };
 }
@@ -4061,7 +4063,10 @@ async function importPayrollSimple(file){
    `산정월: ${monthLabel(parsed.payMonth)}\n`+
    `산정기간: ${parsed.periodStart||'-'} ~ ${parsed.periodEnd||'-'}\n`+
    `급여행: ${parsed.rows.length}건\n`+
-   `공제 기준: ${parsed.advanceDeductionCol?parsed.advanceDeductionCol+'열 선지급공제':'선지급공제 헤더 미발견 → 0원'}\n\n`+
+   `금액열 탐색: A~${parsed.scanEndCol||'?'} (숨김열 포함)\n`+
+   `월지급총액: ${parsed.grossCol||'-'}열 / 실지급액 원본: ${parsed.netCol||'-'}열\n`+
+   `선지급공제 표시: ${parsed.advanceDeductionCol?parsed.advanceDeductionCol+'열':'헤더 미발견 → 0원'}\n`+
+   `총공제 검산: 월지급총액 - Excel 실지급액\n\n`+
    `이번 Excel에서 실제 읽은 직원명:\n${sourcePreview}${sourceNames.length>30?' ...':''}`;
 
  if(exactUnmatched.length){
