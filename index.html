@@ -3644,8 +3644,13 @@ async function parseLaborPayrollExact(file){
 
  function scorePayrollSheet(n){
    let ws0=wb.Sheets[n],score=0;
-   if(n==='급여대장')score+=20;
    if(/급여대장/.test(n))score+=10;
+   // 파일명이 202607이면 '7월 급여대장'처럼 월이 명시된 시트를 generic '급여대장'보다 우선한다.
+   if(wantedYm){
+     let wantedM=Number(wantedYm.slice(5));
+     if(new RegExp(`(^|[^0-9])${wantedM}월`).test(n))score+=120;
+   }
+   if(n==='급여대장')score+=5;
 
    const cv=(addr)=>ws0?.[addr]?.v ?? null;
    let p1=excelDateToIso(cv('D5')), p2=excelDateToIso(cv('F5'));
@@ -3983,7 +3988,8 @@ function makePayrollDbRow(x,payrollMonthId,file,parsed){
    net_pay:payrollDbSafeNumber(x.net_pay,'money'),
 
    source_file:file.name,
-   memo:`weekly_hours=${payrollDbSafeNumber(x._weekly_hours||0,'hours')};weekly_text=${encodeURIComponent(x._weekly_hours_text||'')};pay_date=${parsed.payDate||''};period=${parsed.periodStart||''}~${parsed.periodEnd||''}`
+   // Excel 원본 총지급/실지급 값을 memo에도 남겨 DB 저장 후 검증할 수 있게 한다.
+   memo:`weekly_hours=${payrollDbSafeNumber(x._weekly_hours||0,'hours')};weekly_text=${encodeURIComponent(x._weekly_hours_text||'')};pay_date=${parsed.payDate||''};period=${parsed.periodStart||''}~${parsed.periodEnd||''};gross_col=${parsed.grossCol||''};net_col=${parsed.netCol||''};source_gross=${payrollDbSafeNumber(x.gross_pay,'money')};source_net=${payrollDbSafeNumber(x.net_pay,'money')}`
  };
 }
 
@@ -4242,9 +4248,10 @@ async function importPayrollSimple(file){
    return alert('급여 상세 저장 오류:\n'+ins.error.message+detail);
  }
 
- // 저장 후 새 파일 기준 이름 검증.
+ // 저장 후 새 Excel 기준 이름 + 금액을 다시 DB에서 읽어 검증한다.
+ // 특히 실지급액은 Excel의 netCol(현재 7월 양식은 BO) 원본값과 1원도 다르면 안 된다.
  let savedCheck=await sb.from('payroll_entries')
-   .select('id,employee_name')
+   .select('id,employee_name,gross_pay,net_pay,total_deduction,other_deduction,memo')
    .eq('payroll_month_id',pm.data.id)
    .order('id',{ascending:true});
  if(savedCheck.error){
@@ -4253,14 +4260,85 @@ async function importPayrollSimple(file){
 
  let expectedNames=parsed.rows.map(x=>String(x.employee_name||'').trim()).sort((a,b)=>a.localeCompare(b,'ko'));
  let savedNames=(savedCheck.data||[]).map(x=>String(x.employee_name||'').trim()).sort((a,b)=>a.localeCompare(b,'ko'));
- let mismatch=expectedNames.length!==savedNames.length || expectedNames.some((n,i)=>n!==savedNames[i]);
- if(mismatch){
+ let nameMismatch=expectedNames.length!==savedNames.length || expectedNames.some((n,i)=>n!==savedNames[i]);
+ if(nameMismatch){
    await sb.from('payroll_entries').delete().eq('payroll_month_id',pm.data.id);
    await sb.from('payroll_months').delete().eq('id',pm.data.id);
    setPayrollLoadState('이름 검증 실패','error');
    return alert(
      '새 급여대장 이름과 DB 저장 이름이 일치하지 않아 저장을 취소했습니다.\n\n'+
      '예상: '+expectedNames.join(', ')+'\n\n저장: '+savedNames.join(', ')
+   );
+ }
+
+ function payrollVerifyQueues(){
+   let q=new Map();
+   parsed.rows.forEach(x=>{
+     let k=normalizeName(x.employee_name);
+     if(!q.has(k))q.set(k,[]);
+     q.get(k).push(x);
+   });
+   return q;
+ }
+ function findPayrollAmountMismatches(savedRows){
+   let queues=payrollVerifyQueues(),bad=[];
+   for(const row of (savedRows||[])){
+     let k=normalizeName(row.employee_name),arr=queues.get(k)||[],src=arr.shift();
+     if(!src){
+       bad.push({row,src:null,reason:'원본행 매칭 실패'});
+       continue;
+     }
+     let eg=Math.round(Number(src.gross_pay||0));
+     let en=Math.round(Number(src.net_pay||0));
+     let ed=Math.round(Number(src.total_deduction||0));
+     let sg=Math.round(Number(row.gross_pay||0));
+     let sn=Math.round(Number(row.net_pay||0));
+     let sd=Math.round(Number(row.total_deduction||0));
+     if(eg!==sg || en!==sn || ed!==sd){
+       bad.push({row,src,reason:`총지급 ${sg}→${eg}, 실지급 ${sn}→${en}, 총공제 ${sd}→${ed}`});
+     }
+   }
+   return bad;
+ }
+
+ let amountMismatch=findPayrollAmountMismatches(savedCheck.data||[]);
+ if(amountMismatch.length){
+   // DB 저장 과정에서 값이 달라졌다면 원본 Excel 금액으로 한 번 강제 복구한다.
+   for(const bad of amountMismatch){
+     if(!bad.src || !bad.row?.id)continue;
+     let uq=await sb.from('payroll_entries').update({
+       gross_pay:Math.round(Number(bad.src.gross_pay||0)),
+       net_pay:Math.round(Number(bad.src.net_pay||0)),
+       total_deduction:Math.round(Number(bad.src.total_deduction||0)),
+       other_deduction:Math.round(Number(bad.src.other_deduction||0))
+     }).eq('id',bad.row.id);
+     if(uq.error){
+       console.error('급여 원본금액 복구 실패',bad.row.employee_name,uq.error);
+     }
+   }
+
+   let recheck=await sb.from('payroll_entries')
+     .select('id,employee_name,gross_pay,net_pay,total_deduction,other_deduction,memo')
+     .eq('payroll_month_id',pm.data.id)
+     .order('id',{ascending:true});
+   if(recheck.error){
+     await sb.from('payroll_entries').delete().eq('payroll_month_id',pm.data.id);
+     await sb.from('payroll_months').delete().eq('id',pm.data.id);
+     setPayrollLoadState('금액 검증 오류','error');
+     return alert('급여 금액 재검증 오류:\n'+recheck.error.message);
+   }
+   amountMismatch=findPayrollAmountMismatches(recheck.data||[]);
+   savedCheck=recheck;
+ }
+
+ if(amountMismatch.length){
+   let detail=amountMismatch.slice(0,10).map(x=>`${x.row?.employee_name||'?'}: ${x.reason}`).join('\n');
+   await sb.from('payroll_entries').delete().eq('payroll_month_id',pm.data.id);
+   await sb.from('payroll_months').delete().eq('id',pm.data.id);
+   setPayrollLoadState('실지급 검증 실패','error');
+   return alert(
+     `Excel 원본 실지급액과 DB 저장값이 달라 저장을 취소했습니다.\n`+
+     `실지급 원본열: ${parsed.netCol||'-'}열\n\n${detail}`
    );
  }
 
@@ -4287,11 +4365,16 @@ async function importPayrollSimple(file){
 
  setPayrollLoadState(`${ym} · ${parsed.rows.length}건`,'saved');
  if($('payrollImportInfo')){
+   let kim=parsed.rows.find(x=>normalizeName(x.employee_name)==='김현');
+   let audit=kim
+     ?`<br><b>김현 검증:</b> 월지급총액 ${money(kim.gross_pay)} / <b>Excel ${esc(parsed.netCol||'실지급')}열 실지급 ${money(kim.net_pay)}</b>`
+     :'';
    $('payrollImportInfo').style.display='block';
    $('payrollImportInfo').innerHTML=
-     `<b>${monthLabel(ym)} 급여대장 교체 완료</b><br>`+
+     `<b>${monthLabel(ym)} 급여대장 교체 완료 · 원본 금액 DB 재검증 통과</b><br>`+
      `<span class="help">파일: ${esc(file.name)} · 읽은 시트: ${esc(parsed.sheetName||'-')} · `+
-     `새 급여행 ${parsed.rows.length}건 · 직원매칭 ${parsed.matched}건 · 기존 직원정보 보존</span>`;
+     `월지급총액 ${esc(parsed.grossCol||'-')}열 · 실지급액 ${esc(parsed.netCol||'-')}열 · `+
+     `새 급여행 ${parsed.rows.length}건 · 직원매칭 ${parsed.matched}건 · 기존 직원정보 보존</span>${audit}`;
  }
 }
 function showPayrollImportInfo(parsed,fileName){
