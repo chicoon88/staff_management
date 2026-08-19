@@ -811,7 +811,7 @@ body.resizingEmployeeColumn *{
 
 <section id="payrollPage" class="page">
  <div class="row">
-  <div><h1 class="title">급여관리 <span style="font-size:12px;color:#315efb;background:#eef3ff;border-radius:999px;padding:4px 8px;vertical-align:middle">v2026.08.19-1705</span></h1><div class="sub">월별 급여대장을 검산하고, 기간별·직원별 누적 급여도 조회합니다.</div></div>
+  <div><h1 class="title">급여관리 <span style="font-size:12px;color:#315efb;background:#eef3ff;border-radius:999px;padding:4px 8px;vertical-align:middle">v2026.08.19-1725</span></h1><div class="sub">월별 급여대장을 검산하고, 기간별·직원별 누적 급여도 조회합니다.</div></div>
   <div class="toolbar">
    <input type="file" id="payrollFile" accept=".xlsx,.xls,.xlsm" multiple style="display:none" onchange="importPayrollFiles(this.files);this.value=''">
    <button class="btn" onclick="$('payrollFile').click()">급여대장 여러개 불러오기</button>
@@ -951,7 +951,7 @@ function closeModal(){
  document.body.style.overflow='';
 }
 $('monthSelect').value=new Date().toISOString().slice(0,7);
-let employees=[],schedules=[],payroll=[],stores=[],holidays=[],manualHolidays=[],autoHolidays=[],selectedEmployees=new Set(),leaveLedger=[],scheduleSaveQueue=new Map(),scheduleSaveTimer=null,employeeImportRows=[],paymentRegister=[],incentiveRegister=[],retiredEmployees=[],employeeView='active',employeeActiveSort='manual',refreshToken=0,payrollReloadToken=0,employeeDeleteSelection=new Set(),scheduleView='monthly',employeeResidentBackfillDoneStores=new Set();
+let employees=[],schedules=[],payroll=[],stores=[],holidays=[],manualHolidays=[],autoHolidays=[],selectedEmployees=new Set(),leaveLedger=[],scheduleSaveQueue=new Map(),scheduleSaveTimer=null,employeeImportRows=[],paymentRegister=[],incentiveRegister=[],retiredEmployees=[],employeeView='active',employeeActiveSort='manual',refreshToken=0,payrollReloadToken=0,employeeDeleteSelection=new Set(),scheduleView='monthly',employeeResidentBackfillDoneStores=new Set(),employeeSensitiveColumnsMissingDetected=false;
 const money=n=>Math.round(Number(n||0)).toLocaleString('ko-KR')+'원',esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 function normalizeName(v){return String(v??'').normalize('NFKC').trim().replace(/\s+/g,'').replace(/[·ㆍ._-]/g,'').toLowerCase()}
 function monthRange(){let m=$('monthSelect').value,[y,mo]=m.split('-').map(Number),days=new Date(y,mo,0).getDate();return {m,y,mo,days,first:m+'-01',last:m+'-'+String(days).padStart(2,'0')}}
@@ -1198,7 +1198,13 @@ async function backfillBlankEmployeeResidentsFromStoredPayroll(sid,{force=false}
 
    // 자동채움 직전에 DB 값을 다시 확인해 사용자가 방금 수정한 값을 보호한다.
    let chk=await sb.from('employees').select('resident_number').eq('id',emp.id).eq('store_id',sid).maybeSingle();
-   if(chk.error)return {updated,error:chk.error};
+   if(chk.error){
+     if(isMissingEmployeeSensitiveColumnsError(chk.error)){
+       employeeSensitiveColumnsMissingDetected=true;
+       return {updated,skippedMissingColumns:true};
+     }
+     return {updated,error:chk.error};
+   }
    let current=String(chk.data?.resident_number||'').trim();
    if(current){
      emp.resident_number=current;
@@ -1206,7 +1212,13 @@ async function backfillBlankEmployeeResidentsFromStoredPayroll(sid,{force=false}
    }
 
    let uq=await sb.from('employees').update({resident_number:resident}).eq('id',emp.id).eq('store_id',sid);
-   if(uq.error)return {updated,error:uq.error};
+   if(uq.error){
+     if(isMissingEmployeeSensitiveColumnsError(uq.error)){
+       employeeSensitiveColumnsMissingDetected=true;
+       return {updated,skippedMissingColumns:true};
+     }
+     return {updated,error:uq.error};
+   }
    emp.resident_number=resident;
    updated++;
  }
@@ -4155,6 +4167,11 @@ ${names}
 
  if(inserts.length){
    let qi=await sb.from('employees').insert(inserts);
+   if(qi.error && isMissingEmployeeSensitiveColumnsError(qi.error)){
+     employeeSensitiveColumnsMissingDetected=true;
+     let fallbackInserts=inserts.map(({resident_number,bank_account,...rest})=>rest);
+     qi=await sb.from('employees').insert(fallbackInserts);
+   }
    if(qi.error)return {added:0,skipped:missing.length,error:qi.error};
  }
 
@@ -4305,6 +4322,27 @@ async function resolvePayrollUnmatchedRows(parsed,targetEmployees){
  return unresolved;
 }
 
+function isMissingEmployeeSensitiveColumnsError(err){
+ let msg=String(err?.message||err||'');
+ return /resident_number|bank_account/i.test(msg) && /does not exist|column|schema cache|PGRST204/i.test(msg);
+}
+async function loadPayrollTargetEmployees(targetStoreId){
+ let q=await sb.from('employees')
+   .select('id,name,active,hire_date,resign_date,resident_number,bank_account')
+   .eq('store_id',targetStoreId);
+ if(!q.error)return {data:q.data||[],sensitiveColumnsAvailable:true};
+ if(!isMissingEmployeeSensitiveColumnsError(q.error))return {error:q.error,data:[]};
+
+ // 주민번호/계좌번호 컬럼이 아직 없어도 급여 업로드 자체는 중단하지 않는다.
+ employeeSensitiveColumnsMissingDetected=true;
+ console.warn('employees 주민번호/계좌번호 컬럼 미생성 - 급여 업로드는 계속 진행하고 직원정보 자동반영만 건너뜁니다.',q.error);
+ let fallback=await sb.from('employees')
+   .select('id,name,active,hire_date,resign_date')
+   .eq('store_id',targetStoreId);
+ if(fallback.error)return {error:fallback.error,data:[]};
+ return {data:(fallback.data||[]).map(e=>({...e,resident_number:null,bank_account:null})),sensitiveColumnsAvailable:false};
+}
+
 async function syncEmployeeResidentsFromPayroll(parsed,targetEmployees,targetStoreId){
  let changes=[],seen=new Set();
  for(const row of (parsed?.rows||[])){
@@ -4320,11 +4358,23 @@ async function syncEmployeeResidentsFromPayroll(parsed,targetEmployees,targetSto
  let updated=0;
  for(const ch of changes){
    let chk=await sb.from('employees').select('resident_number').eq('id',ch.id).eq('store_id',targetStoreId).maybeSingle();
-   if(chk.error)return {error:chk.error,employee:ch.name,updated};
+   if(chk.error){
+     if(isMissingEmployeeSensitiveColumnsError(chk.error)){
+       employeeSensitiveColumnsMissingDetected=true;
+       return {updated,skippedMissingColumns:true};
+     }
+     return {error:chk.error,employee:ch.name,updated};
+   }
    if(String(chk.data?.resident_number||'').trim())continue;
    let q=await sb.from('employees').update({resident_number:ch.resident_number})
      .eq('id',ch.id).eq('store_id',targetStoreId);
-   if(q.error)return {error:q.error,employee:ch.name,updated};
+   if(q.error){
+     if(isMissingEmployeeSensitiveColumnsError(q.error)){
+       employeeSensitiveColumnsMissingDetected=true;
+       return {updated,skippedMissingColumns:true};
+     }
+     return {error:q.error,employee:ch.name,updated};
+   }
    let emp=(targetEmployees||[]).find(e=>String(e.id)===String(ch.id));
    if(emp)emp.resident_number=ch.resident_number;
    updated++;
@@ -4335,6 +4385,7 @@ async function syncEmployeeResidentsFromPayroll(parsed,targetEmployees,targetSto
 
 async function importPayrollFiles(fileList){
  const files=[...(fileList||[])].filter(Boolean);
+ employeeSensitiveColumnsMissingDetected=false;
  if(!files.length)return;
  if(files.length===1)return importPayrollSimple(files[0]);
  if(!confirm(`급여대장 ${files.length}개를 선택했습니다.\n\n각 파일의 내부 산정월/업장을 확인하면서 순서대로 적용합니다.\n같은 월 파일이 여러 개면 뒤에 처리되는 파일이 최종자료가 됩니다.\n\n계속할까요?`))return;
@@ -4351,6 +4402,14 @@ async function importPayrollFiles(fileList){
    }
  }
  setPayrollLoadState(`일괄 처리 완료 · ${completed}/${files.length}`,'saved');
+ if(employeeSensitiveColumnsMissingDetected){
+   alert(
+     `급여대장 일괄 처리는 계속 완료했습니다.\n\n`+
+     `다만 employees 테이블에 resident_number / bank_account 컬럼이 아직 없어 `+
+     `직원관리 주민번호 자동채움만 건너뛰었습니다.\n\n`+
+     `아래 SQL을 Supabase SQL Editor에서 1회 실행하면, 기존 급여대장에 저장된 주민번호를 바탕으로 직원관리에서 다시 자동채움됩니다.`
+   );
+ }
 }
 
 async function importPayrollSimple(file,options={}){
@@ -4382,16 +4441,14 @@ async function importPayrollSimple(file,options={}){
  }
 
  // 항상 현재 업장의 직원 DB를 새로 읽는다.
- let eq=await sb.from('employees').select('id,name,active,hire_date,resign_date,resident_number,bank_account').eq('store_id',targetStore.id);
+ // 주민번호/계좌번호 컬럼이 아직 없어도 급여대장 업로드 자체는 정상 진행한다.
+ let eq=await loadPayrollTargetEmployees(targetStore.id);
  if(eq.error){
    setPayrollLoadState('직원 조회 오류','error');
-   let msg=String(eq.error.message||eq.error);
-   if(/resident_number|bank_account|column/i.test(msg)){
-     return alert('직원 주민등록번호/계좌번호 컬럼이 아직 DB에 없습니다.\n\n제가 함께 드린 SQL을 Supabase SQL Editor에서 1회 실행한 뒤 다시 시도하세요.\n\n'+msg);
-   }
-   return alert('대상 업장 직원 조회 오류:\n'+msg);
+   return alert('대상 업장 직원 조회 오류:\n'+String(eq.error.message||eq.error));
  }
  let targetEmployees=eq.data||[];
+ let employeeSensitiveColumnsAvailable=eq.sensitiveColumnsAvailable!==false;
 
  // 1차: 정확한 이름만 매칭. 아직 신규직원 팝업은 띄우지 않는다.
  parsed.rows.forEach(r=>{
@@ -4716,10 +4773,12 @@ async function importPayrollSimple(file,options={}){
 
  // 급여대장 주민번호를 직원 마스터에도 자동 동기화한다.
  // 계좌번호는 급여대장에서 건드리지 않고 직원관리 수기입력만 사용한다.
- let residentSync=await syncEmployeeResidentsFromPayroll(parsed,targetEmployees,sid);
+ let residentSync=employeeSensitiveColumnsAvailable
+   ?await syncEmployeeResidentsFromPayroll(parsed,targetEmployees,sid)
+   :{updated:0,skippedMissingColumns:true};
  if(residentSync?.error){
-   setPayrollLoadState('주민번호 직원반영 오류','error');
-   return alert(`급여자료는 저장됐지만 직원관리 주민번호 자동반영에 실패했습니다.\n\n${residentSync.employee||''}\n${residentSync.error.message||residentSync.error}`);
+   // 급여자료 자체는 이미 정상 저장됐으므로 직원 주민번호 보정 실패가 급여 업로드를 실패로 만들면 안 된다.
+   console.warn('직원관리 주민번호 자동반영 실패 - 급여자료는 유지',residentSync.error);
  }
 
  // 급여대장 재직이력 반영
@@ -4754,7 +4813,8 @@ async function importPayrollSimple(file,options={}){
      `<b>${monthLabel(ym)} 급여대장 교체 완료 · 원본 금액 DB 재검증 통과</b><br>`+
      `<span class="help">파일: ${esc(file.name)} · 읽은 시트: ${esc(parsed.sheetName||'-')} · `+
      `월지급총액 ${esc(parsed.grossCol||'-')}열 · 실지급액 ${esc(parsed.netCol||'-')}열 · `+
-     `새 급여행 ${parsed.rows.length}건 · 직원매칭 ${parsed.matched}건 · 기존 직원정보 보존</span>${audit}`;
+     `새 급여행 ${parsed.rows.length}건 · 직원매칭 ${parsed.matched}건 · 기존 직원정보 보존`+
+     `${residentSync?.skippedMissingColumns?' · <b>직원 주민번호 자동채움은 DB 컬럼 생성 후 적용</b>':''}</span>${audit}`;
  }
 }
 function showPayrollImportInfo(parsed,fileName){
