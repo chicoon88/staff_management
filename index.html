@@ -602,7 +602,7 @@ tr[draggable="true"]:active,.empDragHandle:active{cursor:grabbing}
 
 /* 출력색 / 문서 / 관리 */
 #employeesPage th:nth-child(18),#employeesPage td:nth-child(18){width:86px}
-#employeesPage th:nth-child(19),#employeesPage td:nth-child(19){width:205px}
+#employeesPage th:nth-child(19),#employeesPage td:nth-child(19){width:265px}
 #employeesPage th:nth-child(20),#employeesPage td:nth-child(20){width:210px}
 #employeesPage .empManageActions{display:flex;gap:4px;flex-wrap:wrap;align-items:center;justify-content:center}
 
@@ -683,9 +683,19 @@ body.resizingEmployeeColumn *{
   gap:4px;
   align-items:center;
 }
+#employeesPage .docStatusLine{display:flex;flex-wrap:wrap;gap:3px;margin-bottom:4px}
+#employeesPage .docStatusBadge{display:inline-flex;align-items:center;padding:2px 5px;border-radius:999px;font-size:10px;font-weight:800;line-height:1.2;border:1px solid #d8dee8;background:#f8fafc;color:#475467}
+#employeesPage .docStatusBadge.ok{background:#ecfdf3;border-color:#a6f4c5;color:#067647}
+#employeesPage .docStatusBadge.missing{background:#fff1f3;border-color:#fecdd6;color:#b42318}
+#employeesPage .docStatusBadge.neutral{background:#f2f4f7;border-color:#e4e7ec;color:#667085}
+#employeesPage .renewalBox{margin-bottom:5px;padding:5px 6px;border-radius:7px;background:#f8fafc;border:1px solid #e4e7ec;line-height:1.3}
+#employeesPage .renewalBox b{font-size:10.5px}
+#employeesPage .renewalBox .due{color:#b42318}.renewalBox .soon{color:#b54708}.renewalBox .ok{color:#067647}
+#employeesPage .scheduleHideToggle{display:flex;gap:4px;align-items:center;justify-content:center;margin-top:3px;font-size:10px;color:#475467;white-space:normal}
+#employeesPage .scheduleHideToggle input{margin:0}
 #employeesPage th:nth-child(19),
 #employeesPage td:nth-child(19){
-  width:205px;
+  width:265px;
 }
 
 
@@ -811,7 +821,7 @@ body.resizingEmployeeColumn *{
 
 <section id="payrollPage" class="page">
  <div class="row">
-  <div><h1 class="title">급여관리 <span style="font-size:12px;color:#315efb;background:#eef3ff;border-radius:999px;padding:4px 8px;vertical-align:middle">v2026.08.19-1736</span></h1><div class="sub">월별 급여대장을 검산하고, 기간별·직원별 누적 급여도 조회합니다.</div></div>
+  <div><h1 class="title">급여관리 <span style="font-size:12px;color:#315efb;background:#eef3ff;border-radius:999px;padding:4px 8px;vertical-align:middle">v2026.08.20-1153</span></h1><div class="sub">월별 급여대장을 검산하고, 기간별·직원별 누적 급여도 조회합니다.</div></div>
   <div class="toolbar">
    <input type="file" id="payrollFile" accept=".xlsx,.xls,.xlsm" multiple style="display:none" onchange="importPayrollFiles(this.files);this.value=''">
    <button class="btn" onclick="$('payrollFile').click()">급여대장 여러개 불러오기</button>
@@ -890,9 +900,9 @@ body.resizingEmployeeColumn *{
      <button class="btn gray small" onclick="resetEmployeeColumnWidths()">표 폭 초기화</button>
    </div>
   </div>
-  <div class="help" style="margin-bottom:8px">이름·주민등록번호·계좌번호·직책·업무·입사일·근무형태·휴게·급여형태·비고는 표에서 바로 수정할 수 있습니다. <b>재직자는 기본적으로 내가 정한 연번순</b>이며 필요할 때만 입사일 오름차순으로 볼 수 있습니다. <b>퇴사자는 퇴사일 오름차순으로 자동 정렬</b>됩니다. 입사일 정렬 중에는 순서 드래그가 잠기며 “재직 연번순”으로 돌아오면 다시 ☰ 손잡이로 순서를 바꿀 수 있습니다. 기본시간과 연차기준은 오른쪽 상세수정에서 변경하세요. 표 머리글의 오른쪽 경계선을 좌우로 끌면 열 폭을 직접 조절할 수 있고 자동 저장됩니다. 비고는 여러 줄로 입력할 수 있습니다.</div>
+  <div class="help" style="margin-bottom:8px">이름·주민등록번호·계좌번호·직책·업무·입사일·근무형태·휴게·급여형태·비고는 표에서 바로 수정할 수 있습니다. <b>재직자는 기본적으로 내가 정한 연번순</b>이며 필요할 때만 입사일 오름차순으로 볼 수 있습니다. <b>퇴사자는 퇴사일 오름차순으로 자동 정렬</b>됩니다. <b>“월간표 제외”를 체크하면 재직·급여자료는 그대로 두고 월간스케줄 표/인쇄/Excel에서만 숨깁니다.</b> 문서 칸에서는 다음 재계약일과 근로·연봉·사직서 PDF 등록 여부를 바로 확인할 수 있습니다. 표 머리글의 오른쪽 경계선을 좌우로 끌면 열 폭을 직접 조절할 수 있고 자동 저장됩니다. 비고는 여러 줄로 입력할 수 있습니다.</div>
   <datalist id="employeeWorkTypeSuggestions"><option value="주5일 스케줄근무"></option><option value="주4일 스케줄근무"></option><option value="기타"></option></datalist>
-  <div class="tablewrap"><table><thead><tr><th style="width:44px">선택</th><th>연번</th><th class="name">이름</th><th>주민등록번호</th><th>계좌번호</th><th>직책</th><th>업무</th><th>입사일</th><th>퇴사일</th><th>근무형태</th><th>기본시간</th><th>휴게시간(분)</th><th>스케줄방식</th><th>급여형태</th><th>연차 기준</th><th>연차 잔여</th><th>비고</th><th>출력색</th><th>문서</th><th></th></tr></thead><tbody id="employeeBody"></tbody></table></div>
+  <div class="tablewrap"><table><thead><tr><th style="width:44px">선택</th><th>연번</th><th class="name">이름</th><th>주민등록번호</th><th>계좌번호</th><th>직책</th><th>업무</th><th>입사일</th><th>퇴사일</th><th>근무형태</th><th>기본시간</th><th>휴게시간(분)</th><th>스케줄방식</th><th>급여형태</th><th>연차 기준</th><th>연차 잔여</th><th>비고</th><th>출력색</th><th>문서 / 재계약</th><th></th></tr></thead><tbody id="employeeBody"></tbody></table></div>
  </div>
 </section>
 
@@ -951,7 +961,7 @@ function closeModal(){
  document.body.style.overflow='';
 }
 $('monthSelect').value=new Date().toISOString().slice(0,7);
-let employees=[],schedules=[],payroll=[],stores=[],holidays=[],manualHolidays=[],autoHolidays=[],selectedEmployees=new Set(),leaveLedger=[],scheduleSaveQueue=new Map(),scheduleSaveTimer=null,employeeImportRows=[],paymentRegister=[],incentiveRegister=[],retiredEmployees=[],employeeView='active',employeeActiveSort='manual',refreshToken=0,payrollReloadToken=0,employeeDeleteSelection=new Set(),scheduleView='monthly',employeeResidentBackfillDoneStores=new Set(),employeeSensitiveColumnsMissingDetected=false;
+let employees=[],schedules=[],payroll=[],stores=[],holidays=[],manualHolidays=[],autoHolidays=[],selectedEmployees=new Set(),leaveLedger=[],scheduleSaveQueue=new Map(),scheduleSaveTimer=null,employeeImportRows=[],paymentRegister=[],incentiveRegister=[],retiredEmployees=[],employeeView='active',employeeActiveSort='manual',refreshToken=0,payrollReloadToken=0,employeeDeleteSelection=new Set(),scheduleView='monthly',employeeResidentBackfillDoneStores=new Set(),employeeSensitiveColumnsMissingDetected=false,employeeDocumentStatusMap=new Map(),employeeDocumentStatusReadyStoreId=null;
 const money=n=>Math.round(Number(n||0)).toLocaleString('ko-KR')+'원',esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 function normalizeName(v){return String(v??'').normalize('NFKC').trim().replace(/\s+/g,'').replace(/[·ㆍ._-]/g,'').toLowerCase()}
 function monthRange(){let m=$('monthSelect').value,[y,mo]=m.split('-').map(Number),days=new Date(y,mo,0).getDate();return {m,y,mo,days,first:m+'-01',last:m+'-'+String(days).padStart(2,'0')}}
@@ -1026,6 +1036,11 @@ function employeesForMonth(ym){
    .sort((a,b)=>(Number(a.print_order??9999)-Number(b.print_order??9999))||a.name.localeCompare(b.name,'ko'));
 }
 
+function monthlyScheduleEmployees(ym){
+ return employeesForMonth(ym).filter(e=>e.hide_monthly_schedule!==true);
+}
+function employeeMonthlyScheduleHidden(e){return e?.hide_monthly_schedule===true}
+
 
 async function signIn(){let {error}=await sb.auth.signInWithPassword({email:$('loginEmail').value.trim(),password:$('loginPassword').value});$('loginMsg').textContent=error?error.message:'';if(!error)openApp()}
 async function signOut(){await sb.auth.signOut();location.reload()}async function boot(){let {data}=await sb.auth.getSession();if(data.session)openApp()}
@@ -1044,7 +1059,7 @@ document.querySelectorAll('.nav').forEach(b=>b.onclick=()=>{
    loadEmployeesPageData();
  }
  else if(b.dataset.page==='hours')loadHoursPageData();
- else if(b.dataset.page==='payroll')loadPayrollSimple();
+ else if(b.dataset.page==='payroll'){applyPayrollColumnWidths();loadPayrollSimple();}
  else if(b.dataset.page==='holidays')loadHolidayManagementYear();
  else if(b.dataset.page==='home')loadHomePageData();
 })
@@ -1062,10 +1077,10 @@ async function loadStores(){
 }
 
 function clearStoreScopedUI(){
- employees=[];retiredEmployees=[];schedules=[];payroll=[];leaveLedger=[];paymentRegister=[];incentiveRegister=[];
+ employees=[];retiredEmployees=[];schedules=[];payroll=[];leaveLedger=[];paymentRegister=[];incentiveRegister=[];employeeDocumentStatusMap=new Map();employeeDocumentStatusReadyStoreId=null;
  selectedEmployees.clear();
  if($('schBody'))$('schBody').innerHTML='<tr><td colspan="40" style="padding:20px;text-align:center">직원·스케줄 불러오는 중...</td></tr>';
- if($('employeeBody'))$('employeeBody').innerHTML='<tr><td colspan="17" style="padding:20px;text-align:center">직원 불러오는 중...</td></tr>';
+ if($('employeeBody'))$('employeeBody').innerHTML='<tr><td colspan="20" style="padding:20px;text-align:center">직원 불러오는 중...</td></tr>';
  if($('hoursBody'))$('hoursBody').innerHTML='<tr><td colspan="16" style="padding:20px;text-align:center">근로자료는 근로 탭에서 불러옵니다.</td></tr>';
  if($('payrollBody'))$('payrollBody').innerHTML='<tr><td colspan="23" style="padding:20px;text-align:center">급여자료는 급여 탭에서 불러옵니다.</td></tr>';
 }
@@ -1250,6 +1265,8 @@ async function loadEmployeesPageData(token=refreshToken,sid=storeId()){
    renderEmployees();
  }
  await loadLeaveLedger();
+ if(token!==refreshToken || sid!==storeId())return;
+ await loadEmployeeDocumentStatus(sid);
  if(token!==refreshToken || sid!==storeId())return;
  renderEmployees();
 }
@@ -2007,7 +2024,7 @@ function weeklyScheduleKey(ev,input){
 }
 
 function renderSchedule(){
- let r=monthRange(),list=employeesForMonth(r.m),st=stores.find(s=>s.id===storeId());if($('scheduleStoreState'))$('scheduleStoreState').textContent=st?.name||'업장';h='<tr><th class="name">선택 · 직원</th>';
+ let r=monthRange(),list=monthlyScheduleEmployees(r.m),st=stores.find(s=>s.id===storeId());if($('scheduleStoreState'))$('scheduleStoreState').textContent=st?.name||'업장';h='<tr><th class="name">선택 · 직원</th>';
  for(let d=1;d<=r.days;d++){
   let date=r.m+'-'+String(d).padStart(2,'0'),wd=new Date(r.y,r.mo-1,d).getDay(),hol=holidayFor(date),cl=hol?'holidayHead':(wd===0||wd===6?'weekendHead':'');
   h+=`<th class="${cl}" title="${hol?esc(hol.name):''}">${d}<br>${'일월화수목금토'[wd]}${hol?`<span class="holidayName">${esc(hol.name)}</span>`:''}</th>`;
@@ -2120,7 +2137,7 @@ function scheduleKey(ev,input){
  else if(key==='ArrowUp')nr--;
  else if(key==='ArrowRight')nc++;
  else if(key==='ArrowLeft')nc--;
- let list=employeesForMonth($('monthSelect').value),r=monthRange();
+ let list=monthlyScheduleEmployees($('monthSelect').value),r=monthRange();
  if(nc<1){nc=r.days;nr--}
  if(nc>r.days){nc=1;nr++}
  if(nr<0)nr=0;if(nr>=list.length)nr=list.length-1;
@@ -2132,7 +2149,8 @@ function mins(t){if(!t)return null;let [h,m]=t.slice(0,5).split(':').map(Number)
 function openShift(id,date){let e=employees.find(x=>x.id===id),s=sched(e,date)||{},start=(s.start_time||e.default_start_time||'').slice(0,5),end=(s.end_time||e.default_end_time||'').slice(0,5),br=s.break_minutes??e.break_minutes??60;modal(`<h2>${esc(e.name)} · ${date}</h2><div class="formgrid"><div class="field"><label>구분</label><select id="mCode"><option value="work">근무</option><option value="leave">연차</option><option value="sick">병가</option><option value="off">휴무</option></select></div><div class="field"><label>출근</label><input id="mStart" type="time" value="${start}"></div><div class="field"><label>퇴근</label><input id="mEnd" type="time" value="${end}"></div><div class="field"><label>휴게(분)</label><input id="mBreak" type="number" value="${br}"></div></div><div class="help">근무 선택 시 출퇴근·휴게시간으로 실근로를 자동 계산합니다. 하루 기준시간(${e.daily_hours||8}h)을 넘는 부분은 연장으로 표시합니다.</div><div class="modalActions"><button class="btn gray" onclick="closeModal()">취소</button><button class="btn" onclick="saveShiftDetail(${id},'${date}')">저장</button></div>`);$('mCode').value=s.status||((s.work_code==='연')?'leave':(s.work_code==='병')?'sick':(s.work_code==='0')?'off':'work')}
 async function saveShiftDetail(id,date){let e=employees.find(x=>x.id===id),st=$('mCode').value,start=$('mStart').value,end=$('mEnd').value,br=Number($('mBreak').value||0),base=Number(e.daily_hours||8),leaveH=leaveDayHours(e),worked=0,scheduled=0,ot=0,code='0';if(st==='work'){worked=Math.round(hoursBetween(start,end,br)*100)/100;scheduled=Math.min(worked,base);ot=Math.max(0,worked-base);code=String(worked).replace(/\.0$/,'')}if(st==='leave'){scheduled=leaveH;code='연'}if(st==='sick'){scheduled=base;code='병'}let q=await sb.from('schedules').upsert({employee_id:id,work_date:date,work_code:code,scheduled_hours:scheduled,worked_hours:worked,overtime_hours:ot,start_time:start||null,end_time:end||null,break_minutes:br,status:st},{onConflict:'employee_id,work_date'});if(q.error)return alert(q.error.message);closeModal();refreshAll()}
 async function fillDefaults(){
- let chosen=employeesForMonth($('monthSelect').value).filter(e=>selectedEmployees.has(e.id));
+ let baseList=scheduleView==='monthly'?monthlyScheduleEmployees($('monthSelect').value):employeesForMonth($('monthSelect').value);
+ let chosen=baseList.filter(e=>selectedEmployees.has(e.id));
  if(!chosen.length)return alert('기본근무를 채울 직원을 먼저 체크하세요.');
  let r=monthRange(),rows=[];
  chosen.forEach(e=>{let days=e.work_days||((e.work_type==='36')?[1,2,4,5]:[1,2,3,4,5]);for(let d=1;d<=r.days;d++){let date=r.m+'-'+String(d).padStart(2,'0');if(!employedOn(e,date))continue;if(sched(e,date))continue;let wd=new Date(r.y,r.mo-1,d).getDay(),on=days.includes(wd),worked=on?hoursBetween(e.default_start_time,e.default_end_time,e.break_minutes):0;if(on&&!worked)worked=e.work_type==='36'?9:Number(e.daily_hours||8);let base=Number(e.daily_hours||8);rows.push({employee_id:e.id,work_date:date,work_code:on?String(worked):'0',scheduled_hours:on?Math.min(worked,base):0,worked_hours:on?worked:0,overtime_hours:on?Math.max(0,worked-base):0,start_time:on?e.default_start_time:null,end_time:on?e.default_end_time:null,break_minutes:on?e.break_minutes:0,status:on?'work':'off'})}});if(rows.length){let q=await sb.from('schedules').upsert(rows,{onConflict:'employee_id,work_date'});if(q.error)return alert(q.error.message)}refreshAll()}
@@ -2682,7 +2700,7 @@ function resetEmployeeColumnWidths(){
  localStorage.removeItem(EMPLOYEE_COL_WIDTH_KEY);
  const table=getEmployeeTable();
  if(!table)return;
- table.querySelectorAll('th,td').forEach(cell=>{
+ table.querySelectorAll('th,td,col').forEach(cell=>{
    cell.style.removeProperty('width');
    cell.style.removeProperty('min-width');
    cell.style.removeProperty('max-width');
@@ -2745,6 +2763,75 @@ function initEmployeeColumnResizers(force=false){
  }
 }
 
+
+async function saveMonthlyScheduleVisibility(id,hidden,input){
+ let e=findEmployeeAny(id);if(!e)return;
+ let previous=e.hide_monthly_schedule===true;
+ e.hide_monthly_schedule=!!hidden;
+ renderSchedule();
+ let q=await sb.from('employees').update({hide_monthly_schedule:!!hidden}).eq('id',id);
+ if(q.error){
+   e.hide_monthly_schedule=previous;
+   if(input)input.checked=previous;
+   renderSchedule();
+   let hint=/hide_monthly_schedule|column/i.test(String(q.error.message||''))
+     ?'\n\nSupabase employees 테이블에 hide_monthly_schedule 컬럼을 추가하는 최초 1회 SQL을 실행하세요.'
+     :'';
+   return alert('월간스케줄 표시설정 저장 오류:\n'+q.error.message+hint);
+ }
+}
+function documentStatusForEmployee(employeeId){
+ return employeeDocumentStatusMap.get(Number(employeeId))||{};
+}
+function employeeDocBadge(employeeId,type,isActive){
+ if(employeeDocumentStatusReadyStoreId!==storeId())return '<span class="docStatusBadge neutral">확인중</span>';
+ let st=documentStatusForEmployee(employeeId)[type],count=Number(st?.count||0),label=type==='work_contract'?'근로':type==='salary_contract'?'연봉':'사직';
+ if(count){
+   let title=(st.latestDate?`최근 ${st.latestDate} · `:'')+`${count}건 저장`;
+   return `<span class="docStatusBadge ok" title="${esc(title)}">${label} ✓</span>`;
+ }
+ if(type==='resignation'&&isActive)return `<span class="docStatusBadge neutral" title="재직 중에는 사직서가 없어도 정상입니다.">${label} -</span>`;
+ return `<span class="docStatusBadge missing">${label} 없음</span>`;
+}
+function dayDiffIso(from,to){
+ if(!from||!to)return null;
+ let a=new Date(from+'T00:00:00'),b=new Date(to+'T00:00:00');
+ if(Number.isNaN(a.getTime())||Number.isNaN(b.getTime()))return null;
+ return Math.round((b-a)/86400000);
+}
+function employeeRenewalHtml(e){
+ if(e?.active===false)return '<div class="renewalBox"><b>퇴사 · 재계약 대상 아님</b></div>';
+ if(employeeDocumentStatusReadyStoreId!==storeId())return '<div class="renewalBox"><b>재계약 확인중</b></div>';
+ let docs=documentStatusForEmployee(e.id),dates=[docs.work_contract?.latestDate,docs.salary_contract?.latestDate].filter(Boolean).sort();
+ let base=dates.length?dates[dates.length-1]:(e.hire_date||'');
+ if(!base)return '<div class="renewalBox"><b>재계약 기준일 없음</b></div>';
+ let next=addYearsClamped(base,1),diff=dayDiffIso(isoToday(),next),cls=diff<0?'due':diff<=30?'soon':'ok';
+ let status=diff<0?`기한 ${Math.abs(diff)}일 경과`:diff===0?'오늘 재계약':`D-${diff}`;
+ let source=dates.length?'최근 계약일 기준':'입사일 기준';
+ return `<div class="renewalBox"><b>다음 재계약 ${next}</b><br><span class="${cls}">${status}</span> <span class="help">· ${source}</span></div>`;
+}
+async function loadEmployeeDocumentStatus(sid=storeId()){
+ let q=await sb.from('employee_documents').select('employee_id,document_type,document_date,created_at').eq('store_id',sid);
+ if(q.error){
+   console.warn('직원 문서현황 조회 오류',q.error.message);
+   employeeDocumentStatusMap=new Map();
+   employeeDocumentStatusReadyStoreId=null;
+   return {error:q.error};
+ }
+ let map=new Map();
+ (q.data||[]).forEach(d=>{
+   let id=Number(d.employee_id),type=String(d.document_type||''),obj=map.get(id)||{};
+   let item=obj[type]||{count:0,latestDate:''};
+   item.count++;
+   let dt=String(d.document_date||d.created_at||'').slice(0,10);
+   if(dt&&(!item.latestDate||dt>item.latestDate))item.latestDate=dt;
+   obj[type]=item;map.set(id,obj);
+ });
+ employeeDocumentStatusMap=map;
+ employeeDocumentStatusReadyStoreId=sid;
+ return {updated:true};
+}
+
 function renderEmployees(){
  if(!$('employeeBody'))return;
  let monthActive=employeeManagementActiveEmployees();
@@ -2791,7 +2878,7 @@ function renderEmployees(){
 
    <td class="empInlineCell">${employeeView==='active'?employeeInlineNumber(e,'break_minutes','1','empInlineSmall'):(e.break_minutes||0)}</td>
 
-   <td>${e.work_type==='36'?'주4일':e.work_type==='40'?'주5일':'기타'}<br><span class="help">요일 변동 스케줄</span></td>
+   <td>${e.work_type==='36'?'주4일':e.work_type==='40'?'주5일':'기타'}<br><span class="help">요일 변동 스케줄</span>${employeeView==='active'?`<label class="scheduleHideToggle" title="직원관리·급여관리에는 그대로 두고 월간스케줄 표/인쇄/Excel에서만 숨깁니다."><input type="checkbox" ${employeeMonthlyScheduleHidden(e)?'checked':''} onchange="saveMonthlyScheduleVisibility(${e.id},this.checked,this)">월간표 제외</label>`:''}</td>
 
    <td class="empInlineCell">${payTypeCell}</td>
 
@@ -2815,11 +2902,12 @@ function renderEmployees(){
 
    <td>${employeeView==='active'?`<select onchange="setPrintColor(${e.id},this.value)" style="padding:5px 7px">${colors}</select><span style="display:inline-block;width:18px;height:18px;border-radius:5px;vertical-align:middle;margin-left:4px;background:${employeeColor(e)};border:1px solid #bbb"></span>`:'-'}</td>
 
-   <td><div class="docActions">
+   <td>${employeeRenewalHtml(e)}<div class="docStatusLine">${employeeDocBadge(e.id,'work_contract',employeeView==='active')}${employeeDocBadge(e.id,'salary_contract',employeeView==='active')}${employeeDocBadge(e.id,'resignation',employeeView==='active')}</div><div class="docActions">
 <button class="btn green small" onclick="printEmploymentCertificate(${e.id})">재직증명서</button>
 <button class="btn gray small" onclick="printResignation(${e.id})">사직서</button>
 <button class="btn small" onclick="openEmployeeDocuments(${e.id},'salary_contract')">연봉계약서</button>
 <button class="btn small" onclick="openEmployeeDocuments(${e.id},'work_contract')">근로계약서</button>
+<button class="btn gray small" onclick="openEmployeeDocuments(${e.id},'resignation')">사직서 파일</button>
 </div></td>
    <td><div class="empManageActions">${action}</div></td></tr>`;
  }).join('')||`<tr><td colspan="20">${employeeView==='active'?'재직자가':'퇴사자가'} 없습니다.</td></tr>`;
@@ -3423,11 +3511,17 @@ function toggleEmployee(id,checked){
 }
 function toggleAllEmployees(on){
  selectedEmployees.clear();
- if(on)employeesForMonth($('monthSelect').value).forEach(e=>selectedEmployees.add(e.id));
+ if(on){
+   let ym=$('monthSelect').value;
+   let list=scheduleView==='monthly'?monthlyScheduleEmployees(ym):employeesForMonth(ym);
+   list.forEach(e=>selectedEmployees.add(e.id));
+ }
  renderSchedule();
+ if(scheduleView==='weekly')renderWeeklyPlanner();
 }
 async function clearSelectedSchedules(){
- let chosen=employeesForMonth($('monthSelect').value).filter(e=>selectedEmployees.has(e.id));
+ let baseList=scheduleView==='monthly'?monthlyScheduleEmployees($('monthSelect').value):employeesForMonth($('monthSelect').value);
+ let chosen=baseList.filter(e=>selectedEmployees.has(e.id));
  if(!chosen.length)return alert('비울 직원을 먼저 체크하세요.');
  let r=monthRange(),names=chosen.map(e=>e.name).join(', ');
  let ok=confirm(`${r.y}년 ${r.mo}월\n${names}\n\n선택한 직원의 스케줄을 전부 비울까요?`);
@@ -4971,6 +5065,25 @@ function loadPayrollColumnWidths(){
 function savePayrollColumnWidths(widths){
  localStorage.setItem(PAYROLL_COL_WIDTH_KEY,JSON.stringify(widths||{}));
 }
+function ensurePayrollColgroup(){
+ const table=getPayrollMainTable();if(!table)return null;
+ const count=table.querySelectorAll('thead th').length;if(!count)return null;
+ let group=table.querySelector('colgroup[data-payroll-widths]');
+ if(!group){
+   group=document.createElement('colgroup');group.dataset.payrollWidths='1';
+   for(let i=0;i<count;i++)group.appendChild(document.createElement('col'));
+   table.insertBefore(group,table.firstChild);
+ }
+ while(group.children.length<count)group.appendChild(document.createElement('col'));
+ return group;
+}
+function capturePayrollColumnWidths(){
+ const table=getPayrollMainTable();if(!table)return {};
+ const widths={};[...table.querySelectorAll('thead th')].forEach((th,i)=>{
+   let w=Math.round(th.getBoundingClientRect().width);if(w>=42)widths[i]=w;
+ });
+ return widths;
+}
 function syncPayrollTableWidth(){
  const table=getPayrollMainTable();
  if(!table)return;
@@ -4987,9 +5100,15 @@ function applyPayrollColumnWidths(){
  if(!table)return;
  const widths=loadPayrollColumnWidths();
  const headers=[...table.querySelectorAll('thead th')];
+ const group=ensurePayrollColgroup();
  headers.forEach((th,i)=>{
    const w=Number(widths[i]);
    if(w>=42){
+     if(group?.children[i]){
+       group.children[i].style.setProperty('width',w+'px','important');
+       group.children[i].style.setProperty('min-width',w+'px','important');
+       group.children[i].style.setProperty('max-width',w+'px','important');
+     }
      th.style.setProperty('width',w+'px','important');
      th.style.setProperty('min-width',w+'px','important');
      th.style.setProperty('max-width',w+'px','important');
@@ -5000,7 +5119,14 @@ function applyPayrollColumnWidths(){
      });
    }
  });
- requestAnimationFrame(syncPayrollTableWidth);
+ requestAnimationFrame(()=>{
+   syncPayrollTableWidth();
+   // 예전 버전에서 일부 열만 저장돼 있던 경우도 현재 보이는 전체 폭을 한 번에 고정한다.
+   if(Object.keys(widths).length && Object.keys(widths).length<headers.length){
+     let complete=capturePayrollColumnWidths();
+     if(Object.keys(complete).length===headers.length)savePayrollColumnWidths(complete);
+   }
+ });
 }
 function resetPayrollColumnWidths(){
  localStorage.removeItem(PAYROLL_COL_WIDTH_KEY);
@@ -5036,6 +5162,12 @@ function initPayrollColumnResizers(force=false){
        th.style.setProperty('width',newW+'px','important');
        th.style.setProperty('min-width',newW+'px','important');
        th.style.setProperty('max-width',newW+'px','important');
+       let group=ensurePayrollColgroup();
+       if(group?.children[index]){
+         group.children[index].style.setProperty('width',newW+'px','important');
+         group.children[index].style.setProperty('min-width',newW+'px','important');
+         group.children[index].style.setProperty('max-width',newW+'px','important');
+       }
        table.querySelectorAll(`tbody tr > *:nth-child(${index+1}), tfoot tr > *:nth-child(${index+1})`).forEach(td=>{
          td.style.setProperty('width',newW+'px','important');
          td.style.setProperty('min-width',newW+'px','important');
@@ -5047,9 +5179,9 @@ function initPayrollColumnResizers(force=false){
        document.removeEventListener('mousemove',move);
        document.removeEventListener('mouseup',up);
        document.body.classList.remove('resizingPayrollColumn');
-       const widths=loadPayrollColumnWidths();
-       widths[index]=Math.round(th.getBoundingClientRect().width);
+       const widths=capturePayrollColumnWidths();
        savePayrollColumnWidths(widths);
+       applyPayrollColumnWidths();
      };
      document.addEventListener('mousemove',move);
      document.addEventListener('mouseup',up);
@@ -5754,7 +5886,7 @@ function round2(v){return Math.round((Number(v||0)+Number.EPSILON)*100)/100}
 function hour2(v){let n=round2(v);return Number.isInteger(n)?String(n):n.toFixed(2).replace(/0+$/,'').replace(/\.$/,'')}
 
 function num(v){return typeof v==='number'?v:(Number(String(v||'').replace(/,/g,''))||0)}
-function exportSchedule(){let r=monthRange(),data=[['업장',stores.find(s=>s.id===storeId())?.name],['월',r.m],[],['직원',...Array.from({length:r.days},(_,i)=>`${i+1}일`),'실근로','연장']];employeesForMonth(r.m).forEach(e=>{let x=calc(e);data.push([e.name,...Array.from({length:r.days},(_,i)=>sched(e,r.m+'-'+String(i+1).padStart(2,'0'))?.work_code||''),x.worked,x.ot])});downloadXlsx(data,`${stores.find(s=>s.id===storeId())?.name}_${r.m}_스케줄.xlsx`)}
+function exportSchedule(){let r=monthRange(),data=[['업장',stores.find(s=>s.id===storeId())?.name],['월',r.m],[],['직원',...Array.from({length:r.days},(_,i)=>`${i+1}일`),'실근로','연장']];monthlyScheduleEmployees(r.m).forEach(e=>{let x=calc(e);data.push([e.name,...Array.from({length:r.days},(_,i)=>sched(e,r.m+'-'+String(i+1).padStart(2,'0'))?.work_code||''),x.worked,x.ot])});downloadXlsx(data,`${stores.find(s=>s.id===storeId())?.name}_${r.m}_스케줄.xlsx`)}
 function exportPharmacyPayTable(){$('pharmacyTemplateFile').click()}
 
 function exportPayroll(){let data=[['직원','월근무시간','기본급','고정연장','휴일수당','연장수당','식대','조정수당','상여','월지급총액','공제총액','실지급액']];let orderMap=new Map(employeesForMonth($('monthSelect').value).map((e,i)=>[e.id,i]));
@@ -5785,7 +5917,7 @@ window.addEventListener('afterprint',()=>{
 
 
 const EMPLOYEE_DOC_BUCKET='employee-contracts';
-const EMPLOYEE_DOC_TYPES={work_contract:'근로계약서',salary_contract:'연봉계약서'};
+const EMPLOYEE_DOC_TYPES={work_contract:'근로계약서',salary_contract:'연봉계약서',resignation:'사직서 파일'};
 function employeeDocTypeLabel(t){return EMPLOYEE_DOC_TYPES[t]||t}
 function safeStoragePart(s){
  return String(s||'file').normalize('NFKD')
@@ -5806,13 +5938,14 @@ function guessContractDateFromFilename(name){
 }
 async function openEmployeeDocuments(employeeId,type){
  let e=findEmployeeAny(employeeId);if(!e)return alert('직원정보를 찾지 못했습니다.');
- let label=employeeDocTypeLabel(type);
+ let label=employeeDocTypeLabel(type),isResignation=type==='resignation';
+ let vaultHelp=isResignation?'작성 완료한 사직서 PDF 원본을 서버에 보관합니다. 삭제하지 않는 한 직원 기록과 함께 계속 남습니다.':'PDF 원본은 서버에 누적 보관합니다. 계약 변경·갱신 때 새 파일을 올려도 이전 계약서는 삭제하지 않는 한 계속 남아 언제든 내려받을 수 있습니다.';
  modal(`<div class="contractVaultHead"><div><h2 style="margin:0">${esc(e.name)} · ${label}</h2>
- <div class="help" style="margin-top:4px">PDF 원본은 서버에 누적 보관합니다. 계약 변경·갱신 때 새 파일을 올려도 이전 계약서는 삭제하지 않는 한 계속 남아 언제든 내려받을 수 있습니다.</div></div>
+ <div class="help" style="margin-top:4px">${vaultHelp}</div></div>
  <button class="btn gray" onclick="closeModal()">닫기</button></div>
  <div class="contractUploadBox"><div style="font-weight:900;margin-bottom:8px">새 ${label} 업로드</div>
  <div class="contractUploadGrid">
- <div class="field" style="margin:0"><label>계약일</label><input id="contractDocDate" type="text" inputmode="numeric" maxlength="8" placeholder="YYYYMMDD" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,8)"></div>
+ <div class="field" style="margin:0"><label>${isResignation?'작성일':'계약일'}</label><input id="contractDocDate" type="text" inputmode="numeric" maxlength="8" placeholder="YYYYMMDD" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,8)"></div>
  <div class="field" style="margin:0"><label>표시명</label><input id="contractDocTitle" placeholder="예: 2026년 ${label}"></div>
  <div class="field" style="margin:0"><label>PDF 원본</label><input id="contractDocFile" type="file" accept="application/pdf,.pdf" onchange="fillContractMetaFromFile(this.files[0],'${type}')"></div>
  <button class="btn" onclick="uploadEmployeeDocument(${employeeId},'${type}')">업로드</button></div></div>
@@ -5847,8 +5980,14 @@ async function uploadEmployeeDocument(employeeId,type){
  let up=await sb.storage.from(EMPLOYEE_DOC_BUCKET).upload(path,file,{contentType:'application/pdf',upsert:false});
  if(up.error)return alert('계약서 파일 업로드 오류:\n'+up.error.message);
  let ins=await sb.from('employee_documents').insert({store_id:storeId(),employee_id:employeeId,document_type:type,title,document_date:date||null,file_name:file.name,storage_path:path});
- if(ins.error){await sb.storage.from(EMPLOYEE_DOC_BUCKET).remove([path]);return alert('계약서 이력 저장 오류:\n'+ins.error.message);}
+ if(ins.error){
+   await sb.storage.from(EMPLOYEE_DOC_BUCKET).remove([path]);
+   let hint=type==='resignation'&&/check|document_type/i.test(String(ins.error.message||''))?'\n\n사직서 파일 보관용 document_type 확장 SQL을 최초 1회 실행하세요.':'';
+   return alert('문서 이력 저장 오류:\n'+ins.error.message+hint);
+ }
  await loadEmployeeDocuments(employeeId,type);
+ await loadEmployeeDocumentStatus(storeId());
+ if($('employeesPage')?.classList.contains('active'))renderEmployees();
 }
 async function downloadEmployeeDocument(documentId){
  let q=await sb.from('employee_documents').select('*').eq('id',documentId).single();if(q.error)return alert(q.error.message);
@@ -5862,6 +6001,8 @@ async function deleteEmployeeDocument(documentId,employeeId,type){
  let rm=await sb.storage.from(EMPLOYEE_DOC_BUCKET).remove([d.storage_path]);if(rm.error)return alert(rm.error.message);
  let del=await sb.from('employee_documents').delete().eq('id',documentId);if(del.error)return alert(del.error.message);
  await loadEmployeeDocuments(employeeId,type);
+ await loadEmployeeDocumentStatus(storeId());
+ if($('employeesPage')?.classList.contains('active'))renderEmployees();
 }
 
 function printEmploymentCertificate(id){
@@ -5950,7 +6091,7 @@ function printResignation(id){
 }
 function printSchedule(){
  setPrintPageOrientation('landscape');
- let r=monthRange(),st=stores.find(s=>s.id===storeId()),list=employeesForMonth(r.m);
+ let r=monthRange(),st=stores.find(s=>s.id===storeId()),list=monthlyScheduleEmployees(r.m);
  let h=`<div class="printHead"><div><h1>${esc(st?.name||'')} 월간 근무표</h1><div class="meta">${r.y}년 ${r.mo}월</div></div><div class="meta">출력일 ${new Date().toLocaleDateString('ko-KR')}</div></div>
  <table><thead><tr><th class="pname">직원</th>`;
  for(let d=1;d<=r.days;d++){
