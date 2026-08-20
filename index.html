@@ -736,6 +736,32 @@ body.resizingEmployeeColumn *{
 #payrollMainTable th:nth-child(23),#payrollMainTable td:nth-child(23){width:112px!important}
 #payrollMainTable .payName{font-weight:900;text-align:left}
 #payrollMainTable .residentNo{font-variant-numeric:tabular-nums;letter-spacing:.15px}
+
+/* ===== 급여표 열폭 완전 독립 모드 =====
+   colgroup이 각 열 폭의 유일한 기준이 되며, 한 열 조절이 다른 열 폭을 바꾸지 않는다. */
+#payrollPage .tablewrap:has(#payrollMainTable){
+  overflow-x:auto!important;
+  overflow-y:visible;
+  max-width:100%;
+  scrollbar-gutter:stable;
+  overscroll-behavior-x:contain;
+}
+#payrollPage #payrollMainTable[data-independent-widths="1"]{
+  table-layout:fixed!important;
+  max-width:none!important;
+  margin:0!important;
+}
+#payrollPage #payrollMainTable[data-independent-widths="1"] th,
+#payrollPage #payrollMainTable[data-independent-widths="1"] td{
+  width:auto!important;
+  min-width:0!important;
+  max-width:none!important;
+  box-sizing:border-box!important;
+}
+#payrollPage #payrollMainTable[data-independent-widths="1"] th:last-child,
+#payrollPage #payrollMainTable[data-independent-widths="1"] td:last-child{
+  border-right:0!important;
+}
 </style>
 </head>
 <body>
@@ -821,7 +847,7 @@ body.resizingEmployeeColumn *{
 
 <section id="payrollPage" class="page">
  <div class="row">
-  <div><h1 class="title">급여관리 <span style="font-size:12px;color:#315efb;background:#eef3ff;border-radius:999px;padding:4px 8px;vertical-align:middle">v2026.08.20-1153</span></h1><div class="sub">월별 급여대장을 검산하고, 기간별·직원별 누적 급여도 조회합니다.</div></div>
+  <div><h1 class="title">급여관리 <span style="font-size:12px;color:#315efb;background:#eef3ff;border-radius:999px;padding:4px 8px;vertical-align:middle">v2026.08.20-1305</span></h1><div class="sub">월별 급여대장을 검산하고, 기간별·직원별 누적 급여도 조회합니다.</div></div>
   <div class="toolbar">
    <input type="file" id="payrollFile" accept=".xlsx,.xls,.xlsm" multiple style="display:none" onchange="importPayrollFiles(this.files);this.value=''">
    <button class="btn" onclick="$('payrollFile').click()">급여대장 여러개 불러오기</button>
@@ -840,7 +866,7 @@ body.resizingEmployeeColumn *{
 
  <div class="card" style="margin-top:12px">
   <div class="row">
-   <div><h3 style="margin:0">노무사 급여대장 · 월별 검산</h3><div class="help">노무사 Excel에서 불러온 급여자료를 그대로 표시합니다. <b>순번은 직원관리 연번 순서대로 정렬한 뒤 위에서부터 1, 2, 3…으로 표시합니다.</b> 계좌번호는 직원관리에서 입력한 값을 표시합니다. 표 머리글 경계선을 좌우로 드래그하면 열 폭을 조절할 수 있고 자동 저장됩니다. <b>주민번호가 “원본 재적용 필요”로 보이는 과거월은 위의 ⟳ 원본 새로고침을 누르면 서버에 보관된 원본 Excel에서 다시 반영됩니다.</b></div></div>
+   <div><h3 style="margin:0">노무사 급여대장 · 월별 검산</h3><div class="help">노무사 Excel에서 불러온 급여자료를 그대로 표시합니다. <b>순번은 직원관리 연번 순서대로 정렬한 뒤 위에서부터 1, 2, 3…으로 표시합니다.</b> 계좌번호는 직원관리에서 입력한 값을 표시합니다. 표 머리글 경계선을 좌우로 드래그하면 <b>해당 열만 독립적으로</b> 폭이 바뀌고 자동 저장됩니다. 표가 화면보다 넓으면 아래 가로 스크롤로 오른쪽 끝까지 볼 수 있습니다. <b>주민번호가 “원본 재적용 필요”로 보이는 과거월은 위의 ⟳ 원본 새로고침을 누르면 서버에 보관된 원본 Excel에서 다시 반영됩니다.</b></div></div>
    <div class="toolbar" style="margin-left:auto"><button class="btn gray small" onclick="resetPayrollColumnWidths()">표 폭 초기화</button></div>
   </div>
   <div class="tablewrap" style="margin-top:10px"><table id="payrollMainTable">
@@ -5057,131 +5083,149 @@ function payrollInput(p,field,kind='money',recalc=true){
    onchange="savePayrollField('${p.id}','${field}',this.value,${recalc?'true':'false'})">`;
 }
 
-const PAYROLL_COL_WIDTH_KEY='staff_dashboard_payroll_col_widths_v2';
+const PAYROLL_COL_WIDTH_KEY='staff_dashboard_payroll_col_widths_independent_v3';
+const PAYROLL_COL_WIDTH_LEGACY_KEY='staff_dashboard_payroll_col_widths_v2';
+const PAYROLL_DEFAULT_COL_WIDTHS=[52,86,118,150,92,78,94,76,96,110,110,112,96,112,94,98,94,94,94,94,100,104,112];
+const PAYROLL_COL_MIN_WIDTH=42;
+const PAYROLL_COL_MAX_WIDTH=520;
 function getPayrollMainTable(){return $('payrollMainTable')}
+function normalizePayrollColumnWidths(raw,count){
+ const out=[];
+ for(let i=0;i<count;i++){
+   let v=Number(raw?.[i]);
+   if(!Number.isFinite(v)||v<PAYROLL_COL_MIN_WIDTH)v=Number(PAYROLL_DEFAULT_COL_WIDTHS[i]||90);
+   out[i]=Math.max(PAYROLL_COL_MIN_WIDTH,Math.min(PAYROLL_COL_MAX_WIDTH,Math.round(v)));
+ }
+ return out;
+}
 function loadPayrollColumnWidths(){
- try{return JSON.parse(localStorage.getItem(PAYROLL_COL_WIDTH_KEY)||'{}')||{}}catch(e){return {}}
+ const table=getPayrollMainTable();
+ const count=table?.querySelectorAll('thead th').length||PAYROLL_DEFAULT_COL_WIDTHS.length;
+ let raw={};
+ try{
+   let saved=localStorage.getItem(PAYROLL_COL_WIDTH_KEY);
+   if(saved)raw=JSON.parse(saved)||{};
+   else{
+     let legacy=localStorage.getItem(PAYROLL_COL_WIDTH_LEGACY_KEY);
+     if(legacy)raw=JSON.parse(legacy)||{};
+   }
+ }catch(e){raw={}}
+ return normalizePayrollColumnWidths(raw,count);
 }
 function savePayrollColumnWidths(widths){
- localStorage.setItem(PAYROLL_COL_WIDTH_KEY,JSON.stringify(widths||{}));
+ const obj={};
+ (widths||[]).forEach((w,i)=>obj[i]=Math.round(Number(w)||PAYROLL_DEFAULT_COL_WIDTHS[i]||90));
+ localStorage.setItem(PAYROLL_COL_WIDTH_KEY,JSON.stringify(obj));
 }
 function ensurePayrollColgroup(){
  const table=getPayrollMainTable();if(!table)return null;
  const count=table.querySelectorAll('thead th').length;if(!count)return null;
+ table.dataset.independentWidths='1';
  let group=table.querySelector('colgroup[data-payroll-widths]');
  if(!group){
-   group=document.createElement('colgroup');group.dataset.payrollWidths='1';
-   for(let i=0;i<count;i++)group.appendChild(document.createElement('col'));
+   group=document.createElement('colgroup');
+   group.dataset.payrollWidths='1';
    table.insertBefore(group,table.firstChild);
  }
  while(group.children.length<count)group.appendChild(document.createElement('col'));
+ while(group.children.length>count)group.lastElementChild.remove();
  return group;
 }
-function capturePayrollColumnWidths(){
- const table=getPayrollMainTable();if(!table)return {};
- const widths={};[...table.querySelectorAll('thead th')].forEach((th,i)=>{
-   let w=Math.round(th.getBoundingClientRect().width);if(w>=42)widths[i]=w;
- });
- return widths;
-}
-function syncPayrollTableWidth(){
+function currentPayrollColumnWidths(){
  const table=getPayrollMainTable();
- if(!table)return;
- const headers=[...table.querySelectorAll('thead th')];
- if(!headers.length)return;
- const total=Math.round(headers.reduce((sum,th)=>sum+th.getBoundingClientRect().width,0));
- if(total>0){
-   table.style.setProperty('width',total+'px','important');
-   table.style.setProperty('min-width',total+'px','important');
- }
-}
-function applyPayrollColumnWidths(){
- const table=getPayrollMainTable();
- if(!table)return;
- const widths=loadPayrollColumnWidths();
- const headers=[...table.querySelectorAll('thead th')];
+ if(!table)return [];
+ const count=table.querySelectorAll('thead th').length;
  const group=ensurePayrollColgroup();
- headers.forEach((th,i)=>{
-   const w=Number(widths[i]);
-   if(w>=42){
-     if(group?.children[i]){
-       group.children[i].style.setProperty('width',w+'px','important');
-       group.children[i].style.setProperty('min-width',w+'px','important');
-       group.children[i].style.setProperty('max-width',w+'px','important');
-     }
-     th.style.setProperty('width',w+'px','important');
-     th.style.setProperty('min-width',w+'px','important');
-     th.style.setProperty('max-width',w+'px','important');
-     table.querySelectorAll(`tbody tr > *:nth-child(${i+1}), tfoot tr > *:nth-child(${i+1})`).forEach(td=>{
-       td.style.setProperty('width',w+'px','important');
-       td.style.setProperty('min-width',w+'px','important');
-       td.style.setProperty('max-width',w+'px','important');
-     });
-   }
- });
- requestAnimationFrame(()=>{
-   syncPayrollTableWidth();
-   // 예전 버전에서 일부 열만 저장돼 있던 경우도 현재 보이는 전체 폭을 한 번에 고정한다.
-   if(Object.keys(widths).length && Object.keys(widths).length<headers.length){
-     let complete=capturePayrollColumnWidths();
-     if(Object.keys(complete).length===headers.length)savePayrollColumnWidths(complete);
-   }
+ const saved=loadPayrollColumnWidths();
+ return Array.from({length:count},(_,i)=>{
+   let inline=parseFloat(group?.children[i]?.style.width||'');
+   return Number.isFinite(inline)&&inline>=PAYROLL_COL_MIN_WIDTH?Math.round(inline):saved[i];
  });
 }
-function resetPayrollColumnWidths(){
- localStorage.removeItem(PAYROLL_COL_WIDTH_KEY);
- const table=getPayrollMainTable();
- if(!table)return;
+function setPayrollIndependentWidths(widths,{persist=false}={}){
+ const table=getPayrollMainTable();if(!table)return;
+ const headers=[...table.querySelectorAll('thead th')];if(!headers.length)return;
+ const normalized=normalizePayrollColumnWidths(widths,headers.length);
+ const group=ensurePayrollColgroup();
+
+ // 과거 리사이저가 th/td에 직접 넣었던 폭을 제거하고 colgroup 하나만 폭 기준으로 사용한다.
  table.querySelectorAll('th,td').forEach(cell=>{
    cell.style.removeProperty('width');
    cell.style.removeProperty('min-width');
    cell.style.removeProperty('max-width');
  });
- table.style.removeProperty('width');
- table.style.removeProperty('min-width');
- initPayrollColumnResizers(true);
+
+ normalized.forEach((w,i)=>{
+   const col=group?.children[i];
+   if(!col)return;
+   col.style.width=w+'px';
+ });
+
+ // 표 전체폭은 각 독립 열의 합으로만 결정한다. 한 열을 줄여도 다른 열을 늘려 채우지 않는다.
+ const total=normalized.reduce((sum,w)=>sum+w,0);
+ table.style.setProperty('width',total+'px','important');
+ table.style.setProperty('min-width',total+'px','important');
+ table.style.setProperty('max-width',total+'px','important');
+ table.style.setProperty('table-layout','fixed','important');
+
+ const wrap=table.closest('.tablewrap');
+ if(wrap){
+   wrap.style.setProperty('overflow-x','auto','important');
+   wrap.style.setProperty('max-width','100%');
+ }
+ if(persist)savePayrollColumnWidths(normalized);
+}
+function applyPayrollColumnWidths(){
+ const table=getPayrollMainTable();if(!table)return;
+ const widths=loadPayrollColumnWidths();
+ setPayrollIndependentWidths(widths);
+ // 구버전(v2) 폭만 있던 사용자는 현재 보이는 폭을 v3로 1회 이관한다.
+ if(!localStorage.getItem(PAYROLL_COL_WIDTH_KEY))savePayrollColumnWidths(widths);
+}
+function resetPayrollSingleColumn(index){
+ const widths=currentPayrollColumnWidths();
+ if(!widths.length)return;
+ widths[index]=PAYROLL_DEFAULT_COL_WIDTHS[index]||90;
+ setPayrollIndependentWidths(widths,{persist:true});
+}
+function resetPayrollColumnWidths(){
+ localStorage.removeItem(PAYROLL_COL_WIDTH_KEY);
+ const table=getPayrollMainTable();
+ if(!table)return;
+ const count=table.querySelectorAll('thead th').length||PAYROLL_DEFAULT_COL_WIDTHS.length;
+ const widths=normalizePayrollColumnWidths({},count);
+ setPayrollIndependentWidths(widths,{persist:true});
 }
 function initPayrollColumnResizers(force=false){
  const table=getPayrollMainTable();
  if(!table)return;
+ applyPayrollColumnWidths();
  const headers=[...table.querySelectorAll('thead th')];
  headers.forEach((th,index)=>{
    if(th.querySelector('.payrollColResize'))return;
    th.style.position='relative';
    const handle=document.createElement('span');
    handle.className='payrollColResize';
-   handle.title='좌우로 드래그해 열 폭 조절 · 더블클릭하면 전체 폭 초기화';
+   handle.title='좌우 드래그: 이 열만 조절 · 더블클릭: 이 열만 기본폭으로';
    handle.addEventListener('mousedown',ev=>{
      ev.preventDefault();
      ev.stopPropagation();
      const startX=ev.clientX;
-     const startW=th.getBoundingClientRect().width;
+     const startWidths=currentPayrollColumnWidths();
+     const startW=startWidths[index]||PAYROLL_DEFAULT_COL_WIDTHS[index]||90;
      document.body.classList.add('resizingPayrollColumn');
      const move=e=>{
-       const newW=Math.max(42,Math.min(520,Math.round(startW+(e.clientX-startX))));
-       th.style.setProperty('width',newW+'px','important');
-       th.style.setProperty('min-width',newW+'px','important');
-       th.style.setProperty('max-width',newW+'px','important');
-       let group=ensurePayrollColgroup();
-       if(group?.children[index]){
-         group.children[index].style.setProperty('width',newW+'px','important');
-         group.children[index].style.setProperty('min-width',newW+'px','important');
-         group.children[index].style.setProperty('max-width',newW+'px','important');
-       }
-       table.querySelectorAll(`tbody tr > *:nth-child(${index+1}), tfoot tr > *:nth-child(${index+1})`).forEach(td=>{
-         td.style.setProperty('width',newW+'px','important');
-         td.style.setProperty('min-width',newW+'px','important');
-         td.style.setProperty('max-width',newW+'px','important');
-       });
-       syncPayrollTableWidth();
+       const widths=[...startWidths];
+       widths[index]=Math.max(PAYROLL_COL_MIN_WIDTH,Math.min(PAYROLL_COL_MAX_WIDTH,Math.round(startW+(e.clientX-startX))));
+       setPayrollIndependentWidths(widths);
      };
-     const up=()=>{
+     const up=e=>{
        document.removeEventListener('mousemove',move);
        document.removeEventListener('mouseup',up);
        document.body.classList.remove('resizingPayrollColumn');
-       const widths=capturePayrollColumnWidths();
-       savePayrollColumnWidths(widths);
-       applyPayrollColumnWidths();
+       const widths=[...startWidths];
+       widths[index]=Math.max(PAYROLL_COL_MIN_WIDTH,Math.min(PAYROLL_COL_MAX_WIDTH,Math.round(startW+((e?.clientX??startX)-startX))));
+       setPayrollIndependentWidths(widths,{persist:true});
      };
      document.addEventListener('mousemove',move);
      document.addEventListener('mouseup',up);
@@ -5189,13 +5233,10 @@ function initPayrollColumnResizers(force=false){
    handle.addEventListener('dblclick',ev=>{
      ev.preventDefault();
      ev.stopPropagation();
-     resetPayrollColumnWidths();
+     resetPayrollSingleColumn(index);
    });
    th.appendChild(handle);
  });
- if(force || Object.keys(loadPayrollColumnWidths()).length){
-   applyPayrollColumnWidths();
- }
 }
 
 function renderPayrollSimple(){
