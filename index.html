@@ -762,6 +762,33 @@ body.resizingEmployeeColumn *{
 #payrollPage #payrollMainTable[data-independent-widths="1"] td:last-child{
   border-right:0!important;
 }
+
+/* ===== 근로시간 탭: 사진형 평일/주말/공휴일 집계 ===== */
+#hoursPage .hoursSummaryGuide{padding:10px 12px;border:1px solid #e3e8ef;border-radius:10px;background:#f8fafc;color:#596273;font-size:12px;line-height:1.5}
+#hoursPage .hoursSummaryTable{min-width:1180px}
+#hoursPage .hoursSummaryTable th,#hoursPage .hoursSummaryTable td{padding:8px 7px}
+#hoursPage .hoursKindHead{font-weight:900;color:#253047}
+#hoursPage .weekdayHead{background:#fff7c8!important}
+#hoursPage .weekendHead{background:#eaf2ff!important;color:#2457a6!important}
+#hoursPage .holidayHead{background:#ffe7e7!important;color:#b42318!important}
+#hoursPage .workKindCell{min-width:155px;padding:5px!important}
+#hoursPage .workBucket{border-radius:9px;padding:8px 7px;line-height:1.25;min-height:47px;display:flex;flex-direction:column;justify-content:center;gap:4px}
+#hoursPage .workBucket.weekday{background:#fffdf0;border:1px solid #f3e6a0}
+#hoursPage .workBucket.weekend{background:#f4f8ff;border:1px solid #d7e5fb}
+#hoursPage .workBucket.holiday{background:#fff4f4;border:1px solid #f5d2d2}
+#hoursPage .workBucket.empty{background:#fafafa;border:1px dashed #e1e5eb;color:#9aa1ad}
+#hoursPage .workFormula{font-size:12px;font-weight:700;white-space:normal;word-break:keep-all}
+#hoursPage .workTerm{white-space:nowrap}
+#hoursPage .workPlus{color:#8c94a3;padding:0 2px}
+#hoursPage .workEquals{font-size:13px;color:#283447}
+#hoursPage .hoursStrong{font-size:14px;background:#fbfcfe}
+#hoursPage .hoursDiff{font-weight:900}
+#hoursPage .workDateTable{min-width:980px}
+#hoursPage .workDateTable th:nth-child(n+2),#hoursPage .workDateTable td:nth-child(n+2){min-width:250px}
+#hoursPage .dateDetailCell{text-align:left;white-space:normal;line-height:1.65}
+#hoursPage .holidayDateCell{background:#fffafa}
+#hoursPage .holidayDetail{display:inline-block;padding:1px 5px;border-radius:999px;background:#ffe7e7;color:#b42318;font-size:10px;font-weight:800}
+#hoursPage .dateSep{color:#b4bac4}
 </style>
 </head>
 <body>
@@ -839,15 +866,18 @@ body.resizingEmployeeColumn *{
 </section>
 
 <section id="hoursPage" class="page">
- <div><h1 class="title">근로시간</h1><div class="sub">실제로 출근한 날짜를 평일 / 주말 / 공휴일로 한 번만 분류합니다. 공휴일이 주말보다 우선합니다.</div></div>
- <div class="card" style="margin-top:13px"><div class="tablewrap"><table><thead><tr><th class="name">직원</th><th>근무형태</th><th>평일 출근</th><th>평일 시간</th><th>주말 출근</th><th>주말 시간</th><th>공휴일 출근</th><th>공휴일 시간</th><th>실근로</th><th>주휴 예상</th><th>비교 합계</th><th>연장</th><th>연차</th><th>병가</th><th>급여대장 월근무</th><th>차이</th></tr></thead><tbody id="hoursBody"></tbody></table></div></div>
- <div class="help" style="margin-top:7px">※ 주휴 예상시간은 급여대장 비교용입니다. 주 소정근로시간과 주별 스케줄을 기준으로 계산하며 최종 급여는 노무사 자료와 확인하세요.</div>
- <div class="card" style="margin-top:10px"><h3>직원별 출근 날짜</h3><div class="tablewrap" style="margin-top:10px"><table><thead><tr><th class="name">직원</th><th>평일 근무일</th><th>주말 근무일</th><th>공휴일 근무일</th></tr></thead><tbody id="workDateBody"></tbody></table></div></div>
+ <div><h1 class="title">근로시간</h1><div class="sub">선택월 스케줄을 기준으로 평일 / 주말 / 공휴일 실제 근무를 자동 집계합니다. 같은 근무시간은 묶어서 표시하며, 공휴일이 주말보다 우선합니다.</div></div>
+ <div class="card hoursSummaryCard" style="margin-top:13px">
+  <div class="hoursSummaryGuide"><b>보는 방법</b> · 예: <b>10일 × 8h + 2일 × 5h = 90h</b>처럼 같은 근무시간끼리 자동으로 묶습니다. 직원관리에서 <b>월간표·근로 제외</b>를 체크한 직원은 이 화면에도 표시하지 않습니다.</div>
+  <div class="tablewrap" style="margin-top:10px"><table class="hoursSummaryTable"><thead><tr><th class="name">직원</th><th>근무형태</th><th class="hoursKindHead weekdayHead">평일</th><th class="hoursKindHead weekendHead">주말</th><th class="hoursKindHead holidayHead">공휴일</th><th>실근로</th><th>주휴 예상</th><th>비교 합계</th><th>연장</th><th>연차</th><th>병가</th><th>급여대장 월근무</th><th>차이</th></tr></thead><tbody id="hoursBody"></tbody></table></div>
+ </div>
+ <div class="help" style="margin-top:7px">※ 평일·주말·공휴일 시간은 실제 worked_hours 기준입니다. 주휴 예상시간은 급여대장 비교용이며, 주 소정근로시간과 주별 스케줄을 기준으로 계산합니다.</div>
+ <div class="card" style="margin-top:10px"><h3>직원별 출근 날짜</h3><div class="help">위 집계가 어떤 날짜에서 나온 값인지 확인하는 상세표입니다.</div><div class="tablewrap" style="margin-top:10px"><table class="workDateTable"><thead><tr><th class="name">직원</th><th class="weekdayHead">평일 근무일</th><th class="weekendHead">주말 근무일</th><th class="holidayHead">공휴일 근무일</th></tr></thead><tbody id="workDateBody"></tbody></table></div></div>
 </section>
 
 <section id="payrollPage" class="page">
  <div class="row">
-  <div><h1 class="title">급여관리 <span style="font-size:12px;color:#315efb;background:#eef3ff;border-radius:999px;padding:4px 8px;vertical-align:middle">v2026.08.20-1305</span></h1><div class="sub">월별 급여대장을 검산하고, 기간별·직원별 누적 급여도 조회합니다.</div></div>
+  <div><h1 class="title">급여관리 <span style="font-size:12px;color:#315efb;background:#eef3ff;border-radius:999px;padding:4px 8px;vertical-align:middle">v2026.08.20-1345</span></h1><div class="sub">월별 급여대장을 검산하고, 기간별·직원별 누적 급여도 조회합니다.</div></div>
   <div class="toolbar">
    <input type="file" id="payrollFile" accept=".xlsx,.xls,.xlsm" multiple style="display:none" onchange="importPayrollFiles(this.files);this.value=''">
    <button class="btn" onclick="$('payrollFile').click()">급여대장 여러개 불러오기</button>
@@ -926,7 +956,7 @@ body.resizingEmployeeColumn *{
      <button class="btn gray small" onclick="resetEmployeeColumnWidths()">표 폭 초기화</button>
    </div>
   </div>
-  <div class="help" style="margin-bottom:8px">이름·주민등록번호·계좌번호·직책·업무·입사일·근무형태·휴게·급여형태·비고는 표에서 바로 수정할 수 있습니다. <b>재직자는 기본적으로 내가 정한 연번순</b>이며 필요할 때만 입사일 오름차순으로 볼 수 있습니다. <b>퇴사자는 퇴사일 오름차순으로 자동 정렬</b>됩니다. <b>“월간표 제외”를 체크하면 재직·급여자료는 그대로 두고 월간스케줄 표/인쇄/Excel에서만 숨깁니다.</b> 문서 칸에서는 다음 재계약일과 근로·연봉·사직서 PDF 등록 여부를 바로 확인할 수 있습니다. 표 머리글의 오른쪽 경계선을 좌우로 끌면 열 폭을 직접 조절할 수 있고 자동 저장됩니다. 비고는 여러 줄로 입력할 수 있습니다.</div>
+  <div class="help" style="margin-bottom:8px">이름·주민등록번호·계좌번호·직책·업무·입사일·근무형태·휴게·급여형태·비고는 표에서 바로 수정할 수 있습니다. <b>재직자는 기본적으로 내가 정한 연번순</b>이며 필요할 때만 입사일 오름차순으로 볼 수 있습니다. <b>퇴사자는 퇴사일 오름차순으로 자동 정렬</b>됩니다. <b>“월간표·근로 제외”를 체크하면 재직·급여자료는 그대로 두고 월간스케줄 표/인쇄/Excel과 근로시간 탭에서만 숨깁니다.</b> 문서 칸에서는 다음 재계약일과 근로·연봉·사직서 PDF 등록 여부를 바로 확인할 수 있습니다. 표 머리글의 오른쪽 경계선을 좌우로 끌면 열 폭을 직접 조절할 수 있고 자동 저장됩니다. 비고는 여러 줄로 입력할 수 있습니다.</div>
   <datalist id="employeeWorkTypeSuggestions"><option value="주5일 스케줄근무"></option><option value="주4일 스케줄근무"></option><option value="기타"></option></datalist>
   <div class="tablewrap"><table><thead><tr><th style="width:44px">선택</th><th>연번</th><th class="name">이름</th><th>주민등록번호</th><th>계좌번호</th><th>직책</th><th>업무</th><th>입사일</th><th>퇴사일</th><th>근무형태</th><th>기본시간</th><th>휴게시간(분)</th><th>스케줄방식</th><th>급여형태</th><th>연차 기준</th><th>연차 잔여</th><th>비고</th><th>출력색</th><th>문서 / 재계약</th><th></th></tr></thead><tbody id="employeeBody"></tbody></table></div>
  </div>
@@ -1065,6 +1095,11 @@ function employeesForMonth(ym){
 function monthlyScheduleEmployees(ym){
  return employeesForMonth(ym).filter(e=>e.hide_monthly_schedule!==true);
 }
+// 월간표 제외 체크는 실제 스케줄/근로시간 관리 대상이 아닌 직원에 사용한다.
+// 직원관리·급여관리에는 그대로 남기고 근로시간 집계에서는 제외한다.
+function workTimeEmployees(ym){
+ return employeesForMonth(ym).filter(e=>e.hide_monthly_schedule!==true);
+}
 function employeeMonthlyScheduleHidden(e){return e?.hide_monthly_schedule===true}
 
 
@@ -1107,7 +1142,7 @@ function clearStoreScopedUI(){
  selectedEmployees.clear();
  if($('schBody'))$('schBody').innerHTML='<tr><td colspan="40" style="padding:20px;text-align:center">직원·스케줄 불러오는 중...</td></tr>';
  if($('employeeBody'))$('employeeBody').innerHTML='<tr><td colspan="20" style="padding:20px;text-align:center">직원 불러오는 중...</td></tr>';
- if($('hoursBody'))$('hoursBody').innerHTML='<tr><td colspan="16" style="padding:20px;text-align:center">근로자료는 근로 탭에서 불러옵니다.</td></tr>';
+ if($('hoursBody'))$('hoursBody').innerHTML='<tr><td colspan="13" style="padding:20px;text-align:center">근로자료는 근로 탭에서 불러옵니다.</td></tr>';
  if($('payrollBody'))$('payrollBody').innerHTML='<tr><td colspan="23" style="padding:20px;text-align:center">급여자료는 급여 탭에서 불러옵니다.</td></tr>';
 }
 
@@ -2220,21 +2255,34 @@ function expectedWeeklyHolidayHours(e){
  return {hours:Math.round(count*one*100)/100,weeks:count,one};
 }
 
+function formatWorkBucket(bucket,kind){
+ if(!bucket?.dates?.length)return `<div class="workBucket ${kind} empty">-</div>`;
+ let groups=new Map();
+ bucket.dates.forEach(x=>{
+   let h=round2(Number(x.hours||0)),key=String(h);
+   if(!groups.has(key))groups.set(key,{hours:h,count:0});
+   groups.get(key).count++;
+ });
+ let formula=[...groups.values()].map(g=>`<span class="workTerm"><b>${g.count}일</b> × ${hour2(g.hours)}h</span>`).join('<span class="workPlus"> + </span>');
+ return `<div class="workBucket ${kind}"><div class="workFormula">${formula}</div><div class="workEquals">= <b>${hour2(bucket.hours)}h</b></div></div>`;
+}
+
 function renderHours(){
- $('hoursBody').innerHTML=employeesForMonth($('monthSelect').value).map(e=>{
+ let visible=workTimeEmployees($('monthSelect').value);
+ $('hoursBody').innerHTML=visible.map(e=>{
   let x=calc(e),c=classifyWork(e),wh=expectedWeeklyHolidayHours(e),p=payrollFor(e),ph=Number(p?.scheduled_hours||0),
       compare=round2(x.worked+wh.hours),diff=p?round2(compare-ph):null;
-  return `<tr><td class="name">${esc(e.name)}</td><td>${workType(e)}</td>
-  <td>${c.weekday.days}일</td><td>${hour2(c.weekday.hours)}h</td>
-  <td>${c.weekend.days}일</td><td>${hour2(c.weekend.hours)}h</td>
-  <td><b>${c.holiday.days}일</b></td><td><b>${hour2(c.holiday.hours)}h</b></td>
-  <td><b>${hour2(x.worked)}h</b></td><td title="주휴 ${wh.one}h × ${wh.weeks}주">${hour2(wh.hours)}h</td><td><b>${hour2(compare)}h</b></td>
+  return `<tr><td class="name"><b>${esc(e.name)}</b></td><td>${workType(e)}</td>
+  <td class="workKindCell">${formatWorkBucket(c.weekday,'weekday')}</td>
+  <td class="workKindCell">${formatWorkBucket(c.weekend,'weekend')}</td>
+  <td class="workKindCell">${formatWorkBucket(c.holiday,'holiday')}</td>
+  <td class="hoursStrong"><b>${hour2(x.worked)}h</b></td><td title="주휴 ${wh.one}h × ${wh.weeks}주">${hour2(wh.hours)}h</td><td class="hoursStrong"><b>${hour2(compare)}h</b></td>
   <td>${hour2(x.ot)}h</td><td>${hour2(x.leave)}h</td><td>${hour2(x.sick)}h</td><td>${p?hour2(ph)+'h':'-'}</td>
-  <td class="${diff===0?'ok':diff==null?'':'warn'}">${diff==null?'-':(diff>0?'+':'')+hour2(diff)+'h'}</td></tr>`}).join('');
- $('workDateBody').innerHTML=employeesForMonth($('monthSelect').value).map(e=>{
-   let c=classifyWork(e),fmt=a=>a.length?a.map(x=>`${Number(x.date.slice(8))}일(${x.hours}h${x.name?'·'+x.name:''})`).join(', '):'-';
-   return `<tr><td class="name">${esc(e.name)}</td><td>${fmt(c.weekday.dates)}</td><td>${fmt(c.weekend.dates)}</td><td><b>${fmt(c.holiday.dates)}</b></td></tr>`;
- }).join('');
+  <td class="${diff===0?'ok':diff==null?'':'warn'} hoursDiff">${diff==null?'-':(diff>0?'+':'')+hour2(diff)+'h'}</td></tr>`}).join('')||'<tr><td colspan="13" style="padding:24px;text-align:center;color:#7b8494">이 달에 근로시간 관리 대상 직원이 없습니다.</td></tr>';
+ $('workDateBody').innerHTML=visible.map(e=>{
+   let c=classifyWork(e),fmt=a=>a.length?a.map(x=>`${Number(x.date.slice(8))}일 <b>${hour2(x.hours)}h</b>${x.name?` <span class="holidayDetail">${esc(x.name)}</span>`:''}`).join('<span class="dateSep"> · </span>'):'-';
+   return `<tr><td class="name"><b>${esc(e.name)}</b></td><td class="dateDetailCell">${fmt(c.weekday.dates)}</td><td class="dateDetailCell">${fmt(c.weekend.dates)}</td><td class="dateDetailCell holidayDateCell">${fmt(c.holiday.dates)}</td></tr>`;
+ }).join('')||'<tr><td colspan="4" style="padding:20px;text-align:center;color:#7b8494">표시할 근로시간 대상 직원이 없습니다.</td></tr>';
 }
 
 async function renderPharmacyPay(){
@@ -2803,7 +2851,7 @@ async function saveMonthlyScheduleVisibility(id,hidden,input){
    let hint=/hide_monthly_schedule|column/i.test(String(q.error.message||''))
      ?'\n\nSupabase employees 테이블에 hide_monthly_schedule 컬럼을 추가하는 최초 1회 SQL을 실행하세요.'
      :'';
-   return alert('월간스케줄 표시설정 저장 오류:\n'+q.error.message+hint);
+   return alert('월간표·근로시간 제외 설정 저장 오류:\n'+q.error.message+hint);
  }
 }
 function documentStatusForEmployee(employeeId){
@@ -2904,7 +2952,7 @@ function renderEmployees(){
 
    <td class="empInlineCell">${employeeView==='active'?employeeInlineNumber(e,'break_minutes','1','empInlineSmall'):(e.break_minutes||0)}</td>
 
-   <td>${e.work_type==='36'?'주4일':e.work_type==='40'?'주5일':'기타'}<br><span class="help">요일 변동 스케줄</span>${employeeView==='active'?`<label class="scheduleHideToggle" title="직원관리·급여관리에는 그대로 두고 월간스케줄 표/인쇄/Excel에서만 숨깁니다."><input type="checkbox" ${employeeMonthlyScheduleHidden(e)?'checked':''} onchange="saveMonthlyScheduleVisibility(${e.id},this.checked,this)">월간표 제외</label>`:''}</td>
+   <td>${e.work_type==='36'?'주4일':e.work_type==='40'?'주5일':'기타'}<br><span class="help">요일 변동 스케줄</span>${employeeView==='active'?`<label class="scheduleHideToggle" title="직원관리·급여관리에는 그대로 두고 월간스케줄 표/인쇄/Excel과 근로시간 탭에서만 숨깁니다."><input type="checkbox" ${employeeMonthlyScheduleHidden(e)?'checked':''} onchange="saveMonthlyScheduleVisibility(${e.id},this.checked,this)">월간표·근로 제외</label>`:''}</td>
 
    <td class="empInlineCell">${payTypeCell}</td>
 
