@@ -1054,7 +1054,7 @@ body.resizingEmployeeColumn *{
 
 <section id="payrollPage" class="page">
  <div class="row">
-  <div><h1 class="title">급여관리 <span style="font-size:12px;color:#315efb;background:#eef3ff;border-radius:999px;padding:4px 8px;vertical-align:middle">v2026.08.23-1640</span></h1><div class="sub">월별 급여대장을 검산하고, 기간별·직원별 누적 급여도 조회합니다.</div></div>
+  <div><h1 class="title">급여관리 <span style="font-size:12px;color:#315efb;background:#eef3ff;border-radius:999px;padding:4px 8px;vertical-align:middle">v2026.08.23-1655</span></h1><div class="sub">월별 급여대장을 검산하고, 기간별·직원별 누적 급여도 조회합니다.</div></div>
   <div class="toolbar">
    <input type="file" id="payrollFile" accept=".xlsx,.xls,.xlsm" multiple style="display:none" onchange="importPayrollFiles(this.files);this.value=''">
    <button class="btn" onclick="$('payrollFile').click()">급여대장 여러개 불러오기</button>
@@ -7540,6 +7540,11 @@ function contractTimeMatches(text){
  for(let m of t.matchAll(/(오전|오후)?\s*([0-2]?\d)\s+([0-5]\d)(?!\d)/g)){
    let v=contractClock(m[2],m[3],m[1]||'');if(v)out.push(v);
  }
+ // 숫자 전용 OCR은 10:00을 1000처럼 붙여 읽을 수 있다.
+ // 근무시간 셀처럼 구분기호(~,-)가 있는 경우에만 3~4자리 숫자를 시각으로 복원한다.
+ for(let m of t.matchAll(/\b([0-2]?\d)([0-5]\d)\s*(?:~|\-|–|—)\s*([0-2]?\d)([0-5]\d)\b/g)){
+   let a=contractClock(m[1],m[2]),b=contractClock(m[3],m[4]);if(a)out.push(a);if(b)out.push(b);
+ }
  return out;
 }
 function contractMinutesBetween(a,b){
@@ -7738,9 +7743,47 @@ function enhanceContractOcrCanvas(source,upscale=1.7,threshold=205){
  for(let i=0;i<d.length;i+=4){let y=Math.round(d[i]*0.299+d[i+1]*0.587+d[i+2]*0.114);let v=y>=threshold?255:0;d[i]=d[i+1]=d[i+2]=v;d[i+3]=255}
  ctx.putImageData(im,0,0);return c;
 }
-async function recognizeContractCrop(Tesseract,canvas,lang='kor+eng',psm='7',whitelist=''){
- let opts={tessedit_pageseg_mode:String(psm)};if(whitelist)opts.tessedit_char_whitelist=whitelist;
- let r=await Tesseract.recognize(canvas,lang,opts);return String(r?.data?.text||'').trim();
+let contractOcrWorkerPromises={};
+function contractOcrLangKey(lang){return String(lang||'kor+eng').split('+').map(x=>x.trim()).filter(Boolean)}
+async function getContractOcrWorker(Tesseract,lang='kor+eng'){
+ let key=String(lang||'kor+eng');
+ if(!contractOcrWorkerPromises[key]){
+   contractOcrWorkerPromises[key]=(async()=>{
+     let langs=contractOcrLangKey(key);
+     return await Tesseract.createWorker(langs.length>1?langs:langs[0]);
+   })();
+ }
+ return contractOcrWorkerPromises[key];
+}
+function contractOcrPsm(Tesseract,psm){
+ let k=String(psm||'6'),name=({6:'SINGLE_BLOCK',7:'SINGLE_LINE',11:'SPARSE_TEXT',13:'RAW_LINE'})[k];
+ return (name&&Tesseract.PSM?.[name])||k;
+}
+async function recognizeContractCrop(Tesseract,canvas,lang='kor+eng',psm='6',whitelist=''){
+ // Tesseract.js v5에서는 tessedit_* 옵션을 worker.setParameters()로 지정해야 실제 OCR 엔진에 반영된다.
+ let worker=await getContractOcrWorker(Tesseract,lang);
+ await worker.setParameters({
+   tessedit_pageseg_mode:contractOcrPsm(Tesseract,psm),
+   preserve_interword_spaces:'1',
+   user_defined_dpi:'300',
+   tessedit_char_whitelist:whitelist||''
+ });
+ let r=await worker.recognize(canvas);
+ return String(r?.data?.text||'').trim();
+}
+async function recognizeContractCropMulti(Tesseract,canvas,lang='eng',psms=['7','6'],whitelist=''){
+ let out=[];
+ for(const psm of psms){
+   try{
+     let s=await recognizeContractCrop(Tesseract,canvas,lang,psm,whitelist);
+     if(s)out.push(s);
+   }catch(e){console.warn('계약서 셀 OCR 보조시도 실패',e)}
+ }
+ return [...new Set(out)].join(' | ');
+}
+function insetContractCanvas(source,left=0.03,top=0.12,right=0.03,bottom=0.12){
+ let w=Math.max(0.05,1-left-right),h=Math.max(0.05,1-top-bottom);
+ return cropContractCanvas(source,left,top,w,h);
 }
 function contractTimePairFromTexts(texts,expectedMinutes=0,minMinutes=60,maxMinutes=14*60){
  let times=[];(texts||[]).forEach(x=>times.push(...contractTimeMatches(x)));times=[...new Set(times)];
@@ -7810,15 +7853,28 @@ async function readContractDataFromPdf(file,expectedEmployeeName=''){
  let workRaw=cropContractCanvas(canvas,0.268,0.653,0.185,0.050);
  let breakRaw=cropContractCanvas(canvas,0.450,0.650,0.300,0.055);
  let noteRaw=cropContractCanvas(canvas,0.748,0.653,0.132,0.050);
- let daysHi=enhanceContractOcrCanvas(daysRaw,2.2,215),workHi=enhanceContractOcrCanvas(workRaw,2.4,220),breakHi=enhanceContractOcrCanvas(breakRaw,2.2,220),noteHi=enhanceContractOcrCanvas(noteRaw,2.0,215);
- let [daysOcr,workOcr1,workOcr2,breakOcr1,breakOcr2,noteOcr]=await Promise.all([
-   recognizeContractCrop(Tesseract,daysHi,'kor+eng','7'),
-   recognizeContractCrop(Tesseract,workRaw,'eng','7','0123456789:~.- '),
-   recognizeContractCrop(Tesseract,workHi,'eng','7','0123456789:~.- '),
-   recognizeContractCrop(Tesseract,breakRaw,'eng','7','0123456789:~.- '),
-   recognizeContractCrop(Tesseract,breakHi,'eng','7','0123456789:~.- '),
-   recognizeContractCrop(Tesseract,noteHi,'kor+eng','7')
- ]);
+
+ // 표 테두리와 휴게시간의 두 번째 설명문이 OCR을 방해하므로 실제 값이 있는 내부만 다시 자른다.
+ let daysInner=insetContractCanvas(daysRaw,0.04,0.15,0.04,0.15);
+ let workInner=insetContractCanvas(workRaw,0.025,0.14,0.025,0.14);
+ // 휴게 셀은 첫 줄(예: 12:00 ~ 13:00)만 읽는다.
+ let breakInner=cropContractCanvas(breakRaw,0.025,0.14,0.95,0.43);
+ let noteInner=insetContractCanvas(noteRaw,0.03,0.14,0.03,0.14);
+
+ let daysHi=enhanceContractOcrCanvas(daysInner,3.0,210),
+     workHi=enhanceContractOcrCanvas(workInner,3.4,210),
+     breakHi=enhanceContractOcrCanvas(breakInner,3.4,210),
+     noteHi=enhanceContractOcrCanvas(noteInner,2.6,210);
+
+ // Tesseract worker 파라미터가 서로 덮어쓰이지 않도록 순차 실행한다.
+ // 근로시간은 SINGLE_LINE/SINGLE_BLOCK/RAW_LINE을 모두 시도하고,
+ // 휴게시간은 두 줄 설명문 영향이 적은 SINGLE_BLOCK/SPARSE_TEXT도 함께 시도한다.
+ let daysOcr=await recognizeContractCropMulti(Tesseract,daysHi,'kor+eng',['7','6']);
+ let workOcr1=await recognizeContractCropMulti(Tesseract,workInner,'eng',['7','6','13'],'0123456789:~.- ');
+ let workOcr2=await recognizeContractCropMulti(Tesseract,workHi,'eng',['7','6','13'],'0123456789:~.- ');
+ let breakOcr1=await recognizeContractCropMulti(Tesseract,breakInner,'eng',['6','7','11'],'0123456789:~.- ');
+ let breakOcr2=await recognizeContractCropMulti(Tesseract,breakHi,'eng',['6','7','11'],'0123456789:~.- ');
+ let noteOcr=await recognizeContractCropMulti(Tesseract,noteHi,'kor+eng',['7','6']);
 
  // 제3조 본문은 1일/주 소정시간 등 보조수치만 참고한다. 출퇴근 시각은 위 셀 OCR만 사용한다.
  let section3Crop=enhanceContractOcrCanvas(cropContractCanvas(canvas,0.11,0.505,0.78,0.235),1.25,210);
