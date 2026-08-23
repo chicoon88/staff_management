@@ -1318,6 +1318,13 @@ function normalizedWorkDays(v){
  }
  return [];
 }
+const WORK_CONDITION_DAY_RULES_PREFIX='[[DAY_RULES:';
+function workConditionDayRulesFromNote(note){let m=String(note||'').match(/\[\[DAY_RULES:([^\]]+)\]\]/);if(!m)return [];try{return normalizeContractDayRules(JSON.parse(decodeURIComponent(m[1])))}catch(_){return []}}
+function workConditionHumanNote(note){return String(note||'').replace(/\s*\[\[DAY_RULES:[^\]]+\]\]\s*/g,' ').replace(/\s+/g,' ').trim()}
+function workConditionNoteWithDayRules(note,rules){let human=workConditionHumanNote(note),a=normalizeContractDayRules(rules);return (human+(a.length?' [[DAY_RULES:'+encodeURIComponent(JSON.stringify(a))+']]':'')).trim()||null}
+function conditionDayRules(c){return normalizeContractDayRules(c?._day_rules||c?.day_rules||workConditionDayRulesFromNote(c?.note))}
+function conditionRuleForDate(c,date){let wd=new Date(String(date||isoToday())+'T12:00:00').getDay();return conditionDayRules(c).find(r=>r.days.includes(wd))||null}
+function conditionTimesForDate(c,date){let r=conditionRuleForDate(c,date);return r?{start:r.start,end:r.end,break_minutes:Number(r.break_minutes||c?.break_minutes||0),daily_hours:Number(r.daily_hours||c?.daily_hours||0)}:{start:c?.default_start_time||null,end:c?.default_end_time||null,break_minutes:Number(c?.break_minutes||0),daily_hours:Number(c?.daily_hours||0)}}
 function employeeFallbackCondition(e){
  return {
    employee_id:e?.id, effective_from:e?.hire_date||'0001-01-01',
@@ -1337,6 +1344,7 @@ function workConditionForDate(e,date=isoToday()){
  let base=employeeFallbackCondition(e),rows=workConditionRowsForEmployee(e?.id),hit=null;
  for(const r of rows){if(String(r.effective_from||'')<=date)hit=r;else break}
  if(!hit)return base;
+ let rules=workConditionDayRulesFromNote(hit.note);
  return {...base,...hit,
    daily_hours:Number(hit.daily_hours??base.daily_hours),
    break_minutes:Number(hit.break_minutes??base.break_minutes),
@@ -1344,6 +1352,7 @@ function workConditionForDate(e,date=isoToday()){
    leave_weekly_hours:Number(hit.leave_weekly_hours??base.leave_weekly_hours),
    leave_monthly_hours:Number(hit.leave_monthly_hours??base.leave_monthly_hours),
    leave_day_hours:Number(hit.leave_day_hours??base.leave_day_hours),
+   note:workConditionHumanNote(hit.note),_day_rules:rules,
    _history_id:hit.id||null
  };
 }
@@ -1351,11 +1360,13 @@ function workTypeLabelValue(v){return v==='36'?'주4일 스케줄근무':v==='40
 function workTypeForDate(e,date){return workTypeLabelValue(workConditionForDate(e,date).work_type)}
 function leaveWeeklyHoursAt(e,date){return Number(workConditionForDate(e,date).leave_weekly_hours||0)}
 function leaveMonthlyHoursAt(e,date){return Number(workConditionForDate(e,date).leave_monthly_hours||0)}
-function leaveDayHoursAt(e,date){return Number(workConditionForDate(e,date).leave_day_hours||8)}
-function conditionWorkedDayHours(c){
- let h=0;
- if(c?.default_start_time&&c?.default_end_time)h=hoursBetween(c.default_start_time,c.default_end_time,Number(c.break_minutes||0));
+function leaveDayHoursAt(e,date){let c=workConditionForDate(e,date),r=conditionRuleForDate(c,date);return Number(r?.daily_hours||c.leave_day_hours||8)}
+function conditionWorkedDayHours(c,date=''){
+ let t=date?conditionTimesForDate(c,date):null,h=0;
+ if(t?.start&&t?.end)h=hoursBetween(t.start,t.end,Number(t.break_minutes||0));
+ else if(c?.default_start_time&&c?.default_end_time)h=hoursBetween(c.default_start_time,c.default_end_time,Number(c.break_minutes||0));
  if(h>0)return Math.round(h*100)/100;
+ if(t?.daily_hours>0)return Number(t.daily_hours);
  if(c?.work_type==='36')return 9;
  return Number(c?.daily_hours||8);
 }
@@ -2598,7 +2609,7 @@ async function deleteHoliday(id){
 }
 
 function sched(emp,date){return schedules.find(x=>x.employee_id===emp.id&&x.work_date===date)}
-function calc(emp){let r=monthRange(),o={days:0,scheduled:0,worked:0,ot:0,leave:0,sick:0};for(let d=1;d<=r.days;d++){let date=r.m+'-'+String(d).padStart(2,'0'),s=sched(emp,date);if(!s)continue;let code=s.work_code||'',cond=workConditionForDate(emp,date),dayH=Number(cond.daily_hours||8),leaveH=Number(cond.leave_day_hours||dayH||8);if(code==='연'){o.leave+=Number(s.scheduled_hours||leaveH);o.scheduled+=Number(s.scheduled_hours||leaveH)}else if(code==='병'){o.sick+=Number(s.scheduled_hours||dayH);o.scheduled+=Number(s.scheduled_hours||dayH)}else if(code!=='0'&&code!==''){o.days++;o.scheduled+=Number(s.scheduled_hours||0);o.worked+=Number(s.worked_hours||0);o.ot+=Number(s.overtime_hours||0)}}return o}
+function calc(emp){let r=monthRange(),o={days:0,scheduled:0,worked:0,ot:0,leave:0,sick:0};for(let d=1;d<=r.days;d++){let date=r.m+'-'+String(d).padStart(2,'0'),s=sched(emp,date);if(!s)continue;let code=s.work_code||'',cond=workConditionForDate(emp,date),rule=conditionTimesForDate(cond,date),dayH=Number(rule.daily_hours||cond.daily_hours||8),leaveH=leaveDayHoursAt(emp,date);if(code==='연'){o.leave+=Number(s.scheduled_hours||leaveH);o.scheduled+=Number(s.scheduled_hours||leaveH)}else if(code==='병'){o.sick+=Number(s.scheduled_hours||dayH);o.scheduled+=Number(s.scheduled_hours||dayH)}else if(code!=='0'&&code!==''){o.days++;o.scheduled+=Number(s.scheduled_hours||0);o.worked+=Number(s.worked_hours||0);o.ot+=Number(s.overtime_hours||0)}}return o}
 function renderAll(){renderSchedule();renderEmployees();renderStores();}
 
 function leaveDueInfo(e){
@@ -2936,7 +2947,7 @@ function renderSchedule(){
 }
 
 function schedulePayload(id,date,raw){
- let emp=allEmployees().find(e=>e.id===id),cond=workConditionForDate(emp||{},date),code=String(raw??'').trim(),base=Number(cond.daily_hours||8),leaveH=Number(cond.leave_day_hours||8),scheduled=0,worked=0,ot=0,status='';
+ let emp=allEmployees().find(e=>e.id===id),cond=workConditionForDate(emp||{},date),rule=conditionTimesForDate(cond,date),code=String(raw??'').trim(),base=Number(rule.daily_hours||cond.daily_hours||8),leaveH=leaveDayHoursAt(emp,date),scheduled=0,worked=0,ot=0,status='';
  if(code==='연'){scheduled=leaveH;status='leave'}
  else if(code==='병'){scheduled=base;status='sick'}
  else if(code==='0'||!code){code=code||'0';status='off'}
@@ -3089,10 +3100,10 @@ function scheduleKey(ev,input){
 }
 window.addEventListener('beforeunload',()=>{if(scheduleSaveQueue.size)flushScheduleQueue()});
 function mins(t){if(!t)return null;let [h,m]=t.slice(0,5).split(':').map(Number);return h*60+m}function hoursBetween(a,b,br){let x=mins(a),y=mins(b);if(x==null||y==null)return 0;if(y<x)y+=1440;return Math.max(0,(y-x-Number(br||0))/60)}
-function openShift(id,date){if(!requireScheduleDateEdit(date))return;let e=employees.find(x=>x.id===id),cond=workConditionForDate(e||{},date),s=sched(e,date)||{},start=(s.start_time||cond.default_start_time||'').slice(0,5),end=(s.end_time||cond.default_end_time||'').slice(0,5),br=s.break_minutes??cond.break_minutes??60;modal(`<h2>${esc(e.name)} · ${date}</h2><div class="formgrid"><div class="field"><label>구분</label><select id="mCode"><option value="work">근무</option><option value="leave">연차</option><option value="sick">병가</option><option value="off">휴무</option></select></div><div class="field"><label>출근</label><input id="mStart" type="time" value="${start}"></div><div class="field"><label>퇴근</label><input id="mEnd" type="time" value="${end}"></div><div class="field"><label>휴게(분)</label><input id="mBreak" type="number" value="${br}"></div></div><div class="help">이 날짜에 적용되는 근무조건(${esc(workTypeForDate(e,date))}) 기준입니다. 소정 ${cond.daily_hours||8}h를 넘는 부분은 연장으로 표시합니다.</div><div class="modalActions"><button class="btn gray" onclick="closeModal()">취소</button><button class="btn" onclick="saveShiftDetail(${id},'${date}')">저장</button></div>`);$('mCode').value=s.status||((s.work_code==='연')?'leave':(s.work_code==='병')?'sick':(s.work_code==='0')?'off':'work')}
+function openShift(id,date){if(!requireScheduleDateEdit(date))return;let e=employees.find(x=>x.id===id),cond=workConditionForDate(e||{},date),rule=conditionTimesForDate(cond,date),s=sched(e,date)||{},start=(s.start_time||rule.start||'').slice(0,5),end=(s.end_time||rule.end||'').slice(0,5),br=s.break_minutes??rule.break_minutes??60;modal(`<h2>${esc(e.name)} · ${date}</h2><div class="formgrid"><div class="field"><label>구분</label><select id="mCode"><option value="work">근무</option><option value="leave">연차</option><option value="sick">병가</option><option value="off">휴무</option></select></div><div class="field"><label>출근</label><input id="mStart" type="time" value="${start}"></div><div class="field"><label>퇴근</label><input id="mEnd" type="time" value="${end}"></div><div class="field"><label>휴게(분)</label><input id="mBreak" type="number" value="${br}"></div></div><div class="help">이 날짜에 적용되는 근무조건(${esc(workTypeForDate(e,date))}) 기준입니다. 소정 ${rule.daily_hours||cond.daily_hours||8}h를 넘는 부분은 연장으로 표시합니다.</div><div class="modalActions"><button class="btn gray" onclick="closeModal()">취소</button><button class="btn" onclick="saveShiftDetail(${id},'${date}')">저장</button></div>`);$('mCode').value=s.status||((s.work_code==='연')?'leave':(s.work_code==='병')?'sick':(s.work_code==='0')?'off':'work')}
 async function saveShiftDetail(id,date){
  if(!requireScheduleDateEdit(date))return;
- let e=employees.find(x=>x.id===id),cond=workConditionForDate(e||{},date),st=$('mCode').value,start=$('mStart').value,end=$('mEnd').value,br=Number($('mBreak').value||0),base=Number(cond.daily_hours||8),leaveH=Number(cond.leave_day_hours||8),worked=0,scheduled=0,ot=0,code='0';
+ let e=employees.find(x=>x.id===id),cond=workConditionForDate(e||{},date),rule=conditionTimesForDate(cond,date),st=$('mCode').value,start=$('mStart').value,end=$('mEnd').value,br=Number($('mBreak').value||0),base=Number(rule.daily_hours||cond.daily_hours||8),leaveH=leaveDayHoursAt(e,date),worked=0,scheduled=0,ot=0,code='0';
  if(st==='leave'){
    let ok=await confirmLeaveUseAfterRefresh(e,date,null);
    if(!ok)return;
@@ -3120,10 +3131,10 @@ async function fillDefaults(){
        if(cond.work_type==='40')days=[1,2,3,4,5];
        else if(cond.work_type==='36')days=[1,2,4,5];
      }
-     let wd=new Date(r.y,r.mo-1,d).getDay(),on=days.includes(wd),worked=on?hoursBetween(cond.default_start_time,cond.default_end_time,cond.break_minutes):0;
-     if(on&&!worked)worked=conditionWorkedDayHours(cond);
-     let base=Number(cond.daily_hours||8);
-     rows.push({employee_id:e.id,work_date:date,work_code:on?String(worked):'0',scheduled_hours:on?Math.min(worked,base):0,worked_hours:on?worked:0,overtime_hours:on?Math.max(0,worked-base):0,start_time:on?cond.default_start_time:null,end_time:on?cond.default_end_time:null,break_minutes:on?Number(cond.break_minutes||0):0,status:on?'work':'off'});
+     let wd=new Date(r.y,r.mo-1,d).getDay(),on=days.includes(wd),rule=conditionTimesForDate(cond,date),worked=on?hoursBetween(rule.start,rule.end,rule.break_minutes):0;
+     if(on&&!worked)worked=conditionWorkedDayHours(cond,date);
+     let base=Number(rule.daily_hours||cond.daily_hours||8);
+     rows.push({employee_id:e.id,work_date:date,work_code:on?String(worked):'0',scheduled_hours:on?Math.min(worked,base):0,worked_hours:on?worked:0,overtime_hours:on?Math.max(0,worked-base):0,start_time:on?rule.start:null,end_time:on?rule.end:null,break_minutes:on?Number(rule.break_minutes||0):0,status:on?'work':'off'});
    }
  });
  if(rows.length){let q=await sb.from('schedules').upsert(rows,{onConflict:'employee_id,work_date'});if(q.error)return alert(q.error.message);stampRecentAuditIp(storeId())}
@@ -3364,7 +3375,7 @@ async function loadAttendanceData(sid=storeId(),ym=$('monthSelect').value){
 }
 function attendanceRecordFor(e,date){let eid=Number(e?.id||0);return attendanceRecords.find(x=>(eid&&Number(x.employee_id)===eid&&x.work_date===date)||(!x.employee_id&&normalizeName(x.employee_name)===normalizeName(e?.name||'')&&x.work_date===date))||null}
 function attendanceReviewFor(employeeId,date){return attendanceReviews.find(x=>Number(x.employee_id)===Number(employeeId)&&x.work_date===date)||null}
-function attendanceScheduleInfo(e,date){let s=sched(e,date),code=String(s?.work_code||'').trim(),cond=workConditionForDate(e,date),start=(s?.start_time||cond.default_start_time||'').slice(0,5),end=(s?.end_time||cond.default_end_time||'').slice(0,5),hours=Number(s?.worked_hours||0);let kind=code==='연'?'leave':code==='병'?'sick':code==='0'?'off':(hours>0||(/^[0-9.]+$/.test(code)&&Number(code)>0))?'work':'blank';return {s,code,kind,start,end,hours,cond}}
+function attendanceScheduleInfo(e,date){let s=sched(e,date),code=String(s?.work_code||'').trim(),cond=workConditionForDate(e,date),rule=conditionTimesForDate(cond,date),start=(s?.start_time||rule.start||'').slice(0,5),end=(s?.end_time||rule.end||'').slice(0,5),hours=Number(s?.worked_hours||0);let kind=code==='연'?'leave':code==='병'?'sick':code==='0'?'off':(hours>0||(/^[0-9.]+$/.test(code)&&Number(code)>0))?'work':'blank';return {s,code,kind,start,end,hours,cond}}
 function attendancePunchInfo(rec){let times=Array.isArray(rec?.punch_times)?rec.punch_times:[];let cin=String(rec?.check_in||'').slice(0,5),cout=String(rec?.check_out||'').slice(0,5);if(!cin&&times.length>=2)cin=times[0];if(!cout&&times.length>=2)cout=times[times.length-1];return {times,cin,cout,count:Number(rec?.punch_count??times.length)}}
 function attendanceStatusLabel(code){return ({normal:'정상',missing_checkin:'출근 지문 누락',missing_checkout:'퇴근 지문 누락',single_punch:'지문 1회만 있음',no_punch:'지문기록 없음',late_possible:'출근시간 확인',early_leave_possible:'퇴근시간 확인',late_checkout:'늦은 퇴근기록',leave_punch:'연차인데 지문 있음',sick_punch:'병가인데 지문 있음',off_punch:'휴무인데 지문 있음',unscheduled_punch:'스케줄 없는 지문',multi_punch:'지문 여러 번',device_issue:'근태자료 자체 확인',unmatched:'직원 연결 필요',source_changed:'원본 변경 · 재확인'})[code]||code}
 function attendanceStatusClass(code){return code==='normal'?'ok':['no_punch','device_issue','leave_punch','sick_punch','off_punch','unscheduled_punch','unmatched','source_changed'].includes(code)?'danger':'warn'}
@@ -4976,6 +4987,7 @@ async function openWorkConditionHistory(employeeId,presetDate='',presetNote='',p
    return alert('근무조건 이력용 DB 테이블이 아직 없습니다.\n이번 수정본과 함께 안내한 employee_work_conditions 최초 1회 SQL을 Supabase SQL Editor에서 실행한 뒤 새로고침하세요.');
  }
  let baseCondition=workConditionForDate(e,isoToday()),c=presetCondition?{...baseCondition,...presetCondition,work_days:normalizedWorkDays(presetCondition.work_days)}:baseCondition;
+ let presetRules=normalizeContractDayRules(presetCondition?.day_rules||conditionDayRules(c)),ruleEncoded=encodeURIComponent(JSON.stringify(presetRules)),ruleSummary=presetRules.length?contractDayRulesSummary(presetRules):'';
  let checks=[0,1,2,3,4,5,6].map(d=>`<label style="font-size:12px"><input type="checkbox" class="wcDay" value="${d}" ${normalizedWorkDays(c.work_days).includes(d)?'checked':''}>${'일월화수목금토'[d]}</label>`).join(' ');
  modal(`<div class="row"><div><h2 style="margin:0">${esc(e.name)} · 근무조건 이력</h2>
   <div class="help" style="margin-top:4px">근무형태가 바뀌어도 과거 조건을 지우지 않고 <b>적용 시작일</b>부터 새 조건을 사용합니다. 기본근무 채우기·주간 목표·연차시간도 날짜별 조건을 따라갑니다.</div></div>
@@ -4990,8 +5002,10 @@ async function openWorkConditionHistory(employeeId,presetDate='',presetNote='',p
    <div class="field"><label>연차 산정 주 소정시간</label><input id="wcLeaveWeekly" type="number" step=".5" value="${Number(c.leave_weekly_hours||40)}"></div>
    <div class="field"><label>1년 미만 월 발생(h)</label><input id="wcLeaveMonthly" type="number" step="1" value="${Number(c.leave_monthly_hours||8)}"></div>
    <div class="field"><label>연차 하루 사용(h)</label><input id="wcLeaveDay" type="number" step=".5" value="${Number(c.leave_day_hours||8)}"></div>
-   <div class="field" style="grid-column:span 3"><label>변경 메모</label><input id="wcNote" value="${esc(presetCondition?.note||presetNote||'')}" placeholder="예: 2026년 8월부터 주5일 → 주4일 변경"></div>
+   <div class="field" style="grid-column:span 3"><label>변경 메모</label><input id="wcNote" value="${esc(workConditionHumanNote(presetCondition?.note||presetNote||''))}" placeholder="예: 2026년 8월부터 주5일 → 주4일 변경"></div>
+   <input id="wcDayRules" type="hidden" value="${esc(ruleEncoded)}">
   </div>
+  ${presetRules.length>1?`<div style="margin-top:8px;padding:9px 11px;border:1px solid #b9d7ff;background:#eef6ff;border-radius:10px;font-size:12px"><b>요일별 근로시간</b><br>${esc(ruleSummary)}<br><span style="color:#52657a">기본근무 자동채우기는 이 요일별 시간을 우선 사용합니다.</span></div>`:''}
   <div style="margin-top:8px"><b style="font-size:12px">기본 근무요일</b><div style="margin-top:5px">${checks}</div></div>
   <div class="help" style="margin-top:8px">${presetCondition?'<b>계약서에서 읽은 값이 자동으로 채워졌습니다. 이 화면에서 마지막 확인 후 “이 조건 등록”을 누를 때만 실제 근무조건에 반영됩니다.</b><br>':''}예: 7월까지 주5일 8시간, 8/1부터 주4일 9시간이면 <b>20260801</b>을 적용 시작일로 새 조건을 등록하세요. 주4일 9시간이 ‘소정 8h + 추가 1h’ 구조라면 1일 소정시간은 8h로 두고 출퇴근/휴게로 실제 9h가 나오게 설정합니다. 7월 스케줄은 이전 조건, 8월 자동채우기는 새 조건을 사용합니다.</div>
   <div class="modalActions"><button class="btn" onclick="addWorkCondition(${employeeId})">이 조건 등록</button></div></div>
@@ -5013,9 +5027,9 @@ async function loadWorkConditionHistory(employeeId){
  }
  let rows=q.data||[];
  host.innerHTML=rows.length?rows.map(x=>{
-   let wt=workTypeLabelValue(x.work_type),days=workConditionDaysLabel(x.work_days),times=[String(x.default_start_time||'').slice(0,5),String(x.default_end_time||'').slice(0,5)].filter(Boolean).join('~')||'-',reserved=String(x.effective_from||'')>isoToday();
+   let wt=workTypeLabelValue(x.work_type),rules=workConditionDayRulesFromNote(x.note),days=workConditionDaysLabel(x.work_days),times=rules.length?contractDayRulesSummary(rules):([String(x.default_start_time||'').slice(0,5),String(x.default_end_time||'').slice(0,5)].filter(Boolean).join('~')||'-'),humanNote=workConditionHumanNote(x.note),reserved=String(x.effective_from||'')>isoToday();
    return `<div class="historyRow"><div><b>${x.effective_from}부터 · ${esc(wt)} ${reserved?'<span class="pill">예약</span>':''}</b>
-    <div class="help">${esc(days)} · ${times} · 소정 ${Number(x.daily_hours||0)}h · 기본 실근무 ${conditionWorkedDayHours(x)}h · 휴게 ${Number(x.break_minutes||0)}분 · 연차 주 ${Number(x.leave_weekly_hours||0)}h / 월 +${Number(x.leave_monthly_hours||0)}h / 1일 -${Number(x.leave_day_hours||0)}h${x.note?' · '+esc(x.note):''}</div></div>
+    <div class="help">${esc(days)} · ${times} · 소정 ${Number(x.daily_hours||0)}h · 기본 실근무 ${conditionWorkedDayHours(x)}h · 휴게 ${Number(x.break_minutes||0)}분 · 연차 주 ${Number(x.leave_weekly_hours||0)}h / 월 +${Number(x.leave_monthly_hours||0)}h / 1일 -${Number(x.leave_day_hours||0)}h${humanNote?' · '+esc(humanNote):''}</div></div>
     <button class="btn red small" onclick="deleteWorkCondition(${x.id},${employeeId})">삭제</button></div>`;
   }).join(''):'<div class="help" style="padding:16px">아직 별도 근무조건 이력이 없습니다. 현재 직원 기본값이 그대로 사용됩니다.</div>';
 }
@@ -5024,6 +5038,7 @@ async function addWorkCondition(employeeId){
  let raw=$('wcEffective')?.value||'',effective=normalizeCompactDateInput(raw);
  if(!effective)return alert('적용 시작일을 8자리로 입력하세요. 예: 20260801');
  if(e.hire_date&&effective<e.hire_date)return alert('근무조건 적용일은 입사일보다 빠를 수 없습니다.');
+ let dayRules=[];try{dayRules=normalizeContractDayRules(JSON.parse(decodeURIComponent($('wcDayRules')?.value||'%5B%5D')))}catch(_){dayRules=[]}
  let payload={
    store_id:e.store_id||storeId(),employee_id:employeeId,effective_from:effective,
    work_type:normalizeWorkTypeValue($('wcType')?.value||'custom'),
@@ -5034,7 +5049,7 @@ async function addWorkCondition(employeeId){
    leave_weekly_hours:Number($('wcLeaveWeekly')?.value||40),
    leave_monthly_hours:Number($('wcLeaveMonthly')?.value||8),
    leave_day_hours:Number($('wcLeaveDay')?.value||8),
-   note:$('wcNote')?.value?.trim()||null
+   note:workConditionNoteWithDayRules($('wcNote')?.value?.trim()||'',dayRules)
  };
  if(!Number.isFinite(payload.daily_hours)||payload.daily_hours<=0)return alert('1일 소정시간을 확인하세요.');
  let existing=workConditionRowsForEmployee(employeeId);
@@ -7625,29 +7640,35 @@ function chooseContractWorkAndBreakTimes(times){
  if(!br)br=pairs.filter(x=>x.mins>=15&&x.mins<=180&&!(work&&x.a===work.a&&x.b===work.b)).sort((x,y)=>x.mins-y.mins)[0]||null;
  return {start:work?.a||'',end:work?.b||'',breakStart:br?.a||'',breakEnd:br?.b||'',breakMinutes:br?.mins||0};
 }
+function normalizeContractDayRules(rules){
+ let out=[];
+ for(const r of (Array.isArray(rules)?rules:[])){
+   let days=normalizedWorkDays(r?.days||r?.work_days),start=String(r?.start||r?.default_start_time||'').slice(0,5),end=String(r?.end||r?.default_end_time||'').slice(0,5),br=Number(r?.break_minutes||0),daily=Number(r?.daily_hours||0);
+   if(!days.length||!start||!end)continue;
+   if(!daily){let mins=contractMinutesBetween(start,end)-br;if(mins>0)daily=Math.round(mins/6)/10}
+   out.push({days,start,end,break_minutes:br,daily_hours:daily});
+ }
+ return out;
+}
+function contractDayRulesUnionDays(rules){return [...new Set(normalizeContractDayRules(rules).flatMap(r=>r.days))].sort((a,b)=>a-b)}
+function contractPrimaryDayRule(rules){let a=normalizeContractDayRules(rules);return a.slice().sort((x,y)=>y.days.length-x.days.length||Number(y.daily_hours||0)-Number(x.daily_hours||0))[0]||null}
+function contractDayRulesWeeklyHours(rules){return Math.round(normalizeContractDayRules(rules).reduce((sum,r)=>sum+Number(r.daily_hours||0)*r.days.length,0)*100)/100}
+function contractDayRulesSummary(rules){let a=normalizeContractDayRules(rules);return a.map(r=>`${contractDayLabel(r.days)} ${r.start}~${r.end}${r.break_minutes?` · 휴게 ${r.break_minutes}분`:''}${r.daily_hours?` · ${r.daily_hours}h`:''}`).join(' / ')}
 function mergeContractTerms(...items){
  let valid=items.filter(Boolean);if(!valid.length)return null;
  let best=valid.slice().sort((a,b)=>(b.score||0)-(a.score||0))[0],out={...best};
- const fields=['work_days','default_start_time','default_end_time','break_start_time','break_end_time','break_minutes','daily_hours','weekly_hours','note'];
+ const fields=['day_rules','work_days','default_start_time','default_end_time','break_start_time','break_end_time','break_minutes','daily_hours','weekly_hours','note'];
  for(const k of fields){
-   if(k==='work_days'){
-     if(!out.work_days?.length){let v=valid.find(x=>x.work_days?.length)?.work_days;if(v)out.work_days=[...v]}
-   }else if(out[k]==null||out[k]===''||Number(out[k])===0){
-     let v=valid.map(x=>x[k]).find(v=>v!=null&&v!==''&&Number(v)!==0);if(v!=null)out[k]=v;
-   }
+   if(k==='day_rules'){if(!normalizeContractDayRules(out.day_rules).length){let v=valid.map(x=>normalizeContractDayRules(x.day_rules)).find(v=>v.length);if(v)out.day_rules=v}}
+   else if(k==='work_days'){if(!out.work_days?.length){let v=valid.find(x=>x.work_days?.length)?.work_days;if(v)out.work_days=[...v]}}
+   else if(out[k]==null||out[k]===''||Number(out[k])===0){let v=valid.map(x=>x[k]).find(v=>v!=null&&v!==''&&Number(v)!==0);if(v!=null)out[k]=v}
  }
- if((!out.daily_hours||Number(out.daily_hours)<=0)&&out.default_start_time&&out.default_end_time){
-   let mins=contractMinutesBetween(out.default_start_time,out.default_end_time)-Number(out.break_minutes||0);
-   if(mins>0)out.daily_hours=Math.round(mins/6)/10;
- }
- if((!out.weekly_hours||Number(out.weekly_hours)<=0)&&out.daily_hours&&out.work_days?.length){
-   out.weekly_hours=Math.round(Number(out.daily_hours)*out.work_days.length*100)/100;
- }
- if((!out.work_days||!out.work_days.length)&&Number(out.daily_hours)>0&&Number(out.weekly_hours)>0){
-   let cnt=Math.round(Number(out.weekly_hours)/Number(out.daily_hours));
-   if(cnt===5)out.work_days=[1,2,3,4,5];
- }
- out.score=[out.work_days?.length>0,!!out.default_start_time,!!out.default_end_time,Number(out.break_minutes)>0,Number(out.daily_hours)>0,Number(out.weekly_hours)>0,!!out.note].filter(Boolean).length;
+ let rules=normalizeContractDayRules(out.day_rules);
+ if(rules.length){out.day_rules=rules;out.work_days=contractDayRulesUnionDays(rules);let primary=contractPrimaryDayRule(rules);if(primary){out.default_start_time=primary.start;out.default_end_time=primary.end;if(!out.break_minutes)out.break_minutes=primary.break_minutes;if(!out.daily_hours)out.daily_hours=primary.daily_hours}let wh=contractDayRulesWeeklyHours(rules);if(wh>0)out.weekly_hours=wh}
+ if((!out.daily_hours||Number(out.daily_hours)<=0)&&out.default_start_time&&out.default_end_time){let mins=contractMinutesBetween(out.default_start_time,out.default_end_time)-Number(out.break_minutes||0);if(mins>0)out.daily_hours=Math.round(mins/6)/10}
+ if((!out.weekly_hours||Number(out.weekly_hours)<=0)&&out.daily_hours&&out.work_days?.length&&!rules.length)out.weekly_hours=Math.round(Number(out.daily_hours)*out.work_days.length*100)/100;
+ if((!out.work_days||!out.work_days.length)&&Number(out.daily_hours)>0&&Number(out.weekly_hours)>0&&!rules.length){let cnt=Math.round(Number(out.weekly_hours)/Number(out.daily_hours));if(cnt===5)out.work_days=[1,2,3,4,5]}
+ out.score=[rules.length>0,out.work_days?.length>0,!!out.default_start_time,!!out.default_end_time,Number(out.break_minutes)>0,Number(out.daily_hours)>0,Number(out.weekly_hours)>0,!!out.note].filter(Boolean).length;
  return out;
 }
 function cropContractCanvas(source,xRatio,yRatio,wRatio,hRatio){
@@ -7704,29 +7725,13 @@ function extractContractTermsFromText(text){
 
 function sanitizeContractTermsConsistency(terms){
  if(!terms)return null;
- let out={...terms,work_days:[...(terms.work_days||[])]};
- let daily=Number(out.daily_hours||0),weekly=Number(out.weekly_hours||0),breakMin=Number(out.break_minutes||0);
- // 1일/주 소정시간으로 예상 근무일수가 명확한데 OCR 근무요일 수가 다르면 잘못 읽은 것으로 본다.
- if(daily>0&&weekly>0){
-   let cnt=weekly/daily,rounded=Math.round(cnt);
-   if(rounded>=1&&rounded<=7&&Math.abs(cnt-rounded)<0.08&&out.work_days?.length&&out.work_days.length!==rounded)out.work_days=[];
- }
- // 근로시간은 '근무구간 - 휴게 = 1일 소정시간'과 맞아야만 채운다. OCR이 22:00~08:19 같은 값을 만들면 폐기한다.
- if(out.default_start_time&&out.default_end_time){
-   let span=contractMinutesBetween(out.default_start_time,out.default_end_time);
-   let expected=daily>0?daily*60+(breakMin>0?breakMin:0):0;
-   if(span<60||span>14*60||(expected>0&&Math.abs(span-expected)>45)){
-     out.default_start_time=null;out.default_end_time=null;
-   }
- }
- // 휴게 시작/종료도 저장된 휴게분과 맞지 않으면 잘못 읽은 값으로 본다.
- if(out.break_start_time&&out.break_end_time){
-   let bm=contractMinutesBetween(out.break_start_time,out.break_end_time);
-   if(bm<10||bm>240||(breakMin>0&&Math.abs(bm-breakMin)>20)){
-     out.break_start_time=null;out.break_end_time=null;
-   }else if(!breakMin)out.break_minutes=bm;
- }
- out.score=[out.work_days?.length>0,!!out.default_start_time,!!out.default_end_time,Number(out.break_minutes)>0,Number(out.daily_hours)>0,Number(out.weekly_hours)>0,!!out.note].filter(Boolean).length;
+ let out={...terms,work_days:[...(terms.work_days||[])],day_rules:normalizeContractDayRules(terms.day_rules)};
+ let rules=out.day_rules,daily=Number(out.daily_hours||0),weekly=Number(out.weekly_hours||0),breakMin=Number(out.break_minutes||0);
+ if(rules.length){out.work_days=contractDayRulesUnionDays(rules);let primary=contractPrimaryDayRule(rules),wh=contractDayRulesWeeklyHours(rules);if(primary){out.default_start_time=primary.start;out.default_end_time=primary.end;out.daily_hours=Number(primary.daily_hours||out.daily_hours||0);if(!breakMin){breakMin=Number(primary.break_minutes||0);out.break_minutes=breakMin}}if(wh>0){weekly=wh;out.weekly_hours=wh}}
+ if(!rules.length&&daily>0&&weekly>0){let cnt=weekly/daily,rounded=Math.round(cnt);if(rounded>=1&&rounded<=7&&Math.abs(cnt-rounded)<0.08&&out.work_days?.length&&out.work_days.length!==rounded)out.work_days=[]}
+ if(out.default_start_time&&out.default_end_time){let span=contractMinutesBetween(out.default_start_time,out.default_end_time),expected=0;if(rules.length){let primary=contractPrimaryDayRule(rules);expected=primary?Number(primary.daily_hours||0)*60+Number(primary.break_minutes||out.break_minutes||0):0}else expected=daily>0?daily*60+(breakMin>0?breakMin:0):0;if(span<60||span>14*60||(expected>0&&Math.abs(span-expected)>45)){out.default_start_time=null;out.default_end_time=null}}
+ if(out.break_start_time&&out.break_end_time){let bm=contractMinutesBetween(out.break_start_time,out.break_end_time);if(bm<10||bm>240||(breakMin>0&&Math.abs(bm-breakMin)>20)){out.break_start_time=null;out.break_end_time=null}else if(!breakMin)out.break_minutes=bm}
+ out.score=[rules.length>0,out.work_days?.length>0,!!out.default_start_time,!!out.default_end_time,Number(out.break_minutes)>0,Number(out.daily_hours)>0,Number(out.weekly_hours)>0,!!out.note].filter(Boolean).length;
  return out;
 }
 function safeBroadContractOcrTerms(terms){
@@ -7872,6 +7877,13 @@ function cropContractTableCell(source,geom,col,padX=0.006,padY=0.003){
  let x1=geom.x[col]+padX,x2=geom.x[col+1]-padX,y1=geom.dataTop+padY,y2=geom.dataBottom-padY;
  return cropContractCanvas(source,x1,y1,Math.max(0.01,x2-x1),Math.max(0.01,y2-y1));
 }
+function detectContractTableDataRows(source,geom){
+ try{let tw=900,th=Math.max(1,Math.round(source.height*tw/source.width)),c=document.createElement('canvas');c.width=tw;c.height=th;let ctx=c.getContext('2d',{willReadFrequently:true});ctx.drawImage(source,0,0,tw,th);let im=ctx.getImageData(0,0,tw,th),d=im.data;let x1=Math.floor((geom.x[1]+0.008)*tw),x2=Math.floor((geom.x[2]-0.008)*tw),y1=Math.floor(geom.dataTop*th),y2=Math.floor(geom.dataBottom*th),cand=[];for(let y=y1+5;y<=y2-5;y++){let dark=0,total=0;for(let x=x1;x<=x2;x++){let i=(y*tw+x)*4,lum=d[i]*0.299+d[i+1]*0.587+d[i+2]*0.114;total++;if(lum<190)dark++}if(total&&dark/total>=0.72)cand.push(y)}let lines=contractGroupNear(cand,3).filter(y=>y-y1>9&&y2-y>9),bounds=[y1,...lines,y2],rows=[];for(let i=0;i+1<bounds.length;i++){let a=(bounds[i]+2)/th,b=(bounds[i+1]-2)/th;if(b-a>0.012)rows.push({top:a,bottom:b})}return rows.length?rows:[{top:geom.dataTop,bottom:geom.dataBottom}]}catch(e){console.warn('근로시간 표 행 자동탐지 실패',e);return [{top:geom.dataTop,bottom:geom.dataBottom}]}
+}
+function cropContractTableRowCell(source,geom,col,row,padX=0.006,padY=0.002){let x1=geom.x[col]+padX,x2=geom.x[col+1]-padX,y1=row.top+padY,y2=row.bottom-padY;return cropContractCanvas(source,x1,y1,Math.max(0.01,x2-x1),Math.max(0.008,y2-y1))}
+function contractDailyHoursAll(text){return [...normalizeContractText(text).matchAll(/1\s*일\s*(\d+(?:\.\d+)?)\s*시간/g)].map(m=>Number(m[1])).filter(x=>x>0&&x<=24)}
+function contractRuleFromRowTexts(daysText,workText,noteText,sharedBreak=0){let days=contractTemplateDaysFromText(daysText),daily=contractDailyHoursAll(noteText)[0]||0;let pair=contractTimePairFromTexts([workText],daily>0&&sharedBreak>0?daily*60+Number(sharedBreak):0,2*60,14*60);if(!pair){let ts=contractTimeMatches(workText);if(ts.length>=2){let mins=contractMinutesBetween(ts[0],ts[1]);if(mins>=120&&mins<=840)pair={a:ts[0],b:ts[1],mins}}}if(pair&&!daily&&Number(sharedBreak)>0){let net=pair.mins-Number(sharedBreak);if(net>0)daily=Math.round(net/6)/10}if(!days.length||!pair||!daily)return null;return {days,start:pair.a,end:pair.b,break_minutes:Number(sharedBreak||0),daily_hours:Number(daily)}}
+function recoverContractTermsDirect(rawText,baseTerms){let b=baseTerms||{},daily=Number(b.daily_hours||0),br=Number(b.break_minutes||0);if(!daily)return null;let rec=recoverContractTimesFromWholeText(rawText,daily,br);if(!rec?.start||!rec?.end)return null;return sanitizeContractTermsConsistency({...b,default_start_time:rec.start,default_end_time:rec.end,break_start_time:rec.breakStart||b.break_start_time||null,break_end_time:rec.breakEnd||b.break_end_time||null,break_minutes:Number(rec.breakMinutes||br||0)})}
 function contractTimePairFromTexts(texts,expectedMinutes=0,minMinutes=60,maxMinutes=14*60){
  let times=[];(texts||[]).forEach(x=>times.push(...contractTimeMatches(x)));times=[...new Set(times)];
  let pairs=[];for(let i=0;i<times.length;i++)for(let j=0;j<times.length;j++)if(i!==j){
@@ -7893,23 +7905,10 @@ function contractTemplateDaysFromText(text){
 function contractDailyHoursFromNote(text){
  let t=normalizeContractText(text),m=t.match(/1\s*일\s*(\d+(?:\.\d+)?)\s*시간\s*근무/);return m?Number(m[1]):0;
 }
-function buildContractTemplateTerms({daysText='',workTexts=[],breakTexts=[],noteText='',fallbackTerms=null}={}){
- let days=contractTemplateDaysFromText(daysText),fallback=fallbackTerms||{};
- let daily=contractDailyHoursFromNote(noteText)||Number(fallback.daily_hours||0);
- let breakPair=contractTimePairFromTexts(breakTexts,Number(fallback.break_minutes||0)||60,10,240);
- let breakMinutes=breakPair?.mins||Number(fallback.break_minutes||0)||0;
- let expectedWork=daily>0?Math.round(daily*60+breakMinutes):0;
- let workPair=contractTimePairFromTexts(workTexts,expectedWork,2*60,14*60);
- if(!daily&&workPair&&breakMinutes)daily=Math.round((workPair.mins-breakMinutes)/6)/10;
- if(!breakMinutes&&workPair&&daily>0){let b=workPair.mins-daily*60;if(b>=10&&b<=240)breakMinutes=Math.round(b)}
- if(workPair&&daily>0){let expected=daily*60+breakMinutes;if(Math.abs(workPair.mins-expected)>20)workPair=null}
- if(breakPair&&breakMinutes>0&&Math.abs(breakPair.mins-breakMinutes)>15)breakPair=null;
- let weekly=Number(fallback.weekly_hours||0);if(days?.length&&daily>0)weekly=Math.round(daily*days.length*100)/100;
- let note=(normalizeContractText(noteText).match(/1\s*일\s*\d+(?:\.\d+)?\s*시간\s*근무/)||[])[0]||fallback.note||'';
- let workType='custom';if(days?.length===5&&Math.abs(daily-8)<0.01&&Math.abs(weekly-40)<0.01)workType='40';else if(days?.length===4&&Math.abs(daily-9)<0.01&&Math.abs(weekly-36)<0.01)workType='36';
- let out={work_days:days||[],default_start_time:workPair?.a||null,default_end_time:workPair?.b||null,break_start_time:breakPair?.a||null,break_end_time:breakPair?.b||null,break_minutes:Number(breakMinutes||0),daily_hours:Number(daily||0),weekly_hours:Number(weekly||0),work_type:workType,note,schedule_based:true};
- out.score=[out.work_days?.length>0,!!out.default_start_time,!!out.default_end_time,Number(out.break_minutes)>0,Number(out.daily_hours)>0,Number(out.weekly_hours)>0].filter(Boolean).length;
- return sanitizeContractTermsConsistency(out);
+function buildContractTemplateTerms({daysText='',workTexts=[],breakTexts=[],noteText='',fallbackTerms=null,dayRules=[]}={}){
+ let fallback=fallbackTerms||{},rules=normalizeContractDayRules(dayRules),days=rules.length?contractDayRulesUnionDays(rules):contractTemplateDaysFromText(daysText);let daily=contractDailyHoursFromNote(noteText)||Number(fallback.daily_hours||0);let breakPair=contractTimePairFromTexts(breakTexts,Number(fallback.break_minutes||0)||60,10,240);let breakMinutes=breakPair?.mins||Number(fallback.break_minutes||0)||0;
+ if(rules.length){rules=rules.map(r=>({...r,break_minutes:Number(r.break_minutes||breakMinutes||0)}));let primary=contractPrimaryDayRule(rules),weekly=contractDayRulesWeeklyHours(rules),note=contractDayRulesSummary(rules),workType='custom';let sameDaily=[...new Set(rules.map(r=>Number(r.daily_hours||0)))].length===1,sameTime=[...new Set(rules.map(r=>r.start+'~'+r.end))].length===1;if(sameDaily&&sameTime&&days.length===5&&Math.abs(Number(primary?.daily_hours||0)-8)<0.01&&Math.abs(weekly-40)<0.01)workType='40';else if(sameDaily&&sameTime&&days.length===4&&Math.abs(Number(primary?.daily_hours||0)-9)<0.01&&Math.abs(weekly-36)<0.01)workType='36';let out={day_rules:rules,work_days:days,default_start_time:primary?.start||null,default_end_time:primary?.end||null,break_start_time:breakPair?.a||null,break_end_time:breakPair?.b||null,break_minutes:Number(breakMinutes||primary?.break_minutes||0),daily_hours:Number(primary?.daily_hours||0),weekly_hours:Number(weekly||fallback.weekly_hours||0),work_type:workType,note,schedule_based:true,variable_daily_hours:!sameDaily||!sameTime};out.score=[rules.length>0,days.length>0,!!out.default_start_time,!!out.default_end_time,Number(out.break_minutes)>0,Number(out.weekly_hours)>0].filter(Boolean).length+2;return sanitizeContractTermsConsistency(out)}
+ let expectedWork=daily>0?Math.round(daily*60+breakMinutes):0,workPair=contractTimePairFromTexts(workTexts,expectedWork,2*60,14*60);if(!daily&&workPair&&breakMinutes)daily=Math.round((workPair.mins-breakMinutes)/6)/10;if(!breakMinutes&&workPair&&daily>0){let b=workPair.mins-daily*60;if(b>=10&&b<=240)breakMinutes=Math.round(b)}if(workPair&&daily>0){let expected=daily*60+breakMinutes;if(Math.abs(workPair.mins-expected)>20)workPair=null}if(breakPair&&breakMinutes>0&&Math.abs(breakPair.mins-breakMinutes)>15)breakPair=null;let weekly=Number(fallback.weekly_hours||0);if(!weekly&&days?.length&&daily>0)weekly=Math.round(daily*days.length*100)/100;let note=(normalizeContractText(noteText).match(/1\s*일\s*\d+(?:\.\d+)?\s*시간\s*근무/)||[])[0]||fallback.note||'';let workType='custom';if(days?.length===5&&Math.abs(daily-8)<0.01&&Math.abs(weekly-40)<0.01)workType='40';else if(days?.length===4&&Math.abs(daily-9)<0.01&&Math.abs(weekly-36)<0.01)workType='36';let out={day_rules:[],work_days:days||[],default_start_time:workPair?.a||null,default_end_time:workPair?.b||null,break_start_time:breakPair?.a||null,break_end_time:breakPair?.b||null,break_minutes:Number(breakMinutes||0),daily_hours:Number(daily||0),weekly_hours:Number(weekly||0),work_type:workType,note,schedule_based:true};out.score=[out.work_days?.length>0,!!out.default_start_time,!!out.default_end_time,Number(out.break_minutes)>0,Number(out.daily_hours)>0,Number(out.weekly_hours)>0].filter(Boolean).length;return sanitizeContractTermsConsistency(out)
 }
 async function readContractDataFromPdf(file,expectedEmployeeName=''){
  const pdfjs=await loadContractPdfJs();let data=await file.arrayBuffer();let pdf=await pdfjs.getDocument({data}).promise;
@@ -7935,88 +7934,28 @@ async function readContractDataFromPdf(file,expectedEmployeeName=''){
  let periodOcr=await recognizeContractCrop(Tesseract,periodCrop,'kor+eng','6');
  let finalPeriod=extractContractPeriodFromText(text+' '+periodOcr)||period;
 
- // 제3조 표의 데이터 행을 열별로 읽는다: 근로일 / 근로시간 / 휴게시간 / 비고.
- // 이전 고정 Y좌표(0.653)는 실제 표보다 아래 문장을 잘라 출퇴근 시각이 비는 원인이었다.
- // 이제 표의 가로·세로 선을 화면에서 직접 찾아 데이터 행을 동적으로 자른다.
- let tableGeom=contractScheduleTableGeometry(canvas);
- let daysRaw=cropContractTableCell(canvas,tableGeom,0,0.004,0.002);
- let workRaw=cropContractTableCell(canvas,tableGeom,1,0.004,0.002);
- let breakRaw=cropContractTableCell(canvas,tableGeom,2,0.004,0.002);
- let noteRaw=cropContractTableCell(canvas,tableGeom,3,0.004,0.002);
-
- // 표 테두리를 한 번 더 제거하고 실제 값 내부를 읽는다.
- let daysInner=insetContractCanvas(daysRaw,0.02,0.08,0.02,0.08);
- let workInner=insetContractCanvas(workRaw,0.015,0.08,0.015,0.08);
- // 휴게 셀에 설명문이 함께 있는 양식은 첫 줄을 우선한다.
- let breakInner=cropContractCanvas(breakRaw,0.015,0.06,0.97,0.62);
- let noteInner=insetContractCanvas(noteRaw,0.02,0.08,0.02,0.08);
-
- let daysHi=enhanceContractOcrCanvas(daysInner,3.0,210),
-     workHi=enhanceContractOcrCanvas(workInner,3.4,210),
-     breakHi=enhanceContractOcrCanvas(breakInner,3.4,210),
-     noteHi=enhanceContractOcrCanvas(noteInner,2.6,210);
-
- // Tesseract worker 파라미터가 서로 덮어쓰이지 않도록 순차 실행한다.
- // 근로시간은 SINGLE_LINE/SINGLE_BLOCK/RAW_LINE을 모두 시도하고,
- // 휴게시간은 두 줄 설명문 영향이 적은 SINGLE_BLOCK/SPARSE_TEXT도 함께 시도한다.
- let daysOcr=await recognizeContractCropMulti(Tesseract,daysHi,'kor+eng',['7','6']);
- let workOcr1=await recognizeContractCropMulti(Tesseract,workInner,'eng',['7','6','13'],'0123456789:~.- ');
- let workOcr2=await recognizeContractCropMulti(Tesseract,workHi,'eng',['7','6','13'],'0123456789:~.- ');
- let breakOcr1=await recognizeContractCropMulti(Tesseract,breakInner,'eng',['6','7','11'],'0123456789:~.- ');
- let breakOcr2=await recognizeContractCropMulti(Tesseract,breakHi,'eng',['6','7','11'],'0123456789:~.- ');
- let noteOcr=await recognizeContractCropMulti(Tesseract,noteHi,'kor+eng',['7','6']);
-
- // 제3조 본문은 1일/주 소정시간 등 보조수치만 참고한다. 출퇴근 시각은 위 셀 OCR만 사용한다.
- let section3Crop=enhanceContractOcrCanvas(cropContractCanvas(canvas,0.11,0.505,0.78,0.235),1.25,210);
- let section3Ocr=await recognizeContractCrop(Tesseract,section3Crop,'kor+eng','6');
- let fallback=sanitizeContractTermsConsistency(extractContractTermsFromText(text+' '+section3Ocr));
- let exactTerms=buildContractTemplateTerms({daysText:daysOcr,workTexts:[workOcr1,workOcr2],breakTexts:[breakOcr1,breakOcr2],noteText:noteOcr,fallbackTerms:fallback});
- // 셀 OCR이 실패해도 제3조 전체 OCR에서 나온 시각이 1일 소정시간+휴게시간과 정확히 맞으면 보조값으로 허용한다.
- let finalTerms=mergeContractTerms(exactTerms,safeConsistentContractOcrTimes(fallback),safeConsistentContractOcrTimes(textTerms),safeBroadContractOcrTerms(fallback),safeBroadContractOcrTerms(textTerms));
- finalTerms=sanitizeContractTermsConsistency(finalTerms);
- if(finalTerms?.daily_hours>0&&finalTerms?.work_days?.length&&(!finalTerms.weekly_hours||finalTerms.weekly_hours<=0))finalTerms.weekly_hours=Math.round(finalTerms.daily_hours*finalTerms.work_days.length*100)/100;
- return {period:finalPeriod,terms:finalTerms,nameCheck,method:'ocr-template-cells',text:text+' '+nameOcr+' '+periodOcr+' '+daysOcr+' '+workOcr1+' '+workOcr2+' '+breakOcr1+' '+breakOcr2+' '+noteOcr+' '+section3Ocr};
+ // 제3조 표를 먼저 찾고, 데이터 행이 여러 개면 행별로 따로 OCR한다.
+ let tableGeom=contractScheduleTableGeometry(canvas),dataRows=detectContractTableDataRows(canvas,tableGeom);
+ let daysRaw=cropContractTableCell(canvas,tableGeom,0,0.004,0.002),workRaw=cropContractTableCell(canvas,tableGeom,1,0.004,0.002),breakRaw=cropContractTableCell(canvas,tableGeom,2,0.004,0.002),noteRaw=cropContractTableCell(canvas,tableGeom,3,0.004,0.002);
+ let daysInner=insetContractCanvas(daysRaw,0.02,0.08,0.02,0.08),workInner=insetContractCanvas(workRaw,0.015,0.08,0.015,0.08),breakInner=cropContractCanvas(breakRaw,0.015,0.06,0.97,0.62),noteInner=insetContractCanvas(noteRaw,0.02,0.08,0.02,0.08);
+ let daysHi=enhanceContractOcrCanvas(daysInner,3.0,210),workHi=enhanceContractOcrCanvas(workInner,3.4,210),breakHi=enhanceContractOcrCanvas(breakInner,3.4,210),noteHi=enhanceContractOcrCanvas(noteInner,2.6,210);
+ let daysOcr=await recognizeContractCropMulti(Tesseract,daysHi,'kor+eng',['7','6']);let workOcr1=await recognizeContractCropMulti(Tesseract,workInner,'eng',['7','6','13'],'0123456789:~.- ');let workOcr2=await recognizeContractCropMulti(Tesseract,workHi,'eng',['7','6','13'],'0123456789:~.- ');let breakOcr1=await recognizeContractCropMulti(Tesseract,breakInner,'eng',['6','7','11'],'0123456789:~.- ');let breakOcr2=await recognizeContractCropMulti(Tesseract,breakHi,'eng',['6','7','11'],'0123456789:~.- ');let noteOcr=await recognizeContractCropMulti(Tesseract,noteHi,'kor+eng',['7','6']);
+ let sharedBreakPair=contractTimePairFromTexts([breakOcr1,breakOcr2],60,10,240),sharedBreak=sharedBreakPair?.mins||0,rowRules=[],rowDebug=[],rowParts=[];
+ for(const row of dataRows){try{let rd=cropContractTableRowCell(canvas,tableGeom,0,row,0.004,0.001),rw=cropContractTableRowCell(canvas,tableGeom,1,row,0.004,0.001),rn=cropContractTableRowCell(canvas,tableGeom,3,row,0.004,0.001);let rdHi=enhanceContractOcrCanvas(insetContractCanvas(rd,0.02,0.07,0.02,0.07),3.2,210),rwHi=enhanceContractOcrCanvas(insetContractCanvas(rw,0.015,0.07,0.015,0.07),3.8,205),rnHi=enhanceContractOcrCanvas(insetContractCanvas(rn,0.02,0.07,0.02,0.07),3.0,210);let rdText=await recognizeContractCropMulti(Tesseract,rdHi,'kor+eng',['7','6']);let rwText=await recognizeContractCropMulti(Tesseract,rwHi,'eng',['7','6','13'],'0123456789:~.- ');let rnText=await recognizeContractCropMulti(Tesseract,rnHi,'kor+eng',['7','6']);rowParts.push({days:rdText,work:rwText,note:rnText});let rule=contractRuleFromRowTexts(rdText,rwText,rnText,sharedBreak);if(rule)rowRules.push(rule);rowDebug.push(rdText+' '+rwText+' '+rnText)}catch(e){console.warn('근로계약서 행별 OCR 실패',e)}}
+ let section3Crop=enhanceContractOcrCanvas(cropContractCanvas(canvas,0.11,0.495,0.78,0.255),1.4,205);let section3Ocr=await recognizeContractCrop(Tesseract,section3Crop,'kor+eng','6');let rawScheduleText=[text,section3Ocr,daysOcr,workOcr1,workOcr2,breakOcr1,breakOcr2,noteOcr,...rowDebug].join(' ');let fallback=sanitizeContractTermsConsistency(extractContractTermsFromText(rawScheduleText));if(!sharedBreak)sharedBreak=Number(fallback?.break_minutes||0);if(rowParts.length&&sharedBreak){let retry=rowParts.map(p=>contractRuleFromRowTexts(p.days,p.work,p.note,sharedBreak)).filter(Boolean);if(retry.length)rowRules=retry}if(rowRules.length)rowRules=rowRules.map(r=>({...r,break_minutes:Number(r.break_minutes||sharedBreak||0)}));let exactTerms=buildContractTemplateTerms({daysText:daysOcr,workTexts:[workOcr1,workOcr2],breakTexts:[breakOcr1,breakOcr2],noteText:noteOcr,fallbackTerms:fallback,dayRules:rowRules});let directRecovery=!normalizeContractDayRules(exactTerms?.day_rules).length?recoverContractTermsDirect(rawScheduleText,exactTerms||fallback||textTerms):null;let finalTerms=mergeContractTerms(exactTerms,directRecovery,safeConsistentContractOcrTimes(fallback),safeConsistentContractOcrTimes(textTerms),safeBroadContractOcrTerms(fallback),safeBroadContractOcrTerms(textTerms));finalTerms=sanitizeContractTermsConsistency(finalTerms);if(finalTerms?.daily_hours>0&&finalTerms?.work_days?.length&&(!finalTerms.weekly_hours||finalTerms.weekly_hours<=0)&&!normalizeContractDayRules(finalTerms.day_rules).length)finalTerms.weekly_hours=Math.round(finalTerms.daily_hours*finalTerms.work_days.length*100)/100;return {period:finalPeriod,terms:finalTerms,nameCheck,method:normalizeContractDayRules(finalTerms?.day_rules).length>1?'ocr-template-multirow':'ocr-template-cells',text:rawScheduleText};
 }
 function contractDayLabel(days){return (days||[]).length?(days||[]).map(d=>'일월화수목금토'[d]).join('·'):'미확인'}
-function contractTermsSummary(terms){
- if(!terms)return '';
- let parts=[];if(terms.work_days?.length)parts.push(`근무일 ${contractDayLabel(terms.work_days)}`);if(terms.default_start_time||terms.default_end_time)parts.push(`${terms.default_start_time||'?'}~${terms.default_end_time||'?'}`);if(terms.break_minutes)parts.push(`휴게 ${terms.break_minutes}분`);if(terms.daily_hours)parts.push(`1일 ${terms.daily_hours}h`);if(terms.weekly_hours)parts.push(`주 ${terms.weekly_hours}h`);return parts.join(' · ');
-}
+function contractTermsSummary(terms){if(!terms)return '';let rules=normalizeContractDayRules(terms.day_rules),parts=[];if(rules.length>1)parts.push(`요일별 ${contractDayRulesSummary(rules)}`);else{if(terms.work_days?.length)parts.push(`근무일 ${contractDayLabel(terms.work_days)}`);if(terms.default_start_time||terms.default_end_time)parts.push(`${terms.default_start_time||'?'}~${terms.default_end_time||'?'}`);if(terms.daily_hours)parts.push(`1일 ${terms.daily_hours}h`)}if(terms.break_minutes)parts.push(`휴게 ${terms.break_minutes}분`);if(terms.weekly_hours)parts.push(`주 ${terms.weekly_hours}h`);return parts.join(' · ')}
 function showContractTermsReview(terms,nameCheck=null){
- let host=$('contractTermsReview');if(!host)return;
- if(!terms&&!nameCheck){host.classList.remove('show');host.innerHTML='';return}
- terms=terms||{};
- let dayChecks=[0,1,2,3,4,5,6].map(d=>`<label><input type="checkbox" class="contractTermDay" value="${d}" ${terms.work_days?.includes(d)?'checked':''}>${'일월화수목금토'[d]}</label>`).join('');
- let typeLabel=workTypeLabelValue(terms.work_type||'custom');
- let nameHtml='';
- if(nameCheck?.status==='matched')nameHtml=`<div class="full" style="padding:9px 11px;border-radius:10px;background:#ecfdf3;border:1px solid #a6e5c6;font-size:12px;font-weight:900;color:#087451">✓ 직원 이름 확인 완료 · ${esc(nameCheck.expected||nameCheck.candidate||'')}</div>`;
- else if(nameCheck?.status==='mismatch')nameHtml=`<div class="full" style="padding:9px 11px;border-radius:10px;background:#fff1f2;border:1px solid #fecdd3;font-size:12px;font-weight:900;color:#b42318">⚠ 직원 이름 불일치 · 선택 직원 ${esc(nameCheck.expected||'')} / 계약서 ${esc(nameCheck.candidate||'다른 이름')}</div>`;
- else if(nameCheck?.expected)nameHtml=`<label class="full" style="display:flex;align-items:center;gap:8px;padding:9px 11px;border-radius:10px;background:#fff8e8;border:1px solid #f4d39a;font-size:12px;font-weight:900;color:#8a5300"><input id="contractNameManualConfirm" type="checkbox">이름 자동확인 실패 · 계약서가 <b>${esc(nameCheck.expected)}</b>의 계약서가 맞음을 직접 확인했습니다.</label>`;
- host.innerHTML=`<div class="contractTermsTitle"><span>계약서 자동읽기 결과 · 업로드 전에 한 번 확인</span><span class="pill">수정 가능</span></div>
-  <div class="contractTermsGrid">${nameHtml}
-   <div class="field"><label>근무형태</label><input id="contractTermWorkType" list="employeeWorkTypeSuggestions" value="${esc(typeLabel)}"></div>
-   <div class="field"><label>1일 소정시간</label><input id="contractTermDaily" type="number" step=".5" value="${Number(terms.daily_hours||0)||''}"></div>
-   <div class="field"><label>기본 출근</label><input id="contractTermStart" type="time" value="${esc(terms.default_start_time||'')}"></div>
-   <div class="field"><label>기본 퇴근</label><input id="contractTermEnd" type="time" value="${esc(terms.default_end_time||'')}"></div>
-   <div class="field"><label>휴게(분)</label><input id="contractTermBreak" type="number" value="${Number(terms.break_minutes||0)||''}"></div>
-   <div class="field"><label>주 소정시간</label><input id="contractTermWeekly" type="number" step=".5" value="${Number(terms.weekly_hours||0)||''}"></div>
-   <div class="field wide"><label>근무요일</label><div class="contractTermsDays">${dayChecks}</div></div>
-   <div class="field wide"><label>계약서 비고/특이사항</label><input id="contractTermNote" value="${esc(terms.note||'')}"></div>
-  </div><div class="contractTermsHint"><b>계산 기준:</b> 기본 출근~퇴근은 회사 체류구간이고, <b>1일 소정시간은 휴게시간을 뺀 실제 근로시간</b>입니다. 예: 10:00~17:00, 휴게 60분 → 1일 6시간. 자동인식 값은 바로 DB를 덮어쓰지 않습니다.</div>`;
- host.classList.add('show');
+ let host=$('contractTermsReview');if(!host)return;if(!terms&&!nameCheck){host.classList.remove('show');host.innerHTML='';host.dataset.dayRules='';return}terms=terms||{};let rules=normalizeContractDayRules(terms.day_rules),variable=rules.length>1;host.dataset.dayRules=encodeURIComponent(JSON.stringify(rules));let dayChecks=[0,1,2,3,4,5,6].map(d=>`<label><input type="checkbox" class="contractTermDay" value="${d}" ${terms.work_days?.includes(d)?'checked':''}>${'일월화수목금토'[d]}</label>`).join('');let typeLabel=workTypeLabelValue(terms.work_type||'custom'),nameHtml='';if(nameCheck?.status==='matched')nameHtml=`<div class="full" style="padding:9px 11px;border-radius:10px;background:#ecfdf3;border:1px solid #a6e5c6;font-size:12px;font-weight:900;color:#087451">✓ 직원 이름 확인 완료 · ${esc(nameCheck.expected||nameCheck.candidate||'')}</div>`;else if(nameCheck?.status==='mismatch')nameHtml=`<div class="full" style="padding:9px 11px;border-radius:10px;background:#fff1f2;border:1px solid #fecdd3;font-size:12px;font-weight:900;color:#b42318">⚠ 직원 이름 불일치 · 선택 직원 ${esc(nameCheck.expected||'')} / 계약서 ${esc(nameCheck.candidate||'다른 이름')}</div>`;else if(nameCheck?.expected)nameHtml=`<label class="full" style="display:flex;align-items:center;gap:8px;padding:9px 11px;border-radius:10px;background:#fff8e8;border:1px solid #f4d39a;font-size:12px;font-weight:900;color:#8a5300"><input id="contractNameManualConfirm" type="checkbox">이름 자동확인 실패 · 계약서가 <b>${esc(nameCheck.expected)}</b>의 계약서가 맞음을 직접 확인했습니다.</label>`;let ruleHtml=variable?`<div class="full" style="padding:10px 12px;border-radius:10px;background:#eef6ff;border:1px solid #b9d7ff;font-size:12px;line-height:1.55"><b>✓ 요일별 근로시간이 서로 다른 계약으로 인식</b><br>${esc(contractDayRulesSummary(rules))}<br><span style="color:#52657a">아래 출퇴근/1일 소정시간은 가장 많은 요일의 대표값입니다. 실제 기본근무 채우기는 위 요일별 시간을 사용합니다.</span></div>`:'';
+ host.innerHTML=`<div class="contractTermsTitle"><span>계약서 자동읽기 결과 · 업로드 전에 한 번 확인</span><span class="pill">수정 가능</span></div><div class="contractTermsGrid">${nameHtml}${ruleHtml}<div class="field"><label>근무형태</label><input id="contractTermWorkType" list="employeeWorkTypeSuggestions" value="${esc(typeLabel)}"></div><div class="field"><label>${variable?'대표 1일 소정시간':'1일 소정시간'}</label><input id="contractTermDaily" type="number" step=".5" value="${Number(terms.daily_hours||0)||''}"></div><div class="field"><label>${variable?'대표 출근':'기본 출근'}</label><input id="contractTermStart" type="time" value="${esc(terms.default_start_time||'')}"></div><div class="field"><label>${variable?'대표 퇴근':'기본 퇴근'}</label><input id="contractTermEnd" type="time" value="${esc(terms.default_end_time||'')}"></div><div class="field"><label>휴게(분)</label><input id="contractTermBreak" type="number" value="${Number(terms.break_minutes||0)||''}"></div><div class="field"><label>주 소정시간</label><input id="contractTermWeekly" type="number" step=".5" value="${Number(terms.weekly_hours||0)||''}"></div><div class="field wide"><label>근무요일</label><div class="contractTermsDays">${dayChecks}</div></div><div class="field wide"><label>계약서 비고/특이사항</label><input id="contractTermNote" value="${esc(terms.note||'')}"></div></div><div class="contractTermsHint"><b>계산 기준:</b> 출근~퇴근은 회사 체류구간이고 소정시간은 휴게를 뺀 실제 근로시간입니다. <b>요일별 시간이 다르면 각 행을 따로 읽어 주 소정시간을 합산</b>합니다. 자동인식 값은 바로 DB를 덮어쓰지 않습니다.</div>`;host.classList.add('show')
 }
-function collectContractTermsReview(){
- if(!$('contractTermsReview')?.classList.contains('show'))return null;
- let days=[...document.querySelectorAll('.contractTermDay:checked')].map(x=>Number(x.value));
- let daily=Number($('contractTermDaily')?.value||0),weekly=Number($('contractTermWeekly')?.value||0),start=$('contractTermStart')?.value||null,end=$('contractTermEnd')?.value||null,breakMinutes=Number($('contractTermBreak')?.value||0);
- if(!daily&&start&&end){let mins=contractMinutesBetween(start,end)-breakMinutes;if(mins>0)daily=Math.round(mins/6)/10}
- if(!weekly&&daily&&days.length)weekly=Math.round(daily*days.length*100)/100;
- return {work_type:normalizeWorkTypeValue($('contractTermWorkType')?.value||'custom'),daily_hours:daily,default_start_time:start,default_end_time:end,break_minutes:breakMinutes,work_days:days,weekly_hours:weekly,note:$('contractTermNote')?.value?.trim()||''};
-}
+function collectContractTermsReview(){let host=$('contractTermsReview');if(!host?.classList.contains('show'))return null;let days=[...document.querySelectorAll('.contractTermDay:checked')].map(x=>Number(x.value)),rules=[];try{rules=normalizeContractDayRules(JSON.parse(decodeURIComponent(host.dataset.dayRules||'%5B%5D')))}catch(_){rules=[]}let daily=Number($('contractTermDaily')?.value||0),weekly=Number($('contractTermWeekly')?.value||0),start=$('contractTermStart')?.value||null,end=$('contractTermEnd')?.value||null,breakMinutes=Number($('contractTermBreak')?.value||0);if(!daily&&start&&end){let mins=contractMinutesBetween(start,end)-breakMinutes;if(mins>0)daily=Math.round(mins/6)/10}if(rules.length){rules=rules.map(r=>({...r,break_minutes:Number(r.break_minutes||breakMinutes||0)}));days=contractDayRulesUnionDays(rules);weekly=contractDayRulesWeeklyHours(rules)||weekly}else if(!weekly&&daily&&days.length)weekly=Math.round(daily*days.length*100)/100;return {day_rules:rules,work_type:normalizeWorkTypeValue($('contractTermWorkType')?.value||'custom'),daily_hours:daily,default_start_time:start,default_end_time:end,break_minutes:breakMinutes,work_days:days,weekly_hours:weekly,note:$('contractTermNote')?.value?.trim()||''}}
+
 async function openEmployeeDocuments(employeeId,type){
  let e=findEmployeeAny(employeeId);if(!e)return alert('직원정보를 찾지 못했습니다.');
  let label=employeeDocTypeLabel(type),isResignation=type==='resignation',isContract=!isResignation;
- let vaultHelp=isResignation?'작성 완료한 사직서 PDF 원본을 서버에 보관합니다. 삭제하지 않는 한 직원 기록과 함께 계속 남습니다.':'PDF 원본은 서버에 누적 보관합니다. <b>재계약 D-day는 근로계약서의 계약 종료일</b>을 기준으로 표시합니다. PDF를 선택하면 계약기간뿐 아니라 <b>근무요일·출퇴근시간·휴게시간·1일/주 소정시간·비고</b>를 자동으로 읽어 확인창에 채웁니다. 스캔본은 이 노무사 양식의 계약당사자 이름 영역과 제3조 근로시간 표의 각 셀을 따로 정밀인식하며, 선택한 직원 이름이 맞는지도 검증합니다. 인식값은 사용자가 확인한 뒤에만 근무조건으로 적용됩니다.'+(type==='work_contract'?' <b>근무조건이 함께 바뀌면 “이 계약일부터 근무조건 변경 있음”을 체크</b>하세요. 업로드 직후 적용일이 계약 시작일로 채워진 근무조건 등록창이 열리고, 이후 기본근무 채우기·주간목표·연차 계산이 그 적용일부터 새 조건을 사용합니다.':'');
+ let vaultHelp=isResignation?'작성 완료한 사직서 PDF 원본을 서버에 보관합니다. 삭제하지 않는 한 직원 기록과 함께 계속 남습니다.':'PDF 원본은 서버에 누적 보관합니다. <b>재계약 D-day는 근로계약서의 계약 종료일</b>을 기준으로 표시합니다. PDF를 선택하면 계약기간뿐 아니라 <b>근무요일·출퇴근시간·휴게시간·1일/주 소정시간·비고</b>를 자동으로 읽어 확인창에 채웁니다. <b>요일별 근로시간이 다른 표도 행별로 따로 읽습니다.</b> 스캔본은 이 노무사 양식의 계약당사자 이름 영역과 제3조 근로시간 표의 각 셀을 따로 정밀인식하며, 선택한 직원 이름이 맞는지도 검증합니다. 인식값은 사용자가 확인한 뒤에만 근무조건으로 적용됩니다.'+(type==='work_contract'?' <b>근무조건이 함께 바뀌면 “이 계약일부터 근무조건 변경 있음”을 체크</b>하세요. 업로드 직후 적용일이 계약 시작일로 채워진 근무조건 등록창이 열리고, 이후 기본근무 채우기·주간목표·연차 계산이 그 적용일부터 새 조건을 사용합니다.':'');
  let periodFields=isContract?`<div class="field" style="margin:0"><label>계약 시작일</label><input id="contractStartDate" type="text" inputmode="numeric" maxlength="8" placeholder="YYYYMMDD" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,8)"></div>
  <div class="field" style="margin:0"><label>계약 종료일</label><input id="contractEndDate" type="text" inputmode="numeric" maxlength="8" placeholder="YYYYMMDD" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,8)"></div>`:'';
  modal(`<div class="contractVaultHead"><div><h2 style="margin:0">${esc(e.name)} · ${label}</h2>
@@ -8136,7 +8075,7 @@ async function uploadEmployeeDocument(employeeId,type){
      preset={
        work_type:extractedTerms.work_type||'custom',daily_hours:Number(extractedTerms.daily_hours||0)||8,
        default_start_time:extractedTerms.default_start_time||null,default_end_time:extractedTerms.default_end_time||null,
-       break_minutes:Number(extractedTerms.break_minutes||0),work_days:extractedTerms.work_days||[],
+       break_minutes:Number(extractedTerms.break_minutes||0),work_days:extractedTerms.work_days||[],day_rules:normalizeContractDayRules(extractedTerms.day_rules),
        leave_weekly_hours:Number(extractedTerms.weekly_hours||0)||Number(extractedTerms.daily_hours||0)*(extractedTerms.work_days?.length||0),
        leave_monthly_hours:Number(extractedTerms.daily_hours||0)||8,leave_day_hours:Number(extractedTerms.daily_hours||0)||8,
        note:noteParts.join(' · ')
