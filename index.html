@@ -215,20 +215,25 @@ input,select{border:1px solid #d2d7e0;background:white;border-radius:9px;padding
 }
 .docResignBottom{
  margin-top:auto!important;
- padding-top:8mm!important;
+ padding-top:6mm!important;
+ display:flex!important;
+ flex-direction:column!important;
+ gap:8mm!important;
 }
 .docResignBottom .docResignStatement{
- margin:0 3mm!important;
+ margin:0 7mm!important;
+ line-height:2.35!important;
 }
 .docResignBottom .docIssueDate{
- margin:5mm 0 3mm!important;
+ margin:0!important;
 }
 .docResignBottom .docSignature{
- margin-top:0!important;
+ margin:0 8mm 0 0!important;
  padding-top:0!important;
+ line-height:2.25!important;
 }
 .docResignBottom .docCompanyName{
- margin-top:7mm!important;
+ margin-top:2mm!important;
 }
 .docUnderline{
  display:inline-block!important;
@@ -8489,8 +8494,8 @@ function printEmploymentCertificate(id){
       <div class="docCellLabel">회 사 명</div><div class="docCellValue">${v(s.name)}</div>
       <div class="docCellLabel">사업자번호</div><div class="docCellValue">${v(s.business_number)}</div>
 
-      <div class="docCellLabel">직위/직급</div><div class="docCellValue">${v(e.role)}</div>
-      <div class="docCellLabel">담당업무</div><div class="docCellValue">${v(e.department)}</div>
+      <div class="docCellLabel">직&nbsp;&nbsp;&nbsp;&nbsp;책</div><div class="docCellValue">${v(e.role)}</div>
+      <div class="docCellLabel">업&nbsp;&nbsp;&nbsp;&nbsp;무</div><div class="docCellValue">${v(e.department)}</div>
 
       <div class="docCellLabel docWideLabel">입사일자</div>
       <div class="docCellValue docWideValue">${e.hire_date?fmtDateKo(e.hire_date):''}</div>
