@@ -200,21 +200,29 @@ input,select{border:1px solid #d2d7e0;background:white;border-radius:9px;padding
  font-size:14px!important;
 }
 .docResignStatement{
- margin:0 10mm!important;
- font-size:16px!important;
- line-height:2.1!important;
+ margin:0 9mm!important;
+ font-size:15px!important;
+ line-height:2!important;
  text-align:center!important;
 }
 .docResignLine{
  margin:0!important;
 }
+.docResignFirstLine{
+ display:flex!important;
+ justify-content:center!important;
+ align-items:flex-end!important;
+ gap:1.6mm!important;
+ white-space:nowrap!important;
+ font-size:15px!important;
+}
 .docResignLine + .docResignLine{
- margin-top:4mm!important;
+ margin-top:5mm!important;
 }
 .docResignLastDate{
  display:inline-flex!important;
  align-items:flex-end!important;
- gap:2.5mm!important;
+ gap:1.8mm!important;
  white-space:nowrap!important;
 }
 .docSignature{
@@ -227,14 +235,14 @@ input,select{border:1px solid #d2d7e0;background:white;border-radius:9px;padding
 }
 .docResignBottom{
  margin-top:auto!important;
- padding-top:10mm!important;
+ padding-top:12mm!important;
  display:flex!important;
  flex-direction:column!important;
- gap:10mm!important;
+ gap:14mm!important;
 }
 .docResignBottom .docResignStatement{
- margin:0 10mm!important;
- line-height:2.15!important;
+ margin:0 9mm!important;
+ line-height:2.05!important;
 }
 .docResignBottom .docIssueDate{
  margin:0!important;
@@ -245,12 +253,12 @@ input,select{border:1px solid #d2d7e0;background:white;border-radius:9px;padding
  line-height:2.25!important;
 }
 .docResignBottom .docCompanyName{
- margin-top:1mm!important;
+ margin-top:4mm!important;
 }
 .docUnderline{
  display:inline-block!important;
- min-width:18mm!important;
- height:6mm!important;
+ min-width:15mm!important;
+ height:5.5mm!important;
  border-bottom:1px solid #222!important;
  vertical-align:bottom!important;
 }
@@ -8530,7 +8538,7 @@ function printResignation(id){
  let e=findEmployeeAny(id),s=currentStore();if(!e)return;
  const v=x=>esc(x||'');
  let last=e.resign_date||'';
- let lastText=last?fmtDateKo(last):`<span class="docResignLastDate"><span class="docUnderline"></span>년 <span class="docUnderline" style="min-width:14mm"></span>월 <span class="docUnderline" style="min-width:14mm"></span>일</span>`;
+ let lastText=last?fmtDateKo(last):`<span class="docResignLastDate"><span class="docUnderline"></span>년 <span class="docUnderline" style="min-width:11mm"></span>월 <span class="docUnderline" style="min-width:11mm"></span>일</span>`;
  if(last)lastText=`<span class="docResignLastDate">${fmtDateKo(last)}</span>`;
  $('printArea').innerHTML=`<div class="docPaper">
    <div class="docTitle">사 직 서</div>
@@ -8550,7 +8558,7 @@ function printResignation(id){
 
    <div class="docResignBottom">
      <div class="docResignStatement">
-       <div class="docResignLine">상기 본인은 마지막 근무일인 ${lastText}자로</div>
+       <div class="docResignLine docResignFirstLine">상기 본인은 마지막 근무일인 ${lastText}자로</div>
        <div class="docResignLine">귀사에서 사직하고자 하오니 수락하여 주시기 바랍니다.</div>
      </div>
      <div class="docIssueDate">${fmtDateKo(isoToday())}</div>
