@@ -922,7 +922,7 @@ body.resizingEmployeeColumn *{
 </head>
 <body>
 <section id="login" class="login">
- <div class="loginCard"><h1>직원관리</h1><div class="sub">관리자는 기존 이메일, 담당자는 업장 아이디로 로그인합니다.</div><div class="field" style="margin-top:16px"><label>아이디 <span class="help">(관리자는 이메일 입력 가능)</span></label><input id="loginEmail" type="text" autocomplete="username" placeholder="예: A약국 / 메가팜스365약국" style="width:100%"></div><div class="field" style="margin-top:10px"><label>비밀번호</label><input id="loginPassword" type="password" autocomplete="current-password" style="width:100%"></div><button class="btn" style="width:100%;margin-top:14px" onclick="signIn()">로그인</button><div class="help" style="margin-top:9px;line-height:1.5">스케줄 담당자는 관리자가 알려준 <b>업장명 아이디 + 비밀번호</b>만 입력하면 됩니다.</div><div id="loginMsg" class="help" style="margin-top:8px"></div></div>
+ <div class="loginCard"><h1>직원관리</h1><div class="sub">관리자가 만들어 준 개인 아이디로 로그인합니다.</div><div class="field" style="margin-top:16px"><label>아이디</label><input id="loginEmail" type="text" autocomplete="username" placeholder="예: 김현지" style="width:100%"></div><div class="field" style="margin-top:10px"><label>비밀번호</label><input id="loginPassword" type="password" autocomplete="current-password" style="width:100%"></div><button class="btn" style="width:100%;margin-top:14px" onclick="signIn()">로그인</button><div class="help" style="margin-top:9px;line-height:1.5">이메일을 외울 필요 없이 <b>이름 아이디 + 비밀번호</b>로 접속할 수 있습니다.</div><div id="loginMsg" class="help" style="margin-top:8px"></div></div>
 </section>
 
 <section id="app" class="app hidden">
@@ -1051,7 +1051,7 @@ body.resizingEmployeeColumn *{
 
 <section id="payrollPage" class="page">
  <div class="row">
-  <div><h1 class="title">급여관리 <span style="font-size:12px;color:#315efb;background:#eef3ff;border-radius:999px;padding:4px 8px;vertical-align:middle">v2026.08.23-1400</span></h1><div class="sub">월별 급여대장을 검산하고, 기간별·직원별 누적 급여도 조회합니다.</div></div>
+  <div><h1 class="title">급여관리 <span style="font-size:12px;color:#315efb;background:#eef3ff;border-radius:999px;padding:4px 8px;vertical-align:middle">v2026.08.23-1420</span></h1><div class="sub">월별 급여대장을 검산하고, 기간별·직원별 누적 급여도 조회합니다.</div></div>
   <div class="toolbar">
    <input type="file" id="payrollFile" accept=".xlsx,.xls,.xlsm" multiple style="display:none" onchange="importPayrollFiles(this.files);this.value=''">
    <button class="btn" onclick="$('payrollFile').click()">급여대장 여러개 불러오기</button>
@@ -1137,7 +1137,7 @@ body.resizingEmployeeColumn *{
 </section>
 
 <section id="storesPage" class="page">
- <div class="row"><div><h1 class="title">업장관리</h1><div class="sub">업장 기본정보와 함께 스케줄 담당자 로그인 ID(업장명)·담당자 이름·비밀번호를 한 곳에서 관리합니다.</div></div><button class="btn" onclick="addStore()">+ 업장 추가</button></div>
+ <div class="row"><div><h1 class="title">업장관리</h1><div class="sub">업장 기본정보를 관리합니다. 사용자 계정은 “사용자 / 권한”에서 사람별로 여러 명 등록할 수 있습니다.</div></div><button class="btn" onclick="addStore()">+ 업장 추가</button></div>
  <div id="storeCards" class="grid3" style="margin-top:13px"></div>
 </section>
 
@@ -1151,12 +1151,12 @@ body.resizingEmployeeColumn *{
 
 <section id="usersPage" class="page">
  <div class="row">
-  <div><h1 class="title">사용자 / 권한</h1><div class="sub">업장별 스케줄 담당자에게 필요한 화면만 열어줍니다. 관리자 계정은 기존처럼 전체 기능을 사용합니다.</div></div>
-  <div class="toolbar"><button class="btn green" onclick="openStoreAccountManager()">업장 계정관리</button><button class="btn" onclick="loadUsersAdminPage()">새로고침</button></div>
+  <div><h1 class="title">사용자 / 권한</h1><div class="sub">사람마다 개인 아이디와 비밀번호를 만들고, 접근할 업장과 화면 권한을 따로 지정합니다.</div></div>
+  <div class="toolbar"><button class="btn green" onclick="openUserAccountCreator()">+ 사용자 추가</button><button class="btn" onclick="loadUsersAdminPage()">새로고침</button></div>
  </div>
  <div class="card" style="margin-top:12px">
-   <div class="permissionGuide"><b>일상적인 계정 생성·비밀번호 변경은 업장관리에서</b> 처리합니다. 이 화면은 담당자별 업장·대시보드 보기/수정 권한을 세밀하게 조정할 때 사용합니다.</div>
-   <div class="tablewrap" style="margin-top:10px"><table class="permissionTable"><thead><tr><th>사용자</th><th>상태</th><th>접근 업장</th><th>허용 화면</th><th>마지막 접속</th><th></th></tr></thead><tbody id="userPermissionBody"></tbody></table></div>
+   <div class="permissionGuide"><b>아이디는 사람 이름처럼 쉽게 정하면 됩니다.</b> 한 업장에 여러 명을 등록할 수 있고, 한 사람이 여러 업장을 볼 수도 있습니다. 최고관리자는 전체 업장·전체 기능을 계속 사용합니다.</div>
+   <div class="tablewrap" style="margin-top:10px"><table class="permissionTable"><thead><tr><th>사용자</th><th>상태</th><th>접근 업장</th><th>허용 화면</th><th>마지막 접속</th><th>관리</th></tr></thead><tbody id="userPermissionBody"></tbody></table></div>
  </div>
 </section>
 
@@ -1479,7 +1479,7 @@ async function loginIdToInternalEmail(loginId){
 function schedulerLoginIdForStore(storeIdValue){let st=stores.find(x=>Number(x.id)===Number(storeIdValue));return String(st?.name||'').trim()}
 async function invokeSchedulerAccountAdmin(body){
  let r=await sb.functions.invoke('scheduler-account-admin',{body});
- if(r.error)throw new Error(r.error.message||'담당자 계정 서버 기능 호출 오류');
+ if(r.error)throw new Error(r.error.message||'사용자 계정 서버 기능 호출 오류');
  if(r.data?.error)throw new Error(r.data.error);
  return r.data||{};
 }
@@ -1498,48 +1498,89 @@ async function loadAdminAccountDirectory(){
  if(u.error||sa.error||pa.error)throw (u.error||sa.error||pa.error);
  adminUsers=u.data||[];adminUserStoreAccess=sa.data||[];adminUserPermissions=pa.data||[];
 }
-function openStoreAccountManager(){
- if(!isAppAdmin())return alert('관리자만 업장 로그인 계정을 관리할 수 있습니다.');
- if(!stores.length)return alert('등록된 업장이 없습니다.');
- let opts=stores.map(st=>`<option value="${st.id}">${esc(st.name)}</option>`).join('');
- modal(`<h2>업장 스케줄 담당자 계정</h2><div class="infoBox help">계정 생성·비밀번호 변경은 <b>업장관리</b>에 통합되어 있습니다. 아래에서 업장을 고르면 해당 업장 수정창으로 이동합니다.</div><div class="field" style="margin-top:12px"><label>업장</label><select id="accountStorePick" style="width:100%">${opts}</select></div><div class="modalActions"><button class="btn gray" onclick="closeModal()">취소</button><button class="btn" onclick="let id=Number($('accountStorePick').value);closeModal();editStore(id)">업장 계정 열기</button></div>`);
+function accountStorePickerHtml(selectedIds=[]){
+ let chosen=new Set((selectedIds||[]).map(Number));
+ return stores.map(st=>`<label class="permissionStoreCheck"><input type="checkbox" class="accountStore" value="${st.id}" ${chosen.has(Number(st.id))?'checked':''}>${esc(st.name)}</label>`).join('')||'<span class="help">등록된 업장이 없습니다.</span>';
 }
-function syncSchedulerAccountStore(){let sid=Number($('newSchedulerStore')?.value||0),login=schedulerLoginIdForStore(sid);if($('newSchedulerLoginId'))$('newSchedulerLoginId').value=login;if($('newSchedulerDisplayName')&&!$('newSchedulerDisplayName').value.trim())$('newSchedulerDisplayName').value=login?login+' 스케줄담당':''}
-function openSchedulerAccountCreator(preselectedStoreId=null,fromStoreCreate=false){
- if(preselectedStoreId){closeModal();return editStore(Number(preselectedStoreId));}
- return openStoreAccountManager();
+function openStoreAccountManager(){return openUserAccountCreator()}
+function openSchedulerAccountCreator(){return openUserAccountCreator()}
+function showAccountCreateGuide(){return openUserAccountCreator()}
+function openUserAccountCreator(){
+ if(!isAppAdmin())return alert('최고관리자만 사용자를 만들 수 있습니다.');
+ let storeHtml=accountStorePickerHtml([]);
+ modal(`<h2>사용자 추가</h2>
+   <div class="infoBox help"><b>아이디는 사람이 기억하기 쉬운 이름</b>으로 정하세요. 같은 아이디는 두 번 사용할 수 없습니다.</div>
+   <div class="formgrid" style="margin-top:12px">
+    <div class="field"><label>로그인 아이디</label><input id="newUserLoginId" placeholder="예: 김현지" autocomplete="off"></div>
+    <div class="field"><label>표시 이름</label><input id="newUserDisplayName" placeholder="예: 김현지" autocomplete="off"></div>
+    <div class="field"><label>비밀번호 <span class="help">6자 이상</span></label><input id="newUserPassword" type="password" autocomplete="new-password"></div>
+    <div class="field"><label>비밀번호 확인</label><input id="newUserPassword2" type="password" autocomplete="new-password"></div>
+   </div>
+   <div style="margin-top:12px"><b>접근할 업장</b><div class="permissionStoreList">${storeHtml}</div></div>
+   <div class="infoBox help" style="margin-top:12px">처음 만들면 <b>전체현황 보기 + 스케줄 보기·수정 + 근태 확인</b> 권한이 기본으로 들어갑니다. 생성 후 “권한 설정”에서 언제든 바꿀 수 있습니다.</div>
+   <div class="modalActions"><button class="btn gray" onclick="closeModal()">취소</button><button id="createPersonUserBtn" class="btn" onclick="createDashboardUser()">사용자 만들기</button></div>`);
 }
-async function applySchedulerDefaultPermissionsToUser(uid,storeIdValue,displayName,loginId){
- // 서버 Edge Function이 기본권한까지 원자적으로 적용한다. 기존 호출 호환용 no-op.
- return {user_id:uid,store_id:Number(storeIdValue),display_name:displayName,login_id:loginId};
-}
-async function createSchedulerAccount(){
+async function createDashboardUser(){
  if(!isAppAdmin())return;
- let storeIdValue=Number($('newSchedulerStore')?.value||0),loginId=schedulerLoginIdForStore(storeIdValue),displayName=$('newSchedulerDisplayName')?.value.trim()||loginId+' 스케줄담당',pw=$('newSchedulerPassword')?.value||'',pw2=$('newSchedulerPassword2')?.value||'';
- if(!storeIdValue||!loginId)return alert('담당 업장과 로그인 아이디를 확인하세요.');
+ let loginId=$('newUserLoginId')?.value.trim()||'',displayName=$('newUserDisplayName')?.value.trim()||loginId,pw=$('newUserPassword')?.value||'',pw2=$('newUserPassword2')?.value||'';
+ let storeIds=[...document.querySelectorAll('.accountStore:checked')].map(x=>Number(x.value));
+ if(!loginId)return alert('로그인 아이디를 입력하세요.');
  if(pw.length<6)return alert('비밀번호는 최소 6자 이상 입력해 주세요.');
  if(pw!==pw2)return alert('비밀번호 확인이 일치하지 않습니다.');
- let btn=$('createSchedulerBtn');if(btn){btn.disabled=true;btn.textContent='저장 중...'}
+ if(!storeIds.length&&!confirm('접근 업장을 선택하지 않았습니다. 계정은 만들지만 업장 자료는 볼 수 없습니다. 계속할까요?'))return;
+ let btn=$('createPersonUserBtn');if(btn){btn.disabled=true;btn.textContent='만드는 중...'}
  try{
-   await invokeSchedulerAccountAdmin({action:'upsert_store_account',store_id:storeIdValue,login_id:loginId,display_name:displayName,password:pw,active:true});
-   closeModal();await loadAdminAccountDirectory();renderStores();await loadUsersAdminPage();
-   alert(`담당자 계정을 만들었습니다.\n\n아이디: ${loginId}\n비밀번호: 방금 설정한 비밀번호\n\n이 두 가지만 담당자에게 알려주면 됩니다.`);
- }catch(err){alert('계정 생성 오류\n\n'+(err?.message||err))}
- finally{if(btn){btn.disabled=false;btn.textContent='계정 생성'}}
+   await invokeSchedulerAccountAdmin({action:'upsert_user_account',login_id:loginId,display_name:displayName,password:pw,active:true,store_ids:storeIds});
+   closeModal();await loadAdminAccountDirectory();await loadUsersAdminPage();await loadAuditPage();
+   alert(`사용자 계정을 만들었습니다.\n\n아이디: ${loginId}\n비밀번호: 방금 설정한 비밀번호`);
+ }catch(err){alert('사용자 생성 오류\n\n'+(err?.message||err))}
+ finally{if(btn){btn.disabled=false;btn.textContent='사용자 만들기'}}
+}
+function openUserAccountEditor(uid){
+ if(!isAppAdmin())return;
+ let u=adminUsers.find(x=>x.user_id===uid);if(!u)return;
+ let me=uid===currentSessionUser?.id;
+ modal(`<h2>${me?'내 로그인 설정':'사용자 계정 설정'}</h2>
+   <div class="formgrid">
+    <div class="field"><label>로그인 아이디</label><input id="accountLoginId" value="${esc(u.login_id||'')}" placeholder="예: 김현지" autocomplete="off"></div>
+    <div class="field"><label>표시 이름</label><input id="accountDisplayName" value="${esc(u.display_name||'')}" autocomplete="off"></div>
+    <div class="field"><label>새 비밀번호 <span class="help">변경할 때만 입력</span></label><input id="accountPassword" type="password" autocomplete="new-password"></div>
+    <div class="field"><label>비밀번호 확인</label><input id="accountPassword2" type="password" autocomplete="new-password"></div>
+   </div>
+   ${u.is_admin?'<div class="infoBox help" style="margin-top:12px"><b>최고관리자</b>는 전체 업장과 전체 기능을 계속 사용합니다.</div>':`<label style="display:flex;align-items:center;gap:7px;margin-top:12px"><input id="accountActive" type="checkbox" ${u.active!==false?'checked':''}>계정 사용</label>`}
+   <div class="modalActions"><button class="btn gray" onclick="closeModal()">취소</button><button class="btn" onclick="saveUserAccountEditor('${uid}')">저장</button></div>`);
+}
+async function saveUserAccountEditor(uid){
+ if(!isAppAdmin())return;
+ let u=adminUsers.find(x=>x.user_id===uid);if(!u)return;
+ let loginId=$('accountLoginId')?.value.trim()||'',displayName=$('accountDisplayName')?.value.trim()||loginId,pw=$('accountPassword')?.value||'',pw2=$('accountPassword2')?.value||'';
+ if(!loginId)return alert('로그인 아이디를 입력하세요.');
+ if(pw&&pw.length<6)return alert('새 비밀번호는 최소 6자 이상 입력해 주세요.');
+ if(pw!==pw2)return alert('비밀번호 확인이 일치하지 않습니다.');
+ let active=u.is_admin?true:!!$('accountActive')?.checked;
+ try{
+   await invokeSchedulerAccountAdmin({action:'upsert_user_account',user_id:uid,login_id:loginId,display_name:displayName,password:pw||null,active});
+   closeModal();await loadAdminAccountDirectory();await loadUsersAdminPage();updateCurrentUserBadge();
+   alert(pw?'아이디/이름/비밀번호를 저장했습니다.':'아이디와 이름을 저장했습니다.');
+ }catch(err){alert('계정 저장 오류\n\n'+(err?.message||err))}
 }
 async function loadUsersAdminPage(){
  if(!isAppAdmin()||permissionSystemAvailable!==true)return;
  let [u,sa,pa,al]=await Promise.all([sb.from('app_users').select('*').order('created_at'),sb.from('user_store_access').select('*'),sb.from('user_permissions').select('*'),sb.from('access_logs').select('user_id,created_at,event_type').order('created_at',{ascending:false}).limit(1000)]);
  if(u.error||sa.error||pa.error)return alert((u.error||sa.error||pa.error).message);
  adminUsers=u.data||[];adminUserStoreAccess=sa.data||[];adminUserPermissions=pa.data||[];let lastMap=new Map();(al.data||[]).forEach(x=>{if(!lastMap.has(x.user_id))lastMap.set(x.user_id,x.created_at)});
- $('userPermissionBody').innerHTML=adminUsers.map(x=>{let me=x.user_id===currentSessionUser?.id;let loginLine=x.login_id?`<br><span class="permTag">아이디 ${esc(x.login_id)}</span>`:`<br><span class="help">${esc(x.email||'')}</span>`;return `<tr><td><b>${esc(x.display_name||x.login_id||x.email||'사용자')}</b>${loginLine}${x.is_admin?'<br><span class="permTag">관리자</span>':''}</td><td>${x.active===false?'<span style="color:#b42318;font-weight:900">사용중지</span>':'사용중'}</td><td>${x.is_admin?'<span class="storeTag">전체 업장</span>':storeSummaryForUser(x.user_id)}</td><td><div class="permTags">${x.is_admin?'<span class="permTag edit">전체 권한</span>':permissionSummaryForUser(x.user_id)}</div></td><td>${lastMap.get(x.user_id)?fmtDateTime(lastMap.get(x.user_id)):'-'}</td><td>${x.is_admin&&me?'<span class="help">현재 관리자</span>':`<button class="btn small" onclick="openUserPermissionEditor('${x.user_id}')">권한 설정</button>`}</td></tr>`}).join('')||'<tr><td colspan="6" style="padding:20px">등록된 사용자가 없습니다.</td></tr>';
+ $('userPermissionBody').innerHTML=adminUsers.map(x=>{
+   let me=x.user_id===currentSessionUser?.id;
+   let loginLine=x.login_id?`<br><span class="permTag">아이디 ${esc(x.login_id)}</span>`:`<br><span class="help">아이디 미설정</span>`;
+   let actions=`<div class="toolbar" style="gap:6px"><button class="btn gray small" onclick="openUserAccountEditor('${x.user_id}')">${me&&x.is_admin?'내 로그인 설정':'계정 설정'}</button>${x.is_admin?'':`<button class="btn small" onclick="openUserPermissionEditor('${x.user_id}')">권한 설정</button>`}</div>`;
+   return `<tr><td><b>${esc(x.display_name||x.login_id||'사용자')}</b>${loginLine}${x.is_admin?'<br><span class="permTag edit">최고관리자</span>':''}</td><td>${x.active===false?'<span style="color:#b42318;font-weight:900">사용중지</span>':'사용중'}</td><td>${x.is_admin?'<span class="storeTag">전체 업장</span>':storeSummaryForUser(x.user_id)}</td><td><div class="permTags">${x.is_admin?'<span class="permTag edit">전체 권한</span>':permissionSummaryForUser(x.user_id)}</div></td><td>${lastMap.get(x.user_id)?fmtDateTime(lastMap.get(x.user_id)):'-'}</td><td>${actions}</td></tr>`
+ }).join('')||'<tr><td colspan="6" style="padding:20px">등록된 사용자가 없습니다.</td></tr>';
 }
-function showAccountCreateGuide(){return openStoreAccountManager()}
 function openUserPermissionEditor(uid){
  let u=adminUsers.find(x=>x.user_id===uid);if(!u)return;let currentStores=new Set(adminUserStoreAccess.filter(x=>x.user_id===uid).map(x=>Number(x.store_id)));let perms=new Map(adminUserPermissions.filter(x=>x.user_id===uid).map(x=>[x.module_key,x]));
  let storeHtml=stores.map(st=>`<label class="permissionStoreCheck"><input type="checkbox" class="permStore" value="${st.id}" ${currentStores.has(st.id)?'checked':''}>${esc(st.name)}</label>`).join('');
  let grid=APP_PERMISSION_MODULES.map(m=>{let p=perms.get(m.key)||{};return `<div>${esc(m.label)}</div><div style="text-align:center"><input type="checkbox" id="pv-${m.key}" ${p.can_view?'checked':''} onchange="if(!this.checked)$('pe-${m.key}').checked=false"></div><div style="text-align:center"><input type="checkbox" id="pe-${m.key}" ${p.can_edit?'checked':''} onchange="if(this.checked)$('pv-${m.key}').checked=true"></div>`}).join('');
- modal(`<h2>${esc(u.display_name||u.email)} · 권한 설정</h2><div class="field"><label>표시 이름</label><input id="permDisplayName" value="${esc(u.display_name||'')}" style="width:100%"></div><div style="margin-top:10px"><b>접근 업장</b><div class="permissionStoreList">${storeHtml}</div></div><div class="toolbar" style="margin-top:10px"><button class="btn green small" onclick="setSchedulerPermissionPreset()">스케줄 담당자 기본권한</button><span class="help">전체현황 보기 + 스케줄 보기·수정 + 근로시간 보기</span></div><div class="permissionGrid"><div class="head">대시보드</div><div class="head" style="text-align:center">보기</div><div class="head" style="text-align:center">수정</div>${grid}</div><label style="display:flex;align-items:center;gap:6px;margin-top:12px"><input id="permUserActive" type="checkbox" ${u.active!==false?'checked':''}>계정 사용</label><div class="modalActions"><button class="btn gray" onclick="closeModal()">취소</button><button class="btn" onclick="saveUserPermissionEditor('${uid}')">저장</button></div>`);
+ modal(`<h2>${esc(u.display_name||u.login_id||'사용자')} · 권한 설정</h2><div class="field"><label>표시 이름</label><input id="permDisplayName" value="${esc(u.display_name||'')}" style="width:100%"></div><div style="margin-top:10px"><b>접근 업장</b><div class="permissionStoreList">${storeHtml}</div></div><div class="toolbar" style="margin-top:10px"><button class="btn green small" onclick="setSchedulerPermissionPreset()">스케줄 담당자 기본권한</button><span class="help">전체현황 보기 + 스케줄 보기·수정 + 근로시간 보기</span></div><div class="permissionGrid"><div class="head">대시보드</div><div class="head" style="text-align:center">보기</div><div class="head" style="text-align:center">수정</div>${grid}</div><label style="display:flex;align-items:center;gap:6px;margin-top:12px"><input id="permUserActive" type="checkbox" ${u.active!==false?'checked':''}>계정 사용</label><div class="modalActions"><button class="btn gray" onclick="closeModal()">취소</button><button class="btn" onclick="saveUserPermissionEditor('${uid}')">저장</button></div>`);
 }
 function setSchedulerPermissionPreset(){APP_PERMISSION_MODULES.forEach(m=>{let v=$(`pv-${m.key}`),e=$(`pe-${m.key}`);if(v)v.checked=(m.key==='home'||m.key==='schedule'||m.key==='hours');if(e)e.checked=(m.key==='schedule')})}
 async function saveUserPermissionEditor(uid){
@@ -3345,7 +3386,7 @@ async function refreshAdminTasks(showLoading=false){
  if(!canViewModule('home')){board.style.display='none';return}
  board.style.display='block';
  if($('homeCheckTitle'))$('homeCheckTitle').textContent=isAppAdmin()?'관리자 할 일':'확인할 내용';
- if($('homeCheckSub'))$('homeCheckSub').textContent=isAppAdmin()?'계약·스케줄·급여·담당자 계정에서 확인이 필요한 항목만 모아봅니다.':'스케줄·근태에서 빠진 자료나 확인이 필요한 항목만 보여줍니다.';
+ if($('homeCheckSub'))$('homeCheckSub').textContent=isAppAdmin()?'계약·스케줄·급여·사용자 계정에서 확인이 필요한 항목만 모아봅니다.':'스케줄·근태에서 빠진 자료나 확인이 필요한 항목만 보여줍니다.';
  let token=++adminTaskRefreshToken;if(showLoading)host.innerHTML=adminTaskHtmlItem('info','확인 중','현재 업장과 월의 상태를 다시 확인합니다.');
  let sid=storeId(),ym=$('monthSelect').value,tasks=[];
  try{
@@ -3387,7 +3428,7 @@ async function refreshAdminTasks(showLoading=false){
    let renew=[];active.forEach(e=>{let end=documentStatusForEmployee(e.id).work_contract?.latestEnd,d=end?dayDiffIso(isoToday(),end):null;if(d!=null&&d<=30)renew.push(`${e.name} ${d<0?'D+'+Math.abs(d):d===0?'D-DAY':'D-'+d}`)});if(renew.length)tasks.push(['urgent','재계약 확인',renew.slice(0,10).join(' · ')]);
    let missingResign=retired.filter(e=>!Number(documentStatusForEmployee(e.id).resignation?.count||0));if(missingResign.length)tasks.push(['warn','퇴사자 사직서 파일 없음',`${missingResign.slice(0,8).map(x=>x.name).join(', ')}${missingResign.length>8?` 외 ${missingResign.length-8}명`:''}`]);
    if(canViewModule('payroll')){try{let pm=await sb.from('payroll_months').select('id').eq('store_id',sid).eq('pay_month',ym+'-01').limit(1);if(!pm.error&&!(pm.data||[]).length)tasks.push(['warn',`${ym} 급여대장 미등록`,'선택월 급여대장이 아직 DB에 없습니다.'])}catch(_){ }}
-   if(permissionSystemAvailable===true){let noAccounts=stores.filter(st=>!schedulerUserForStore(st.id));if(noAccounts.length)tasks.push(['info','스케줄 담당자 계정 미설정',noAccounts.map(x=>x.name).join(', ')+' — 업장관리에서 비밀번호를 정하면 생성됩니다.'])}
+   if(permissionSystemAvailable===true){let noAccounts=stores.filter(st=>!schedulerUserForStore(st.id));if(noAccounts.length)tasks.push(['info','접근 사용자 미설정',noAccounts.map(x=>x.name).join(', ')+' — 사용자 / 권한에서 이 업장을 볼 사용자를 지정하세요.'])}
  }
 
  let future=employeeWorkConditions.filter(x=>x.effective_from>isoToday()&&x.effective_from<=addDaysIso(isoToday(),30));if(future.length)tasks.push(['info','30일 이내 근무조건 변경 예정',future.slice(0,8).map(x=>`${allEmployees().find(e=>e.id===x.employee_id)?.name||'직원'} ${x.effective_from}`).join(' · ')]);
@@ -5132,22 +5173,27 @@ async function restoreEmployee(id,name){
  setEmployeeView('active');
 }
 
+function storeUsersForStore(storeIdValue){
+ let ids=adminUserStoreAccess.filter(x=>Number(x.store_id)===Number(storeIdValue)).map(x=>x.user_id);
+ return adminUsers.filter(x=>ids.includes(x.user_id)&&x.is_admin!==true);
+}
 function storeAccountStatusHtml(s){
  if(!isAppAdmin())return '';
  if(permissionSystemAvailable!==true)return '<span class="storeAccountStatus none">계정기능 SQL 필요</span>';
- let u=schedulerUserForStore(s.id);
- if(!u)return '<span class="storeAccountStatus none">로그인계정 미설정</span>';
- return u.active===false?'<span class="storeAccountStatus off">접속 차단됨</span>':'<span class="storeAccountStatus on">담당자 계정 사용중</span>';
+ let list=storeUsersForStore(s.id);
+ if(!list.length)return '<span class="storeAccountStatus none">접근 사용자 없음</span>';
+ let active=list.filter(x=>x.active!==false).length;
+ return `<span class="storeAccountStatus ${active?'on':'off'}">사용자 ${active}/${list.length}명 사용중</span>`;
 }
 function renderStores(){
  if(!$('storeCards'))return;
- $('storeCards').innerHTML=stores.map(s=>{let u=isAppAdmin()?schedulerUserForStore(s.id):null;return `<div class="card">
+ $('storeCards').innerHTML=stores.map(s=>{let users=isAppAdmin()?storeUsersForStore(s.id):[];let names=users.map(x=>x.display_name||x.login_id||'사용자').join(', ');return `<div class="card">
   <div class="row"><h3 style="margin:0">${esc(s.name)}</h3>${storeAccountStatusHtml(s)}</div>
   <div class="sub" style="margin-top:7px">${esc(s.business_number||'사업자번호 미입력')} · 대표 ${esc(s.representative_name||'미입력')}</div>
   <div class="help" style="margin-top:8px">${esc(s.address||'주소 미입력')}<br>${esc(s.phone||'')}</div>
-  ${isAppAdmin()?`<div class="help" style="margin-top:9px"><b>스케줄 로그인 ID</b> ${esc(u?.login_id||s.name)}${u?` · 담당자 ${esc(u.display_name||'-')}`:''}</div>`:''}
+  ${isAppAdmin()?`<div class="help" style="margin-top:9px"><b>접근 사용자</b> ${users.length?esc(names):'없음'}</div>`:''}
   <div class="toolbar" style="margin-top:12px">
-   <button class="btn gray small" onclick="editStore(${s.id})">업장정보 · 로그인 관리</button>
+   <button class="btn gray small" onclick="editStore(${s.id})">업장정보 수정</button>
    <button class="btn green small" onclick="document.getElementById('storeSelect').value='${s.id}';refreshAll()">이 업장 보기</button>
   </div>
  </div>`}).join('')
@@ -5156,26 +5202,14 @@ async function addStore(){
  if(!requireModuleEdit('stores'))return;
  modal(`<h2>업장 추가</h2>${storeFormHtml({})}<div class="modalActions"><button class="btn gray" onclick="closeModal()">취소</button><button class="btn" onclick="saveStore(null)">저장</button></div>`)
 }
-function syncStoreLoginIdPreview(){if($('sLoginId'))$('sLoginId').value=$('sName')?.value.trim()||''}
 function storeFormHtml(s){
- let u=s?.id?schedulerUserForStore(s.id):null,status=!isAppAdmin()?'':permissionSystemAvailable!==true?'계정기능 SQL 필요':u?(u.active===false?'접속 차단됨':'사용중'):'미설정';
  return `<div class="formgrid">
-  <div class="field"><label>업장명</label><input id="sName" value="${esc(s.name||'')}" oninput="syncStoreLoginIdPreview()"></div>
+  <div class="field"><label>업장명</label><input id="sName" value="${esc(s.name||'')}"></div>
   <div class="field"><label>사업자번호</label><input id="sBiz" value="${esc(s.business_number||'')}"></div>
   <div class="field"><label>대표자명</label><input id="sRep" value="${esc(s.representative_name||'')}"></div>
   <div class="field"><label>전화번호</label><input id="sPhone" value="${esc(s.phone||'')}"></div>
   <div class="field" style="grid-column:span 2"><label>주소</label><input id="sAddress" value="${esc(s.address||'')}"></div>
-  ${isAppAdmin()?`<div class="storeAccountBox">
-    <div class="row"><div><b>스케줄 담당자 로그인</b><div class="help">실제 이메일 없이 업장명 아이디 + 관리자 지정 비밀번호로 접속합니다.</div></div><span class="storeAccountStatus ${u?(u.active===false?'off':'on'):'none'}">${esc(status)}</span></div>
-    <div class="storeAccountGrid" style="margin-top:10px">
-      <div class="field"><label>로그인 ID <span class="help">(업장명 자동)</span></label><input id="sLoginId" readonly value="${esc(s.name||'')}" style="background:#fff;font-weight:900"></div>
-      <div class="field"><label>담당자 이름 <span class="help">(수정이력 표시)</span></label><input id="sSchedulerName" value="${esc(u?.display_name||'')}" placeholder="예: 김대리"></div>
-      <div class="field"><label>${u?'새 비밀번호':'비밀번호'} <span class="help">${u?'변경할 때만 입력':'6자 이상'}</span></label><input id="sSchedulerPassword" type="password" autocomplete="new-password"></div>
-      <div class="field"><label>비밀번호 확인</label><input id="sSchedulerPassword2" type="password" autocomplete="new-password"></div>
-    </div>
-    <label style="display:flex;align-items:center;gap:7px;margin-top:10px"><input id="sSchedulerActive" type="checkbox" ${u?.active===false?'':'checked'} ${u?'':'disabled'}>담당자 계정 접속 허용</label>
-    <div class="help" style="margin-top:8px">${u?'비밀번호를 비워두면 기존 비밀번호는 유지됩니다. 담당자가 바뀌면 담당자 이름과 새 비밀번호를 입력하세요.':'새 업장/미설정 업장은 비밀번호를 입력하면 저장과 함께 담당자 계정을 만듭니다. 비밀번호를 비워도 업장 자체는 정상 저장됩니다.'}</div>
-  </div>`:''}
+  ${isAppAdmin()?`<div class="storeAccountBox"><b>사용자 계정은 사람별로 관리합니다.</b><div class="help" style="margin-top:6px">한 업장에 여러 명을 등록하려면 “사용자 / 권한”에서 사용자를 추가한 뒤 이 업장을 선택하세요.</div><button type="button" class="btn green small" style="margin-top:10px" onclick="closeModal();document.querySelector('.nav[data-page=\"users\"]')?.click()">사용자 / 권한 열기</button></div>`:''}
  </div>`
 }
 async function editStore(id){
@@ -5188,26 +5222,16 @@ async function saveStore(id){
  if(!requireModuleEdit('stores'))return;
  let obj={name:$('sName').value.trim(),business_number:$('sBiz').value.trim(),representative_name:$('sRep').value.trim(),phone:$('sPhone').value.trim(),address:$('sAddress').value.trim()};
  if(!obj.name)return alert('업장명을 입력하세요.');
- let schedName=$('sSchedulerName')?.value.trim()||'',pw=$('sSchedulerPassword')?.value||'',pw2=$('sSchedulerPassword2')?.value||'',existing=id?schedulerUserForStore(id):null,active=$('sSchedulerActive')?$('sSchedulerActive').checked:true;
- if(pw&&pw.length<6)return alert('담당자 비밀번호는 최소 6자 이상 입력해 주세요.');
- if(pw!==pw2)return alert('담당자 비밀번호 확인이 일치하지 않습니다.');
  let newStoreId=null,q;
  if(id){q=await sb.from('stores').update(obj).eq('id',id)}
  else{q=await sb.from('stores').insert(obj).select('id,name').single();if(!q.error)newStoreId=Number(q.data?.id||0)||null}
  if(q.error)return alert(q.error.message);
- let targetId=Number(id||newStoreId||0),accountError=null;
- // 업장은 먼저 저장한다. 계정 설정 실패가 업장 저장을 되돌리지 않는다.
- if(isAppAdmin()&&permissionSystemAvailable===true&&targetId&&(existing||pw)){
-   try{
-     await invokeSchedulerAccountAdmin({action:'upsert_store_account',store_id:targetId,login_id:obj.name,display_name:schedName||existing?.display_name||obj.name+' 스케줄담당',password:pw||null,active:existing?active:true});
-   }catch(err){accountError=err}
- }
+ let targetId=Number(id||newStoreId||0);
  closeModal();await loadStores();
  if(targetId&&$('storeSelect'))$('storeSelect').value=String(targetId);
  if(isAppAdmin()&&permissionSystemAvailable===true){try{await loadAdminAccountDirectory()}catch(err){console.warn(err)}}
  await refreshAll();renderStores();
- if(accountError)return alert(`업장 “${obj.name}” 정보는 정상 저장했습니다.\n\n다만 스케줄 담당자 계정 설정은 실패했습니다.\n${accountError.message||accountError}\n\nEdge Function 설정을 확인한 뒤 업장관리에서 다시 비밀번호를 설정하세요.`);
- if(!existing&&!pw&&isAppAdmin())return alert(`업장 “${obj.name}”을 저장했습니다.\n담당자 계정은 아직 만들지 않았습니다. 필요할 때 업장관리에서 비밀번호를 입력하면 바로 생성됩니다.`);
+ alert(`업장 “${obj.name}” 정보를 저장했습니다.`);
 }
 async function renameStore(id,old){editStore(id)}
 
