@@ -523,6 +523,7 @@ tr[draggable="true"]:active,.empDragHandle:active{cursor:grabbing}
 #employeesPage .tablewrap{overflow-x:auto}
 #employeesPage table{min-width:1650px;table-layout:auto}
 #employeesPage th,#employeesPage td{white-space:normal!important;word-break:keep-all;line-height:1.35;vertical-align:middle}
+.contractAutoReadStatus{margin-top:6px;font-size:11px;font-weight:800;line-height:1.4;min-height:16px}.contractAutoReadStatus.reading{color:#315efb}.contractAutoReadStatus.ok{color:#087451}.contractAutoReadStatus.warn{color:#a15c00}
 .contractVaultHead{display:flex;justify-content:space-between;gap:12px}.contractVaultList{display:grid;gap:8px;margin-top:12px}
 .contractDocRow{display:grid;grid-template-columns:minmax(180px,1fr) 110px 120px auto;gap:8px;align-items:center;border:1px solid var(--line);border-radius:10px;padding:10px}
 .contractDocName{font-weight:900}.contractDocMeta{font-size:11px;color:#667085}.contractUploadBox{border:1px dashed #b8c2d1;background:#f8fafc;border-radius:12px;padding:12px}
@@ -1052,7 +1053,7 @@ body.resizingEmployeeColumn *{
 
 <section id="payrollPage" class="page">
  <div class="row">
-  <div><h1 class="title">급여관리 <span style="font-size:12px;color:#315efb;background:#eef3ff;border-radius:999px;padding:4px 8px;vertical-align:middle">v2026.08.23-1455</span></h1><div class="sub">월별 급여대장을 검산하고, 기간별·직원별 누적 급여도 조회합니다.</div></div>
+  <div><h1 class="title">급여관리 <span style="font-size:12px;color:#315efb;background:#eef3ff;border-radius:999px;padding:4px 8px;vertical-align:middle">v2026.08.23-1515</span></h1><div class="sub">월별 급여대장을 검산하고, 기간별·직원별 누적 급여도 조회합니다.</div></div>
   <div class="toolbar">
    <input type="file" id="payrollFile" accept=".xlsx,.xls,.xlsm" multiple style="display:none" onchange="importPayrollFiles(this.files);this.value=''">
    <button class="btn" onclick="$('payrollFile').click()">급여대장 여러개 불러오기</button>
@@ -7477,12 +7478,54 @@ function contractStoragePath(employeeId,type,file){
 function guessContractDateFromFilename(name){
  let s=String(name||''),m=s.match(/(20\d{2})[.\-_ ]?(\d{1,2})[.\-_ ]?(\d{1,2})/);
  if(m)return `${m[1]}-${String(Number(m[2])).padStart(2,'0')}-${String(Number(m[3])).padStart(2,'0')}`;
- let y=s.match(/(20\d{2})/);return y?`${y[1]}-01-01`:'';
+ return '';
+}
+function contractDateIso(y,m,d){
+ let yy=Number(y),mm=Number(m),dd=Number(d);if(yy<2000||yy>2100||mm<1||mm>12||dd<1||dd>31)return '';
+ let dt=new Date(Date.UTC(yy,mm-1,dd));if(dt.getUTCFullYear()!==yy||dt.getUTCMonth()+1!==mm||dt.getUTCDate()!==dd)return '';
+ return `${yy}-${String(mm).padStart(2,'0')}-${String(dd).padStart(2,'0')}`;
+}
+function extractContractPeriodFromText(text){
+ let t=String(text||'').normalize('NFKC').replace(/[\u00a0]/g,' ').replace(/\s+/g,' ');
+ let zone=t;
+ let idx=t.search(/근로계약기간|계약기간/);if(idx>=0)zone=t.slice(idx,Math.min(t.length,idx+900));
+ let patterns=[
+  /(20\d{2})\s*년\s*(\d{1,2})\s*월\s*(\d{1,2})\s*일\s*(?:부터|~|～|\-|–|—)\s*(20\d{2})\s*년\s*(\d{1,2})\s*월\s*(\d{1,2})\s*일/,
+  /(20\d{2})[.\/-]\s*(\d{1,2})[.\/-]\s*(\d{1,2})\s*(?:부터|~|～|\-|–|—)\s*(20\d{2})[.\/-]\s*(\d{1,2})[.\/-]\s*(\d{1,2})/,
+  /(20\d{2})\s+(\d{1,2})\s+(\d{1,2})\s*(?:부터|~|～|\-|–|—)\s*(20\d{2})\s+(\d{1,2})\s+(\d{1,2})/
+ ];
+ for(let re of patterns){let m=zone.match(re)||t.match(re);if(m){let a=contractDateIso(m[1],m[2],m[3]),b=contractDateIso(m[4],m[5],m[6]);if(a&&b)return {start:a,end:b}}}
+ let dates=[...zone.matchAll(/(20\d{2})\s*년\s*(\d{1,2})\s*월\s*(\d{1,2})\s*일/g)].map(m=>contractDateIso(m[1],m[2],m[3])).filter(Boolean);
+ if(dates.length>=2)return {start:dates[0],end:dates[1]};
+ return null;
+}
+let contractPdfJsPromise=null,contractTesseractPromise=null;
+async function loadContractPdfJs(){
+ if(!contractPdfJsPromise)contractPdfJsPromise=import('https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/build/pdf.min.mjs').then(pdfjs=>{pdfjs.GlobalWorkerOptions.workerSrc='https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/build/pdf.worker.min.mjs';return pdfjs});
+ return contractPdfJsPromise;
+}
+async function loadContractTesseract(){
+ if(window.Tesseract)return window.Tesseract;
+ if(!contractTesseractPromise)contractTesseractPromise=new Promise((resolve,reject)=>{let sc=document.createElement('script');sc.src='https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js';sc.onload=()=>resolve(window.Tesseract);sc.onerror=()=>reject(new Error('문자인식 모듈을 불러오지 못했습니다.'));document.head.appendChild(sc)});
+ return contractTesseractPromise;
+}
+function setContractAutoReadStatus(msg,kind=''){let el=$('contractAutoReadStatus');if(!el)return;el.textContent=msg||'';el.className='contractAutoReadStatus '+kind}
+async function readContractPeriodFromPdf(file){
+ const pdfjs=await loadContractPdfJs();let data=await file.arrayBuffer();let pdf=await pdfjs.getDocument({data}).promise;
+ let pageCount=Math.min(pdf.numPages,3),text='';
+ for(let i=1;i<=pageCount;i++){let page=await pdf.getPage(i),tc=await page.getTextContent();text+=' '+tc.items.map(x=>x.str||'').join(' ')}
+ let found=extractContractPeriodFromText(text);if(found)return {...found,method:'text'};
+ // 스캔본 PDF는 텍스트가 없으므로 첫 페이지를 OCR로 한 번 더 읽습니다.
+ let page=await pdf.getPage(1),vp=page.getViewport({scale:1.8}),canvas=document.createElement('canvas'),ctx=canvas.getContext('2d');canvas.width=Math.ceil(vp.width);canvas.height=Math.ceil(vp.height);await page.render({canvasContext:ctx,viewport:vp}).promise;
+ const Tesseract=await loadContractTesseract();
+ let result=await Tesseract.recognize(canvas,'kor+eng',{logger:m=>{if(m.status==='recognizing text')setContractAutoReadStatus(`계약기간 읽는 중... ${Math.round((m.progress||0)*100)}%`,'reading')}});
+ found=extractContractPeriodFromText(result?.data?.text||'');if(found)return {...found,method:'ocr'};
+ return null;
 }
 async function openEmployeeDocuments(employeeId,type){
  let e=findEmployeeAny(employeeId);if(!e)return alert('직원정보를 찾지 못했습니다.');
  let label=employeeDocTypeLabel(type),isResignation=type==='resignation',isContract=!isResignation;
- let vaultHelp=isResignation?'작성 완료한 사직서 PDF 원본을 서버에 보관합니다. 삭제하지 않는 한 직원 기록과 함께 계속 남습니다.':'PDF 원본은 서버에 누적 보관합니다. <b>재계약 D-day는 근로계약서의 계약 종료일</b>을 기준으로 표시합니다. PDF 양식마다 날짜 위치가 달라 자동추측으로 잘못 잡지 않도록, 업로드할 때 계약서에 적힌 시작일·종료일을 확인 입력합니다.'+(type==='work_contract'?' <b>근무조건이 함께 바뀌면 “이 계약일부터 근무조건 변경 있음”을 체크</b>하세요. 업로드 직후 적용일이 계약 시작일로 채워진 근무조건 등록창이 열리고, 이후 기본근무 채우기·주간목표·연차 계산이 그 적용일부터 새 조건을 사용합니다.':'');
+ let vaultHelp=isResignation?'작성 완료한 사직서 PDF 원본을 서버에 보관합니다. 삭제하지 않는 한 직원 기록과 함께 계속 남습니다.':'PDF 원본은 서버에 누적 보관합니다. <b>재계약 D-day는 근로계약서의 계약 종료일</b>을 기준으로 표시합니다. PDF를 선택하면 계약서 안의 근로계약기간을 자동으로 읽어 시작일·종료일을 채웁니다. 스캔본도 문자인식을 한 번 시도하며, 자동인식이 안 된 경우에만 날짜를 직접 확인 입력하면 됩니다.'+(type==='work_contract'?' <b>근무조건이 함께 바뀌면 “이 계약일부터 근무조건 변경 있음”을 체크</b>하세요. 업로드 직후 적용일이 계약 시작일로 채워진 근무조건 등록창이 열리고, 이후 기본근무 채우기·주간목표·연차 계산이 그 적용일부터 새 조건을 사용합니다.':'');
  let periodFields=isContract?`<div class="field" style="margin:0"><label>계약 시작일</label><input id="contractStartDate" type="text" inputmode="numeric" maxlength="8" placeholder="YYYYMMDD" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,8)"></div>
  <div class="field" style="margin:0"><label>계약 종료일</label><input id="contractEndDate" type="text" inputmode="numeric" maxlength="8" placeholder="YYYYMMDD" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,8)"></div>`:'';
  modal(`<div class="contractVaultHead"><div><h2 style="margin:0">${esc(e.name)} · ${label}</h2>
@@ -7494,16 +7537,35 @@ async function openEmployeeDocuments(employeeId,type){
  ${periodFields}
  <div class="field" style="margin:0"><label>표시명</label><input id="contractDocTitle" placeholder="예: 2026년 ${label}"></div>
  ${type==='work_contract'?`<label class="contractWorkChange" style="display:flex;align-items:center;gap:7px;padding:9px 10px;border:1px solid #d9e2f2;border-radius:10px;background:#f8fbff;font-size:12px;font-weight:800"><input id="contractWorkConditionChange" type="checkbox">이 계약일부터 근무조건 변경 있음</label>`:''}
- <div class="field" style="margin:0"><label>PDF 원본</label><input id="contractDocFile" type="file" accept="application/pdf,.pdf" onchange="fillContractMetaFromFile(this.files[0],'${type}')"></div>
+ <div class="field" style="margin:0"><label>PDF 원본</label><input id="contractDocFile" type="file" accept="application/pdf,.pdf" onchange="fillContractMetaFromFile(this.files[0],'${type}')"><div id="contractAutoReadStatus" class="contractAutoReadStatus"></div></div>
  <button class="btn" onclick="uploadEmployeeDocument(${employeeId},'${type}')">업로드</button></div></div>
  <div id="contractDocList" class="contractVaultList"><div class="contractEmpty">불러오는 중...</div></div>`);
  await loadEmployeeDocuments(employeeId,type);
 }
-function fillContractMetaFromFile(file,type){
+async function fillContractMetaFromFile(file,type){
  if(!file)return;let d=guessContractDateFromFilename(file.name);
- if($('contractDocDate')&&!$('contractDocDate').value)$('contractDocDate').value=d?d.replace(/-/g,''):'';
- if(type!=='resignation'&&$('contractStartDate')&&!$('contractStartDate').value&&d)$('contractStartDate').value=d.replace(/-/g,'');
- if($('contractDocTitle')&&!$('contractDocTitle').value)$('contractDocTitle').value=(d?d.slice(0,4)+'년 ':'')+employeeDocTypeLabel(type);
+ let hadDocDate=!!$('contractDocDate')?.value,hadTitle=!!$('contractDocTitle')?.value,hadStart=!!$('contractStartDate')?.value,hadEnd=!!$('contractEndDate')?.value;
+ if(!hadDocDate&&d&&$('contractDocDate'))$('contractDocDate').value=d.replace(/-/g,'');
+ if(!hadTitle&&$('contractDocTitle'))$('contractDocTitle').value=(d?d.slice(0,4)+'년 ':'')+employeeDocTypeLabel(type);
+ if(type==='resignation')return;
+ setContractAutoReadStatus('계약서에서 계약기간을 읽는 중...','reading');
+ try{
+   let period=await readContractPeriodFromPdf(file);
+   if(period){
+     if($('contractStartDate')&&!hadStart)$('contractStartDate').value=period.start.replace(/-/g,'');
+     if($('contractEndDate')&&!hadEnd)$('contractEndDate').value=period.end.replace(/-/g,'');
+     if($('contractDocDate')&&!hadDocDate)$('contractDocDate').value=period.start.replace(/-/g,'');
+     if($('contractDocTitle')&&!hadTitle)$('contractDocTitle').value=`${period.start.slice(0,4)}년 ${employeeDocTypeLabel(type)}`;
+     setContractAutoReadStatus(`계약기간 자동확인: ${period.start} ~ ${period.end}${period.method==='ocr'?' (스캔본 인식)':''}`,'ok');
+   }else{
+     if($('contractStartDate')&&!$('contractStartDate').value&&d)$('contractStartDate').value=d.replace(/-/g,'');
+     setContractAutoReadStatus('계약기간을 자동으로 찾지 못했습니다. 계약서의 시작일·종료일만 확인해서 입력해 주세요.','warn');
+   }
+ }catch(err){
+   console.warn('계약기간 자동읽기 오류',err);
+   if($('contractStartDate')&&!$('contractStartDate').value&&d)$('contractStartDate').value=d.replace(/-/g,'');
+   setContractAutoReadStatus('계약기간 자동읽기에 실패했습니다. 날짜를 직접 입력해도 업로드할 수 있습니다.','warn');
+ }
 }
 async function loadEmployeeDocuments(employeeId,type){
  let host=$('contractDocList');if(!host)return;
@@ -7533,7 +7595,7 @@ async function uploadEmployeeDocument(employeeId,type){
  if(endRaw&&!contractEnd)return alert('계약 종료일을 8자리로 입력하세요. 예: 20270731');
  if(contractStart&&contractEnd&&contractEnd<contractStart)return alert('계약 종료일이 시작일보다 빠릅니다.');
  if(type==='work_contract'&&!contractEnd){
-   if(!confirm('근로계약서의 계약 종료일이 비어 있습니다.\n종료일이 없으면 직원관리에서 재계약 D-day를 계산할 수 없습니다.\n그래도 업로드할까요?'))return;
+   return alert('계약 종료일을 확인하지 못했습니다.\nPDF를 다시 선택해 자동읽기를 시도하거나, 계약서에 적힌 종료일을 8자리로 입력해 주세요.\n예: 20261231');
  }
  let title=$('contractDocTitle')?.value?.trim()||`${date.slice(0,4)}년 ${employeeDocTypeLabel(type)}`;
  let path=contractStoragePath(employeeId,type,file);
