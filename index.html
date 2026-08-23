@@ -1001,7 +1001,7 @@ body.resizingEmployeeColumn *{
 
 <section id="payrollPage" class="page">
  <div class="row">
-  <div><h1 class="title">급여관리 <span style="font-size:12px;color:#315efb;background:#eef3ff;border-radius:999px;padding:4px 8px;vertical-align:middle">v2026.08.23-1255</span></h1><div class="sub">월별 급여대장을 검산하고, 기간별·직원별 누적 급여도 조회합니다.</div></div>
+  <div><h1 class="title">급여관리 <span style="font-size:12px;color:#315efb;background:#eef3ff;border-radius:999px;padding:4px 8px;vertical-align:middle">v2026.08.23-1330</span></h1><div class="sub">월별 급여대장을 검산하고, 기간별·직원별 누적 급여도 조회합니다.</div></div>
   <div class="toolbar">
    <input type="file" id="payrollFile" accept=".xlsx,.xls,.xlsm" multiple style="display:none" onchange="importPayrollFiles(this.files);this.value=''">
    <button class="btn" onclick="$('payrollFile').click()">급여대장 여러개 불러오기</button>
@@ -1080,7 +1080,7 @@ body.resizingEmployeeColumn *{
      <button class="btn gray small" onclick="resetEmployeeColumnWidths()">표 폭 초기화</button>
    </div>
   </div>
-  <div class="help" style="margin-bottom:8px">이름·주민등록번호·계좌번호·직책·업무·입사일·근무형태·휴게·급여형태·비고는 표에서 바로 수정할 수 있습니다. <b>재직자는 기본적으로 내가 정한 연번순</b>이며 필요할 때만 입사일 오름차순으로 볼 수 있습니다. <b>퇴사자는 퇴사일 오름차순으로 자동 정렬</b>됩니다. <b>“스케줄·근로 제외”를 체크하면 재직·급여자료는 그대로 두고 월간스케줄·주간편성·근로시간에서 숨깁니다.</b> 문서 칸에서는 근로계약서의 계약 종료일을 기준으로 재계약 D-day와 근로·연봉·사직서 PDF 등록 여부를 바로 확인할 수 있습니다. 근무형태가 날짜별로 바뀌는 직원은 우측 “근무조건”에서 적용 시작일별 이력을 등록합니다. 표 머리글의 오른쪽 경계선을 좌우로 끌면 열 폭을 직접 조절할 수 있고 자동 저장됩니다. 비고는 여러 줄로 입력할 수 있습니다.</div>
+  <div class="help" style="margin-bottom:8px">이름·주민등록번호·계좌번호·직책·업무·입사일·근무형태·휴게·급여형태·비고는 표에서 바로 수정할 수 있습니다. <b>재직자는 기본적으로 내가 정한 연번순</b>이며 필요할 때만 입사일 오름차순으로 볼 수 있습니다. <b>퇴사자는 퇴사일 오름차순으로 자동 정렬</b>됩니다. <b>“스케줄·근로 제외”를 체크하면 재직·급여자료는 그대로 두고 월간스케줄·주간편성·근로시간에서 숨깁니다.</b> 문서 칸에서는 근로계약서의 계약 종료일을 기준으로 재계약 D-day와 근로·연봉계약서 등록 여부를 바로 확인합니다. 퇴사자 화면에서는 사직서 PDF 보관 여부도 확인할 수 있습니다. 근무형태가 날짜별로 바뀌는 직원은 우측 “근무조건”에서 적용 시작일별 이력을 등록합니다. 표 머리글의 오른쪽 경계선을 좌우로 끌면 열 폭을 직접 조절할 수 있고 자동 저장됩니다. 비고는 여러 줄로 입력할 수 있습니다.</div>
   <datalist id="employeeWorkTypeSuggestions"><option value="주5일 스케줄근무"></option><option value="주4일 스케줄근무"></option><option value="기타"></option></datalist>
   <div class="tablewrap"><table><thead><tr><th style="width:44px">선택</th><th>연번</th><th class="name">이름</th><th>주민등록번호</th><th>계좌번호</th><th>직책</th><th>업무</th><th>입사일</th><th>퇴사일</th><th>근무형태</th><th>기본시간</th><th>휴게시간(분)</th><th>스케줄방식</th><th>급여형태</th><th>연차 기준</th><th>연차 잔여</th><th>비고</th><th>출력색</th><th>문서 / 재계약</th><th></th></tr></thead><tbody id="employeeBody"></tbody></table></div>
  </div>
@@ -2583,71 +2583,33 @@ function plannerWeeks(){
  return out;
 }
 function weeklyTargetHours(e,weekStart=mondayOf(isoToday())){
- // 날짜별 근무조건과 실제 재직기간을 기준으로 목표시간을 계산한다.
- // 특히 월중 입사/퇴사 또는 주중 근무조건 변경이 있는 첫·마지막 주에는
- // 월요일 기준의 40h/36h를 그대로 반환하지 않고 해당 날짜부터만 계산해야 한다.
- let weekEnd=addDaysIso(weekStart,6),total=0,patternKnown=false;
- let employedDates=[];
+ // 주간편성의 '목표'는 실제 편성 요일(work_days)이 아니라 근무형태의 주 목표를 기준으로 한다.
+ // work_days는 기본근무 채우기를 돕는 참고값일 뿐, 스케줄근무자의 주 목표를 줄이거나 늘리면 안 된다.
+ // 따라서 주4일 스케줄근무는 정상적으로 4일 편성 가능한 주라면 36h, 주5일은 40h가 목표다.
+ // 입사/퇴사로 그 주에 재직 가능한 날짜 자체가 부족한 경우에만 일 단위로 줄인다.
+ let weekEnd=addDaysIso(weekStart,6),employedDates=[];
  for(let d=0;d<7;d++){
    let date=addDaysIso(weekStart,d);
    if(employedOn(e,date))employedDates.push(date);
  }
  if(!employedDates.length)return 0;
 
- // 근무요일 패턴이 등록돼 있으면 날짜별로 합산하되,
- // 근무형태의 주간 목표(주5일 40h / 주4일 36h)를 절대 초과하지 않게 한다.
- // 예: 과거 주5일 근무요일(월~금)이 남아 있는데 근무형태만 주4일로 바꾼 경우
- // 9h x 5일 = 45h로 잘못 표시되던 문제를 막는다.
- let patternGroups=new Map();
- for(const date of employedDates){
-   let cond=workConditionForDate(e,date),days=normalizedWorkDays(cond.work_days),wd=new Date(date+'T12:00:00').getDay();
-   if(days.length){
-     patternKnown=true;
-     if(days.includes(wd)){
-       let key=String(cond._history_id||cond.effective_from||cond.work_type||'base');
-       if(!patternGroups.has(key))patternGroups.set(key,{cond,hours:0});
-       patternGroups.get(key).hours+=conditionWorkedDayHours(cond);
-     }
-   }
- }
- if(patternKnown){
-   total=0;
-   for(const g of patternGroups.values()){
-     let cap=g.cond.work_type==='40'?40:g.cond.work_type==='36'?36:null;
-     total+=cap===null?g.hours:Math.min(cap,g.hours);
-   }
-   return Math.round(total*100)/100;
+ // 같은 주 안에서 근무형태가 하나라면 스케줄근무의 주 목표를 우선한다.
+ // 예: 8/5 입사 + 주4일 스케줄근무는 수~일 5일 중 4일 편성이 가능하므로 목표 36h.
+ // 예전 월~금 work_days가 남아 있어도 27h/45h처럼 왜곡되지 않는다.
+ let typeValues=[...new Set(employedDates.map(date=>normalizeWorkTypeValue(workConditionForDate(e,date).work_type)))];
+ if(typeValues.length===1 && (typeValues[0]==='40'||typeValues[0]==='36')){
+   let type=typeValues[0],requiredDays=type==='40'?5:4,dayTarget=type==='40'?8:9,cap=type==='40'?40:36;
+   return Math.min(cap,Math.min(requiredDays,employedDates.length)*dayTarget);
  }
 
- // 요일 패턴이 비어 있는 스케줄근무자는 정상적인 '완전한 한 주'에는 기존 목표를 유지한다.
- // 다만 입사/퇴사 또는 근무조건 적용일이 주중에 걸리면 구간별로 계산하여
- // 홍수연처럼 8/5부터 근무하는 직원에게 첫 주 전체 40h/36h가 잡히는 오류를 막는다.
- let rows=workConditionRowsForEmployee(e?.id);
- let boundaryInsideWeek=rows.some(r=>String(r.effective_from||'')>weekStart&&String(r.effective_from||'')<=weekEnd);
- let partialEmployment=(e?.hire_date&&e.hire_date>weekStart&&e.hire_date<=weekEnd)||(e?.resign_date&&e.resign_date>=weekStart&&e.resign_date<weekEnd);
- if(!boundaryInsideWeek&&!partialEmployment&&employedDates.length===7){
-   let cond=workConditionForDate(e,weekStart);
-   if(cond.work_type==='40')return 40;
-   if(cond.work_type==='36')return 36;
-   return 0;
- }
-
- // 패턴 미등록 + 부분 주간: 조건이 적용되는 평일만 일 단위로 환산한다.
- // 주5일은 1일 소정시간(통상 8h), 주4일 36h는 1일 목표 9h로 계산하고
- // 동일 조건 구간이 한 주 목표를 초과하지 않도록 제한한다.
- let groups=new Map();
+ // 주중에 근무형태 자체가 바뀌는 예외적인 주는 날짜별 조건을 합산한다.
+ // 이때도 특정 요일 패턴이 아니라 재직 날짜와 당시 근무형태만 사용한다.
+ let total=0,usedByType={40:0,36:0};
  for(const date of employedDates){
-   let cond=workConditionForDate(e,date),wd=new Date(date+'T12:00:00').getDay();
-   if(wd===0||wd===6)continue;
-   let key=String(cond._history_id||cond.effective_from||cond.work_type||'base');
-   if(!groups.has(key))groups.set(key,{cond,hours:0});
-   let g=groups.get(key);
-   if(cond.work_type==='40')g.hours+=Number(cond.daily_hours||8);
-   else if(cond.work_type==='36')g.hours+=9;
- }
- for(const g of groups.values()){
-   let cap=g.cond.work_type==='40'?40:g.cond.work_type==='36'?36:0;
-   if(cap>0)total+=Math.min(cap,g.hours);
+   let type=normalizeWorkTypeValue(workConditionForDate(e,date).work_type);
+   if(type==='40' && usedByType[40]<5){total+=8;usedByType[40]++;}
+   else if(type==='36' && usedByType[36]<4){total+=9;usedByType[36]++;}
  }
  return Math.round(total*100)/100;
 }
@@ -4121,12 +4083,12 @@ function renderEmployees(){
 
    <td>${employeeView==='active'?`<select onchange="setPrintColor(${e.id},this.value)" style="padding:5px 7px">${colors}</select><span style="display:inline-block;width:18px;height:18px;border-radius:5px;vertical-align:middle;margin-left:4px;background:${employeeColor(e)};border:1px solid #bbb"></span>`:'-'}</td>
 
-   <td>${employeeRenewalHtml(e)}<div class="docStatusLine">${employeeDocBadge(e.id,'work_contract',employeeView==='active')}${employeeDocBadge(e.id,'salary_contract',employeeView==='active')}${employeeDocBadge(e.id,'resignation',employeeView==='active')}</div><div class="docActions">
+   <td>${employeeRenewalHtml(e)}<div class="docStatusLine">${employeeDocBadge(e.id,'work_contract',employeeView==='active')}${employeeDocBadge(e.id,'salary_contract',employeeView==='active')}${employeeView==='retired'?employeeDocBadge(e.id,'resignation',false):''}</div><div class="docActions">
 <button class="btn green small" onclick="printEmploymentCertificate(${e.id})">재직증명서</button>
-<button class="btn gray small" onclick="printResignation(${e.id})">사직서</button>
+<button class="btn gray small" onclick="printResignation(${e.id})" title="사직서 양식을 열어 인쇄하거나 PDF로 저장합니다.">사직서 출력/PDF</button>
 <button class="btn small" onclick="openEmployeeDocuments(${e.id},'salary_contract')">연봉계약서</button>
 <button class="btn small" onclick="openEmployeeDocuments(${e.id},'work_contract')">근로계약서</button>
-<button class="btn gray small" onclick="openEmployeeDocuments(${e.id},'resignation')">사직서 파일</button>
+${employeeView==='retired'?`<button class="btn gray small" onclick="openEmployeeDocuments(${e.id},'resignation')">사직서 PDF</button>`:''}
 </div></td>
    <td><div class="empManageActions">${action}</div></td></tr>`;
  }).join('')||`<tr><td colspan="20">${employeeView==='active'?'재직자가':'퇴사자가'} 없습니다.</td></tr>`;
@@ -7321,6 +7283,21 @@ function fmtDateKo(s){
  if(!s)return '       년     월     일';
  let [y,m,d]=s.split('-');return `${y}년 ${Number(m)}월 ${Number(d)}일`;
 }
+function birthDateFromResidentNumber(value){
+ let d=String(value||'').replace(/[^0-9]/g,'');
+ if(d.length<7)return '';
+ let yy=Number(d.slice(0,2)),mm=Number(d.slice(2,4)),dd=Number(d.slice(4,6)),g=d.charAt(6),century=null;
+ if('1256'.includes(g))century=1900;
+ else if('3478'.includes(g))century=2000;
+ else if('90'.includes(g))century=1800;
+ if(century===null)return '';
+ let year=century+yy,dt=new Date(year,mm-1,dd);
+ if(dt.getFullYear()!==year||dt.getMonth()!==mm-1||dt.getDate()!==dd)return '';
+ return `${year}-${String(mm).padStart(2,'0')}-${String(dd).padStart(2,'0')}`;
+}
+function employeeBirthDate(e){
+ return String(e?.birth_date||'').trim()||birthDateFromResidentNumber(e?.resident_number);
+}
 function currentStore(){return stores.find(s=>s.id===storeId())||{}}
 function findEmployeeAny(id){return [...employees,...retiredEmployees].find(e=>e.id===id)}
 
@@ -7341,7 +7318,7 @@ window.addEventListener('afterprint',()=>{
 
 
 const EMPLOYEE_DOC_BUCKET='employee-contracts';
-const EMPLOYEE_DOC_TYPES={work_contract:'근로계약서',salary_contract:'연봉계약서',resignation:'사직서 파일'};
+const EMPLOYEE_DOC_TYPES={work_contract:'근로계약서',salary_contract:'연봉계약서',resignation:'사직서 PDF'};
 function employeeDocTypeLabel(t){return EMPLOYEE_DOC_TYPES[t]||t}
 function safeStoragePart(s){
  return String(s||'file').normalize('NFKD')
@@ -7488,7 +7465,7 @@ function printEmploymentCertificate(id){
     <div class="docSectionTitle">인 적 사 항</div>
     <div class="docGrid">
       <div class="docCellLabel">성&nbsp;&nbsp;&nbsp;&nbsp;명</div><div class="docCellValue">${v(e.name)}</div>
-      <div class="docCellLabel">생년월일</div><div class="docCellValue">${e.birth_date?fmtDateKo(e.birth_date):''}</div>
+      <div class="docCellLabel">생년월일</div><div class="docCellValue">${employeeBirthDate(e)?fmtDateKo(employeeBirthDate(e)):''}</div>
 
       <div class="docCellLabel">전화번호</div><div class="docCellValue">${v(e.phone)}</div>
       <div class="docCellLabel">이 메 일</div><div class="docCellValue">${v(e.email)}</div>
@@ -7536,7 +7513,7 @@ function printResignation(id){
    <div class="docSection">
     <div class="docGrid">
       <div class="docCellLabel">성&nbsp;&nbsp;&nbsp;&nbsp;명</div><div class="docCellValue">${v(e.name)}</div>
-      <div class="docCellLabel">생년월일</div><div class="docCellValue">${e.birth_date?fmtDateKo(e.birth_date):''}</div>
+      <div class="docCellLabel">생년월일</div><div class="docCellValue">${employeeBirthDate(e)?fmtDateKo(employeeBirthDate(e)):''}</div>
 
       <div class="docCellLabel">담당업무</div><div class="docCellValue">${v(e.department)}</div>
       <div class="docCellLabel">입 사 일</div><div class="docCellValue">${e.hire_date?fmtDateKo(e.hire_date):''}</div>
