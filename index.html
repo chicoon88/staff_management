@@ -347,6 +347,56 @@ input,select{border:1px solid #d2d7e0;background:white;border-radius:9px;padding
  }
 }
 
+
+/* ===== 직원 수정 팝업: PC 가로형 + 근무요일 한 줄 배치 ===== */
+.modalBack>.modal.employeeEditModal{
+ width:min(1480px,calc(100vw - 32px))!important;
+ max-width:1480px!important;
+}
+.modalBack>.modal.employeeEditModal .formgrid{
+ grid-template-columns:repeat(4,minmax(0,1fr))!important;
+ gap:12px 14px!important;
+}
+.employeeWorkDayPattern{
+ display:flex!important;
+ align-items:center!important;
+ gap:8px!important;
+ flex-wrap:wrap!important;
+ margin-top:7px!important;
+}
+.employeeWorkDayPattern label{
+ display:inline-flex!important;
+ align-items:center!important;
+ justify-content:center!important;
+ gap:6px!important;
+ min-width:58px!important;
+ padding:8px 11px!important;
+ border:1px solid #d9dee7!important;
+ border-radius:10px!important;
+ background:#f8fafc!important;
+ font-size:13px!important;
+ font-weight:750!important;
+ cursor:pointer!important;
+}
+.modalBack>.modal.employeeEditModal .employeeWorkDayPattern input[type="checkbox"]{
+ width:18px!important;
+ height:18px!important;
+ min-width:18px!important;
+ margin:0!important;
+ padding:0!important;
+ accent-color:#315efb!important;
+}
+@media(max-width:1100px){
+ .modalBack>.modal.employeeEditModal .formgrid{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+}
+@media(max-width:800px){
+ .modalBack>.modal.employeeEditModal .formgrid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+}
+@media(max-width:560px){
+ .modalBack>.modal.employeeEditModal .formgrid{grid-template-columns:1fr!important}
+ .employeeWorkDayPattern label{min-width:52px!important}
+}
+
 .empDeleteCheck{width:18px!important;height:18px!important;cursor:pointer;accent-color:#315efb}
 
 /* ===== 주간 스케줄 편성 ===== */
@@ -1001,7 +1051,7 @@ body.resizingEmployeeColumn *{
 
 <section id="payrollPage" class="page">
  <div class="row">
-  <div><h1 class="title">급여관리 <span style="font-size:12px;color:#315efb;background:#eef3ff;border-radius:999px;padding:4px 8px;vertical-align:middle">v2026.08.23-1330</span></h1><div class="sub">월별 급여대장을 검산하고, 기간별·직원별 누적 급여도 조회합니다.</div></div>
+  <div><h1 class="title">급여관리 <span style="font-size:12px;color:#315efb;background:#eef3ff;border-radius:999px;padding:4px 8px;vertical-align:middle">v2026.08.23-1350</span></h1><div class="sub">월별 급여대장을 검산하고, 기간별·직원별 누적 급여도 조회합니다.</div></div>
   <div class="toolbar">
    <input type="file" id="payrollFile" accept=".xlsx,.xls,.xlsm" multiple style="display:none" onchange="importPayrollFiles(this.files);this.value=''">
    <button class="btn" onclick="$('payrollFile').click()">급여대장 여러개 불러오기</button>
@@ -4552,6 +4602,12 @@ async function commitEmployeeImport(){
 
  alert(`${targetStore.name} 직원 등록 완료\n\n신규 ${inserts.length}명\n기존 업데이트 ${updates.length}명`);
 }
+function syncEmployeeBirthFromResident(){
+ let birth=$('eBirth'),resident=$('eResident');
+ if(!birth||!resident||String(birth.value||'').trim())return;
+ let derived=birthDateFromResidentNumber(resident.value);
+ if(derived)birth.value=derived.replace(/-/g,'');
+}
 async function openEmployee(id,isRetired=false){
  let e=id?[...employees,...retiredEmployees].find(x=>x.id===id):null;
  if(id&&!e){
@@ -4562,14 +4618,15 @@ async function openEmployee(id,isRetired=false){
  if(id&&!e)return alert('직원정보를 찾지 못했습니다.');
  if(!id)e={work_type:'40',daily_hours:8,break_minutes:60,work_days:[1,2,3,4,5],pay_type:'monthly',leave_weekly_hours:40,leave_monthly_hours:8,leave_day_hours:8,salary_delay_months:1,salary_pay_day:'10',incentive_delay_months:2,holiday_incentive_unit:30000,holiday_incentive_enabled:true};
  let currentCond=workConditionForDate(e,isoToday());
- let checks=[0,1,2,3,4,5,6].map(d=>`<label style="font-size:12px"><input type="checkbox" class="wd" value="${d}" ${normalizedWorkDays(currentCond.work_days).includes(d)?'checked':''}>${'일월화수목금토'[d]}</label>`).join(' ');
+ let birthCompact=employeeBirthDate(e).replace(/-/g,'');
+ let checks=[0,1,2,3,4,5,6].map(d=>`<label><input type="checkbox" class="wd" value="${d}" ${normalizedWorkDays(currentCond.work_days).includes(d)?'checked':''}><span>${'일월화수목금토'[d]}</span></label>`).join('');
  modal(`<h2>${id?'직원 수정':'직원 추가'}</h2><div class="formgrid">
  <div class="field"><label>이름</label><input id="eName" value="${esc(e.name||'')}"></div>
- <div class="field"><label>주민등록번호</label><input id="eResident" value="${esc(e.resident_number||'')}" placeholder="예: 900101-1234567" autocomplete="off"></div>
+ <div class="field"><label>주민등록번호</label><input id="eResident" value="${esc(e.resident_number||'')}" placeholder="예: 900101-1234567" autocomplete="off" oninput="syncEmployeeBirthFromResident()"></div>
  <div class="field"><label>계좌번호</label><input id="eBankAccount" value="${esc(e.bank_account||'')}" placeholder="직접 입력" autocomplete="off"></div>
  <div class="field"><label>직책</label><input id="eRole" value="${esc(e.role||'')}"></div>
  <div class="field"><label>업무</label><input id="eDept" value="${esc(e.department||'')}"></div>
- <div class="field"><label>생년월일</label><input id="eBirth" type="text" inputmode="numeric" maxlength="8" placeholder="YYYYMMDD" value="${(e.birth_date||'').replace(/-/g,'')}" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,8)"></div>
+ <div class="field"><label>생년월일</label><input id="eBirth" type="text" inputmode="numeric" maxlength="8" placeholder="YYYYMMDD" value="${birthCompact}" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,8)"></div>
  <div class="field"><label>전화번호</label><input id="ePhone" value="${esc(e.phone||'')}"></div>
  <div class="field"><label>이메일</label><input id="eEmail" type="email" value="${esc(e.email||'')}"></div>
  <div class="field"><label>현 주소</label><input id="eAddress" value="${esc(e.address||'')}"></div>
@@ -4590,9 +4647,10 @@ async function openEmployee(id,isRetired=false){
  <div class="field"><label>1년 미만 월 발생(h)</label><input id="eLeaveMonthly" type="number" step="1" value="${leaveMonthlyHours(e)}"></div>
  <div class="field"><label>연차 하루 사용(h)</label><input id="eLeaveDay" type="number" step=".5" value="${leaveDayHours(e)}"></div>
  </div>
- <div style="margin-top:10px"><b style="font-size:12px">기본근무 채우기용 패턴 (선택사항)</b><div style="margin-top:6px">${checks}</div></div>
+ <div style="margin-top:12px"><b style="font-size:12px">기본근무 채우기용 패턴 (선택사항)</b><div class="employeeWorkDayPattern">${checks}</div></div>
  <div class="help" style="margin-top:10px"><b>직책과 업무를 구분해서 입력하세요.</b> 예: 직책=과장 / 업무=매장관리·조제·전산 등<br><b>이 화면의 모든 항목은 수기로 수정 후 저장할 수 있습니다.</b><br><b>퇴사자의 퇴사일을 비워 저장하면 기존 입사일·연번을 유지한 채 재직자로 복귀합니다.</b> 실제 퇴사 후 다시 입사한 경우에는 퇴사자 목록의 “재입사”를 사용하세요.<br>실제 근무요일이 매주 바뀌는 스케줄근무라면 위 요일은 비워두셔도 됩니다. 이 항목은 “기본근무 채우기”를 빠르게 사용할 때만 참고합니다.<br>연차 기본값: 주5일은 월 +8h / 하루 -8h, 주4일은 주32h 소정 기준 월 +7h / 하루 -8h.</div>
  <div class="modalActions"><button class="btn gray" onclick="closeModal()">취소</button><button class="btn" onclick="saveEmployee(${id||'null'})">저장</button></div>`);
+ $('modalBox')?.classList.add('employeeEditModal');
  $('eType').value=workType(e);$('ePay').value=e.pay_type||'monthly';$('ePayDay').value=payDayRule(e);$('eIncentiveOn').value=incentiveEnabled(e)?'1':'0';
 }
 function applyLeavePreset(){
@@ -4608,6 +4666,9 @@ async function saveEmployee(id){
  let existing=id?[...employees,...retiredEmployees].find(x=>x.id===id):null;
  let returnEmployeeView=employeeView;
  let resign=$('eResign')?.value||null;
+ let birthRaw=String($('eBirth')?.value||'').trim();
+ let birthNormalized=birthRaw?normalizeCompactDateInput(birthRaw):birthDateFromResidentNumber($('eResident')?.value||'');
+ if(birthRaw&&!birthNormalized)return alert('생년월일이 올바르지 않습니다.\n예: 19810626');
 
  let obj={
    store_id:storeId(),
@@ -4616,7 +4677,7 @@ async function saveEmployee(id){
    bank_account:$('eBankAccount')?.value.trim()||null,
    role:$('eRole').value.trim(),
    department:$('eDept').value.trim(),
-   birth_date:$('eBirth').value||null,
+   birth_date:birthNormalized||null,
    phone:$('ePhone').value.trim(),
    email:$('eEmail').value.trim(),
    address:$('eAddress').value.trim(),
@@ -7523,12 +7584,11 @@ function printResignation(id){
     </div>
    </div>
 
-   <div class="docResignStatement">
+   <div class="docResignStatement" style="margin-bottom:4mm!important">
       상기 본인은 마지막 근무일인 ${lastText}자로<br>
       귀사에서 사직하고자 하오니 수락하여 주시기 바랍니다.
    </div>
 
-   <div class="docSpacer"></div>
    <div class="docIssueDate">${fmtDateKo(isoToday())}</div>
    <div class="docSignature">제출자&nbsp;&nbsp;&nbsp; ${v(e.name)} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (서명 또는 인)</div>
    <div class="docCompanyName">${v(s.name)} 귀하</div>
