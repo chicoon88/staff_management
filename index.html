@@ -850,7 +850,7 @@ body.resizingEmployeeColumn *{
 .storeTag{display:inline-flex;padding:3px 7px;border-radius:999px;background:#f1f5f9;color:#475569;font-size:11px;font-weight:800;margin:1px 2px}
 .permissionGrid{display:grid;grid-template-columns:minmax(170px,1fr) 90px 90px;gap:0;border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-top:10px}
 .permissionGrid>div{padding:8px 10px;border-bottom:1px solid var(--line);background:#fff}.permissionGrid>.head{font-weight:900;background:#f7f9fc}.permissionGrid>div:nth-last-child(-n+3){border-bottom:0}
-.permissionStoreList{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}.permissionStoreCheck{display:inline-flex;align-items:center;gap:5px;border:1px solid var(--line);border-radius:9px;padding:7px 9px;background:#fff}
+.permissionStoreList{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:8px;margin-top:8px}.permissionStoreCheck{display:flex!important;align-items:center!important;gap:9px!important;border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:#fff;white-space:nowrap!important;word-break:keep-all!important;line-height:1.25!important;min-width:0}.permissionStoreCheck input[type=checkbox]{width:18px!important;min-width:18px!important;height:18px!important;flex:0 0 18px!important;margin:0!important}.permissionStoreCheck:hover{background:#f8fbff;border-color:#b9c9ff}.modalBack>.modal input[type=checkbox],.modalBack>.modal input[type=radio]{width:18px!important;min-width:18px!important;height:18px!important;flex:0 0 18px!important;padding:0!important;margin:0!important}.modalBack>.modal label{word-break:keep-all}.modalBack>.modal .accountUseRow{display:inline-flex!important;align-items:center!important;gap:8px!important;width:auto!important;white-space:nowrap!important;word-break:keep-all!important;line-height:1.2!important}.permissionGrid>div{word-break:keep-all}.permissionGrid>.head{white-space:nowrap}.permissionTable th,.permissionTable td{word-break:keep-all}
 .readOnlyScheduleNotice{display:none;padding:8px 11px;border-radius:9px;background:#fff7ed;color:#9a5215;font-weight:800;margin-top:8px}
 #schedulePage.scheduleReadOnly .readOnlyScheduleNotice{display:block}
 #schedulePage.scheduleReadOnly input.code,#schedulePage.scheduleReadOnly input.weekCode{background:#f8fafc!important;color:#475569!important;cursor:not-allowed}
@@ -1051,7 +1051,7 @@ body.resizingEmployeeColumn *{
 
 <section id="payrollPage" class="page">
  <div class="row">
-  <div><h1 class="title">급여관리 <span style="font-size:12px;color:#315efb;background:#eef3ff;border-radius:999px;padding:4px 8px;vertical-align:middle">v2026.08.23-1435</span></h1><div class="sub">월별 급여대장을 검산하고, 기간별·직원별 누적 급여도 조회합니다.</div></div>
+  <div><h1 class="title">급여관리 <span style="font-size:12px;color:#315efb;background:#eef3ff;border-radius:999px;padding:4px 8px;vertical-align:middle">v2026.08.23-1445</span></h1><div class="sub">월별 급여대장을 검산하고, 기간별·직원별 누적 급여도 조회합니다.</div></div>
   <div class="toolbar">
    <input type="file" id="payrollFile" accept=".xlsx,.xls,.xlsm" multiple style="display:none" onchange="importPayrollFiles(this.files);this.value=''">
    <button class="btn" onclick="$('payrollFile').click()">급여대장 여러개 불러오기</button>
@@ -1559,7 +1559,7 @@ function openUserAccountEditor(uid){
     <div class="field"><label>새 비밀번호 <span class="help">변경할 때만 입력</span></label><input id="accountPassword" type="password" autocomplete="new-password"></div>
     <div class="field"><label>비밀번호 확인</label><input id="accountPassword2" type="password" autocomplete="new-password"></div>
    </div>
-   ${u.is_admin?'<div class="infoBox help" style="margin-top:12px"><b>최고관리자</b>는 전체 업장과 전체 기능을 계속 사용합니다.</div>':`<label style="display:flex;align-items:center;gap:7px;margin-top:12px"><input id="accountActive" type="checkbox" ${u.active!==false?'checked':''}>계정 사용</label>`}
+   ${u.is_admin?'<div class="infoBox help" style="margin-top:12px"><b>최고관리자</b>는 전체 업장과 전체 기능을 계속 사용합니다.</div>':`<label class="accountUseRow" style="margin-top:12px"><input id="accountActive" type="checkbox" ${u.active!==false?'checked':''}>계정 사용</label>`}
    <div class="modalActions" style="justify-content:space-between">${!u.is_admin&&!me?`<button class="btn red" onclick="deleteDashboardUser('${uid}')">계정 삭제</button>`:'<span></span>'}<div class="toolbar"><button class="btn gray" onclick="closeModal()">취소</button><button class="btn" onclick="saveUserAccountEditor('${uid}')">저장</button></div></div>`);
 }
 async function saveUserAccountEditor(uid){
@@ -1571,10 +1571,34 @@ async function saveUserAccountEditor(uid){
  if(pw!==pw2)return alert('비밀번호 확인이 일치하지 않습니다.');
  let active=u.is_admin?true:!!$('accountActive')?.checked;
  try{
-   await invokeSchedulerAccountAdmin({action:'upsert_user_account',user_id:uid,login_id:loginId,display_name:displayName,password:pw||null,active});
+   // 아이디/표시이름만 바꾸는 경우에는 Edge Function을 거치지 않고
+   // app_users를 직접 수정합니다. 한글 아이디 변경이 Edge Function 버전 차이로
+   // 막히는 문제를 피하고, resolve_dashboard_login()도 이 값을 바로 사용합니다.
+   if(!pw){
+     let direct=await sb.from('app_users').update({login_id:loginId,display_name:displayName,active}).eq('user_id',uid).select('user_id').maybeSingle();
+     if(direct.error){
+       // 프로젝트별 RLS가 직접 수정을 막는 경우에만 서버 함수로 한 번 더 시도합니다.
+       try{
+         await invokeSchedulerAccountAdmin({action:'upsert_user_account',user_id:uid,login_id:loginId,display_name:displayName,password:null,active});
+       }catch(edgeErr){
+         let msg=String(edgeErr?.message||edgeErr||'');
+         if(/지원하지 않는 작업|unsupported/i.test(msg)){
+           throw new Error('현재 배포된 scheduler-account-admin이 이전 버전입니다. Edge Function의 index.ts를 최신 파일로 전체 교체 후 Deploy updates를 눌러 주세요.\n\nDB 직접 저장 오류: '+direct.error.message);
+         }
+         throw edgeErr;
+       }
+     }
+   }else{
+     await invokeSchedulerAccountAdmin({action:'upsert_user_account',user_id:uid,login_id:loginId,display_name:displayName,password:pw,active});
+   }
+   if(uid===currentSessionUser?.id&&currentAppUser){currentAppUser={...currentAppUser,login_id:loginId,display_name:displayName,active:true}}
    closeModal();await loadAdminAccountDirectory();await loadUsersAdminPage();updateCurrentUserBadge();
    alert(pw?'아이디/이름/비밀번호를 저장했습니다.':'아이디와 이름을 저장했습니다.');
- }catch(err){alert('계정 저장 오류\n\n'+(err?.message||err))}
+ }catch(err){
+   let msg=String(err?.message||err||'');
+   if(/duplicate key|app_users_login_id_lower_key|unique/i.test(msg))msg='이미 사용 중인 로그인 아이디입니다. 다른 아이디를 입력해 주세요.';
+   alert('계정 저장 오류\n\n'+msg)
+ }
 }
 async function deleteDashboardUser(uid){
  if(!isAppAdmin())return alert('최고관리자만 계정을 삭제할 수 있습니다.');
@@ -1609,7 +1633,7 @@ function openUserPermissionEditor(uid){
  let u=adminUsers.find(x=>x.user_id===uid);if(!u)return;let currentStores=new Set(adminUserStoreAccess.filter(x=>x.user_id===uid).map(x=>Number(x.store_id)));let perms=new Map(adminUserPermissions.filter(x=>x.user_id===uid).map(x=>[x.module_key,x]));
  let storeHtml=stores.map(st=>`<label class="permissionStoreCheck"><input type="checkbox" class="permStore" value="${st.id}" ${currentStores.has(st.id)?'checked':''}>${esc(st.name)}</label>`).join('');
  let grid=APP_PERMISSION_MODULES.map(m=>{let p=perms.get(m.key)||{};return `<div>${esc(m.label)}</div><div style="text-align:center"><input type="checkbox" id="pv-${m.key}" ${p.can_view?'checked':''} onchange="if(!this.checked)$('pe-${m.key}').checked=false"></div><div style="text-align:center"><input type="checkbox" id="pe-${m.key}" ${p.can_edit?'checked':''} onchange="if(this.checked)$('pv-${m.key}').checked=true"></div>`}).join('');
- modal(`<h2>${esc(u.display_name||u.login_id||'사용자')} · 권한 설정</h2><div class="field"><label>표시 이름</label><input id="permDisplayName" value="${esc(u.display_name||'')}" style="width:100%"></div><div style="margin-top:10px"><b>접근 업장</b><div class="permissionStoreList">${storeHtml}</div></div><div class="toolbar" style="margin-top:10px"><button class="btn green small" onclick="setSchedulerPermissionPreset()">스케줄 담당자 기본권한</button><span class="help">전체현황 보기 + 스케줄 보기·수정 + 근로시간 보기</span></div><div class="permissionGrid"><div class="head">대시보드</div><div class="head" style="text-align:center">보기</div><div class="head" style="text-align:center">수정</div>${grid}</div><label style="display:flex;align-items:center;gap:6px;margin-top:12px"><input id="permUserActive" type="checkbox" ${u.active!==false?'checked':''}>계정 사용</label><div class="modalActions"><button class="btn gray" onclick="closeModal()">취소</button><button class="btn" onclick="saveUserPermissionEditor('${uid}')">저장</button></div>`);
+ modal(`<h2>${esc(u.display_name||u.login_id||'사용자')} · 권한 설정</h2><div class="field"><label>표시 이름</label><input id="permDisplayName" value="${esc(u.display_name||'')}" style="width:100%"></div><div style="margin-top:10px"><b>접근 업장</b><div class="permissionStoreList">${storeHtml}</div></div><div class="toolbar" style="margin-top:10px"><button class="btn green small" onclick="setSchedulerPermissionPreset()">스케줄 담당자 기본권한</button><span class="help">전체현황 보기 + 스케줄 보기·수정 + 근로시간 보기</span></div><div class="permissionGrid"><div class="head">대시보드</div><div class="head" style="text-align:center">보기</div><div class="head" style="text-align:center">수정</div>${grid}</div><label class="accountUseRow" style="margin-top:12px"><input id="permUserActive" type="checkbox" ${u.active!==false?'checked':''}>계정 사용</label><div class="modalActions"><button class="btn gray" onclick="closeModal()">취소</button><button class="btn" onclick="saveUserPermissionEditor('${uid}')">저장</button></div>`);
 }
 function setSchedulerPermissionPreset(){APP_PERMISSION_MODULES.forEach(m=>{let v=$(`pv-${m.key}`),e=$(`pe-${m.key}`);if(v)v.checked=(m.key==='home'||m.key==='schedule'||m.key==='hours');if(e)e.checked=(m.key==='schedule')})}
 async function saveUserPermissionEditor(uid){
