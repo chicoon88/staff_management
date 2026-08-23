@@ -819,6 +819,52 @@ body.resizingEmployeeColumn *{
 .storeAccountBox{grid-column:1/-1;margin-top:4px;padding:12px;border:1px solid #dbe4f0;border-radius:12px;background:#f8fafc}.storeAccountGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.storeAccountStatus{display:inline-flex;padding:4px 8px;border-radius:999px;font-size:11px;font-weight:900}.storeAccountStatus.on{background:#ecfdf3;color:#067647}.storeAccountStatus.off{background:#fff1f1;color:#b42318}.storeAccountStatus.none{background:#eef2f7;color:#64748b}
 .auditUndoBtn{white-space:nowrap}.schedulerFocusNote{display:none}.schedulerMode .schedulerFocusNote{display:block}
 @media(max-width:760px){.storeAccountGrid{grid-template-columns:1fr}.adminTaskList{grid-template-columns:1fr}.scheduleLockHelp{width:100%}}
+
+
+/* ===== 2026-08-21 텔레캅 근태검증 · 선택출력 · 간편화 ===== */
+.simpleTabs{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.simpleTab{border:1px solid var(--line);background:#fff;color:#475569;border-radius:10px;padding:9px 15px;font-weight:900;cursor:pointer}
+.simpleTab.active{background:#315efb;color:#fff;border-color:#315efb}
+.attendanceBadge{display:inline-flex;min-width:19px;height:19px;align-items:center;justify-content:center;border-radius:999px;background:#fff1f1;color:#b42318;font-size:10px;font-weight:900;margin-left:5px;padding:0 5px}
+.simpleTab.active .attendanceBadge{background:#fff;color:#315efb}
+.attendanceHero{border:1px solid #dbe4f0;background:linear-gradient(180deg,#fff,#fbfcff);margin-top:12px}
+.attendanceHeroRow{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.attendanceHeroTitle{font-size:18px;font-weight:900}.attendanceHeroSub{font-size:12px;color:#667085;margin-top:3px}
+.attendanceUploadBtn{font-size:15px!important;padding:11px 17px!important;min-height:44px}
+.attendanceSummary{display:grid;grid-template-columns:repeat(3,minmax(130px,1fr));gap:9px;margin-top:10px}
+.attendanceStat{border:1px solid var(--line);border-radius:11px;background:#fff;padding:11px 13px}
+.attendanceStat .k{font-size:11px;color:#667085;font-weight:800}.attendanceStat .v{font-size:22px;font-weight:950;margin-top:2px}
+.attendanceStat.need .v{color:#b42318}.attendanceStat.done .v{color:#067647}
+.attendanceToolbar{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin:12px 0 8px}
+.attendanceToolbar .spacer{flex:1}
+.attendanceFilter{min-width:150px}
+.attendanceTable th,.attendanceTable td{vertical-align:middle}
+.attendanceTable .attName{min-width:90px;font-weight:900}.attendanceTable .attDate{white-space:nowrap;min-width:72px}.attendanceTable .attSchedule{min-width:150px}.attendanceTable .attPunch{min-width:145px}.attendanceTable .attStatus{min-width:132px}.attendanceTable .attAction{white-space:nowrap;min-width:108px}
+.attStatusTag{display:inline-flex;align-items:center;gap:4px;border-radius:999px;padding:5px 8px;font-size:11px;font-weight:900;white-space:nowrap;background:#f1f5f9;color:#475569}
+.attStatusTag.ok{background:#ecfdf3;color:#067647}.attStatusTag.warn{background:#fff7ed;color:#9a5215}.attStatusTag.danger{background:#fff1f1;color:#b42318}.attStatusTag.info{background:#eef3ff;color:#315efb}
+.attReviewDone{font-size:11px;color:#067647;font-weight:800;line-height:1.4}
+.attReviewOld{font-size:10px;color:#b42318;font-weight:800;margin-top:3px}
+.attEmpty{padding:34px 16px!important;text-align:center!important;color:#667085}
+.attFileName{display:inline-flex;align-items:center;gap:5px;padding:5px 8px;border-radius:999px;background:#f1f5f9;color:#475569;font-size:11px;font-weight:800}
+.attReviewChoices{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:10px}
+.attReviewChoice{border:1px solid var(--line);background:#fff;border-radius:10px;padding:10px 11px;text-align:left;font-weight:850;cursor:pointer}
+.attReviewChoice.active{border-color:#315efb;background:#eef3ff;color:#2348bd}
+.attCompactFacts{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0}.attCompactFact{border:1px solid var(--line);border-radius:9px;padding:9px 10px;background:#fafbfc}.attCompactFact b{display:block;font-size:11px;color:#667085;margin-bottom:3px}.attCompactFact span{font-weight:900}
+.attHistory{margin-top:10px;border-top:1px solid var(--line);padding-top:8px}.attHistoryItem{font-size:11px;color:#667085;padding:5px 0;border-bottom:1px dashed #e5e7eb}.attHistoryItem:last-child{border-bottom:0}
+.outputModeRow{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0}.outputModeBtn{border:1px solid var(--line);background:#fff;border-radius:11px;padding:14px 10px;font-weight:900;cursor:pointer}.outputModeBtn.active{background:#eef3ff;border-color:#315efb;color:#2348bd}
+.outputEmployeeList{border:1px solid var(--line);border-radius:10px;padding:8px;max-height:330px;overflow:auto}.outputEmployeeItem{display:flex;align-items:center;gap:8px;padding:8px;border-bottom:1px solid #eef0f3;font-weight:800}.outputEmployeeItem:last-child{border-bottom:0}.outputEmployeeItem input{width:18px;height:18px}
+.schedulerMode .schedulerAdvanced{display:none!important}
+.schedulerMode #schedulePage>.row>.toolbar .btn{min-height:40px;padding:9px 13px;font-size:13px}
+.schedulerMode #schedulePage .schedulerFocusNote{font-size:12px;padding:8px 10px}
+.schedulerMode .side .nav{font-size:14px;padding:12px 13px}
+.schedulerMode .top .brand small{display:none}
+@media(max-width:760px){.attendanceSummary{grid-template-columns:1fr 1fr 1fr}.attCompactFacts{grid-template-columns:1fr}.attReviewChoices{grid-template-columns:1fr}.attendanceToolbar .spacer{display:none}.outputModeRow{grid-template-columns:1fr 1fr}}
+@media(max-width:520px){.attendanceSummary{grid-template-columns:1fr}.attendanceStat{display:flex;justify-content:space-between;align-items:center}.attendanceStat .v{font-size:19px}.outputModeRow{grid-template-columns:1fr}}
+
+
+.schedulerMode #scheduleStoreState,.schedulerMode #scheduleLoadState,.schedulerMode #schedulePage>.row>.toolbar>span.help{display:none!important}
+.schedulerMode #scheduleLockBadge.open{display:none!important}
+
 </style>
 </head>
 <body>
@@ -880,9 +926,8 @@ body.resizingEmployeeColumn *{
   <button class="btn gray" onclick="toggleAllEmployees(false)">선택 해제</button>
   <button class="btn" onclick="fillDefaults()">선택 직원 기본근무 채우기</button>
   <button class="btn red" onclick="clearSelectedSchedules()">선택 직원 비우기</button>
-  <button class="btn green" onclick="printSchedule()">근무표 인쇄/PDF</button>
-  <button class="btn" onclick="exportSchedule()">스케줄 Excel</button>
-  <button class="btn gray" onclick="openScheduleDiagnostics()">오류검사</button>
+  <button class="btn green" onclick="openScheduleOutput()">스케줄 출력</button>
+  <button class="btn gray schedulerAdvanced" onclick="openScheduleDiagnostics()">오류검사</button>
   <button id="scheduleLockBtn" class="btn gray" style="display:none" onclick="toggleCurrentMonthLock()">월 마감</button>
   <button id="monthBackupBtn" class="btn gray" style="display:none" onclick="backupSelectedMonth()">월 백업</button>
   <span id="scheduleLockBadge" class="scheduleLockBadge open">편집 가능</span>
@@ -890,7 +935,7 @@ body.resizingEmployeeColumn *{
  </div>
  </div>
  <div class="legend"><span class="tag">8 = 8시간</span><span class="tag">9 = 9시간</span><span class="tag">0 = 휴무</span><span class="tag">연 = 연차</span><span class="tag">병 = 병가</span><span class="tag">주5일 목표 40h</span><span class="tag">주4일 목표 36h</span><span class="tag">공휴일은 주말보다 우선</span></div>
- <div class="readOnlyScheduleNotice" id="scheduleReadOnlyNotice">보기 전용 권한입니다. 스케줄 확인은 가능하지만 수정은 할 수 없습니다.</div><div class="schedulerFocusNote infoBox help" style="margin-top:8px"><b>스케줄 담당자 화면</b> · 이 계정은 허용된 업장의 월간스케줄·주간편성·근로시간 중심으로 사용합니다.</div>
+ <div class="readOnlyScheduleNotice" id="scheduleReadOnlyNotice">보기 전용 권한입니다. 스케줄 확인은 가능하지만 수정은 할 수 없습니다.</div><div class="schedulerFocusNote infoBox help" style="margin-top:8px"><b>사용 순서</b> · 스케줄 입력 → 근태 확인 → 스케줄 출력</div>
 
  <div id="monthlyScheduleWrap">
    <div class="tablewrap"><table><thead id="schHead"></thead><tbody id="schBody"></tbody></table></div>
@@ -908,18 +953,52 @@ body.resizingEmployeeColumn *{
 </section>
 
 <section id="hoursPage" class="page">
- <div><h1 class="title">근로시간</h1><div class="sub">선택월 스케줄을 기준으로 평일 / 주말 / 공휴일 실제 근무를 자동 집계합니다. 같은 근무시간은 묶어서 표시하며, 공휴일이 주말보다 우선합니다.</div></div>
- <div class="card hoursSummaryCard" style="margin-top:13px">
-  <div class="hoursSummaryGuide"><b>보는 방법</b> · 예: <b>10일 × 8h + 2일 × 5h = 90h</b>처럼 같은 근무시간끼리 자동으로 묶습니다. 직원관리에서 <b>스케줄·근로 제외</b>를 체크한 직원은 월간스케줄·주간편성·근로시간에서 모두 표시하지 않습니다.</div>
-  <div class="tablewrap" style="margin-top:10px"><table class="hoursSummaryTable"><thead><tr><th class="name">직원</th><th>근무형태</th><th class="hoursKindHead weekdayHead">평일</th><th class="hoursKindHead weekendHead">주말</th><th class="hoursKindHead holidayHead">공휴일</th><th>실근로</th><th>주휴 예상</th><th>비교 합계</th><th>연장</th><th>연차</th><th>병가</th><th>급여대장 월근무</th><th>차이</th></tr></thead><tbody id="hoursBody"></tbody></table></div>
+ <div class="row">
+  <div><h1 class="title" id="hoursPageTitle">근로시간</h1><div class="sub" id="hoursPageSub">선택월 스케줄을 기준으로 근로시간을 확인합니다.</div></div>
+  <div class="simpleTabs">
+   <button id="hoursSummaryTabBtn" class="simpleTab active" onclick="setHoursView('summary')">근로시간</button>
+   <button id="attendanceTabBtn" class="simpleTab" onclick="setHoursView('attendance')">근태 확인 <span id="attendanceNeedBadge" class="attendanceBadge" style="display:none">0</span></button>
+  </div>
  </div>
- <div class="help" style="margin-top:7px">※ 평일·주말·공휴일 시간은 실제 worked_hours 기준입니다. 주휴 예상시간은 급여대장 비교용이며, 주 소정근로시간과 주별 스케줄을 기준으로 계산합니다.</div>
- <div class="card" style="margin-top:10px"><h3>직원별 출근 날짜</h3><div class="help">위 집계가 어떤 날짜에서 나온 값인지 확인하는 상세표입니다.</div><div class="tablewrap" style="margin-top:10px"><table class="workDateTable"><thead><tr><th class="name">직원</th><th class="weekdayHead">평일 근무일</th><th class="weekendHead">주말 근무일</th><th class="holidayHead">공휴일 근무일</th></tr></thead><tbody id="workDateBody"></tbody></table></div></div>
+ <div id="hoursSummaryView">
+  <div class="card hoursSummaryCard" style="margin-top:13px">
+   <div class="hoursSummaryGuide"><b>보는 방법</b> · 예: <b>10일 × 8h + 2일 × 5h = 90h</b>처럼 같은 근무시간끼리 자동으로 묶습니다. 직원관리에서 <b>스케줄·근로 제외</b>를 체크한 직원은 월간스케줄·주간편성·근로시간에서 모두 표시하지 않습니다.</div>
+   <div class="tablewrap" style="margin-top:10px"><table class="hoursSummaryTable"><thead><tr><th class="name">직원</th><th>근무형태</th><th class="hoursKindHead weekdayHead">평일</th><th class="hoursKindHead weekendHead">주말</th><th class="hoursKindHead holidayHead">공휴일</th><th>실근로</th><th>주휴 예상</th><th>비교 합계</th><th>연장</th><th>연차</th><th>병가</th><th>급여대장 월근무</th><th>차이</th></tr></thead><tbody id="hoursBody"></tbody></table></div>
+  </div>
+  <div class="help" style="margin-top:7px">※ 평일·주말·공휴일 시간은 대시보드의 실제 worked_hours 기준입니다.</div>
+  <div class="card" style="margin-top:10px"><h3>직원별 출근 날짜</h3><div class="tablewrap" style="margin-top:10px"><table class="workDateTable"><thead><tr><th class="name">직원</th><th class="weekdayHead">평일 근무일</th><th class="weekendHead">주말 근무일</th><th class="holidayHead">공휴일 근무일</th></tr></thead><tbody id="workDateBody"></tbody></table></div></div>
+ </div>
+ <div id="attendanceView" class="hidden">
+  <div class="card attendanceHero">
+   <div class="attendanceHeroRow">
+    <div><div class="attendanceHeroTitle">텔레캅 근태 확인</div><div class="attendanceHeroSub">지문기록은 스케줄 확인용이며 근로시간을 자동으로 바꾸지 않습니다.</div></div>
+    <div class="toolbar">
+     <input type="file" id="attendanceFile" accept=".xlsx,.xls,.xlsm" style="display:none" onchange="importAttendanceFile(this.files?.[0]);this.value=''">
+     <button class="btn attendanceUploadBtn" onclick="$('attendanceFile').click()">텔레캅 파일 불러오기</button>
+     <button id="attendanceRuleBtn" class="btn gray small adminOnly" onclick="openAttendanceRules()">기준 설정</button>
+    </div>
+   </div>
+   <div id="attendanceImportLine" style="margin-top:9px"><span class="help">선택월 텔레캅 파일을 불러오세요.</span></div>
+   <div class="attendanceSummary">
+    <div class="attendanceStat"><div class="k">정상</div><div class="v" id="attNormalCount">0</div></div>
+    <div class="attendanceStat need"><div class="k">확인 필요</div><div class="v" id="attNeedCount">0</div></div>
+    <div class="attendanceStat done"><div class="k">확인 완료</div><div class="v" id="attDoneCount">0</div></div>
+   </div>
+  </div>
+  <div class="attendanceToolbar">
+   <button id="attPendingBtn" class="btn" onclick="setAttendanceListMode('pending')">미확인</button>
+   <button id="attDoneBtn" class="btn gray" onclick="setAttendanceListMode('done')">확인완료</button>
+   <select id="attendanceStatusFilter" class="attendanceFilter" onchange="renderAttendance()"><option value="">전체 종류</option></select>
+   <span class="spacer"></span>
+   <button id="attendanceBulkBtn" class="btn green small" onclick="bulkConfirmAttendance()">선택 정상근무 확인</button>
+  </div>
+  <div class="tablewrap"><table class="attendanceTable"><thead><tr><th style="width:42px">선택</th><th>직원</th><th>날짜</th><th>스케줄</th><th>텔레캅</th><th>상태</th><th>처리</th></tr></thead><tbody id="attendanceBody"><tr><td colspan="7" class="attEmpty">텔레캅 파일을 불러오면 확인할 기록만 표시합니다.</td></tr></tbody></table></div>
+ </div>
 </section>
 
 <section id="payrollPage" class="page">
  <div class="row">
-  <div><h1 class="title">급여관리 <span style="font-size:12px;color:#315efb;background:#eef3ff;border-radius:999px;padding:4px 8px;vertical-align:middle">v2026.08.20-1715</span></h1><div class="sub">월별 급여대장을 검산하고, 기간별·직원별 누적 급여도 조회합니다.</div></div>
+  <div><h1 class="title">급여관리 <span style="font-size:12px;color:#315efb;background:#eef3ff;border-radius:999px;padding:4px 8px;vertical-align:middle">v2026.08.21-2335</span></h1><div class="sub">월별 급여대장을 검산하고, 기간별·직원별 누적 급여도 조회합니다.</div></div>
   <div class="toolbar">
    <input type="file" id="payrollFile" accept=".xlsx,.xls,.xlsm" multiple style="display:none" onchange="importPayrollFiles(this.files);this.value=''">
    <button class="btn" onclick="$('payrollFile').click()">급여대장 여러개 불러오기</button>
@@ -1086,7 +1165,7 @@ function closeModal(){
  document.body.style.overflow='';
 }
 $('monthSelect').value=new Date().toISOString().slice(0,7);
-let employees=[],schedules=[],payroll=[],stores=[],holidays=[],manualHolidays=[],autoHolidays=[],selectedEmployees=new Set(),leaveLedger=[],leaveAttendanceSchedules=[],scheduleSaveQueue=new Map(),scheduleSaveTimer=null,employeeImportRows=[],paymentRegister=[],incentiveRegister=[],retiredEmployees=[],employeeView='active',employeeActiveSort='manual',refreshToken=0,payrollReloadToken=0,employeeDeleteSelection=new Set(),scheduleView='monthly',employeeResidentBackfillDoneStores=new Set(),employeeSensitiveColumnsMissingDetected=false,employeeDocumentStatusMap=new Map(),employeeDocumentStatusReadyStoreId=null,employeeDocumentPeriodColumnsAvailable=true,employeeWorkConditions=[],employeeWorkConditionTableAvailable=null,currentSessionUser=null,currentAppUser=null,currentPermissions=new Map(),currentStoreAccess=new Set(),permissionSystemAvailable=null,adminUsers=[],adminUserStoreAccess=[],adminUserPermissions=[],auditLogs=[],accessLogs=[],scheduleMonthLocks=[],scheduleLockTableAvailable=null,adminTaskRefreshToken=0;
+let employees=[],schedules=[],payroll=[],stores=[],holidays=[],manualHolidays=[],autoHolidays=[],selectedEmployees=new Set(),leaveLedger=[],leaveAttendanceSchedules=[],scheduleSaveQueue=new Map(),scheduleSaveTimer=null,employeeImportRows=[],paymentRegister=[],incentiveRegister=[],retiredEmployees=[],employeeView='active',employeeActiveSort='manual',refreshToken=0,payrollReloadToken=0,employeeDeleteSelection=new Set(),scheduleView='monthly',employeeResidentBackfillDoneStores=new Set(),employeeSensitiveColumnsMissingDetected=false,employeeDocumentStatusMap=new Map(),employeeDocumentStatusReadyStoreId=null,employeeDocumentPeriodColumnsAvailable=true,employeeWorkConditions=[],employeeWorkConditionTableAvailable=null,currentSessionUser=null,currentAppUser=null,currentPermissions=new Map(),currentStoreAccess=new Set(),permissionSystemAvailable=null,adminUsers=[],adminUserStoreAccess=[],adminUserPermissions=[],auditLogs=[],accessLogs=[],scheduleMonthLocks=[],scheduleLockTableAvailable=null,adminTaskRefreshToken=0,hoursView='summary',attendanceSchemaAvailable=null,attendanceActiveImport=null,attendanceRecords=[],attendanceReviews=[],attendanceReviewHistory=[],attendanceListMode='pending',attendanceSelected=new Set(),attendancePendingManualParse=null,attendanceSettings={late_minutes:10,early_leave_minutes:10,late_out_minutes:60},scheduleOutputMode='all',scheduleOutputSelected=new Set();
 const money=n=>Math.round(Number(n||0)).toLocaleString('ko-KR')+'원',esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 function normalizeName(v){return String(v??'').normalize('NFKC').trim().replace(/\s+/g,'').replace(/[·ㆍ._-]/g,'').toLowerCase()}
 function monthRange(){let m=$('monthSelect').value,[y,mo]=m.split('-').map(Number),days=new Date(y,mo,0).getDate();return {m,y,mo,days,first:m+'-01',last:m+'-'+String(days).padStart(2,'0')}}
@@ -1266,7 +1345,15 @@ async function loadCurrentAccessContext(){
  return true;
 }
 function updateCurrentUserBadge(){let el=$('currentUserBadge');if(!el)return;let name=currentAppUser?.display_name||currentAppUser?.email||currentSessionUser?.email||'사용자';el.textContent=isAppAdmin()?`관리자 · ${name}`:name;el.classList.toggle('admin',isAppAdmin())}
-function applyPermissionUI(){document.body.classList.toggle('schedulerMode',!isAppAdmin());document.querySelectorAll('.nav[data-page]').forEach(btn=>{btn.style.display=canViewModule(btn.dataset.page)?'':'none'});if($('adminNavDivider'))$('adminNavDivider').style.display=(canViewModule('users')||canViewModule('audit'))?'':'none';if($('renameStoreBtn'))$('renameStoreBtn').style.display=canEditModule('stores')?'':'none';updateCurrentUserBadge();applyScheduleEditState();if($('adminTaskBoard'))$('adminTaskBoard').style.display=isAppAdmin()?'':'none'}
+function applyPermissionUI(){
+ document.body.classList.toggle('schedulerMode',!isAppAdmin());
+ document.querySelectorAll('.nav[data-page]').forEach(btn=>{btn.style.display=canViewModule(btn.dataset.page)?'':'none'});
+ document.querySelectorAll('.nav[data-page="hours"]').forEach(btn=>{let mobile=btn.closest('.mobileNav');btn.innerHTML=isAppAdmin()?(mobile?'근로':'◷ 근로시간'):(mobile?'근태 확인':'✓ 근태 확인')});
+ if($('adminNavDivider'))$('adminNavDivider').style.display=(canViewModule('users')||canViewModule('audit'))?'':'none';
+ if($('renameStoreBtn'))$('renameStoreBtn').style.display=canEditModule('stores')?'':'none';
+ document.querySelectorAll('.adminOnly').forEach(el=>{if(el.id!=='adminTaskBoard')el.style.display=isAppAdmin()?'':'none'});
+ updateCurrentUserBadge();applyScheduleEditState();if($('adminTaskBoard'))$('adminTaskBoard').style.display=isAppAdmin()?'':'none';
+}
 function selectInitialPermittedPage(){let active=document.querySelector('.page.active'),key=active?.id?.replace(/Page$/,'');if(key&&canViewModule(key))return;let first=['schedule','hours','home','employees','payroll','stores','holidays'].find(canViewModule);if(!first){document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));alert('이 계정에 허용된 대시보드가 없습니다. 관리자에게 권한을 요청하세요.');return}document.querySelectorAll('.nav').forEach(x=>x.classList.remove('active'));document.querySelectorAll(`[data-page="${first}"]`).forEach(x=>x.classList.add('active'));document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));$(`${first}Page`)?.classList.add('active')}
 async function logAccessEvent(eventType,details={}){if(permissionSystemAvailable!==true||!currentSessionUser)return;try{await sb.from('access_logs').insert({user_id:currentSessionUser.id,actor_email:currentSessionUser.email||currentAppUser?.email||null,actor_name:currentAppUser?.display_name||null,event_type:eventType,store_id:details.store_id??($('storeSelect')?.value?storeId():null),device:userDeviceLabel(),details})}catch(err){console.warn('접속기록 저장 오류',err)}}
 function scheduleMonthKey(v){return String(v||'').slice(0,7)}
@@ -1455,7 +1542,7 @@ async function boot(){let {data}=await sb.auth.getSession();if(data.session)open
 async function openApp(){
  try{
   let ok=await loadCurrentAccessContext();if(!ok)return;
-  $('login').classList.add('hidden');$('app').classList.remove('hidden');applyPermissionUI();await loadStores();if(isAppAdmin()&&permissionSystemAvailable===true){try{await loadAdminAccountDirectory()}catch(err){console.warn(err)}}selectInitialPermittedPage();applyPermissionUI();await refreshAll();await logAccessEvent('login',{store_id:$('storeSelect')?.value?storeId():null});
+  $('login').classList.add('hidden');$('app').classList.remove('hidden');applyPermissionUI();setHoursView(isAppAdmin()?(localStorage.getItem('staff_hours_view')||'summary'):'attendance');await loadStores();if(isAppAdmin()&&permissionSystemAvailable===true){try{await loadAdminAccountDirectory()}catch(err){console.warn(err)}}selectInitialPermittedPage();applyPermissionUI();await refreshAll();await logAccessEvent('login',{store_id:$('storeSelect')?.value?storeId():null});
  }catch(err){console.error(err);$('loginMsg').textContent=err?.message||String(err)}
 }
 [$('loginEmail'),$('loginPassword')].forEach(el=>el&&el.addEventListener('keydown',e=>{if(e.key==='Enter')signIn()}));
@@ -1467,7 +1554,7 @@ document.querySelectorAll('.nav').forEach(b=>b.onclick=()=>{
  let page=$(b.dataset.page+'Page');if(page)page.classList.add('active');
  if(b.dataset.page==='schedule'){if(scheduleView==='weekly')renderWeeklyPlanner();else renderSchedule();applyScheduleEditState()}
  else if(b.dataset.page==='employees'){employeeView='active';$('activeEmpTab')?.classList.add('active');$('retiredEmpTab')?.classList.remove('active');loadEmployeesPageData()}
- else if(b.dataset.page==='hours')loadHoursPageData();
+ else if(b.dataset.page==='hours'){setHoursView(isAppAdmin()?(localStorage.getItem('staff_hours_view')||'summary'):'attendance');loadHoursPageData();}
  else if(b.dataset.page==='payroll'){applyPayrollColumnWidths();loadPayrollSimple()}
  else if(b.dataset.page==='holidays')loadHolidayManagementYear();
  else if(b.dataset.page==='home')loadHomePageData();
@@ -1490,6 +1577,7 @@ function clearStoreScopedUI(){
  if($('schBody'))$('schBody').innerHTML='<tr><td colspan="40" style="padding:20px;text-align:center">직원·스케줄 불러오는 중...</td></tr>';
  if($('employeeBody'))$('employeeBody').innerHTML='<tr><td colspan="20" style="padding:20px;text-align:center">직원 불러오는 중...</td></tr>';
  if($('hoursBody'))$('hoursBody').innerHTML='<tr><td colspan="13" style="padding:20px;text-align:center">근로자료는 근로 탭에서 불러옵니다.</td></tr>';
+ if($('attendanceBody'))$('attendanceBody').innerHTML='<tr><td colspan="7" class="attEmpty">텔레캅 자료를 불러오는 중...</td></tr>';attendanceActiveImport=null;attendanceRecords=[];attendanceReviews=[];attendanceSelected.clear();
  if($('payrollBody'))$('payrollBody').innerHTML='<tr><td colspan="23" style="padding:20px;text-align:center">급여자료는 급여 탭에서 불러옵니다.</td></tr>';
 }
 
@@ -1587,6 +1675,8 @@ async function loadHomePageData(token=refreshToken,sid=storeId()){
 async function loadHoursPageData(token=refreshToken,sid=storeId()){
  if(canViewModule('payroll'))await loadPayroll();else payroll=[];
  if(token!==refreshToken || sid!==storeId())return;renderHours();
+ await loadAttendanceData(sid,$('monthSelect').value);
+ if(token!==refreshToken || sid!==storeId())return;renderAttendance();
 }
 async function backfillBlankEmployeeResidentsFromStoredPayroll(sid,{force=false}={}){
  sid=Number(sid||0);
@@ -2436,21 +2526,69 @@ function plannerWeeks(){
  return out;
 }
 function weeklyTargetHours(e,weekStart=mondayOf(isoToday())){
- // 주중 근무조건이 바뀌는 경우도 날짜별 조건을 합산해 목표시간을 계산한다.
- let total=0,hasPattern=false;
+ // 날짜별 근무조건과 실제 재직기간을 기준으로 목표시간을 계산한다.
+ // 특히 월중 입사/퇴사 또는 주중 근무조건 변경이 있는 첫·마지막 주에는
+ // 월요일 기준의 40h/36h를 그대로 반환하지 않고 해당 날짜부터만 계산해야 한다.
+ let weekEnd=addDaysIso(weekStart,6),total=0,patternKnown=false;
+ let employedDates=[];
  for(let d=0;d<7;d++){
-   let date=addDaysIso(weekStart,d);if(!employedOn(e,date))continue;
+   let date=addDaysIso(weekStart,d);
+   if(employedOn(e,date))employedDates.push(date);
+ }
+ if(!employedDates.length)return 0;
+
+ // 근무요일 패턴이 등록돼 있으면 가장 정확하므로 날짜별로 그대로 합산한다.
+ for(const date of employedDates){
    let cond=workConditionForDate(e,date),days=normalizedWorkDays(cond.work_days),wd=new Date(date+'T12:00:00').getDay();
    if(days.length){
-     hasPattern=true;
+     patternKnown=true;
      if(days.includes(wd))total+=conditionWorkedDayHours(cond);
    }
  }
- if(hasPattern)return Math.round(total*100)/100;
- let cond=workConditionForDate(e,weekStart);
- if(cond.work_type==='40')return 40;
- if(cond.work_type==='36')return 36;
- return 0;
+ if(patternKnown)return Math.round(total*100)/100;
+
+ // 요일 패턴이 비어 있는 스케줄근무자는 정상적인 '완전한 한 주'에는 기존 목표를 유지한다.
+ // 다만 입사/퇴사 또는 근무조건 적용일이 주중에 걸리면 구간별로 계산하여
+ // 홍수연처럼 8/5부터 근무하는 직원에게 첫 주 전체 40h/36h가 잡히는 오류를 막는다.
+ let rows=workConditionRowsForEmployee(e?.id);
+ let boundaryInsideWeek=rows.some(r=>String(r.effective_from||'')>weekStart&&String(r.effective_from||'')<=weekEnd);
+ let partialEmployment=(e?.hire_date&&e.hire_date>weekStart&&e.hire_date<=weekEnd)||(e?.resign_date&&e.resign_date>=weekStart&&e.resign_date<weekEnd);
+ if(!boundaryInsideWeek&&!partialEmployment&&employedDates.length===7){
+   let cond=workConditionForDate(e,weekStart);
+   if(cond.work_type==='40')return 40;
+   if(cond.work_type==='36')return 36;
+   return 0;
+ }
+
+ // 패턴 미등록 + 부분 주간: 조건이 적용되는 평일만 일 단위로 환산한다.
+ // 주5일은 1일 소정시간(통상 8h), 주4일 36h는 1일 목표 9h로 계산하고
+ // 동일 조건 구간이 한 주 목표를 초과하지 않도록 제한한다.
+ let groups=new Map();
+ for(const date of employedDates){
+   let cond=workConditionForDate(e,date),wd=new Date(date+'T12:00:00').getDay();
+   if(wd===0||wd===6)continue;
+   let key=String(cond._history_id||cond.effective_from||cond.work_type||'base');
+   if(!groups.has(key))groups.set(key,{cond,hours:0});
+   let g=groups.get(key);
+   if(cond.work_type==='40')g.hours+=Number(cond.daily_hours||8);
+   else if(cond.work_type==='36')g.hours+=9;
+ }
+ for(const g of groups.values()){
+   let cap=g.cond.work_type==='40'?40:g.cond.work_type==='36'?36:0;
+   if(cap>0)total+=Math.min(cap,g.hours);
+ }
+ return Math.round(total*100)/100;
+}
+function workTypeForWeek(e,weekStart){
+ let vals=[];
+ for(let d=0;d<7;d++){
+   let date=addDaysIso(weekStart,d);
+   if(!employedOn(e,date))continue;
+   let v=workTypeForDate(e,date);
+   if(v&&!vals.includes(v))vals.push(v);
+ }
+ if(!vals.length)return workTypeForDate(e,weekStart);
+ return vals.length===1?vals[0]:`변경 · ${vals.join(' → ')}`;
 }
 function weeklyWorkedHours(e,weekStart){
  let end=addDaysIso(weekStart,6),total=0;
@@ -2501,7 +2639,7 @@ function renderWeeklyPlanner(){
      let target=weeklyTargetHours(e,ws),total=weeklyWorkedHours(e,ws),diff=Math.round((total-target)*100)/100;
      let diffClass=target===0?'':(diff===0?'exact':(diff<0?'under':'over'));
      let diffText=target===0?'-':(diff===0?'맞음':`${diff>0?'+':''}${diff}h`);
-     let row=`<tr><td class="name"><b>${esc(e.name)}</b></td><td>${workTypeForDate(e,ws)}</td><td class="weekTarget">${target?target+'h':'-'}</td>`;
+     let row=`<tr><td class="name"><b>${esc(e.name)}</b></td><td>${workTypeForWeek(e,ws)}</td><td class="weekTarget">${target?target+'h':'-'}</td>`;
      for(let d=0;d<7;d++){
        let date=addDaysIso(ws,d),valid=employedOn(e,date),s=sched(e,date),v=s?.work_code||'';
        let [yy,mm,dd]=date.split('-').map(Number),wd=new Date(yy,mm-1,dd).getDay(),hol=holidayFor(date);
@@ -2864,6 +3002,168 @@ function renderHours(){
    return `<tr><td class="name"><b>${esc(e.name)}</b></td><td class="dateDetailCell">${fmt(c.weekday.dates)}</td><td class="dateDetailCell">${fmt(c.weekend.dates)}</td><td class="dateDetailCell holidayDateCell">${fmt(c.holiday.dates)}</td></tr>`;
  }).join('')||'<tr><td colspan="4" style="padding:20px;text-align:center;color:#7b8494">표시할 근로시간 대상 직원이 없습니다.</td></tr>';
 }
+
+
+/* ===== 텔레캅 근태검증 ===== */
+function setHoursView(view){
+ hoursView=view==='attendance'?'attendance':'summary';localStorage.setItem('staff_hours_view',hoursView);
+ $('hoursSummaryView')?.classList.toggle('hidden',hoursView!=='summary');$('attendanceView')?.classList.toggle('hidden',hoursView!=='attendance');
+ $('hoursSummaryTabBtn')?.classList.toggle('active',hoursView==='summary');$('attendanceTabBtn')?.classList.toggle('active',hoursView==='attendance');
+ if($('hoursPageTitle'))$('hoursPageTitle').textContent=hoursView==='attendance'?'근태 확인':'근로시간';
+ if($('hoursPageSub'))$('hoursPageSub').textContent=hoursView==='attendance'?'텔레캅 지문기록과 대시보드 스케줄을 비교합니다.':'선택월 스케줄을 기준으로 근로시간을 확인합니다.';
+ if(hoursView==='attendance')renderAttendance();
+}
+function attendanceMissingSchemaError(err){let m=String(err?.message||'')+' '+String(err?.details||'')+' '+String(err?.code||'');return /attendance_imports|attendance_records|attendance_reviews|attendance_name_mappings|attendance_settings|relation .* does not exist|42P01|schema cache|attendance-sources|bucket not found/i.test(m)}
+function attendanceRules(){return {late:Number(attendanceSettings?.late_minutes??10),earlyLeave:Number(attendanceSettings?.early_leave_minutes??10),lateOut:Number(attendanceSettings?.late_out_minutes??60)}}
+function openAttendanceRules(){if(!isAppAdmin())return;let r=attendanceRules();modal(`<h2>근태 확인 기준</h2><div class="formgrid"><div class="field"><label>지각 확인 기준(분)</label><input id="attRuleLate" type="number" min="0" value="${r.late}"></div><div class="field"><label>조퇴 확인 기준(분)</label><input id="attRuleEarly" type="number" min="0" value="${r.earlyLeave}"></div><div class="field"><label>늦은 퇴근 확인 기준(분)</label><input id="attRuleLateOut" type="number" min="0" value="${r.lateOut}"></div></div><div class="modalActions"><button class="btn gray" onclick="closeModal()">취소</button><button class="btn" onclick="saveAttendanceRules()">저장</button></div>`)}
+async function saveAttendanceRules(){let obj={store_id:storeId(),late_minutes:Math.max(0,Number($('attRuleLate').value||0)),early_leave_minutes:Math.max(0,Number($('attRuleEarly').value||0)),late_out_minutes:Math.max(0,Number($('attRuleLateOut').value||0)),updated_by:currentSessionUser?.id||null,updated_at:new Date().toISOString()};let q=await sb.from('attendance_settings').upsert(obj,{onConflict:'store_id'});if(q.error)return alert('기준 저장 오류\n'+q.error.message);attendanceSettings=obj;closeModal();renderAttendance()}
+function timeMinutes(t){let m=String(t||'').match(/^(\d{1,2}):(\d{2})/);return m?Number(m[1])*60+Number(m[2]):null}
+function attendanceDateValue(v,ym){
+ if(v instanceof Date&&!isNaN(v))return `${v.getFullYear()}-${String(v.getMonth()+1).padStart(2,'0')}-${String(v.getDate()).padStart(2,'0')}`;
+ if(typeof v==='number'&&Number.isInteger(v)&&v>=20000101&&v<=20991231){let z=String(v);return `${z.slice(0,4)}-${z.slice(4,6)}-${z.slice(6,8)}`}
+ if(typeof v==='number'&&v>20000&&v<100000&&typeof XLSX!=='undefined'&&XLSX.SSF?.parse_date_code){let d=XLSX.SSF.parse_date_code(v);if(d)return `${d.y}-${String(d.m).padStart(2,'0')}-${String(d.d).padStart(2,'0')}`}
+ let s=String(v??'').trim();if(!s)return '';
+ let m=s.match(/(20\d{2})\D{0,3}(\d{1,2})\D{0,3}(\d{1,2})/);if(m)return `${m[1]}-${m[2].padStart(2,'0')}-${m[3].padStart(2,'0')}`;
+ let digits=s.replace(/\D/g,'');if(digits.length>=8&&/^20\d{6}/.test(digits)){return `${digits.slice(0,4)}-${digits.slice(4,6)}-${digits.slice(6,8)}`}
+ m=s.match(/(?:^|\D)(\d{1,2})\D+(\d{1,2})(?:\D|$)/);if(m&&ym)return `${ym.slice(0,4)}-${m[1].padStart(2,'0')}-${m[2].padStart(2,'0')}`;
+ return '';
+}
+function attendanceTimeValue(v){
+ if(v instanceof Date&&!isNaN(v))return `${String(v.getHours()).padStart(2,'0')}:${String(v.getMinutes()).padStart(2,'0')}`;
+ if(typeof v==='number'){
+  if(v>=0&&v<1){let mins=Math.round(v*24*60)%1440;return `${String(Math.floor(mins/60)).padStart(2,'0')}:${String(mins%60).padStart(2,'0')}`}
+  let n=Math.trunc(v),s=String(n);if(s.length===3||s.length===4){s=s.padStart(4,'0');let h=Number(s.slice(0,2)),m=Number(s.slice(2));if(h<24&&m<60)return `${s.slice(0,2)}:${s.slice(2)}`}
+ }
+ let s=String(v??'').trim();if(!s)return '';
+ let m=s.match(/(?:^|\s)([01]?\d|2[0-3]):([0-5]\d)(?::\d{2})?/);if(!m)m=s.match(/\b([01]\d|2[0-3])([0-5]\d)\b/);
+ return m?`${String(Number(m[1])).padStart(2,'0')}:${m[2]}`:'';
+}
+function attendanceNormHeader(v){return String(v??'').normalize('NFKC').replace(/[\s_\-\/().\[\]]/g,'').toLowerCase()}
+function findHeaderIndex(headers,patterns){let hs=headers.map(attendanceNormHeader);for(const p of patterns){let i=hs.findIndex(x=>x===p||x.includes(p));if(i>=0)return i}return -1}
+function bestAttendanceHeaderRow(rows){
+ let best=null;
+ for(let r=0;r<Math.min(40,rows.length);r++){
+  let h=rows[r].map(x=>String(x??'').trim()),name=findHeaderIndex(h,['성명','사원명','직원명','근로자명','이름']),date=findHeaderIndex(h,['근태일','근무일','일자','날짜','출근일','인증일시','출입일시','일시']),cin=findHeaderIndex(h,['출근시간','출근시각','출근','입실시간','입실']),cout=findHeaderIndex(h,['퇴근시간','퇴근시각','퇴근','퇴실시간','퇴실']),time=findHeaderIndex(h,['인증시간','체크시간','발생시간','출입시간','지문시간','시간','시각']);
+  let score=(name>=0?5:0)+(date>=0?5:0)+(cin>=0?3:0)+(cout>=0?3:0)+(time>=0?2:0)+Math.min(h.filter(Boolean).length,8)/10;
+  if(name>=0&&date>=0&&(cin>=0||cout>=0||time>=0)){if(!best||score>best.score)best={row:r,headers:h,name,date,cin,cout,time,score}}
+ }
+ return best;
+}
+function parseAttendanceRowsWithMap(rows,map,ym){
+ let grouped=new Map(),start=Number(map.headerRow||0)+1;
+ for(let r=start;r<rows.length;r++){
+  let row=rows[r],name=String(row[map.name]??'').trim();if(!name)continue;
+  let date=attendanceDateValue(row[map.date],ym);if(!date)continue;
+  let cin=map.cin>=0?attendanceTimeValue(row[map.cin]):'',cout=map.cout>=0?attendanceTimeValue(row[map.cout]):'',generic=map.time>=0?attendanceTimeValue(row[map.time]):'';
+  if(!generic&&map.date===map.time)generic=attendanceTimeValue(row[map.date]);
+  let key=normalizeName(name)+'|'+date;if(!grouped.has(key))grouped.set(key,{employee_name:name,work_date:date,check_in:'',check_out:'',punch_times:[],raw_rows:[]});let g=grouped.get(key);
+  if(cin&&!g.check_in)g.check_in=cin;if(cout)g.check_out=cout;if(generic)g.punch_times.push(generic);if(cin)g.punch_times.push(cin);if(cout)g.punch_times.push(cout);
+  g.raw_rows.push(row.slice(0,Math.min(row.length,30)));
+ }
+ let items=[...grouped.values()];items.forEach(g=>{g.punch_times=[...new Set(g.punch_times.filter(Boolean))].sort();if(!g.check_in&&g.punch_times.length>=2)g.check_in=g.punch_times[0];if(!g.check_out&&g.punch_times.length>=2)g.check_out=g.punch_times[g.punch_times.length-1];g.source_key=`${normalizeName(g.employee_name)}|${g.work_date}|${g.check_in}|${g.check_out}|${g.punch_times.join(',')}`});return items;
+}
+async function parseAttendanceWorkbook(file){
+ let buf=await file.arrayBuffer(),wb=XLSX.read(buf,{type:'array',cellDates:true});let ym=$('monthSelect').value,best=null,fallback=null;
+ for(const name of wb.SheetNames){let ws=wb.Sheets[name],rows=XLSX.utils.sheet_to_json(ws,{header:1,defval:'',raw:true});if(!rows.length)continue;let head=bestAttendanceHeaderRow(rows);if(head){let items=parseAttendanceRowsWithMap(rows,{headerRow:head.row,name:head.name,date:head.date,cin:head.cin,cout:head.cout,time:head.time},ym);let score=items.length*10+head.score;if(!best||score>best.score)best={sheetName:name,rows,head,items,score}}
+  let rr=rows.slice(0,30).map((x,i)=>({i,row:x,filled:x.filter(v=>String(v??'').trim()).length})).sort((a,b)=>b.filled-a.filled)[0];if(rr&&(!fallback||rr.filled>fallback.filled))fallback={sheetName:name,rows,headerRow:rr.i,headers:rr.row.map(x=>String(x??'').trim()),filled:rr.filled};
+ }
+ if(best&&best.items.length)return {items:best.items,sheetName:best.sheetName,mode:(best.head.cin>=0||best.head.cout>=0)?'summary':'punch'};
+ return {error:'텔레캅 Excel의 열을 자동으로 찾지 못했습니다.',fallback};
+}
+function openAttendanceColumnMapper(file,draft){
+ let headers=draft?.headers||[];if(!headers.length)return alert('Excel의 제목 행을 찾지 못했습니다. 실제 텔레캅 파일 형식을 확인해 주세요.');attendancePendingManualParse={file,draft};
+ let opts=(allowBlank=false)=>`${allowBlank?'<option value="-1">사용 안 함</option>':''}`+headers.map((h,i)=>`<option value="${i}">${esc(h||`열 ${i+1}`)}</option>`).join('');
+ modal(`<h2>텔레캅 파일 열 선택</h2><div class="formgrid"><div class="field"><label>직원 이름</label><select id="attMapName">${opts()}</select></div><div class="field"><label>날짜</label><select id="attMapDate">${opts()}</select></div><div class="field"><label>출근시간</label><select id="attMapIn">${opts(true)}</select></div><div class="field"><label>퇴근시간</label><select id="attMapOut">${opts(true)}</select></div><div class="field"><label>지문시간(한 줄씩 기록될 때)</label><select id="attMapTime">${opts(true)}</select></div></div><div class="modalActions"><button class="btn gray" onclick="closeModal()">취소</button><button class="btn" onclick="continueManualAttendanceImport()">불러오기</button></div>`);
+ let guess=(id,ps)=>{let i=findHeaderIndex(headers,ps);if(i>=0)$(id).value=String(i)};guess('attMapName',['성명','사원명','직원명','이름']);guess('attMapDate',['근태일','근무일','일자','날짜','일시']);guess('attMapIn',['출근시간','출근']);guess('attMapOut',['퇴근시간','퇴근']);guess('attMapTime',['인증시간','출입시간','지문시간','시간']);
+}
+async function continueManualAttendanceImport(){let p=attendancePendingManualParse;if(!p)return;let map={headerRow:p.draft.headerRow,name:Number($('attMapName').value),date:Number($('attMapDate').value),cin:Number($('attMapIn').value),cout:Number($('attMapOut').value),time:Number($('attMapTime').value)};if(map.name<0||map.date<0)return alert('직원 이름과 날짜 열은 꼭 선택하세요.');if(map.cin<0&&map.cout<0&&map.time<0)return alert('출근/퇴근 또는 지문시간 열을 하나 이상 선택하세요.');let items=parseAttendanceRowsWithMap(p.draft.rows,map,$('monthSelect').value);if(!items.length)return alert('선택한 열에서 근태 기록을 읽지 못했습니다.');closeModal();await persistAttendanceImport(p.file,{items,sheetName:p.draft.sheetName,mode:'manual'})}
+async function attendanceNameMappings(){if(attendanceSchemaAvailable===false)return [];let q=await sb.from('attendance_name_mappings').select('*').eq('store_id',storeId());if(q.error){if(attendanceMissingSchemaError(q.error)){attendanceSchemaAvailable=false;return []}throw q.error}return q.data||[]}
+function attendanceSafeFileName(name){let ext=(String(name).match(/\.[A-Za-z0-9]+$/)||['.xlsx'])[0].toLowerCase();return `telecop_${Date.now()}${ext}`}
+async function importAttendanceFile(file){
+ if(!file)return;if(!canViewModule('hours'))return alert('근태 확인 권한이 없습니다.');let ym=$('monthSelect').value;if(!ym)return alert('먼저 월을 선택하세요.');
+ try{
+  let parsed=await parseAttendanceWorkbook(file);if(parsed.error){if(parsed.fallback)return openAttendanceColumnMapper(file,parsed.fallback);return alert(parsed.error)}
+  await persistAttendanceImport(file,parsed);
+ }catch(err){console.error(err);alert('텔레캅 파일을 불러오지 못했습니다.\n'+(err.message||err))}
+}
+async function persistAttendanceImport(file,parsed){
+ let ym=$('monthSelect').value,sid=storeId(),items=parsed.items.filter(x=>String(x.work_date||'').slice(0,7)===ym);if(!items.length)return alert(`${ym} 날짜의 지문기록을 찾지 못했습니다.`);
+ let mappings=await attendanceNameMappings(),mapByName=new Map(mappings.map(x=>[normalizeName(x.source_name),Number(x.employee_id)])),all=allEmployees();
+ items.forEach(x=>{let mapped=mapByName.get(normalizeName(x.employee_name)),e=mapped?all.find(z=>Number(z.id)===mapped):all.find(z=>normalizeName(z.name)===normalizeName(x.employee_name));x.employee_id=e?.id||null});
+ let path=`${sid}/${ym}/${attendanceSafeFileName(file.name)}`,up=await sb.storage.from('attendance-sources').upload(path,file,{contentType:file.type||'application/octet-stream',upsert:false});if(up.error){if(attendanceMissingSchemaError(up.error))throw new Error('근태 기능용 SQL/Storage 설정이 필요합니다.');throw up.error}
+ let prev=await sb.from('attendance_imports').select('id').eq('store_id',sid).eq('work_month',ym+'-01').eq('is_active',true);if(prev.error){if(attendanceMissingSchemaError(prev.error))throw new Error('근태 기능용 SQL을 먼저 실행하세요.');throw prev.error}
+ let iq=await sb.from('attendance_imports').insert({store_id:sid,work_month:ym+'-01',file_name:file.name,storage_path:path,sheet_name:parsed.sheetName||'',parser_mode:parsed.mode||'auto',row_count:items.length,is_active:false,uploaded_by:currentSessionUser?.id||null}).select('*').single();if(iq.error)throw iq.error;let iid=iq.data.id;
+ let rows=items.map(x=>({import_id:iid,store_id:sid,employee_id:x.employee_id||null,employee_name:x.employee_name,work_date:x.work_date,check_in:x.check_in||null,check_out:x.check_out||null,punch_times:x.punch_times||[],punch_count:(x.punch_times||[]).length,source_key:x.source_key,raw_json:{rows:(x.raw_rows||[]).slice(0,10)}}));
+ for(let i=0;i<rows.length;i+=400){let q=await sb.from('attendance_records').insert(rows.slice(i,i+400));if(q.error)throw q.error}
+ let oldIds=(prev.data||[]).map(x=>x.id);if(oldIds.length){let off=await sb.from('attendance_imports').update({is_active:false}).in('id',oldIds);if(off.error)throw off.error}let on=await sb.from('attendance_imports').update({is_active:true}).eq('id',iid);if(on.error)throw on.error;
+ attendanceSchemaAvailable=true;await loadAttendanceData(sid,ym);setHoursView('attendance');renderAttendance();alert(`텔레캅 파일을 불러왔습니다.\n${ym} · ${items.length}건\n\n확인 필요한 기록만 확인하면 됩니다.`);
+}
+async function loadAttendanceData(sid=storeId(),ym=$('monthSelect').value){
+ attendanceActiveImport=null;attendanceRecords=[];attendanceReviews=[];attendanceSelected.clear();if(attendanceSchemaAvailable===false){renderAttendance();return}
+ let iq=await sb.from('attendance_imports').select('*').eq('store_id',sid).eq('work_month',ym+'-01').eq('is_active',true).order('uploaded_at',{ascending:false}).limit(1).maybeSingle();
+ if(iq.error){if(attendanceMissingSchemaError(iq.error)){attendanceSchemaAvailable=false;renderAttendance();return}console.warn(iq.error);return}
+ attendanceSchemaAvailable=true;attendanceActiveImport=iq.data||null;
+ if(attendanceActiveImport){let rq=await sb.from('attendance_records').select('*').eq('import_id',attendanceActiveImport.id).order('work_date');if(!rq.error)attendanceRecords=rq.data||[]}
+ let rr=monthRange(),[rv,st]=await Promise.all([sb.from('attendance_reviews').select('*').eq('store_id',sid).gte('work_date',rr.first).lte('work_date',rr.last),sb.from('attendance_settings').select('*').eq('store_id',sid).maybeSingle()]);if(!rv.error)attendanceReviews=rv.data||[];if(!st.error&&st.data)attendanceSettings=st.data;else attendanceSettings={late_minutes:10,early_leave_minutes:10,late_out_minutes:60};renderAttendance();
+}
+function attendanceRecordFor(e,date){let eid=Number(e?.id||0);return attendanceRecords.find(x=>(eid&&Number(x.employee_id)===eid&&x.work_date===date)||(!x.employee_id&&normalizeName(x.employee_name)===normalizeName(e?.name||'')&&x.work_date===date))||null}
+function attendanceReviewFor(employeeId,date){return attendanceReviews.find(x=>Number(x.employee_id)===Number(employeeId)&&x.work_date===date)||null}
+function attendanceScheduleInfo(e,date){let s=sched(e,date),code=String(s?.work_code||'').trim(),cond=workConditionForDate(e,date),start=(s?.start_time||cond.default_start_time||'').slice(0,5),end=(s?.end_time||cond.default_end_time||'').slice(0,5),hours=Number(s?.worked_hours||0);let kind=code==='연'?'leave':code==='병'?'sick':code==='0'?'off':(hours>0||(/^[0-9.]+$/.test(code)&&Number(code)>0))?'work':'blank';return {s,code,kind,start,end,hours,cond}}
+function attendancePunchInfo(rec){let times=Array.isArray(rec?.punch_times)?rec.punch_times:[];let cin=String(rec?.check_in||'').slice(0,5),cout=String(rec?.check_out||'').slice(0,5);if(!cin&&times.length>=2)cin=times[0];if(!cout&&times.length>=2)cout=times[times.length-1];return {times,cin,cout,count:Number(rec?.punch_count??times.length)}}
+function attendanceStatusLabel(code){return ({normal:'정상',missing_checkin:'출근 지문 누락',missing_checkout:'퇴근 지문 누락',single_punch:'지문 1회만 있음',no_punch:'지문기록 없음',late_possible:'출근시간 확인',early_leave_possible:'퇴근시간 확인',late_checkout:'늦은 퇴근기록',leave_punch:'연차인데 지문 있음',sick_punch:'병가인데 지문 있음',off_punch:'휴무인데 지문 있음',unscheduled_punch:'스케줄 없는 지문',multi_punch:'지문 여러 번',device_issue:'근태자료 자체 확인',unmatched:'직원 연결 필요',source_changed:'원본 변경 · 재확인'})[code]||code}
+function attendanceStatusClass(code){return code==='normal'?'ok':['no_punch','device_issue','leave_punch','sick_punch','off_punch','unscheduled_punch','unmatched','source_changed'].includes(code)?'danger':'warn'}
+function attendanceResultLabel(code){return ({normal_work:'정상근무',late_punch:'지문을 늦게 찍음',missing_checkin:'출근 지문 누락',missing_checkout:'퇴근 지문 누락',actual_late:'실제 지각',actual_early:'실제 조퇴',no_work:'실제 미근무',extra_work:'추가근무 확인',other:'기타'})[code]||code||'확인완료'}
+function detectAttendanceState(e,date,rec){
+ let sc=attendanceScheduleInfo(e,date),p=attendancePunchInfo(rec),rev=attendanceReviewFor(e.id,date),sourceChanged=!!(rev&&rec?.source_key&&rev.reviewed_source_key&&rev.reviewed_source_key!==rec.source_key);if(rev&&!sourceChanged)return {code:'confirmed',review:rev,sc,p,rec};if(sourceChanged)return {code:'source_changed',review:rev,sc,p,rec};
+ if(sc.kind==='leave')return {code:rec&&p.count?'leave_punch':'normal',sc,p,rec};if(sc.kind==='sick')return {code:rec&&p.count?'sick_punch':'normal',sc,p,rec};if(sc.kind==='off')return {code:rec&&p.count?'off_punch':'normal',sc,p,rec};if(sc.kind==='blank')return {code:rec&&p.count?'unscheduled_punch':'ignore',sc,p,rec};
+ if(sc.kind==='work'){
+  if(!rec||(!p.cin&&!p.cout&&!p.count))return {code:'no_punch',sc,p,rec};
+  let explicit=!!(rec.check_in||rec.check_out);if(explicit&&!p.cin)return {code:'missing_checkin',sc,p,rec};if(explicit&&!p.cout)return {code:'missing_checkout',sc,p,rec};if(!explicit&&p.count===1)return {code:'single_punch',sc,p,rec};
+  let rules=attendanceRules(),sm=timeMinutes(sc.start),em=timeMinutes(sc.end),im=timeMinutes(p.cin),om=timeMinutes(p.cout);
+  if(sm!=null&&im!=null&&im>sm+rules.late)return {code:'late_possible',sc,p,rec};if(em!=null&&om!=null&&om<em-rules.earlyLeave)return {code:'early_leave_possible',sc,p,rec};if(em!=null&&om!=null&&om>em+rules.lateOut)return {code:'late_checkout',sc,p,rec};if(!explicit&&p.count>2)return {code:'multi_punch',sc,p,rec};return {code:'normal',sc,p,rec};
+ }
+ return {code:'ignore',sc,p,rec};
+}
+function buildAttendanceRows(){
+ if(!attendanceActiveImport)return [];
+ let ym=$('monthSelect').value,r=monthRange(),list=workTimeEmployees(ym),rows=[],seen=new Set();
+ for(const e of list){for(let d=1;d<=r.days;d++){let date=`${ym}-${String(d).padStart(2,'0')}`,rec=attendanceRecordFor(e,date),st=detectAttendanceState(e,date,rec);if(st.code==='ignore')continue;seen.add(`${e.id}|${date}`);rows.push({employee:e,date,...st})}}
+ attendanceRecords.filter(x=>!x.employee_id).forEach(rec=>rows.push({employee:null,date:rec.work_date,rec,code:'unmatched',sc:{kind:'blank',start:'',end:'',hours:0},p:attendancePunchInfo(rec),review:null}));
+ attendanceRecords.filter(x=>x.employee_id&&!seen.has(`${x.employee_id}|${x.work_date}`)).forEach(rec=>{let e=allEmployees().find(z=>Number(z.id)===Number(rec.employee_id));if(!e||e.hide_monthly_schedule===true)return;let st=detectAttendanceState(e,rec.work_date,rec);if(st.code!=='ignore')rows.push({employee:e,date:rec.work_date,...st})});
+ let byDate=new Map();rows.filter(x=>x.employee&&x.sc?.kind==='work').forEach(x=>{if(!byDate.has(x.date))byDate.set(x.date,[]);byDate.get(x.date).push(x)});for(const same of byDate.values()){let missing=same.filter(x=>x.code==='no_punch');if(same.length>=3&&missing.length/same.length>=0.7)missing.forEach(x=>x.code='device_issue')}
+ return rows.sort((a,b)=>a.date.localeCompare(b.date)||(a.employee?.print_order??9999)-(b.employee?.print_order??9999));
+}
+function attendanceScheduleText(row){let s=row.sc;if(s.kind==='leave')return '연차';if(s.kind==='sick')return '병가';if(s.kind==='off')return '휴무';if(s.kind==='blank')return '-';let tm=s.start&&s.end?`${s.start}~${s.end}`:'';return `${tm}${tm&&s.hours?' · ':''}${s.hours?hour2(s.hours)+'h':''}`||'근무'}
+function attendancePunchText(row){let p=row.p;if(!row.rec||(!p.cin&&!p.cout&&!p.count))return '기록 없음';if(row.rec.check_in||row.rec.check_out)return `출근 ${p.cin||'-'} · 퇴근 ${p.cout||'-'}`;return p.times.length?p.times.join(' · '):`${p.cin||'-'} · ${p.cout||'-'}`}
+function renderAttendance(){
+ let body=$('attendanceBody');if(!body)return;
+ if(attendanceSchemaAvailable===false){body.innerHTML='<tr><td colspan="7" class="attEmpty">근태 기능용 SQL을 먼저 실행해야 합니다.</td></tr>';$('attendanceImportLine').innerHTML='<span class="attStatusTag info">최초 1회 설정 필요</span>';return}
+ let rows=buildAttendanceRows(),normal=rows.filter(x=>x.code==='normal').length,done=rows.filter(x=>x.code==='confirmed').length,need=rows.filter(x=>!['normal','confirmed'].includes(x.code)).length;
+ if($('attNormalCount'))$('attNormalCount').textContent=normal;if($('attNeedCount'))$('attNeedCount').textContent=need;if($('attDoneCount'))$('attDoneCount').textContent=done;if($('attendanceNeedBadge')){$('attendanceNeedBadge').textContent=need;$('attendanceNeedBadge').style.display=need?'inline-flex':'none'}
+ if($('attendanceImportLine'))$('attendanceImportLine').innerHTML=attendanceActiveImport?`<span class="attFileName">${esc(attendanceActiveImport.file_name||'텔레캅 Excel')}</span> <span class="help">${fmtDateTime(attendanceActiveImport.uploaded_at)} · ${attendanceActiveImport.row_count||attendanceRecords.length}건</span>`:'<span class="help">선택월 텔레캅 파일을 불러오세요.</span>';
+ let statusCodes=[...new Set(rows.filter(x=>!['normal','confirmed'].includes(x.code)).map(x=>x.code))],sel=$('attendanceStatusFilter');if(sel){let current=sel.value;sel.innerHTML='<option value="">전체 종류</option>'+statusCodes.map(c=>`<option value="${c}">${esc(attendanceStatusLabel(c))}</option>`).join('');if(statusCodes.includes(current))sel.value=current}
+ $('attPendingBtn')?.classList.toggle('gray',attendanceListMode!=='pending');$('attDoneBtn')?.classList.toggle('gray',attendanceListMode!=='done');let filter=$('attendanceStatusFilter')?.value||'';
+ let visible=rows.filter(x=>attendanceListMode==='done'?x.code==='confirmed':!['normal','confirmed'].includes(x.code)).filter(x=>!filter||x.code===filter);
+ if(!attendanceActiveImport&&attendanceListMode==='pending')visible=[];
+ body.innerHTML=visible.map(row=>{
+  let e=row.employee,canSelect=!!e&&attendanceListMode==='pending'&&row.code!=='unmatched',key=e?`${e.id}|${row.date}`:'',checked=key&&attendanceSelected.has(key),review=row.review,sourceChanged=row.code==='source_changed';
+  let status=row.code==='confirmed'?`<div class="attReviewDone">✓ ${esc(attendanceResultLabel(review?.result_code))}</div>`:`<span class="attStatusTag ${attendanceStatusClass(row.code)}">${esc(attendanceStatusLabel(row.code))}</span>${sourceChanged?'<div class="attReviewOld">이전 확인 후 원본이 바뀜</div>':''}`;
+  let action=!e?`<button class="btn small" onclick="openAttendanceNameMatch('${esc(row.rec?.employee_name||'')}')">직원 연결</button>`:row.code==='confirmed'?`<button class="btn gray small" onclick="openAttendanceReview(${e.id},'${row.date}')">수정</button>`:`<button class="btn small" onclick="openAttendanceReview(${e.id},'${row.date}')">확인</button>`;
+  return `<tr><td style="text-align:center">${canSelect?`<input type="checkbox" class="attSelect" ${checked?'checked':''} onchange="toggleAttendanceSelected('${key}',this.checked)">`:''}</td><td class="attName">${esc(e?.name||row.rec?.employee_name||'-')}</td><td class="attDate">${row.date.slice(5).replace('-','/')}</td><td class="attSchedule">${esc(attendanceScheduleText(row))}</td><td class="attPunch">${esc(attendancePunchText(row))}</td><td class="attStatus">${status}</td><td class="attAction">${action}</td></tr>`
+ }).join('')||`<tr><td colspan="7" class="attEmpty">${attendanceListMode==='done'?'확인 완료한 기록이 없습니다.':attendanceActiveImport?'확인할 기록이 없습니다.':'텔레캅 파일을 불러오면 확인할 기록만 표시합니다.'}</td></tr>`;
+ if($('attendanceBulkBtn'))$('attendanceBulkBtn').style.display=attendanceListMode==='pending'?'':'none';
+}
+function setAttendanceListMode(mode){attendanceListMode=mode==='done'?'done':'pending';attendanceSelected.clear();renderAttendance()}
+function toggleAttendanceSelected(key,on){if(on)attendanceSelected.add(key);else attendanceSelected.delete(key)}
+function attendanceRowByKey(key){let [eid,date]=String(key).split('|');return buildAttendanceRows().find(x=>Number(x.employee?.id)===Number(eid)&&x.date===date)}
+async function bulkConfirmAttendance(){let keys=[...attendanceSelected];if(!keys.length)return alert('먼저 같은 종류의 기록을 선택하세요.');let rows=keys.map(attendanceRowByKey).filter(Boolean),codes=[...new Set(rows.map(x=>x.code))];if(codes.length!==1)return alert('같은 종류의 기록만 함께 처리할 수 있습니다.');if(!confirm(`선택한 ${rows.length}건을 정상근무로 확인할까요?\n\n텔레캅 지문시간이 대시보드 근로시간을 바꾸지는 않습니다.`))return;for(const row of rows)await saveAttendanceReviewDirect(row.employee.id,row.date,'normal_work','','',`선택 일괄확인 · ${attendanceStatusLabel(row.code)}`,row.rec?.source_key||'');attendanceSelected.clear();await loadAttendanceData();renderAttendance()}
+function openAttendanceReview(employeeId,date){let row=buildAttendanceRows().find(x=>Number(x.employee?.id)===Number(employeeId)&&x.date===date);if(!row)return alert('근태 기록을 찾지 못했습니다.');let rev=attendanceReviewFor(employeeId,date),choices=[['normal_work','정상근무'],['late_punch','지문을 늦게 찍음'],['missing_checkin','출근 지문 누락'],['missing_checkout','퇴근 지문 누락'],['actual_late','실제 지각'],['actual_early','실제 조퇴'],['no_work','실제 미근무'],['extra_work','추가근무 확인'],['other','기타']];let selected=rev?.result_code||'',html=choices.map(([v,l])=>`<button type="button" class="attReviewChoice ${selected===v?'active':''}" data-att-result="${v}" onclick="chooseAttendanceResult('${v}')">${l}</button>`).join('');modal(`<h2>${esc(row.employee.name)} · ${date.slice(5).replace('-','/')}</h2><div class="attCompactFacts"><div class="attCompactFact"><b>스케줄</b><span>${esc(attendanceScheduleText(row))}</span></div><div class="attCompactFact"><b>텔레캅</b><span>${esc(attendancePunchText(row))}</span></div></div><div class="attReviewChoices">${html}</div><input type="hidden" id="attReviewResult" value="${esc(selected)}"><div class="formgrid" style="margin-top:10px"><div class="field"><label>확인 출근시간</label><input id="attConfirmedIn" type="time" value="${String(rev?.confirmed_start||'').slice(0,5)}"></div><div class="field"><label>확인 퇴근시간</label><input id="attConfirmedOut" type="time" value="${String(rev?.confirmed_end||'').slice(0,5)}"></div></div><div class="field" style="margin-top:9px"><label>메모</label><input id="attReviewNote" value="${esc(rev?.note||'')}" style="width:100%" placeholder="필요한 경우만 입력"></div><div id="attHistoryHost" class="attHistory"></div><div class="modalActions"><button class="btn gray" onclick="closeModal()">취소</button><button class="btn" onclick="saveAttendanceReview(${employeeId},'${date}')">저장</button></div>`);loadAttendanceReviewHistory(employeeId,date)}
+function chooseAttendanceResult(v){$('attReviewResult').value=v;document.querySelectorAll('[data-att-result]').forEach(x=>x.classList.toggle('active',x.dataset.attResult===v))}
+async function saveAttendanceReview(employeeId,date){let result=$('attReviewResult').value;if(!result)return alert('처리 내용을 하나 선택하세요.');let row=buildAttendanceRows().find(x=>Number(x.employee?.id)===Number(employeeId)&&x.date===date);await saveAttendanceReviewDirect(employeeId,date,result,$('attConfirmedIn').value,$('attConfirmedOut').value,$('attReviewNote').value,row?.rec?.source_key||'');closeModal();await loadAttendanceData();renderAttendance()}
+async function saveAttendanceReviewDirect(employeeId,date,result,cin,cout,note,sourceKey){let obj={store_id:storeId(),employee_id:Number(employeeId),work_date:date,result_code:result,confirmed_start:cin||null,confirmed_end:cout||null,note:note||null,reviewed_source_key:sourceKey||null,reviewed_by:currentSessionUser?.id||null,reviewed_at:new Date().toISOString(),updated_at:new Date().toISOString()};let q=await sb.from('attendance_reviews').upsert(obj,{onConflict:'store_id,employee_id,work_date'});if(q.error)throw q.error}
+async function loadAttendanceReviewHistory(employeeId,date){let host=$('attHistoryHost');if(!host)return;let q=await sb.from('attendance_review_history').select('*').eq('store_id',storeId()).eq('employee_id',employeeId).eq('work_date',date).order('changed_at',{ascending:false}).limit(8);if(q.error){host.innerHTML='';return}let rows=q.data||[];host.innerHTML=rows.length?'<b class="help">수정 이력</b>'+rows.map(x=>`<div class="attHistoryItem">${fmtDateTime(x.changed_at)} · ${esc(attendanceResultLabel(x.old_result_code)||'-')} → <b>${esc(attendanceResultLabel(x.new_result_code)||'-')}</b></div>`).join(''):''}
+async function openAttendanceNameMatch(sourceName){let opts=workTimeEmployees($('monthSelect').value).map(e=>`<option value="${e.id}">${esc(e.name)}</option>`).join('');if(!opts)return alert('연결할 직원이 없습니다.');modal(`<h2>직원 연결</h2><div class="attCompactFact"><b>텔레캅 이름</b><span>${esc(sourceName)}</span></div><div class="field" style="margin-top:10px"><label>대시보드 직원</label><select id="attMatchEmployee" style="width:100%">${opts}</select></div><div class="modalActions"><button class="btn gray" onclick="closeModal()">취소</button><button class="btn" onclick="saveAttendanceNameMatch('${esc(sourceName)}')">연결</button></div>`)}
+async function saveAttendanceNameMatch(sourceName){let eid=Number($('attMatchEmployee').value),sid=storeId();let q=await sb.from('attendance_name_mappings').upsert({store_id:sid,source_name:sourceName,source_name_norm:normalizeName(sourceName),employee_id:eid,updated_by:currentSessionUser?.id||null,updated_at:new Date().toISOString()},{onConflict:'store_id,source_name_norm'});if(q.error)return alert(q.error.message);if(attendanceActiveImport){await sb.from('attendance_records').update({employee_id:eid}).eq('import_id',attendanceActiveImport.id).eq('employee_name',sourceName)}closeModal();await loadAttendanceData();renderAttendance()}
 
 
 function collectScheduleDiagnostics(){
@@ -6832,7 +7132,18 @@ function round2(v){return Math.round((Number(v||0)+Number.EPSILON)*100)/100}
 function hour2(v){let n=round2(v);return Number.isInteger(n)?String(n):n.toFixed(2).replace(/0+$/,'').replace(/\.$/,'')}
 
 function num(v){return typeof v==='number'?v:(Number(String(v||'').replace(/,/g,''))||0)}
-function exportSchedule(){let r=monthRange(),data=[['업장',stores.find(s=>s.id===storeId())?.name],['월',r.m],[],['직원',...Array.from({length:r.days},(_,i)=>`${i+1}일`),'실근로','연장']];monthlyScheduleEmployees(r.m).forEach(e=>{let x=calc(e);data.push([e.name,...Array.from({length:r.days},(_,i)=>sched(e,r.m+'-'+String(i+1).padStart(2,'0'))?.work_code||''),x.worked,x.ot])});downloadXlsx(data,`${stores.find(s=>s.id===storeId())?.name}_${r.m}_스케줄.xlsx`)}
+
+function openScheduleOutput(){
+ let list=monthlyScheduleEmployees($('monthSelect').value);scheduleOutputMode='all';scheduleOutputSelected=new Set(list.map(e=>e.id));let items=list.map(e=>`<label class="outputEmployeeItem"><input type="checkbox" class="scheduleOutputCheck" value="${e.id}" checked onchange="toggleScheduleOutputEmployee(${e.id},this.checked)"><span>${esc(e.name)}</span></label>`).join('');
+ modal(`<h2>스케줄 출력</h2><div class="outputModeRow"><button id="outAllBtn" class="outputModeBtn active" onclick="setScheduleOutputMode('all')">전체 직원</button><button id="outPickBtn" class="outputModeBtn" onclick="setScheduleOutputMode('selected')">직원 선택</button></div><div id="scheduleOutputPicker" class="hidden"><div class="toolbar" style="margin-bottom:7px"><button class="btn gray small" onclick="toggleScheduleOutputAll(true)">전체선택</button><button class="btn gray small" onclick="toggleScheduleOutputAll(false)">전체해제</button></div><div class="outputEmployeeList">${items||'<div class="attEmpty">출력할 직원이 없습니다.</div>'}</div></div><div class="modalActions"><button class="btn gray" onclick="closeModal()">취소</button><button class="btn green" onclick="runSchedulePrint()">인쇄/PDF</button><button class="btn" onclick="runScheduleExcel()">Excel</button></div>`)
+}
+function setScheduleOutputMode(mode){scheduleOutputMode=mode==='selected'?'selected':'all';$('outAllBtn')?.classList.toggle('active',scheduleOutputMode==='all');$('outPickBtn')?.classList.toggle('active',scheduleOutputMode==='selected');$('scheduleOutputPicker')?.classList.toggle('hidden',scheduleOutputMode!=='selected')}
+function toggleScheduleOutputEmployee(id,on){if(on)scheduleOutputSelected.add(Number(id));else scheduleOutputSelected.delete(Number(id))}
+function toggleScheduleOutputAll(on){document.querySelectorAll('.scheduleOutputCheck').forEach(x=>{x.checked=on;toggleScheduleOutputEmployee(Number(x.value),on)})}
+function scheduleOutputIds(){let all=monthlyScheduleEmployees($('monthSelect').value).map(e=>e.id);return scheduleOutputMode==='all'?all:all.filter(id=>scheduleOutputSelected.has(Number(id)))}
+function runSchedulePrint(){let ids=scheduleOutputIds();if(!ids.length)return alert('출력할 직원을 선택하세요.');closeModal();setTimeout(()=>printScheduleNow(ids),30)}
+function runScheduleExcel(){let ids=scheduleOutputIds();if(!ids.length)return alert('출력할 직원을 선택하세요.');closeModal();exportSchedule(ids)}
+function exportSchedule(employeeIds=null){let r=monthRange(),data=[['업장',stores.find(s=>s.id===storeId())?.name],['월',r.m],[],['직원',...Array.from({length:r.days},(_,i)=>`${i+1}일`),'실근로','연장']];let allowed=employeeIds?new Set(employeeIds.map(Number)):null;monthlyScheduleEmployees(r.m).filter(e=>!allowed||allowed.has(Number(e.id))).forEach(e=>{let x=calc(e);data.push([e.name,...Array.from({length:r.days},(_,i)=>sched(e,r.m+'-'+String(i+1).padStart(2,'0'))?.work_code||''),x.worked,x.ot])});downloadXlsx(data,`${stores.find(s=>s.id===storeId())?.name}_${r.m}_스케줄.xlsx`)}
 function exportPharmacyPayTable(){$('pharmacyTemplateFile').click()}
 
 function exportPayroll(){let data=[['직원','월근무시간','기본급','고정연장','휴일수당','연장수당','식대','조정수당','상여','월지급총액','공제총액','실지급액']];let orderMap=new Map(employeesForMonth($('monthSelect').value).map((e,i)=>[e.id,i]));
@@ -7080,9 +7391,9 @@ function printResignation(id){
  </div>`;
  window.print();
 }
-function printSchedule(){
+function printScheduleNow(employeeIds=null){
  setPrintPageOrientation('landscape');
- let r=monthRange(),st=stores.find(s=>s.id===storeId()),list=monthlyScheduleEmployees(r.m);
+ let r=monthRange(),st=stores.find(s=>s.id===storeId()),allowed=employeeIds?new Set(employeeIds.map(Number)):null,list=monthlyScheduleEmployees(r.m).filter(e=>!allowed||allowed.has(Number(e.id)));
  let h=`<div class="printHead"><div><h1>${esc(st?.name||'')} 월간 근무표</h1><div class="meta">${r.y}년 ${r.mo}월</div></div><div class="meta">출력일 ${new Date().toLocaleDateString('ko-KR')}</div></div>
  <table><thead><tr><th class="pname">직원</th>`;
  for(let d=1;d<=r.days;d++){
@@ -7110,6 +7421,7 @@ function printSchedule(){
  <div class="printFoot">직원관리 대시보드</div>`;
  $('printArea').innerHTML=h;window.print();
 }
+function printSchedule(){openScheduleOutput()}
 boot();
 </script>
 </body></html>
