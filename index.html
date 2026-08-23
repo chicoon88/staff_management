@@ -1336,10 +1336,13 @@ function normalizedWorkDays(v){
  return [];
 }
 const WORK_CONDITION_DAY_RULES_PREFIX='[[DAY_RULES:';
+const WORK_CONDITION_SCHEDULE_MODE_PREFIX='[[SCHEDULE_MODE:';
 function workConditionDayRulesFromNote(note){let m=String(note||'').match(/\[\[DAY_RULES:([^\]]+)\]\]/);if(!m)return [];try{return normalizeContractDayRules(JSON.parse(decodeURIComponent(m[1])))}catch(_){return []}}
-function workConditionHumanNote(note){return String(note||'').replace(/\s*\[\[DAY_RULES:[^\]]+\]\]\s*/g,' ').replace(/\s+/g,' ').trim()}
-function workConditionNoteWithDayRules(note,rules){let human=workConditionHumanNote(note),a=normalizeContractDayRules(rules);return (human+(a.length?' [[DAY_RULES:'+encodeURIComponent(JSON.stringify(a))+']]':'')).trim()||null}
+function workConditionScheduleModeFromNote(note){let m=String(note||'').match(/\[\[SCHEDULE_MODE:(manual|auto)\]\]/);return m?m[1]:'manual'}
+function workConditionHumanNote(note){return String(note||'').replace(/\s*\[\[DAY_RULES:[^\]]+\]\]\s*/g,' ').replace(/\s*\[\[SCHEDULE_MODE:(?:manual|auto)\]\]\s*/g,' ').replace(/\s+/g,' ').trim()}
+function workConditionNoteWithDayRules(note,rules,scheduleMode='manual'){let human=workConditionHumanNote(note),a=normalizeContractDayRules(rules),mode=scheduleMode==='auto'?'auto':'manual';return (human+(a.length?' [[DAY_RULES:'+encodeURIComponent(JSON.stringify(a))+']]':'')+' [[SCHEDULE_MODE:'+mode+']]').trim()||null}
 function conditionDayRules(c){return normalizeContractDayRules(c?._day_rules||c?.day_rules||workConditionDayRulesFromNote(c?.note))}
+function conditionScheduleMode(c){return c?.schedule_mode==='auto'||c?._schedule_mode==='auto'||workConditionScheduleModeFromNote(c?.note)==='auto'?'auto':'manual'}
 function conditionRuleForDate(c,date){let wd=new Date(String(date||isoToday())+'T12:00:00').getDay();return conditionDayRules(c).find(r=>r.days.includes(wd))||null}
 function conditionTimesForDate(c,date){let r=conditionRuleForDate(c,date);return r?{start:r.start,end:r.end,break_minutes:Number(r.break_minutes||c?.break_minutes||0),daily_hours:Number(r.daily_hours||c?.daily_hours||0)}:{start:c?.default_start_time||null,end:c?.default_end_time||null,break_minutes:Number(c?.break_minutes||0),daily_hours:Number(c?.daily_hours||0)}}
 function employeeFallbackCondition(e){
@@ -1361,7 +1364,7 @@ function workConditionForDate(e,date=isoToday()){
  let base=employeeFallbackCondition(e),rows=workConditionRowsForEmployee(e?.id),hit=null;
  for(const r of rows){if(String(r.effective_from||'')<=date)hit=r;else break}
  if(!hit)return base;
- let rules=workConditionDayRulesFromNote(hit.note);
+ let rules=workConditionDayRulesFromNote(hit.note),scheduleMode=workConditionScheduleModeFromNote(hit.note);
  return {...base,...hit,
    daily_hours:Number(hit.daily_hours??base.daily_hours),
    break_minutes:Number(hit.break_minutes??base.break_minutes),
@@ -1369,7 +1372,7 @@ function workConditionForDate(e,date=isoToday()){
    leave_weekly_hours:Number(hit.leave_weekly_hours??base.leave_weekly_hours),
    leave_monthly_hours:Number(hit.leave_monthly_hours??base.leave_monthly_hours),
    leave_day_hours:Number(hit.leave_day_hours??base.leave_day_hours),
-   note:workConditionHumanNote(hit.note),_day_rules:rules,
+   note:workConditionHumanNote(hit.note),_day_rules:rules,_schedule_mode:scheduleMode,
    _history_id:hit.id||null
  };
 }
@@ -3141,16 +3144,18 @@ async function fillDefaults(){
  let baseList=scheduleManagedEmployees($('monthSelect').value);
  let chosen=baseList.filter(e=>selectedEmployees.has(e.id));
  if(!chosen.length)return alert('기본근무를 채울 직원을 먼저 체크하세요.');
- let r=monthRange(),rows=[];
+ let r=monthRange(),rows=[],manualNames=new Set(),missingDayNames=new Set(),autoNames=new Set();
  chosen.forEach(e=>{
    for(let d=1;d<=r.days;d++){
      let date=r.m+'-'+String(d).padStart(2,'0');
      if(!employedOn(e,date)||sched(e,date))continue;
-     let cond=workConditionForDate(e,date),days=normalizedWorkDays(cond.work_days);
-     if(!days.length){
-       if(cond.work_type==='40')days=[1,2,3,4,5];
-       else if(cond.work_type==='36')days=[1,2,4,5];
-     }
+     let cond=workConditionForDate(e,date);
+     // 안전 기본값: 계약서/근무조건을 직원관리에 적용해도 스케줄은 자동 생성하지 않는다.
+     if(conditionScheduleMode(cond)!=='auto'){manualNames.add(e.name);continue}
+     let days=normalizedWorkDays(cond.work_days);
+     // 주5일/주4일이라는 이유만으로 월~금 등 특정 요일을 추정하지 않는다. 고정요일이 명시돼 있어야 자동채우기 가능.
+     if(!days.length){missingDayNames.add(e.name);continue}
+     autoNames.add(e.name);
      let wd=new Date(r.y,r.mo-1,d).getDay(),on=days.includes(wd),rule=conditionTimesForDate(cond,date),worked=on?hoursBetween(rule.start,rule.end,rule.break_minutes):0;
      if(on&&!worked)worked=conditionWorkedDayHours(cond,date);
      let base=Number(rule.daily_hours||cond.daily_hours||8);
@@ -3158,7 +3163,12 @@ async function fillDefaults(){
    }
  });
  if(rows.length){let q=await sb.from('schedules').upsert(rows,{onConflict:'employee_id,work_date'});if(q.error)return alert(q.error.message);stampRecentAuditIp(storeId())}
- refreshAll();
+ await refreshAll();
+ let msgs=[];
+ if(autoNames.size)msgs.push(`자동채우기: ${[...autoNames].join(', ')}`);
+ if(manualNames.size)msgs.push(`직접입력 모드로 제외: ${[...manualNames].join(', ')}`);
+ if(missingDayNames.size)msgs.push(`고정요일 미지정으로 제외: ${[...missingDayNames].join(', ')}`);
+ if(msgs.length)alert(msgs.join('\n')+'\n\n직접입력 모드 직원의 기존/빈 스케줄은 변경하지 않았습니다.');
 }
 async function workRowsForMonth(employeeIds,ym){
  if(!employeeIds.length)return [];
@@ -4255,7 +4265,7 @@ function renderEmployees(){
 
    <td class="empInlineCell">${employeeView==='active'?employeeInlineNumber(e,'break_minutes','1','empInlineSmall',currentCond.break_minutes):(currentCond.break_minutes||0)}</td>
 
-   <td>${currentCond.work_type==='36'?'주4일':currentCond.work_type==='40'?'주5일':'기타'}<br><span class="help">요일 변동 스케줄</span>${employeeView==='active'?`<label class="scheduleHideToggle" title="직원관리·급여관리에는 그대로 두고 월간스케줄·주간편성·근로시간에서만 숨깁니다."><input type="checkbox" ${employeeMonthlyScheduleHidden(e)?'checked':''} onchange="saveMonthlyScheduleVisibility(${e.id},this.checked,this)">스케줄·근로 제외</label>`:''}</td>
+   <td>${currentCond.work_type==='36'?'주4일':currentCond.work_type==='40'?'주5일':'기타'}<br><span class="help">${conditionScheduleMode(currentCond)==='auto'?'고정요일 자동채우기':'스케줄 직접입력'}</span>${employeeView==='active'?`<label class="scheduleHideToggle" title="직원관리·급여관리에는 그대로 두고 월간스케줄·주간편성·근로시간에서만 숨깁니다."><input type="checkbox" ${employeeMonthlyScheduleHidden(e)?'checked':''} onchange="saveMonthlyScheduleVisibility(${e.id},this.checked,this)">스케줄·근로 제외</label>`:''}</td>
 
    <td class="empInlineCell">${payTypeCell}</td>
 
@@ -5008,9 +5018,11 @@ async function openWorkConditionHistory(employeeId,presetDate='',presetNote='',p
  }
  let baseCondition=workConditionForDate(e,isoToday()),c=presetCondition?{...baseCondition,...presetCondition,work_days:normalizedWorkDays(presetCondition.work_days)}:baseCondition;
  let presetRules=normalizeContractDayRules(presetCondition?.day_rules||conditionDayRules(c)),ruleEncoded=encodeURIComponent(JSON.stringify(presetRules)),ruleSummary=presetRules.length?contractDayRulesSummary(presetRules):'';
+ // 근로계약서의 근무요일/시간과 실제 스케줄 자동편성은 별개다. 계약서 업로드로 들어오는 새 조건은 항상 직접입력을 기본값으로 둔다.
+ let scheduleMode=presetCondition?(presetCondition.schedule_mode==='auto'?'auto':'manual'):conditionScheduleMode(c);
  let checks=[0,1,2,3,4,5,6].map(d=>`<label style="font-size:12px"><input type="checkbox" class="wcDay" value="${d}" ${normalizedWorkDays(c.work_days).includes(d)?'checked':''}>${'일월화수목금토'[d]}</label>`).join(' ');
  modal(`<div class="row"><div><h2 style="margin:0">${esc(e.name)} · 근무조건 이력</h2>
-  <div class="help" style="margin-top:4px">근무형태가 바뀌어도 과거 조건을 지우지 않고 <b>적용 시작일</b>부터 새 조건을 사용합니다. 기본근무 채우기·주간 목표·연차시간도 날짜별 조건을 따라갑니다.</div></div>
+  <div class="help" style="margin-top:4px">근무형태가 바뀌어도 과거 조건을 지우지 않고 <b>적용 시작일</b>부터 새 조건을 사용합니다. 주간 목표·연차시간은 날짜별 조건을 따르며, <b>스케줄 자동채우기는 별도로 “고정요일 자동채우기”를 선택한 경우에만</b> 작동합니다.</div></div>
   <button class="btn gray" onclick="closeModal()">닫기</button></div>
   <div class="historyAddBox"><div class="historyGrid" style="grid-template-columns:repeat(4,minmax(0,1fr))">
    <div class="field"><label>적용 시작일</label><input id="wcEffective" type="text" inputmode="numeric" maxlength="8" placeholder="YYYYMMDD" value="${String(presetDate||isoToday()).replace(/-/g,'')}" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,8)"></div>
@@ -5022,12 +5034,13 @@ async function openWorkConditionHistory(employeeId,presetDate='',presetNote='',p
    <div class="field"><label>연차 산정 주 소정시간</label><input id="wcLeaveWeekly" type="number" step=".5" value="${Number(c.leave_weekly_hours||40)}"></div>
    <div class="field"><label>1년 미만 월 발생(h)</label><input id="wcLeaveMonthly" type="number" step="1" value="${Number(c.leave_monthly_hours||8)}"></div>
    <div class="field"><label>연차 하루 사용(h)</label><input id="wcLeaveDay" type="number" step=".5" value="${Number(c.leave_day_hours||8)}"></div>
+   <div class="field"><label>스케줄 편성 방식</label><select id="wcScheduleMode"><option value="manual" ${scheduleMode==='manual'?'selected':''}>직접 입력 (기본)</option><option value="auto" ${scheduleMode==='auto'?'selected':''}>고정요일 자동채우기</option></select></div>
    <div class="field" style="grid-column:span 3"><label>변경 메모</label><input id="wcNote" value="${esc(workConditionHumanNote(presetCondition?.note||presetNote||''))}" placeholder="예: 2026년 8월부터 주5일 → 주4일 변경"></div>
    <input id="wcDayRules" type="hidden" value="${esc(ruleEncoded)}">
   </div>
-  ${presetRules.length>1?`<div style="margin-top:8px;padding:9px 11px;border:1px solid #b9d7ff;background:#eef6ff;border-radius:10px;font-size:12px"><b>요일별 근로시간</b><br>${esc(ruleSummary)}<br><span style="color:#52657a">기본근무 자동채우기는 이 요일별 시간을 우선 사용합니다.</span></div>`:''}
-  <div style="margin-top:8px"><b style="font-size:12px">기본 근무요일</b><div style="margin-top:5px">${checks}</div></div>
-  <div class="help" style="margin-top:8px">${presetCondition?'<b>계약서에서 읽은 값이 자동으로 채워졌습니다. 이 화면에서 마지막 확인 후 “이 조건 등록”을 누를 때만 실제 근무조건에 반영됩니다.</b><br>':''}예: 7월까지 주5일 8시간, 8/1부터 주4일 9시간이면 <b>20260801</b>을 적용 시작일로 새 조건을 등록하세요. 주4일 9시간이 ‘소정 8h + 추가 1h’ 구조라면 1일 소정시간은 8h로 두고 출퇴근/휴게로 실제 9h가 나오게 설정합니다. 7월 스케줄은 이전 조건, 8월 자동채우기는 새 조건을 사용합니다.</div>
+  ${presetRules.length>1?`<div style="margin-top:8px;padding:9px 11px;border:1px solid #b9d7ff;background:#eef6ff;border-radius:10px;font-size:12px"><b>계약서의 요일별 근로시간</b><br>${esc(ruleSummary)}<br><span style="color:#52657a">이 값은 계약조건/수기입력 시 참고합니다. <b>직접 입력</b> 모드에서는 스케줄 날짜를 자동으로 만들지 않습니다.</span></div>`:''}
+  <div style="margin-top:8px"><b style="font-size:12px">근무요일 (계약서/참고값)</b><div style="margin-top:5px">${checks}</div></div>
+  <div class="help" style="margin-top:8px">${presetCondition?'<b>계약서에서 읽은 값이 자동으로 채워졌습니다. 계약서의 근무요일이 실제 매주 고정이라는 뜻은 아니므로 스케줄 편성은 기본적으로 “직접 입력”으로 저장됩니다.</b><br>':''}<b>직접 입력:</b> 월간/주간 스케줄에서 사용자가 근무일과 시간을 직접 입력합니다. 주2일·주5일이라도 요일이 매주 바뀌거나 계약서에 실제 고정요일이 없으면 이 방식을 사용하세요.<br><b>고정요일 자동채우기:</b> 실제로 매주 같은 요일에 근무하는 직원에게만 선택하세요. 이때 위 체크한 요일만 “선택 직원 기본근무 채우기”에 사용하며, 주5일이라고 해서 월~금으로 임의 추정하지 않습니다.</div>
   <div class="modalActions"><button class="btn" onclick="addWorkCondition(${employeeId})">${presetCondition?'확인 후 직원관리에 적용':'이 조건 등록'}</button></div></div>
   <div id="workConditionList" class="historyList"><div class="help">불러오는 중...</div></div>`);
  await loadWorkConditionHistory(employeeId);
@@ -5047,9 +5060,9 @@ async function loadWorkConditionHistory(employeeId){
  }
  let rows=q.data||[];
  host.innerHTML=rows.length?rows.map(x=>{
-   let wt=workTypeLabelValue(x.work_type),rules=workConditionDayRulesFromNote(x.note),days=workConditionDaysLabel(x.work_days),times=rules.length?contractDayRulesSummary(rules):([String(x.default_start_time||'').slice(0,5),String(x.default_end_time||'').slice(0,5)].filter(Boolean).join('~')||'-'),humanNote=workConditionHumanNote(x.note),reserved=String(x.effective_from||'')>isoToday();
+   let wt=workTypeLabelValue(x.work_type),rules=workConditionDayRulesFromNote(x.note),days=workConditionDaysLabel(x.work_days),times=rules.length?contractDayRulesSummary(rules):([String(x.default_start_time||'').slice(0,5),String(x.default_end_time||'').slice(0,5)].filter(Boolean).join('~')||'-'),humanNote=workConditionHumanNote(x.note),reserved=String(x.effective_from||'')>isoToday(),scheduleLabel=workConditionScheduleModeFromNote(x.note)==='auto'?'고정요일 자동채우기':'직접 입력';
    return `<div class="historyRow"><div><b>${x.effective_from}부터 · ${esc(wt)} ${reserved?'<span class="pill">예약</span>':''}</b>
-    <div class="help">${esc(days)} · ${times} · 소정 ${Number(x.daily_hours||0)}h · 기본 실근무 ${conditionWorkedDayHours(x)}h · 휴게 ${Number(x.break_minutes||0)}분 · 연차 주 ${Number(x.leave_weekly_hours||0)}h / 월 +${Number(x.leave_monthly_hours||0)}h / 1일 -${Number(x.leave_day_hours||0)}h${humanNote?' · '+esc(humanNote):''}</div></div>
+    <div class="help">스케줄 ${scheduleLabel} · ${esc(days)} · ${times} · 소정 ${Number(x.daily_hours||0)}h · 기본 실근무 ${conditionWorkedDayHours(x)}h · 휴게 ${Number(x.break_minutes||0)}분 · 연차 주 ${Number(x.leave_weekly_hours||0)}h / 월 +${Number(x.leave_monthly_hours||0)}h / 1일 -${Number(x.leave_day_hours||0)}h${humanNote?' · '+esc(humanNote):''}</div></div>
     <button class="btn red small" onclick="deleteWorkCondition(${x.id},${employeeId})">삭제</button></div>`;
   }).join(''):'<div class="help" style="padding:16px">아직 별도 근무조건 이력이 없습니다. 현재 직원 기본값이 그대로 사용됩니다.</div>';
 }
@@ -5071,7 +5084,7 @@ async function addWorkCondition(employeeId){
    leave_weekly_hours:Number($('wcLeaveWeekly')?.value||40),
    leave_monthly_hours:Number($('wcLeaveMonthly')?.value||8),
    leave_day_hours:Number($('wcLeaveDay')?.value||8),
-   note:workConditionNoteWithDayRules($('wcNote')?.value?.trim()||'',dayRules)
+   note:workConditionNoteWithDayRules($('wcNote')?.value?.trim()||'',dayRules,$('wcScheduleMode')?.value||'manual')
  };
  if(!Number.isFinite(payload.daily_hours)||payload.daily_hours<=0)return alert('1일 소정시간을 확인하세요.');
  let existing=workConditionRowsForEmployee(employeeId);
