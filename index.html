@@ -1054,7 +1054,7 @@ body.resizingEmployeeColumn *{
 
 <section id="payrollPage" class="page">
  <div class="row">
-  <div><h1 class="title">급여관리 <span style="font-size:12px;color:#315efb;background:#eef3ff;border-radius:999px;padding:4px 8px;vertical-align:middle">v2026.08.23-1545</span></h1><div class="sub">월별 급여대장을 검산하고, 기간별·직원별 누적 급여도 조회합니다.</div></div>
+  <div><h1 class="title">급여관리 <span style="font-size:12px;color:#315efb;background:#eef3ff;border-radius:999px;padding:4px 8px;vertical-align:middle">v2026.08.23-1605</span></h1><div class="sub">월별 급여대장을 검산하고, 기간별·직원별 누적 급여도 조회합니다.</div></div>
   <div class="toolbar">
    <input type="file" id="payrollFile" accept=".xlsx,.xls,.xlsm" multiple style="display:none" onchange="importPayrollFiles(this.files);this.value=''">
    <button class="btn" onclick="$('payrollFile').click()">급여대장 여러개 불러오기</button>
@@ -7529,8 +7529,18 @@ function contractClock(h,m,ampm=''){
  return `${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')}`
 }
 function contractTimeMatches(text){
- let t=normalizeContractText(text).replace(/[OoＯｏ]/g,'0');
- return [...t.matchAll(/(오전|오후)?\s*([0-2]?\d)\s*[:.]\s*([0-5]\d)/g)].map(m=>contractClock(m[2],m[3],m[1]||'')).filter(Boolean);
+ let t=normalizeContractText(text)
+   .replace(/[OoＯｏQqＤＤD]/g,'0')
+   .replace(/[Ilⅼ｜|]/g,'1');
+ let out=[];
+ for(let m of t.matchAll(/(오전|오후)?\s*([0-2]?\d)\s*(?:[:.;·,]|시)\s*([0-5]\d)\s*(?:분)?/g)){
+   let v=contractClock(m[2],m[3],m[1]||'');if(v)out.push(v);
+ }
+ // 스캔 OCR에서 콜론이 빠져 '10 00'처럼 읽히는 경우를 보조 인식한다.
+ for(let m of t.matchAll(/(오전|오후)?\s*([0-2]?\d)\s+([0-5]\d)(?!\d)/g)){
+   let v=contractClock(m[2],m[3],m[1]||'');if(v)out.push(v);
+ }
+ return out;
 }
 function contractMinutesBetween(a,b){
  if(!a||!b)return 0;let [ah,am]=a.split(':').map(Number),[bh,bm]=b.split(':').map(Number),n=(bh*60+bm)-(ah*60+am);if(n<0)n+=1440;return n;
@@ -7539,16 +7549,15 @@ function contractMinutesOfDay(t){if(!t)return -1;let [h,m]=String(t).split(':').
 function extractContractWorkDays(text){
  let t=normalizeContractText(text),zone=t;
  // 노무사 양식의 제3조 ② 표(근로일 / 근로시간 / 휴게시간 / 비고)를 최우선으로 읽는다.
- let si=t.search(/(?:시업\s*및\s*종업시간[^③제]{0,80}휴게시간|근로일\s*근로시간\s*휴게시간)/);
- if(si>=0){zone=t.slice(si,Math.min(t.length,si+700));let cut=zone.search(/(?:③|제\s*4\s*조)/);if(cut>0)zone=zone.slice(0,cut)}
- else {let idx=t.search(/근로일|근무일|소정근로일/);if(idx>=0)zone=t.slice(idx,Math.min(t.length,idx+500))}
+ let si=t.search(/(?:시업\s*및\s*종업시간[^③제]{0,120}휴게시간|근로일\s*근로시간\s*휴게시간)/);
+ if(si>=0){zone=t.slice(si,Math.min(t.length,si+900));let cut=zone.search(/(?:③|제\s*4\s*조)/);if(cut>0)zone=zone.slice(0,cut)}
+ else {let idx=t.search(/근로일|근무일|소정근로일/);if(idx>=0)zone=t.slice(idx,Math.min(t.length,idx+700))}
  const dayIndex={일:0,월:1,화:2,수:3,목:4,금:5,토:6};
- let range=zone.match(/([일월화수목금토])\s*(?:요일)?\s*(?:~|\-|–|—|부터)\s*([일월화수목금토])\s*(?:요일)?/);
+ let range=zone.match(/([일월화수목금토])\s*(?:요일)?\s*(?:~|\-|–|—|부터|내지)\s*([일월화수목금토])\s*(?:요일)?/);
  if(range){let a=dayIndex[range[1]],b=dayIndex[range[2]],out=[];for(let i=a;;i=(i+1)%7){out.push(i);if(i===b||out.length>=7)break}return out.sort((x,y)=>x-y)}
- // OCR에서 '월~금'의 물결표가 빠지는 경우: 표 안에 월 금이 연이어 잡히고 그 사이가 짧으면 월~금으로 본다.
- let compact=zone.match(/(?:근로일[^가-힣0-9]{0,20})?월\s*(?:요일)?\s{0,8}(?:-|~|부터)?\s*금\s*(?:요일)?/);
- if(compact)return [1,2,3,4,5];
- let line=(zone.match(/(?:근로일|근무일|소정근로일)\s*[:：]?\s*([^.;]{1,140})/)||[])[1]||zone;
+ // OCR에서 구분기호가 사라지거나 잡음문자가 끼는 경우에도 '월 … 금'을 월~금으로 인식한다.
+ if(/(?:근로일|근무일|소정근로일)?[^가-힣]{0,20}월[^일월화수목금토]{0,24}금/.test(zone) || /월[^일월화수목금토]{0,16}금/.test(zone))return [1,2,3,4,5];
+ let line=(zone.match(/(?:근로일|근무일|소정근로일)\s*[:：]?\s*([^.;]{1,180})/)||[])[1]||zone;
  let names=[...line.matchAll(/([일월화수목금토])\s*(?:요일)?/g)].map(m=>dayIndex[m[1]]);
  return [...new Set(names)].sort((a,b)=>a-b);
 }
@@ -7581,6 +7590,36 @@ function chooseContractWorkAndBreakTimes(times){
  }
  if(!br)br=pairs.filter(x=>x.mins>=15&&x.mins<=180&&!(work&&x.a===work.a&&x.b===work.b)).sort((x,y)=>x.mins-y.mins)[0]||null;
  return {start:work?.a||'',end:work?.b||'',breakStart:br?.a||'',breakEnd:br?.b||'',breakMinutes:br?.mins||0};
+}
+function mergeContractTerms(...items){
+ let valid=items.filter(Boolean);if(!valid.length)return null;
+ let best=valid.slice().sort((a,b)=>(b.score||0)-(a.score||0))[0],out={...best};
+ const fields=['work_days','default_start_time','default_end_time','break_start_time','break_end_time','break_minutes','daily_hours','weekly_hours','note'];
+ for(const k of fields){
+   if(k==='work_days'){
+     if(!out.work_days?.length){let v=valid.find(x=>x.work_days?.length)?.work_days;if(v)out.work_days=[...v]}
+   }else if(out[k]==null||out[k]===''||Number(out[k])===0){
+     let v=valid.map(x=>x[k]).find(v=>v!=null&&v!==''&&Number(v)!==0);if(v!=null)out[k]=v;
+   }
+ }
+ if((!out.daily_hours||Number(out.daily_hours)<=0)&&out.default_start_time&&out.default_end_time){
+   let mins=contractMinutesBetween(out.default_start_time,out.default_end_time)-Number(out.break_minutes||0);
+   if(mins>0)out.daily_hours=Math.round(mins/6)/10;
+ }
+ if((!out.weekly_hours||Number(out.weekly_hours)<=0)&&out.daily_hours&&out.work_days?.length){
+   out.weekly_hours=Math.round(Number(out.daily_hours)*out.work_days.length*100)/100;
+ }
+ if((!out.work_days||!out.work_days.length)&&Number(out.daily_hours)>0&&Number(out.weekly_hours)>0){
+   let cnt=Math.round(Number(out.weekly_hours)/Number(out.daily_hours));
+   if(cnt===5)out.work_days=[1,2,3,4,5];
+ }
+ out.score=[out.work_days?.length>0,!!out.default_start_time,!!out.default_end_time,Number(out.break_minutes)>0,Number(out.daily_hours)>0,Number(out.weekly_hours)>0,!!out.note].filter(Boolean).length;
+ return out;
+}
+function cropContractCanvas(source,xRatio,yRatio,wRatio,hRatio){
+ let c=document.createElement('canvas'),sx=Math.max(0,Math.floor(source.width*xRatio)),sy=Math.max(0,Math.floor(source.height*yRatio)),
+ sw=Math.max(1,Math.floor(source.width*wRatio)),sh=Math.max(1,Math.floor(source.height*hRatio));
+ c.width=sw;c.height=sh;let ctx=c.getContext('2d');ctx.drawImage(source,sx,sy,sw,sh,0,0,sw,sh);return c;
 }
 function extractContractTermsFromText(text){
  let t=normalizeContractText(text);if(!t)return null;
@@ -7638,13 +7677,48 @@ async function readContractDataFromPdf(file){
  let pageCount=Math.min(pdf.numPages,3),text='';
  for(let i=1;i<=pageCount;i++){let page=await pdf.getPage(i),tc=await page.getTextContent();text+=' '+tc.items.map(x=>x.str||'').join(' ')}
  let period=extractContractPeriodFromText(text),terms=extractContractTermsFromText(text);
- if(period && (terms?.score||0)>=4)return {period,terms,method:'text',text};
- // 스캔본이거나 텍스트 추출이 부족한 경우 첫 페이지를 OCR합니다. 이 양식은 핵심 근무조건이 1페이지에 있습니다.
- let page=await pdf.getPage(1),vp=page.getViewport({scale:2}),canvas=document.createElement('canvas'),ctx=canvas.getContext('2d');canvas.width=Math.ceil(vp.width);canvas.height=Math.ceil(vp.height);await page.render({canvasContext:ctx,viewport:vp}).promise;
+ if(period && terms?.default_start_time && terms?.default_end_time && terms?.work_days?.length && (terms?.score||0)>=5)return {period,terms,method:'text',text};
+
+ // 스캔본/표 인식이 부족한 경우 1페이지를 고해상도로 OCR하고,
+ // 제3조 근로시간 표가 있는 중앙부를 별도로 한 번 더 읽는다.
+ let page=await pdf.getPage(1),vp=page.getViewport({scale:3.4}),canvas=document.createElement('canvas'),ctx=canvas.getContext('2d');
+ canvas.width=Math.ceil(vp.width);canvas.height=Math.ceil(vp.height);await page.render({canvasContext:ctx,viewport:vp}).promise;
  const Tesseract=await loadContractTesseract();
- let result=await Tesseract.recognize(canvas,'kor+eng',{logger:m=>{if(m.status==='recognizing text')setContractAutoReadStatus(`계약서 읽는 중... ${Math.round((m.progress||0)*100)}%`,'reading')}});
- let ocrText=result?.data?.text||'',merged=text+' '+ocrText;
- return {period:extractContractPeriodFromText(merged)||period,terms:extractContractTermsFromText(merged)||terms,method:'ocr',text:merged};
+
+ let fullResult=await Tesseract.recognize(canvas,'kor+eng',{
+   logger:m=>{if(m.status==='recognizing text')setContractAutoReadStatus(`계약서 전체 읽는 중... ${Math.round((m.progress||0)*100)}%`,'reading')},
+   tessedit_pageseg_mode:'6'
+ });
+ let fullOcr=fullResult?.data?.text||'';
+
+ // 이 노무사 양식에서 제3조/근로시간 표는 첫 페이지 중앙~하단에 위치한다.
+ // 여기를 다시 크게 읽어 숫자(10:00~17:00, 12:00~13:00)와 월~금 누락을 줄인다.
+ let tableCanvas=cropContractCanvas(canvas,0.07,0.42,0.86,0.38);
+ let tableResult=await Tesseract.recognize(tableCanvas,'kor+eng',{
+   logger:m=>{if(m.status==='recognizing text')setContractAutoReadStatus(`근무시간 표 읽는 중... ${Math.round((m.progress||0)*100)}%`,'reading')},
+   tessedit_pageseg_mode:'6'
+ });
+ let tableOcr=tableResult?.data?.text||'';
+
+ // 숫자만 한 번 더 읽어 OCR이 ':'를 놓치거나 0/O를 혼동하는 경우를 보완한다.
+ let numericResult=await Tesseract.recognize(tableCanvas,'eng',{
+   tessedit_pageseg_mode:'6',
+   tessedit_char_whitelist:'0123456789:~.- '
+ });
+ let numericOcr=numericResult?.data?.text||'';
+
+ let mergedFull=text+' '+fullOcr;
+ let ocrTermsFull=extractContractTermsFromText(mergedFull);
+ let ocrTermsTable=extractContractTermsFromText(tableOcr+' '+numericOcr);
+ let finalTerms=mergeContractTerms(terms,ocrTermsFull,ocrTermsTable);
+ let finalPeriod=extractContractPeriodFromText(mergedFull)||period;
+
+ return {
+   period:finalPeriod,
+   terms:finalTerms,
+   method:'ocr',
+   text:mergedFull+' '+tableOcr+' '+numericOcr
+ };
 }
 function contractDayLabel(days){return (days||[]).length?(days||[]).map(d=>'일월화수목금토'[d]).join('·'):'미확인'}
 function contractTermsSummary(terms){
