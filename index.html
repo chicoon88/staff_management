@@ -805,6 +805,8 @@ body.resizingEmployeeColumn *{
 #schedulePage.scheduleReadOnly .readOnlyScheduleNotice{display:block}
 #schedulePage.scheduleReadOnly input.code,#schedulePage.scheduleReadOnly input.weekCode{background:#f8fafc!important;color:#475569!important;cursor:not-allowed}
 .auditChange{font-size:12px;line-height:1.45;white-space:nowrap}.auditBefore{color:#64748b}.auditArrow{padding:0 5px;color:#94a3b8}.auditAfter{font-weight:900;color:#1f2937}.accessEvent{font-weight:800}
+.ipCell{white-space:nowrap}.ipDisplay{display:flex;align-items:center;gap:6px;flex-wrap:wrap}.ipAddressText{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:11px}.ipAlias{display:inline-flex;align-items:center;padding:3px 7px;border-radius:999px;background:#eef3ff;color:#315efb;font-size:11px;font-weight:900}.ipAlias.none{background:#f1f5f9;color:#64748b}.ipLabelManager{display:grid;grid-template-columns:minmax(160px,220px) minmax(220px,1fr);gap:8px 12px;align-items:center;max-height:430px;overflow:auto;padding-right:4px}.ipLabelManager .ipKey{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12px;font-weight:800}.ipLabelManager input{width:100%}.homePayrollSensitive{}
+@media(max-width:700px){.ipLabelManager{grid-template-columns:1fr}.ipLabelManager .ipKey{margin-top:6px}}
 
 /* ===== 2026-08-20 운영안전/마감/할일/계정관리 추가 ===== */
 .adminTaskBoard{margin-top:12px;border:1px solid #dbe4f0;background:linear-gradient(180deg,#fff,#fbfcff)}
@@ -852,14 +854,15 @@ body.resizingEmployeeColumn *{
 .attCompactFacts{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0}.attCompactFact{border:1px solid var(--line);border-radius:9px;padding:9px 10px;background:#fafbfc}.attCompactFact b{display:block;font-size:11px;color:#667085;margin-bottom:3px}.attCompactFact span{font-weight:900}
 .attHistory{margin-top:10px;border-top:1px solid var(--line);padding-top:8px}.attHistoryItem{font-size:11px;color:#667085;padding:5px 0;border-bottom:1px dashed #e5e7eb}.attHistoryItem:last-child{border-bottom:0}
 .outputModeRow{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0}.outputModeBtn{border:1px solid var(--line);background:#fff;border-radius:11px;padding:14px 10px;font-weight:900;cursor:pointer}.outputModeBtn.active{background:#eef3ff;border-color:#315efb;color:#2348bd}
-.outputEmployeeList{border:1px solid var(--line);border-radius:10px;padding:8px;max-height:330px;overflow:auto}.outputEmployeeItem{display:flex;align-items:center;gap:8px;padding:8px;border-bottom:1px solid #eef0f3;font-weight:800}.outputEmployeeItem:last-child{border-bottom:0}.outputEmployeeItem input{width:18px;height:18px}
+.scheduleOutputModal{width:min(860px,calc(100vw - 40px))!important;max-width:860px!important}.outputPickerTop{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:4px 0 10px;flex-wrap:wrap}.outputPickerActions{display:flex;gap:6px;align-items:center}.outputSelectedCount{font-size:12px;font-weight:900;color:#315efb;background:#eef3ff;border-radius:999px;padding:6px 10px;white-space:nowrap}.outputEmployeeList{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;border:1px solid var(--line);border-radius:12px;padding:10px;max-height:360px;overflow:auto;background:#fafbfc}.outputEmployeeItem{display:flex!important;align-items:center!important;justify-content:flex-start!important;gap:9px!important;min-width:0;min-height:46px;padding:9px 11px!important;border:1px solid #e4e8ef!important;border-radius:10px;background:#fff;font-weight:850;cursor:pointer;box-sizing:border-box}.outputEmployeeItem:hover{border-color:#b7c7f7!important;background:#f7f9ff}.outputEmployeeItem input[type=checkbox]{width:20px!important;height:20px!important;min-width:20px!important;max-width:20px!important;flex:0 0 20px!important;margin:0!important;padding:0!important;accent-color:#315efb}.outputEmployeeItem span{display:block;min-width:0;white-space:nowrap!important;word-break:keep-all!important;overflow:hidden;text-overflow:ellipsis;line-height:1.2;text-align:left}.outputEmployeeItem:has(input:checked){border-color:#9db3f6!important;background:#f2f5ff}.ipCell{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:11px;white-space:nowrap}
 .schedulerMode .schedulerAdvanced{display:none!important}
 .schedulerMode #schedulePage>.row>.toolbar .btn{min-height:40px;padding:9px 13px;font-size:13px}
 .schedulerMode #schedulePage .schedulerFocusNote{font-size:12px;padding:8px 10px}
 .schedulerMode .side .nav{font-size:14px;padding:12px 13px}
 .schedulerMode .top .brand small{display:none}
-@media(max-width:760px){.attendanceSummary{grid-template-columns:1fr 1fr 1fr}.attCompactFacts{grid-template-columns:1fr}.attReviewChoices{grid-template-columns:1fr}.attendanceToolbar .spacer{display:none}.outputModeRow{grid-template-columns:1fr 1fr}}
-@media(max-width:520px){.attendanceSummary{grid-template-columns:1fr}.attendanceStat{display:flex;justify-content:space-between;align-items:center}.attendanceStat .v{font-size:19px}.outputModeRow{grid-template-columns:1fr}}
+@media(max-width:900px){.outputEmployeeList{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:760px){.attendanceSummary{grid-template-columns:1fr 1fr 1fr}.attCompactFacts{grid-template-columns:1fr}.attReviewChoices{grid-template-columns:1fr}.attendanceToolbar .spacer{display:none}.outputModeRow{grid-template-columns:1fr 1fr}.outputEmployeeList{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:520px){.attendanceSummary{grid-template-columns:1fr}.attendanceStat{display:flex;justify-content:space-between;align-items:center}.attendanceStat .v{font-size:19px}.outputModeRow{grid-template-columns:1fr}.outputEmployeeList{grid-template-columns:1fr}.outputPickerTop{align-items:flex-start}.outputPickerActions{width:100%}}
 
 
 .schedulerMode #scheduleStoreState,.schedulerMode #scheduleLoadState,.schedulerMode #schedulePage>.row>.toolbar>span.help{display:none!important}
@@ -904,10 +907,10 @@ body.resizingEmployeeColumn *{
   <div class="card"><div class="k">이번 달 연차 발생</div><div class="v" id="kLeaveDue">0명</div></div>
   <div class="card"><div class="k">주5일 발생 직원</div><div class="v" id="kUnder1">0명</div></div>
   <div class="card"><div class="k">주4일 발생 직원</div><div class="v" id="kAnnual">0명</div></div>
-  <div class="card"><div class="k">급여 실지급</div><div class="v" id="kPay">0원</div></div>
+  <div class="card homePayrollSensitive"><div class="k">급여 실지급</div><div class="v" id="kPay">0원</div></div>
  </div>
- <div id="adminTaskBoard" class="card adminTaskBoard adminOnly" style="display:none">
-  <div class="adminTaskHead"><div><h3 style="margin:0">관리자 할 일</h3><div class="help">계약·스케줄·급여·담당자 계정에서 확인이 필요한 항목만 모아봅니다.</div></div><button class="btn gray small" onclick="refreshAdminTasks(true)">새로고침</button></div>
+ <div id="adminTaskBoard" class="card adminTaskBoard" style="display:none">
+  <div class="adminTaskHead"><div><h3 id="homeCheckTitle" style="margin:0">확인할 내용</h3><div id="homeCheckSub" class="help">현재 업장과 선택월에서 확인이 필요한 항목만 모아봅니다.</div></div><button class="btn gray small" onclick="refreshAdminTasks(true)">새로고침</button></div>
   <div id="adminTaskList" class="adminTaskList"><div class="adminTaskItem info"><b>확인 중</b><span class="meta">현재 업장과 월의 상태를 불러옵니다.</span></div></div>
  </div>
  <div class="grid2">
@@ -998,7 +1001,7 @@ body.resizingEmployeeColumn *{
 
 <section id="payrollPage" class="page">
  <div class="row">
-  <div><h1 class="title">급여관리 <span style="font-size:12px;color:#315efb;background:#eef3ff;border-radius:999px;padding:4px 8px;vertical-align:middle">v2026.08.23-1210</span></h1><div class="sub">월별 급여대장을 검산하고, 기간별·직원별 누적 급여도 조회합니다.</div></div>
+  <div><h1 class="title">급여관리 <span style="font-size:12px;color:#315efb;background:#eef3ff;border-radius:999px;padding:4px 8px;vertical-align:middle">v2026.08.23-1245</span></h1><div class="sub">월별 급여대장을 검산하고, 기간별·직원별 누적 급여도 조회합니다.</div></div>
   <div class="toolbar">
    <input type="file" id="payrollFile" accept=".xlsx,.xls,.xlsm" multiple style="display:none" onchange="importPayrollFiles(this.files);this.value=''">
    <button class="btn" onclick="$('payrollFile').click()">급여대장 여러개 불러오기</button>
@@ -1110,16 +1113,16 @@ body.resizingEmployeeColumn *{
 <section id="auditPage" class="page">
  <div class="row">
   <div><h1 class="title">접속 / 수정이력</h1><div class="sub">스케줄 담당자가 언제 접속했고, 어떤 직원의 어느 날짜 스케줄을 어떻게 바꿨는지 확인합니다.</div></div>
-  <div class="toolbar"><button class="btn" onclick="loadAuditPage()">새로고침</button></div>
+  <div class="toolbar"><button class="btn gray" onclick="openIpLabelManager()">IP 이름 관리</button><button class="btn" onclick="loadAuditPage()">새로고침</button></div>
  </div>
  <div class="card" style="margin-top:12px">
    <div class="row"><div><h3 style="margin:0">스케줄 수정이력</h3><div class="help">DB 트리거가 직접 기록하므로 기본근무 채우기·개별수정·비우기도 남습니다.</div></div>
    <div class="toolbar"><select id="auditStoreFilter" onchange="renderAuditLogs()"><option value="">전체 업장</option></select><select id="auditUserFilter" onchange="renderAuditLogs()"><option value="">전체 사용자</option></select></div></div>
-   <div class="tablewrap" style="margin-top:10px"><table><thead><tr><th>일시</th><th>사용자</th><th>업장</th><th>직원</th><th>날짜</th><th>작업</th><th>변경내용</th><th>복구</th></tr></thead><tbody id="auditLogBody"></tbody></table></div>
+   <div class="tablewrap" style="margin-top:10px"><table><thead><tr><th>일시</th><th>사용자</th><th>업장</th><th>직원</th><th>날짜</th><th>작업</th><th>변경내용</th><th>IP / 위치이름</th><th>복구</th></tr></thead><tbody id="auditLogBody"></tbody></table></div>
  </div>
  <div class="card" style="margin-top:12px">
    <h3 style="margin-top:0">접속기록</h3>
-   <div class="tablewrap"><table><thead><tr><th>일시</th><th>사용자</th><th>구분</th><th>업장</th><th>기기</th></tr></thead><tbody id="accessLogBody"></tbody></table></div>
+   <div class="tablewrap"><table><thead><tr><th>일시</th><th>사용자</th><th>구분</th><th>업장</th><th>IP / 위치이름</th><th>기기</th></tr></thead><tbody id="accessLogBody"></tbody></table></div>
  </div>
 </section>
 
@@ -1151,6 +1154,7 @@ function modal(content){
    });
  }
  let box=document.getElementById('modalBox');
+ box.className='modal';
  box.innerHTML=content;
  wrap.style.display='grid';
  document.body.style.overflow='hidden';
@@ -1165,7 +1169,7 @@ function closeModal(){
  document.body.style.overflow='';
 }
 $('monthSelect').value=new Date().toISOString().slice(0,7);
-let employees=[],schedules=[],payroll=[],stores=[],holidays=[],manualHolidays=[],autoHolidays=[],selectedEmployees=new Set(),leaveLedger=[],leaveAttendanceSchedules=[],scheduleSaveQueue=new Map(),scheduleSaveTimer=null,employeeImportRows=[],paymentRegister=[],incentiveRegister=[],retiredEmployees=[],employeeView='active',employeeActiveSort='manual',refreshToken=0,payrollReloadToken=0,employeeDeleteSelection=new Set(),scheduleView='monthly',employeeResidentBackfillDoneStores=new Set(),employeeSensitiveColumnsMissingDetected=false,employeeDocumentStatusMap=new Map(),employeeDocumentStatusReadyStoreId=null,employeeDocumentPeriodColumnsAvailable=true,employeeWorkConditions=[],employeeWorkConditionTableAvailable=null,currentSessionUser=null,currentAppUser=null,currentPermissions=new Map(),currentStoreAccess=new Set(),permissionSystemAvailable=null,adminUsers=[],adminUserStoreAccess=[],adminUserPermissions=[],auditLogs=[],accessLogs=[],scheduleMonthLocks=[],scheduleLockTableAvailable=null,adminTaskRefreshToken=0,hoursView='summary',attendanceSchemaAvailable=null,attendanceActiveImport=null,attendanceRecords=[],attendanceReviews=[],attendanceReviewHistory=[],attendanceListMode='pending',attendanceSelected=new Set(),attendancePendingManualParse=null,attendanceSettings={late_minutes:10,early_leave_minutes:10,late_out_minutes:60},scheduleOutputMode='all',scheduleOutputSelected=new Set();
+let employees=[],schedules=[],payroll=[],stores=[],holidays=[],manualHolidays=[],autoHolidays=[],selectedEmployees=new Set(),leaveLedger=[],leaveAttendanceSchedules=[],scheduleSaveQueue=new Map(),scheduleSaveTimer=null,employeeImportRows=[],paymentRegister=[],incentiveRegister=[],retiredEmployees=[],employeeView='active',employeeActiveSort='manual',refreshToken=0,payrollReloadToken=0,employeeDeleteSelection=new Set(),scheduleView='monthly',employeeResidentBackfillDoneStores=new Set(),employeeSensitiveColumnsMissingDetected=false,employeeDocumentStatusMap=new Map(),employeeDocumentStatusReadyStoreId=null,employeeDocumentPeriodColumnsAvailable=true,employeeWorkConditions=[],employeeWorkConditionTableAvailable=null,currentSessionUser=null,currentAppUser=null,currentPermissions=new Map(),currentStoreAccess=new Set(),permissionSystemAvailable=null,adminUsers=[],adminUserStoreAccess=[],adminUserPermissions=[],auditLogs=[],accessLogs=[],ipAddressLabels=new Map(),scheduleMonthLocks=[],scheduleLockTableAvailable=null,adminTaskRefreshToken=0,hoursView='summary',attendanceSchemaAvailable=null,attendanceActiveImport=null,attendanceRecords=[],attendanceReviews=[],attendanceReviewHistory=[],attendanceListMode='pending',attendanceSelected=new Set(),attendancePendingManualParse=null,attendanceSettings={late_minutes:10,early_leave_minutes:10,late_out_minutes:60},scheduleOutputMode='all',scheduleOutputSelected=new Set();
 const money=n=>Math.round(Number(n||0)).toLocaleString('ko-KR')+'원',esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 function normalizeName(v){return String(v??'').normalize('NFKC').trim().replace(/\s+/g,'').replace(/[·ㆍ._-]/g,'').toLowerCase()}
 function monthRange(){let m=$('monthSelect').value,[y,mo]=m.split('-').map(Number),days=new Date(y,mo,0).getDate();return {m,y,mo,days,first:m+'-01',last:m+'-'+String(days).padStart(2,'0')}}
@@ -1351,11 +1355,23 @@ function applyPermissionUI(){
  document.querySelectorAll('.nav[data-page="hours"]').forEach(btn=>{let mobile=btn.closest('.mobileNav');btn.innerHTML=isAppAdmin()?(mobile?'근로':'◷ 근로시간'):(mobile?'근태 확인':'✓ 근태 확인')});
  if($('adminNavDivider'))$('adminNavDivider').style.display=(canViewModule('users')||canViewModule('audit'))?'':'none';
  if($('renameStoreBtn'))$('renameStoreBtn').style.display=canEditModule('stores')?'':'none';
- document.querySelectorAll('.adminOnly').forEach(el=>{if(el.id!=='adminTaskBoard')el.style.display=isAppAdmin()?'':'none'});
- updateCurrentUserBadge();applyScheduleEditState();if($('adminTaskBoard'))$('adminTaskBoard').style.display=isAppAdmin()?'':'none';
+ document.querySelectorAll('.adminOnly').forEach(el=>{el.style.display=isAppAdmin()?'':'none'});
+ document.querySelectorAll('.homePayrollSensitive').forEach(el=>{el.style.display=isAppAdmin()?'':'none'});
+ updateCurrentUserBadge();applyScheduleEditState();if($('adminTaskBoard'))$('adminTaskBoard').style.display=canViewModule('home')?'':'none';
 }
 function selectInitialPermittedPage(){let active=document.querySelector('.page.active'),key=active?.id?.replace(/Page$/,'');if(key&&canViewModule(key))return;let first=['schedule','hours','home','employees','payroll','stores','holidays'].find(canViewModule);if(!first){document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));alert('이 계정에 허용된 대시보드가 없습니다. 관리자에게 권한을 요청하세요.');return}document.querySelectorAll('.nav').forEach(x=>x.classList.remove('active'));document.querySelectorAll(`[data-page="${first}"]`).forEach(x=>x.classList.add('active'));document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));$(`${first}Page`)?.classList.add('active')}
-async function logAccessEvent(eventType,details={}){if(permissionSystemAvailable!==true||!currentSessionUser)return;try{await sb.from('access_logs').insert({user_id:currentSessionUser.id,actor_email:currentSessionUser.email||currentAppUser?.email||null,actor_name:currentAppUser?.display_name||null,event_type:eventType,store_id:details.store_id??($('storeSelect')?.value?storeId():null),device:userDeviceLabel(),details})}catch(err){console.warn('접속기록 저장 오류',err)}}
+async function logAccessEvent(eventType,details={}){
+ if(permissionSystemAvailable!==true||!currentSessionUser)return;
+ let sid=details.store_id??($('storeSelect')?.value?storeId():null),payload={action:'log_access',event_type:eventType,store_id:sid,device:userDeviceLabel(),details};
+ try{await invokeSchedulerAccountAdmin(payload);return}catch(err){console.warn('IP 포함 접속기록 서버 저장 실패 · 기본 기록으로 대체',err)}
+ try{await sb.from('access_logs').insert({user_id:currentSessionUser.id,actor_email:currentSessionUser.email||currentAppUser?.email||null,actor_name:currentAppUser?.display_name||null,event_type:eventType,store_id:sid,device:userDeviceLabel(),details})}catch(err){console.warn('접속기록 저장 오류',err)}
+}
+let auditIpStampTimer=null;
+function stampRecentAuditIp(storeIdValue=null){
+ if(permissionSystemAvailable!==true||!currentSessionUser)return;
+ clearTimeout(auditIpStampTimer);
+ auditIpStampTimer=setTimeout(async()=>{try{await invokeSchedulerAccountAdmin({action:'stamp_audit_ip',store_id:storeIdValue??($('storeSelect')?.value?storeId():null)})}catch(err){console.warn('수정이력 IP 기록 실패',err)}},180);
+}
 function scheduleMonthKey(v){return String(v||'').slice(0,7)}
 function isMissingScheduleLockTableError(err){let m=String(err?.message||'')+' '+String(err?.details||'')+' '+String(err?.code||'');return /schedule_month_locks|relation .* does not exist|42P01|schema cache/i.test(m)}
 function scheduleLockForMonth(ym){return scheduleMonthLocks.find(x=>String(x.month_start||'').slice(0,7)===scheduleMonthKey(ym)&&x.locked!==false)||null}
@@ -1473,9 +1489,9 @@ function openUserPermissionEditor(uid){
  let u=adminUsers.find(x=>x.user_id===uid);if(!u)return;let currentStores=new Set(adminUserStoreAccess.filter(x=>x.user_id===uid).map(x=>Number(x.store_id)));let perms=new Map(adminUserPermissions.filter(x=>x.user_id===uid).map(x=>[x.module_key,x]));
  let storeHtml=stores.map(st=>`<label class="permissionStoreCheck"><input type="checkbox" class="permStore" value="${st.id}" ${currentStores.has(st.id)?'checked':''}>${esc(st.name)}</label>`).join('');
  let grid=APP_PERMISSION_MODULES.map(m=>{let p=perms.get(m.key)||{};return `<div>${esc(m.label)}</div><div style="text-align:center"><input type="checkbox" id="pv-${m.key}" ${p.can_view?'checked':''} onchange="if(!this.checked)$('pe-${m.key}').checked=false"></div><div style="text-align:center"><input type="checkbox" id="pe-${m.key}" ${p.can_edit?'checked':''} onchange="if(this.checked)$('pv-${m.key}').checked=true"></div>`}).join('');
- modal(`<h2>${esc(u.display_name||u.email)} · 권한 설정</h2><div class="field"><label>표시 이름</label><input id="permDisplayName" value="${esc(u.display_name||'')}" style="width:100%"></div><div style="margin-top:10px"><b>접근 업장</b><div class="permissionStoreList">${storeHtml}</div></div><div class="toolbar" style="margin-top:10px"><button class="btn green small" onclick="setSchedulerPermissionPreset()">스케줄 담당자 기본권한</button><span class="help">스케줄 보기·수정 + 근로시간 보기만 자동 체크</span></div><div class="permissionGrid"><div class="head">대시보드</div><div class="head" style="text-align:center">보기</div><div class="head" style="text-align:center">수정</div>${grid}</div><label style="display:flex;align-items:center;gap:6px;margin-top:12px"><input id="permUserActive" type="checkbox" ${u.active!==false?'checked':''}>계정 사용</label><div class="modalActions"><button class="btn gray" onclick="closeModal()">취소</button><button class="btn" onclick="saveUserPermissionEditor('${uid}')">저장</button></div>`);
+ modal(`<h2>${esc(u.display_name||u.email)} · 권한 설정</h2><div class="field"><label>표시 이름</label><input id="permDisplayName" value="${esc(u.display_name||'')}" style="width:100%"></div><div style="margin-top:10px"><b>접근 업장</b><div class="permissionStoreList">${storeHtml}</div></div><div class="toolbar" style="margin-top:10px"><button class="btn green small" onclick="setSchedulerPermissionPreset()">스케줄 담당자 기본권한</button><span class="help">전체현황 보기 + 스케줄 보기·수정 + 근로시간 보기</span></div><div class="permissionGrid"><div class="head">대시보드</div><div class="head" style="text-align:center">보기</div><div class="head" style="text-align:center">수정</div>${grid}</div><label style="display:flex;align-items:center;gap:6px;margin-top:12px"><input id="permUserActive" type="checkbox" ${u.active!==false?'checked':''}>계정 사용</label><div class="modalActions"><button class="btn gray" onclick="closeModal()">취소</button><button class="btn" onclick="saveUserPermissionEditor('${uid}')">저장</button></div>`);
 }
-function setSchedulerPermissionPreset(){APP_PERMISSION_MODULES.forEach(m=>{let v=$(`pv-${m.key}`),e=$(`pe-${m.key}`);if(v)v.checked=(m.key==='schedule'||m.key==='hours');if(e)e.checked=(m.key==='schedule')})}
+function setSchedulerPermissionPreset(){APP_PERMISSION_MODULES.forEach(m=>{let v=$(`pv-${m.key}`),e=$(`pe-${m.key}`);if(v)v.checked=(m.key==='home'||m.key==='schedule'||m.key==='hours');if(e)e.checked=(m.key==='schedule')})}
 async function saveUserPermissionEditor(uid){
  if(!isAppAdmin())return;let display=$('permDisplayName').value.trim(),active=$('permUserActive').checked;let storeIds=[...document.querySelectorAll('.permStore:checked')].map(x=>Number(x.value));
  if(!storeIds.length&&!adminUsers.find(x=>x.user_id===uid)?.is_admin){if(!confirm('접근 업장을 하나도 선택하지 않았습니다. 이 사용자는 대시보드 데이터를 볼 수 없게 됩니다. 계속할까요?'))return}
@@ -1486,10 +1502,38 @@ async function saveUserPermissionEditor(uid){
 }
 function fmtDateTime(v){if(!v)return '-';let d=new Date(v);if(isNaN(d))return String(v);return d.toLocaleString('ko-KR',{year:'2-digit',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'})}
 function scheduleAuditSummary(x){let b=x.before_value||{},a=x.after_value||{},op=x.action_type;if(op==='DELETE')return `<span class="auditBefore">${esc(b.work_code||'-')}</span><span class="auditArrow">→</span><span class="auditAfter">삭제</span>`;if(op==='INSERT')return `<span class="auditBefore">빈칸</span><span class="auditArrow">→</span><span class="auditAfter">${esc(a.work_code||'-')}</span>`;let parts=[];[['work_code','코드'],['worked_hours','근무'],['start_time','출근'],['end_time','퇴근'],['break_minutes','휴게']].forEach(([k,l])=>{if(String(b[k]??'')!==String(a[k]??''))parts.push(`${l} ${esc(b[k]??'-')} → <b>${esc(a[k]??'-')}</b>`)});return parts.join(' · ')||'값 저장'}
+function ipKey(v){return String(v||'').trim()}
+function ipLabelFor(v){return ipAddressLabels.get(ipKey(v))||''}
+function ipDisplayHtml(v){
+ let ip=ipKey(v);if(!ip)return '-';let label=ipLabelFor(ip);
+ return `<div class="ipDisplay"><span class="ipAddressText">${esc(ip)}</span>${label?`<span class="ipAlias">${esc(label)}</span>`:'<span class="ipAlias none">이름 미설정</span>'}</div>`;
+}
+function uniqueLoggedIps(){
+ let set=new Set();[...auditLogs,...accessLogs].forEach(x=>{let ip=ipKey(x.ip_address);if(ip)set.add(ip)});
+ return [...set].sort((a,b)=>a.localeCompare(b,undefined,{numeric:true}));
+}
+async function openIpLabelManager(){
+ if(!isAppAdmin())return alert('관리자만 IP 이름을 관리할 수 있습니다.');
+ let ips=uniqueLoggedIps();
+ if(!ips.length)return alert('아직 IP가 기록된 접속/수정이력이 없습니다.');
+ let rows=ips.map(ip=>`<div class="ipKey">${esc(ip)}</div><input class="ipLabelInput" data-ip="${esc(ip)}" value="${esc(ipLabelFor(ip))}" placeholder="예: 메가존365 사무실 PC">`).join('');
+ modal(`<h2>IP 이름 관리</h2><div class="help">같은 IP가 다시 나타나면 입력한 이름을 함께 표시합니다. 예: 약국 사무실 · 집 · 노트북 테더링</div><div class="ipLabelManager" style="margin-top:12px">${rows}</div><div class="modalActions"><button class="btn gray" onclick="closeModal()">취소</button><button class="btn" onclick="saveIpLabels()">저장</button></div>`);
+}
+async function saveIpLabels(){
+ if(!isAppAdmin())return;
+ let inputs=[...document.querySelectorAll('.ipLabelInput')],upserts=[],deletes=[];
+ inputs.forEach(el=>{let ip=ipKey(el.dataset.ip),label=String(el.value||'').trim();if(!ip)return;if(label)upserts.push({ip_address:ip,label,updated_by:currentSessionUser?.id||null,updated_at:new Date().toISOString()});else if(ipAddressLabels.has(ip))deletes.push(ip)});
+ try{
+   if(upserts.length){let q=await sb.from('ip_address_labels').upsert(upserts,{onConflict:'ip_address'});if(q.error)throw q.error}
+   if(deletes.length){let q=await sb.from('ip_address_labels').delete().in('ip_address',deletes);if(q.error)throw q.error}
+   closeModal();await loadAuditPage();
+ }catch(err){alert('IP 이름 저장 오류\n'+(err?.message||err))}
+}
+
 function renderAuditLogs(){
  let sf=$('auditStoreFilter')?.value||'',uf=$('auditUserFilter')?.value||'';
  let rows=auditLogs.filter(x=>(!sf||String(x.store_id)===sf)&&(!uf||String(x.user_id)===uf));
- $('auditLogBody').innerHTML=rows.map(x=>`<tr><td>${fmtDateTime(x.created_at)}</td><td>${esc(x.actor_name||x.actor_email||'-')}</td><td>${esc(x.store_name||stores.find(s=>s.id===Number(x.store_id))?.name||'-')}</td><td>${esc(x.employee_name||'-')}</td><td>${esc(x.target_date||'-')}</td><td>${x.action_type==='INSERT'?'추가':x.action_type==='DELETE'?'삭제':'수정'}</td><td class="auditChange">${scheduleAuditSummary(x)}</td><td>${isAppAdmin()?`<button class="btn gray small auditUndoBtn" onclick="undoScheduleAudit(${x.id})">되돌리기</button>`:''}</td></tr>`).join('')||'<tr><td colspan="8" style="padding:20px">조건에 맞는 수정이력이 없습니다.</td></tr>';
+ $('auditLogBody').innerHTML=rows.map(x=>`<tr><td>${fmtDateTime(x.created_at)}</td><td>${esc(x.actor_name||x.actor_email||'-')}</td><td>${esc(x.store_name||stores.find(s=>s.id===Number(x.store_id))?.name||'-')}</td><td>${esc(x.employee_name||'-')}</td><td>${esc(x.target_date||'-')}</td><td>${x.action_type==='INSERT'?'추가':x.action_type==='DELETE'?'삭제':'수정'}</td><td class="auditChange">${scheduleAuditSummary(x)}</td><td class="ipCell">${ipDisplayHtml(x.ip_address)}</td><td>${isAppAdmin()?`<button class="btn gray small auditUndoBtn" onclick="undoScheduleAudit(${x.id})">되돌리기</button>`:''}</td></tr>`).join('')||'<tr><td colspan="9" style="padding:20px">조건에 맞는 수정이력이 없습니다.</td></tr>';
 }
 function scheduleSnapshotForUndo(v){
  let src=v||{},keys=['employee_id','work_date','work_code','scheduled_hours','worked_hours','overtime_hours','start_time','end_time','break_minutes','status'],o={};
@@ -1518,12 +1562,25 @@ async function undoScheduleAudit(id){
    q=await sb.from('schedules').upsert(payload,{onConflict:'employee_id,work_date'});
  }
  if(q.error)return alert('되돌리기 오류\n'+q.error.message);
+ stampRecentAuditIp(Number(x.store_id)||storeId());
  await refreshAll();await loadAuditPage();alert('스케줄을 이전 값으로 되돌렸습니다. 이 복구 작업도 새 수정이력으로 남습니다.');
 }
 
 async function loadAuditPage(){
- if(!isAppAdmin()||permissionSystemAvailable!==true)return;let [a,l,u]=await Promise.all([sb.from('audit_logs').select('*').order('created_at',{ascending:false}).limit(1500),sb.from('access_logs').select('*').order('created_at',{ascending:false}).limit(1000),sb.from('app_users').select('user_id,email,display_name').order('display_name')]);if(a.error||l.error)return alert((a.error||l.error).message);
- auditLogs=a.data||[];accessLogs=l.data||[];adminUsers=u.data||adminUsers;if($('auditStoreFilter'))$('auditStoreFilter').innerHTML='<option value="">전체 업장</option>'+stores.map(st=>`<option value="${st.id}">${esc(st.name)}</option>`).join('');if($('auditUserFilter'))$('auditUserFilter').innerHTML='<option value="">전체 사용자</option>'+adminUsers.map(x=>`<option value="${x.user_id}">${esc(x.display_name||x.email||'사용자')}</option>`).join('');renderAuditLogs();$('accessLogBody').innerHTML=accessLogs.map(x=>`<tr><td>${fmtDateTime(x.created_at)}</td><td>${esc(x.actor_name||x.actor_email||'-')}</td><td class="accessEvent">${x.event_type==='login'?'로그인':x.event_type==='logout'?'로그아웃':x.event_type==='store_open'?'업장 열기':esc(x.event_type)}</td><td>${esc(stores.find(s=>s.id===Number(x.store_id))?.name||'-')}</td><td>${esc(x.device||'-')}</td></tr>`).join('')||'<tr><td colspan="5" style="padding:20px">접속기록이 없습니다.</td></tr>';
+ if(!isAppAdmin()||permissionSystemAvailable!==true)return;
+ let [a,l,u,il]=await Promise.all([
+   sb.from('audit_logs').select('*').order('created_at',{ascending:false}).limit(1500),
+   sb.from('access_logs').select('*').order('created_at',{ascending:false}).limit(1000),
+   sb.from('app_users').select('user_id,email,display_name').order('display_name'),
+   sb.from('ip_address_labels').select('ip_address,label').order('ip_address')
+ ]);
+ if(a.error||l.error)return alert((a.error||l.error).message);
+ if(il.error)console.warn('IP 이름 조회 오류 · SQL 적용 전이면 무시됩니다.',il.error.message);
+ auditLogs=a.data||[];accessLogs=l.data||[];adminUsers=u.data||adminUsers;ipAddressLabels=new Map((il.data||[]).map(x=>[ipKey(x.ip_address),x.label||'']));
+ if($('auditStoreFilter'))$('auditStoreFilter').innerHTML='<option value="">전체 업장</option>'+stores.map(st=>`<option value="${st.id}">${esc(st.name)}</option>`).join('');
+ if($('auditUserFilter'))$('auditUserFilter').innerHTML='<option value="">전체 사용자</option>'+adminUsers.map(x=>`<option value="${x.user_id}">${esc(x.display_name||x.email||'사용자')}</option>`).join('');
+ renderAuditLogs();
+ $('accessLogBody').innerHTML=accessLogs.map(x=>`<tr><td>${fmtDateTime(x.created_at)}</td><td>${esc(x.actor_name||x.actor_email||'-')}</td><td class="accessEvent">${x.event_type==='login'?'로그인':x.event_type==='logout'?'로그아웃':x.event_type==='store_open'?'업장 열기':esc(x.event_type)}</td><td>${esc(stores.find(s=>s.id===Number(x.store_id))?.name||'-')}</td><td class="ipCell">${ipDisplayHtml(x.ip_address)}</td><td>${esc(x.device||'-')}</td></tr>`).join('')||'<tr><td colspan="6" style="padding:20px">접속기록이 없습니다.</td></tr>';
 }
 
 
@@ -1660,14 +1717,14 @@ async function refreshAll(){
 async function loadHomePageData(token=refreshToken,sid=storeId()){
  await Promise.all([canViewModule('payroll')?loadPayroll():Promise.resolve(payroll=[]),loadLeaveLedger(),isAppAdmin()?loadEmployeeDocumentStatus(sid):Promise.resolve()]);
  if(token!==refreshToken || sid!==storeId())return;
- renderHome();if(isAppAdmin())refreshAdminTasks(false);
+ renderHome();refreshAdminTasks(false);
  if(canEditModule('schedule'))Promise.resolve().then(async()=>{
    try{
      await syncLeaveLedger();
      if(token!==refreshToken || sid!==storeId())return;
      await loadLeaveLedger();
      if(token!==refreshToken || sid!==storeId())return;
-     renderHome();if(isAppAdmin())refreshAdminTasks(false);
+     renderHome();refreshAdminTasks(false);
      if($('employeesPage')?.classList.contains('active')&&canViewModule('employees'))renderEmployees();
    }catch(err){console.warn(err)}
  });
@@ -2426,7 +2483,7 @@ function renderHome(){
  $('kLeaveDue').textContent=monthDue.length+'명';
  $('kUnder1').textContent=w5+'명';
  $('kAnnual').textContent=w4+'명';
- $('kPay').textContent=money(pay);
+ if($('kPay'))$('kPay').textContent=isAppAdmin()?money(pay):'';
  $('homeEmployees').innerHTML=monthDue.length?monthDue.map(({e,ev})=>{
    let s=liveLeaveSummary(e,monthRange().last),mh=ev.reduce((a,x)=>a+Number(x.hours||0),0);
    let detail=ev.map(x=>x.memo?.includes('주년')?`${x.hours}h(연간)`:`${x.hours}h`).join(' + ');
@@ -2795,6 +2852,7 @@ async function flushScheduleQueue(){
    clearTimeout(scheduleSaveTimer);scheduleSaveTimer=setTimeout(flushScheduleQueue,1800);
    return;
  }
+ stampRecentAuditIp(storeId());
  // 연차 원장만 백그라운드 동기화. 스케줄 화면은 다시 그리지 않음.
  try{
    await syncLeaveLedger();
@@ -2902,6 +2960,7 @@ async function saveShiftDetail(id,date){
  if(st==='sick'){scheduled=base;code='병'}
  let q=await sb.from('schedules').upsert({employee_id:id,work_date:date,work_code:code,scheduled_hours:scheduled,worked_hours:worked,overtime_hours:ot,start_time:start||null,end_time:end||null,break_minutes:br,status:st},{onConflict:'employee_id,work_date'});
  if(q.error)return alert(q.error.message);
+ stampRecentAuditIp(storeId());
  closeModal();refreshAll();
 }
 async function fillDefaults(){
@@ -2925,7 +2984,7 @@ async function fillDefaults(){
      rows.push({employee_id:e.id,work_date:date,work_code:on?String(worked):'0',scheduled_hours:on?Math.min(worked,base):0,worked_hours:on?worked:0,overtime_hours:on?Math.max(0,worked-base):0,start_time:on?cond.default_start_time:null,end_time:on?cond.default_end_time:null,break_minutes:on?Number(cond.break_minutes||0):0,status:on?'work':'off'});
    }
  });
- if(rows.length){let q=await sb.from('schedules').upsert(rows,{onConflict:'employee_id,work_date'});if(q.error)return alert(q.error.message)}
+ if(rows.length){let q=await sb.from('schedules').upsert(rows,{onConflict:'employee_id,work_date'});if(q.error)return alert(q.error.message);stampRecentAuditIp(storeId())}
  refreshAll();
 }
 async function workRowsForMonth(employeeIds,ym){
@@ -3256,26 +3315,59 @@ async function openScheduleDiagnostics(){
 function adminTaskHtmlItem(level,title,detail){return `<div class="adminTaskItem ${level}"><b>${esc(title)}</b><div class="meta">${esc(detail)}</div></div>`}
 async function refreshAdminTasks(showLoading=false){
  let board=$('adminTaskBoard'),host=$('adminTaskList');if(!board||!host)return;
- if(!isAppAdmin()){board.style.display='none';return}
- board.style.display='block';let token=++adminTaskRefreshToken;if(showLoading)host.innerHTML=adminTaskHtmlItem('info','확인 중','현재 업장과 월의 상태를 다시 확인합니다.');
+ if(!canViewModule('home')){board.style.display='none';return}
+ board.style.display='block';
+ if($('homeCheckTitle'))$('homeCheckTitle').textContent=isAppAdmin()?'관리자 할 일':'확인할 내용';
+ if($('homeCheckSub'))$('homeCheckSub').textContent=isAppAdmin()?'계약·스케줄·급여·담당자 계정에서 확인이 필요한 항목만 모아봅니다.':'스케줄·근태에서 빠진 자료나 확인이 필요한 항목만 보여줍니다.';
+ let token=++adminTaskRefreshToken;if(showLoading)host.innerHTML=adminTaskHtmlItem('info','확인 중','현재 업장과 월의 상태를 다시 확인합니다.');
  let sid=storeId(),ym=$('monthSelect').value,tasks=[];
- try{await Promise.all([loadEmployeeDocumentStatus(sid),loadScheduleMonthLocks(sid)]);if(permissionSystemAvailable===true)await loadAdminAccountDirectory()}catch(err){console.warn(err)}
+ try{
+   let jobs=[loadScheduleMonthLocks(sid)];
+   if(isAppAdmin())jobs.push(loadEmployeeDocumentStatus(sid));
+   if(isAppAdmin()&&permissionSystemAvailable===true)jobs.push(loadAdminAccountDirectory());
+   await Promise.all(jobs);
+ }catch(err){console.warn(err)}
  if(token!==adminTaskRefreshToken)return;
  let active=employees.filter(e=>e.active!==false),retired=retiredEmployees;
- let missingWork=active.filter(e=>!Number(documentStatusForEmployee(e.id).work_contract?.count||0));
- if(missingWork.length)tasks.push(['urgent','근로계약서 없음',`${missingWork.slice(0,8).map(x=>x.name).join(', ')}${missingWork.length>8?` 외 ${missingWork.length-8}명`:''}`]);
- let missingSalary=active.filter(e=>!Number(documentStatusForEmployee(e.id).salary_contract?.count||0));
- if(missingSalary.length)tasks.push(['warn','연봉계약서 없음',`${missingSalary.slice(0,8).map(x=>x.name).join(', ')}${missingSalary.length>8?` 외 ${missingSalary.length-8}명`:''}`]);
- let renew=[];active.forEach(e=>{let end=documentStatusForEmployee(e.id).work_contract?.latestEnd,d=end?dayDiffIso(isoToday(),end):null;if(d!=null&&d<=30)renew.push(`${e.name} ${d<0?'D+'+Math.abs(d):d===0?'D-DAY':'D-'+d}`)});if(renew.length)tasks.push(['urgent','재계약 확인',renew.slice(0,10).join(' · ')]);
- let missingResign=retired.filter(e=>!Number(documentStatusForEmployee(e.id).resignation?.count||0));if(missingResign.length)tasks.push(['warn','퇴사자 사직서 파일 없음',`${missingResign.slice(0,8).map(x=>x.name).join(', ')}${missingResign.length>8?` 외 ${missingResign.length-8}명`:''}`]);
- let diag=collectScheduleDiagnostics(),err=diag.filter(x=>x.level==='error').length,warn=diag.filter(x=>x.level==='warn').length;if(err||warn)tasks.push([err?'urgent':'warn','스케줄 확인 필요',`오류 ${err}건 · 목표시간 확인 ${warn}건 — 스케줄 화면의 오류검사를 눌러 상세 확인`]);
- if(scheduleLockTableAvailable===true&&!isScheduleMonthLocked(ym))tasks.push(['info',`${ym} 스케줄 미마감`,'편성이 확정되면 스케줄 화면에서 월 마감하여 담당자 수정 실수를 막을 수 있습니다.']);
- try{let pm=await sb.from('payroll_months').select('id').eq('store_id',sid).eq('pay_month',ym+'-01').limit(1);if(!pm.error&&!(pm.data||[]).length)tasks.push(['warn',`${ym} 급여대장 미등록`,'선택월 급여대장이 아직 DB에 없습니다.'])}catch(_){ }
- if(permissionSystemAvailable===true){let noAccounts=stores.filter(st=>!schedulerUserForStore(st.id));if(noAccounts.length)tasks.push(['info','스케줄 담당자 계정 미설정',noAccounts.map(x=>x.name).join(', ')+' — 업장관리에서 비밀번호를 정하면 생성됩니다.'])}
- let future=employeeWorkConditions.filter(x=>x.effective_from>isoToday()&&x.effective_from<=addDaysIso(isoToday(),30));if(future.length)tasks.push(['info','30일 이내 근무조건 변경 예약',future.slice(0,8).map(x=>`${allEmployees().find(e=>e.id===x.employee_id)?.name||'직원'} ${x.effective_from}`).join(' · ')]);
- if(!tasks.length)tasks.push(['ok','현재 확인할 항목 없음','계약·스케줄·급여·담당자 계정에서 즉시 확인이 필요한 항목이 없습니다.']);
+
+ // 모든 사용자에게 필요한 스케줄 입력상태
+ let diag=collectScheduleDiagnostics(),err=diag.filter(x=>x.level==='error').length,warn=diag.filter(x=>x.level==='warn').length;
+ if(err||warn)tasks.push([err?'urgent':'warn','스케줄 확인 필요',`오류 ${err}건 · 목표시간 확인 ${warn}건 — 스케줄 화면의 오류검사를 눌러 확인`]);
+ else tasks.push(['ok','스케줄 자동검사 이상 없음','현재 입력된 범위 기준입니다.']);
+
+ if(scheduleLockTableAvailable===true){
+   if(isScheduleMonthLocked(ym))tasks.push(['ok',`${ym} 스케줄 마감됨`,isAppAdmin()?'필요하면 스케줄 화면에서 마감 해제할 수 있습니다.':'마감된 달은 확인만 가능하고 수정할 수 없습니다.']);
+   else tasks.push(['info',`${ym} 스케줄 편집 가능`,isAppAdmin()?'편성이 확정되면 월 마감할 수 있습니다.':'현재 선택월은 수정 가능한 상태입니다.']);
+ }
+
+ // 근태 확인 권한이 있으면 텔레캅 원본 등록 여부만 보여줍니다. 급여정보는 조회하지 않습니다.
+ if(canViewModule('hours')){
+   try{
+     let ai=await sb.from('attendance_imports').select('id,file_name,uploaded_at').eq('store_id',sid).eq('work_month',ym+'-01').eq('is_active',true).order('uploaded_at',{ascending:false}).limit(1).maybeSingle();
+     if(!ai.error){
+       if(ai.data)tasks.push(['ok','텔레캅 파일 등록됨',`${ai.data.file_name||'근태파일'} · 근태 확인 화면에서 이상기록을 확인하세요.`]);
+       else tasks.push(['warn','텔레캅 파일 미등록',`${ym} 근태파일을 아직 불러오지 않았습니다.`]);
+     }else if(!attendanceMissingSchemaError(ai.error))console.warn('현황 텔레캅 상태 조회 오류',ai.error.message);
+   }catch(e){console.warn(e)}
+ }
+
+ // 계약·급여·계정은 관리자에게만 보여줍니다.
+ if(isAppAdmin()){
+   let missingWork=active.filter(e=>!Number(documentStatusForEmployee(e.id).work_contract?.count||0));
+   if(missingWork.length)tasks.push(['urgent','근로계약서 없음',`${missingWork.slice(0,8).map(x=>x.name).join(', ')}${missingWork.length>8?` 외 ${missingWork.length-8}명`:''}`]);
+   let missingSalary=active.filter(e=>!Number(documentStatusForEmployee(e.id).salary_contract?.count||0));
+   if(missingSalary.length)tasks.push(['warn','연봉계약서 없음',`${missingSalary.slice(0,8).map(x=>x.name).join(', ')}${missingSalary.length>8?` 외 ${missingSalary.length-8}명`:''}`]);
+   let renew=[];active.forEach(e=>{let end=documentStatusForEmployee(e.id).work_contract?.latestEnd,d=end?dayDiffIso(isoToday(),end):null;if(d!=null&&d<=30)renew.push(`${e.name} ${d<0?'D+'+Math.abs(d):d===0?'D-DAY':'D-'+d}`)});if(renew.length)tasks.push(['urgent','재계약 확인',renew.slice(0,10).join(' · ')]);
+   let missingResign=retired.filter(e=>!Number(documentStatusForEmployee(e.id).resignation?.count||0));if(missingResign.length)tasks.push(['warn','퇴사자 사직서 파일 없음',`${missingResign.slice(0,8).map(x=>x.name).join(', ')}${missingResign.length>8?` 외 ${missingResign.length-8}명`:''}`]);
+   if(canViewModule('payroll')){try{let pm=await sb.from('payroll_months').select('id').eq('store_id',sid).eq('pay_month',ym+'-01').limit(1);if(!pm.error&&!(pm.data||[]).length)tasks.push(['warn',`${ym} 급여대장 미등록`,'선택월 급여대장이 아직 DB에 없습니다.'])}catch(_){ }}
+   if(permissionSystemAvailable===true){let noAccounts=stores.filter(st=>!schedulerUserForStore(st.id));if(noAccounts.length)tasks.push(['info','스케줄 담당자 계정 미설정',noAccounts.map(x=>x.name).join(', ')+' — 업장관리에서 비밀번호를 정하면 생성됩니다.'])}
+ }
+
+ let future=employeeWorkConditions.filter(x=>x.effective_from>isoToday()&&x.effective_from<=addDaysIso(isoToday(),30));if(future.length)tasks.push(['info','30일 이내 근무조건 변경 예정',future.slice(0,8).map(x=>`${allEmployees().find(e=>e.id===x.employee_id)?.name||'직원'} ${x.effective_from}`).join(' · ')]);
+ if(!tasks.length)tasks.push(['ok','현재 확인할 항목 없음','현재 선택월에서 즉시 확인이 필요한 항목이 없습니다.']);
  host.innerHTML=tasks.map(x=>adminTaskHtmlItem(...x)).join('');
 }
+
 async function backupSelectedMonth(){
  if(!isAppAdmin())return alert('관리자만 월 백업을 만들 수 있습니다.');
  let sid=storeId(),ym=$('monthSelect').value,r=monthRange(),st=stores.find(x=>x.id===sid);if(!confirm(`${st?.name||'현재 업장'} ${ym} 운영자료를 Excel로 백업할까요?\n\n직원 기본정보·스케줄·연차원장·급여·근무조건이 들어갑니다. 주민번호와 계좌번호는 안전을 위해 제외합니다.`))return;
@@ -4654,6 +4746,7 @@ async function clearSelectedSchedules(){
  let ids=chosen.map(e=>e.id);
  let q=await sb.from('schedules').delete().in('employee_id',ids).gte('work_date',r.first).lte('work_date',r.last);
  if(q.error)return alert(q.error.message);
+ stampRecentAuditIp(storeId());
  await refreshAll();
 }
 
@@ -4677,6 +4770,7 @@ async function clearMonthSchedule(){
    .gte('work_date',r.first)
    .lte('work_date',r.last);
  if(q.error)return alert(q.error.message);
+ stampRecentAuditIp(storeId());
  await refreshAll();
  alert(`${r.y}년 ${r.mo}월 스케줄을 모두 비웠습니다.`);
 }
@@ -4692,6 +4786,7 @@ async function clearEmployeeMonth(id,name){
    .gte('work_date',r.first)
    .lte('work_date',r.last);
  if(q.error)return alert(q.error.message);
+ stampRecentAuditIp(storeId());
  await refreshAll();
 }
 
@@ -7189,12 +7284,14 @@ function hour2(v){let n=round2(v);return Number.isInteger(n)?String(n):n.toFixed
 function num(v){return typeof v==='number'?v:(Number(String(v||'').replace(/,/g,''))||0)}
 
 function openScheduleOutput(){
- let list=monthlyScheduleEmployees($('monthSelect').value);scheduleOutputMode='all';scheduleOutputSelected=new Set(list.map(e=>e.id));let items=list.map(e=>`<label class="outputEmployeeItem"><input type="checkbox" class="scheduleOutputCheck" value="${e.id}" checked onchange="toggleScheduleOutputEmployee(${e.id},this.checked)"><span>${esc(e.name)}</span></label>`).join('');
- modal(`<h2>스케줄 출력</h2><div class="outputModeRow"><button id="outAllBtn" class="outputModeBtn active" onclick="setScheduleOutputMode('all')">전체 직원</button><button id="outPickBtn" class="outputModeBtn" onclick="setScheduleOutputMode('selected')">직원 선택</button></div><div id="scheduleOutputPicker" class="hidden"><div class="toolbar" style="margin-bottom:7px"><button class="btn gray small" onclick="toggleScheduleOutputAll(true)">전체선택</button><button class="btn gray small" onclick="toggleScheduleOutputAll(false)">전체해제</button></div><div class="outputEmployeeList">${items||'<div class="attEmpty">출력할 직원이 없습니다.</div>'}</div></div><div class="modalActions"><button class="btn gray" onclick="closeModal()">취소</button><button class="btn green" onclick="runSchedulePrint()">인쇄/PDF</button><button class="btn" onclick="runScheduleExcel()">Excel</button></div>`)
+ let list=monthlyScheduleEmployees($('monthSelect').value);scheduleOutputMode='all';scheduleOutputSelected=new Set(list.map(e=>e.id));let items=list.map(e=>`<label class="outputEmployeeItem" title="${esc(e.name)}"><input type="checkbox" class="scheduleOutputCheck" value="${e.id}" checked onchange="toggleScheduleOutputEmployee(${e.id},this.checked)"><span>${esc(e.name)}</span></label>`).join('');
+ modal(`<h2>스케줄 출력</h2><div class="outputModeRow"><button id="outAllBtn" class="outputModeBtn active" onclick="setScheduleOutputMode('all')">전체 직원</button><button id="outPickBtn" class="outputModeBtn" onclick="setScheduleOutputMode('selected')">직원 선택</button></div><div id="scheduleOutputPicker" class="hidden"><div class="outputPickerTop"><div class="outputPickerActions"><button class="btn gray small" onclick="toggleScheduleOutputAll(true)">전체선택</button><button class="btn gray small" onclick="toggleScheduleOutputAll(false)">전체해제</button></div><span id="scheduleOutputCount" class="outputSelectedCount">선택 ${list.length}명</span></div><div class="outputEmployeeList">${items||'<div class="attEmpty">출력할 직원이 없습니다.</div>'}</div></div><div class="modalActions"><button class="btn gray" onclick="closeModal()">취소</button><button class="btn green" onclick="runSchedulePrint()">인쇄/PDF</button><button class="btn" onclick="runScheduleExcel()">Excel</button></div>`);
+ $('modalBox')?.classList.add('scheduleOutputModal');updateScheduleOutputCount();
 }
-function setScheduleOutputMode(mode){scheduleOutputMode=mode==='selected'?'selected':'all';$('outAllBtn')?.classList.toggle('active',scheduleOutputMode==='all');$('outPickBtn')?.classList.toggle('active',scheduleOutputMode==='selected');$('scheduleOutputPicker')?.classList.toggle('hidden',scheduleOutputMode!=='selected')}
-function toggleScheduleOutputEmployee(id,on){if(on)scheduleOutputSelected.add(Number(id));else scheduleOutputSelected.delete(Number(id))}
-function toggleScheduleOutputAll(on){document.querySelectorAll('.scheduleOutputCheck').forEach(x=>{x.checked=on;toggleScheduleOutputEmployee(Number(x.value),on)})}
+function setScheduleOutputMode(mode){scheduleOutputMode=mode==='selected'?'selected':'all';$('outAllBtn')?.classList.toggle('active',scheduleOutputMode==='all');$('outPickBtn')?.classList.toggle('active',scheduleOutputMode==='selected');$('scheduleOutputPicker')?.classList.toggle('hidden',scheduleOutputMode!=='selected');updateScheduleOutputCount()}
+function updateScheduleOutputCount(){let el=$('scheduleOutputCount');if(el)el.textContent=`선택 ${scheduleOutputSelected.size}명`}
+function toggleScheduleOutputEmployee(id,on){if(on)scheduleOutputSelected.add(Number(id));else scheduleOutputSelected.delete(Number(id));updateScheduleOutputCount()}
+function toggleScheduleOutputAll(on){document.querySelectorAll('.scheduleOutputCheck').forEach(x=>{x.checked=on;if(on)scheduleOutputSelected.add(Number(x.value));else scheduleOutputSelected.delete(Number(x.value))});updateScheduleOutputCount()}
 function scheduleOutputIds(){let all=monthlyScheduleEmployees($('monthSelect').value).map(e=>e.id);return scheduleOutputMode==='all'?all:all.filter(id=>scheduleOutputSelected.has(Number(id)))}
 function runSchedulePrint(){let ids=scheduleOutputIds();if(!ids.length)return alert('출력할 직원을 선택하세요.');closeModal();setTimeout(()=>printScheduleNow(ids),30)}
 function runScheduleExcel(){let ids=scheduleOutputIds();if(!ids.length)return alert('출력할 직원을 선택하세요.');closeModal();exportSchedule(ids)}
