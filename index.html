@@ -206,12 +206,29 @@ input,select{border:1px solid #d2d7e0;background:white;border-radius:9px;padding
  text-align:center!important;
 }
 .docSignature{
- margin-top:auto!important;
- padding-top:18mm!important;
+ margin-top:0!important;
+ padding-top:0!important;
  text-align:right!important;
  font-size:16px!important;
  line-height:2.2!important;
  margin-right:8mm!important;
+}
+.docResignBottom{
+ margin-top:auto!important;
+ padding-top:8mm!important;
+}
+.docResignBottom .docResignStatement{
+ margin:0 3mm!important;
+}
+.docResignBottom .docIssueDate{
+ margin:5mm 0 3mm!important;
+}
+.docResignBottom .docSignature{
+ margin-top:0!important;
+ padding-top:0!important;
+}
+.docResignBottom .docCompanyName{
+ margin-top:7mm!important;
 }
 .docUnderline{
  display:inline-block!important;
@@ -5008,7 +5025,7 @@ async function openWorkConditionHistory(employeeId,presetDate='',presetNote='',p
   ${presetRules.length>1?`<div style="margin-top:8px;padding:9px 11px;border:1px solid #b9d7ff;background:#eef6ff;border-radius:10px;font-size:12px"><b>요일별 근로시간</b><br>${esc(ruleSummary)}<br><span style="color:#52657a">기본근무 자동채우기는 이 요일별 시간을 우선 사용합니다.</span></div>`:''}
   <div style="margin-top:8px"><b style="font-size:12px">기본 근무요일</b><div style="margin-top:5px">${checks}</div></div>
   <div class="help" style="margin-top:8px">${presetCondition?'<b>계약서에서 읽은 값이 자동으로 채워졌습니다. 이 화면에서 마지막 확인 후 “이 조건 등록”을 누를 때만 실제 근무조건에 반영됩니다.</b><br>':''}예: 7월까지 주5일 8시간, 8/1부터 주4일 9시간이면 <b>20260801</b>을 적용 시작일로 새 조건을 등록하세요. 주4일 9시간이 ‘소정 8h + 추가 1h’ 구조라면 1일 소정시간은 8h로 두고 출퇴근/휴게로 실제 9h가 나오게 설정합니다. 7월 스케줄은 이전 조건, 8월 자동채우기는 새 조건을 사용합니다.</div>
-  <div class="modalActions"><button class="btn" onclick="addWorkCondition(${employeeId})">이 조건 등록</button></div></div>
+  <div class="modalActions"><button class="btn" onclick="addWorkCondition(${employeeId})">${presetCondition?'확인 후 직원관리에 적용':'이 조건 등록'}</button></div></div>
   <div id="workConditionList" class="historyList"><div class="help">불러오는 중...</div></div>`);
  await loadWorkConditionHistory(employeeId);
 }
@@ -7841,32 +7858,32 @@ function detectContractScheduleTable(source){
  try{
    let tw=900,th=Math.max(1,Math.round(source.height*tw/source.width)),c=document.createElement('canvas');c.width=tw;c.height=th;
    let ctx=c.getContext('2d',{willReadFrequently:true});ctx.drawImage(source,0,0,tw,th);
-   let im=ctx.getImageData(0,0,tw,th),d=im.data,isDark=(x,y,threshold=185)=>{
-     let i=(y*tw+x)*4;return (d[i]*0.299+d[i+1]*0.587+d[i+2]*0.114)<threshold;
-   };
+   let im=ctx.getImageData(0,0,tw,th),d=im.data,isDark=(x,y,threshold=185)=>{let i=(y*tw+x)*4;return (d[i]*0.299+d[i+1]*0.587+d[i+2]*0.114)<threshold};
+   // 계약서마다 제1조/서명 높이가 달라 표 위치가 위아래로 움직인다. 넓게 찾되, 세로 5줄까지 확인된 후보만 채택한다.
    let hCand=[],x0=Math.floor(tw*0.10),x1=Math.floor(tw*0.90);
-   for(let y=Math.floor(th*0.48);y<=Math.floor(th*0.70);y++){
+   for(let y=Math.floor(th*0.40);y<=Math.floor(th*0.72);y++){
      let dark=0,total=0;for(let x=x0;x<=x1;x+=2){total++;if(isDark(x,y,185))dark++}
-     if(total&&dark/total>=0.46)hCand.push(y);
+     if(total&&dark/total>=0.43)hCand.push(y);
    }
-   let hLines=contractGroupNear(hCand,5),trip=null;
-   for(let i=0;i+2<hLines.length;i++){
-     let a=hLines[i],b=hLines[i+1],z=hLines[i+2],g1=b-a,g2=z-b;
-     if(g1>=8&&g1<=42&&g2>=15&&g2<=78){trip=[a,b,z];break}
+   let hLines=contractGroupNear(hCand,5),candidates=[];
+   for(let i=0;i<hLines.length;i++)for(let j=i+1;j<hLines.length;j++)for(let k=j+1;k<hLines.length;k++){
+     let top=hLines[i],headerBottom=hLines[j],bottom=hLines[k],g1=headerBottom-top,g2=bottom-headerBottom;
+     if(g1<8||g1>45||g2<15||g2>95)continue;
+     let vCand=[];
+     for(let x=Math.floor(tw*0.12);x<=Math.floor(tw*0.90);x++){
+       let dark=0,total=0;for(let y=top;y<=bottom;y++){total++;if(isDark(x,y,200))dark++}
+       if(total&&dark/total>=0.66)vCand.push(x);
+     }
+     let vLines=contractGroupNear(vCand,4);
+     for(let q=0;q+4<vLines.length;q++){
+       let a=vLines.slice(q,q+5),gaps=a.slice(0,4).map((x,n)=>a[n+1]-x),width=a[4]-a[0];
+       if(!gaps.every(g=>g>38)||width<tw*0.58)continue;
+       // 이 양식의 표는 페이지 중앙부에 있고 4개 열의 상대 폭이 비교적 일정하다.
+       let score=Math.abs(width/tw-0.70)*100+Math.abs(top/th-0.54)*15+Math.abs(g1/th-0.018)*80;
+       candidates.push({score,x:a.map(v=>v/tw),dataTop:(headerBottom+2)/th,dataBottom:(bottom-2)/th,detected:true});
+     }
    }
-   if(!trip)return null;
-   let [top,headerBottom,bottom]=trip,vCand=[];
-   for(let x=Math.floor(tw*0.12);x<=Math.floor(tw*0.90);x++){
-     let dark=0,total=0;for(let y=top;y<=bottom;y++){total++;if(isDark(x,y,200))dark++}
-     if(total&&dark/total>=0.70)vCand.push(x);
-   }
-   let vLines=contractGroupNear(vCand,4),chosen=null;
-   for(let i=0;i+4<vLines.length;i++){
-     let a=vLines.slice(i,i+5),gaps=a.slice(0,4).map((x,j)=>a[j+1]-x);
-     if(gaps.every(g=>g>40)&&a[4]-a[0]>tw*0.60){chosen=a;break}
-   }
-   if(!chosen)return null;
-   return {x:chosen.map(v=>v/tw),dataTop:(headerBottom+2)/th,dataBottom:(bottom-2)/th,detected:true};
+   candidates.sort((a,b)=>a.score-b.score);return candidates[0]||null;
  }catch(e){console.warn('근로시간 표 위치 자동탐지 실패',e);return null}
 }
 function contractScheduleTableGeometry(source){
@@ -7882,7 +7899,7 @@ function detectContractTableDataRows(source,geom){
 }
 function cropContractTableRowCell(source,geom,col,row,padX=0.006,padY=0.002){let x1=geom.x[col]+padX,x2=geom.x[col+1]-padX,y1=row.top+padY,y2=row.bottom-padY;return cropContractCanvas(source,x1,y1,Math.max(0.01,x2-x1),Math.max(0.008,y2-y1))}
 function contractDailyHoursAll(text){return [...normalizeContractText(text).matchAll(/1\s*일\s*(\d+(?:\.\d+)?)\s*시간/g)].map(m=>Number(m[1])).filter(x=>x>0&&x<=24)}
-function contractRuleFromRowTexts(daysText,workText,noteText,sharedBreak=0){let days=contractTemplateDaysFromText(daysText),daily=contractDailyHoursAll(noteText)[0]||0;let pair=contractTimePairFromTexts([workText],daily>0&&sharedBreak>0?daily*60+Number(sharedBreak):0,2*60,14*60);if(!pair){let ts=contractTimeMatches(workText);if(ts.length>=2){let mins=contractMinutesBetween(ts[0],ts[1]);if(mins>=120&&mins<=840)pair={a:ts[0],b:ts[1],mins}}}if(pair&&!daily&&Number(sharedBreak)>0){let net=pair.mins-Number(sharedBreak);if(net>0)daily=Math.round(net/6)/10}if(!days.length||!pair||!daily)return null;return {days,start:pair.a,end:pair.b,break_minutes:Number(sharedBreak||0),daily_hours:Number(daily)}}
+function contractRuleFromRowTexts(daysText,workText,noteText,sharedBreak=0){let days=Array.isArray(daysText)?normalizedWorkDays(daysText):contractDaysFromCandidates([daysText]),daily=contractDailyHoursAll(noteText)[0]||0;let pair=contractTimePairFromTexts([workText],daily>0&&sharedBreak>0?daily*60+Number(sharedBreak):0,2*60,14*60);if(!pair){let ts=contractTimeMatches(workText);if(ts.length>=2){let mins=contractMinutesBetween(ts[0],ts[1]);if(mins>=120&&mins<=840)pair={a:ts[0],b:ts[1],mins}}}if(pair&&!daily&&Number(sharedBreak)>0){let net=pair.mins-Number(sharedBreak);if(net>0)daily=Math.round(net/6)/10}if(!days.length||!pair||!daily)return null;return {days,start:pair.a,end:pair.b,break_minutes:Number(sharedBreak||0),daily_hours:Number(daily)}}
 function recoverContractTermsDirect(rawText,baseTerms){let b=baseTerms||{},daily=Number(b.daily_hours||0),br=Number(b.break_minutes||0);if(!daily)return null;let rec=recoverContractTimesFromWholeText(rawText,daily,br);if(!rec?.start||!rec?.end)return null;return sanitizeContractTermsConsistency({...b,default_start_time:rec.start,default_end_time:rec.end,break_start_time:rec.breakStart||b.break_start_time||null,break_end_time:rec.breakEnd||b.break_end_time||null,break_minutes:Number(rec.breakMinutes||br||0)})}
 function contractTimePairFromTexts(texts,expectedMinutes=0,minMinutes=60,maxMinutes=14*60){
  let times=[];(texts||[]).forEach(x=>times.push(...contractTimeMatches(x)));times=[...new Set(times)];
@@ -7900,17 +7917,43 @@ function contractTimePairFromTexts(texts,expectedMinutes=0,minMinutes=60,maxMinu
 function contractTemplateDaysFromText(text){
  let raw=normalizeContractText(text),t=raw.replace(/\s+/g,'');
  const dayIndex={일:0,월:1,화:2,수:3,목:4,금:5,토:6};
- // '월~금'처럼 명시된 범위만 범위로 확장한다. 단순히 월/금이 둘 다 있다는 이유로 월~금으로 만들지 않는다.
  let range=t.match(/([일월화수목금토])(?:요일)?[~\-–—부터내지]+([일월화수목금토])(?:요일)?/);
  if(range){let a=dayIndex[range[1]],b=dayIndex[range[2]],out=[];for(let i=a;;i=(i+1)%7){out.push(i);if(i===b||out.length>=7)break}return out.sort((x,y)=>x-y)}
- // '주5일'·'주4일'은 실제 요일을 특정하지 않는다. 여기의 '일'을 일요일로 오인하지 않도록 먼저 제외한다.
- if(/주\s*5\s*일/.test(raw)||/주\s*4\s*일/.test(raw))return [];
- // 표의 근로일 셀은 '월,화,수', '목'처럼 요일 글자만 들어오는 경우가 많다.
- // 쉼표/점/세로줄이 OCR에서 깨져도 실제 한글 요일 글자를 직접 수집한다.
- let direct=[...t].filter(ch=>Object.prototype.hasOwnProperty.call(dayIndex,ch)).map(ch=>dayIndex[ch]);
+ // 셀 자체에 '주5일'만 들어온 경우는 요일 미지정이다. 다만 '주5일 목금토일월'처럼 실제 요일도 같이 읽혔다면 실제 요일을 살린다.
+ let cleaned=t.replace(/주[0-7]일/g,'').replace(/[0-9]+일/g,'').replace(/1일/g,'').replace(/근로일|근무일|요일/g,'');
+ let direct=[...cleaned].filter(ch=>Object.prototype.hasOwnProperty.call(dayIndex,ch)).map(ch=>dayIndex[ch]);
  direct=[...new Set(direct)].sort((a,b)=>a-b);
  if(direct.length)return direct;
+ if(/주\s*[0-7]\s*일/.test(raw))return [];
  return extractContractWorkDays(text);
+}
+function contractExpectedWorkdayCount(terms){let daily=Number(terms?.daily_hours||0),weekly=Number(terms?.weekly_hours||0);if(!(daily>0&&weekly>0))return 0;let q=weekly/daily,r=Math.round(q);return r>=1&&r<=7&&Math.abs(q-r)<0.08?r:0}
+function contractDaySetContinuityScore(days){
+ let a=normalizedWorkDays(days);if(a.length<=1)return a.length;
+ let best=0;for(let start of a){let n=1,d=start;while(n<a.length){d=(d+1)%7;if(!a.includes(d))break;n++}best=Math.max(best,n)}return best;
+}
+function repairLikelyContractDayOcr(days,text=''){
+ let out=normalizedWorkDays(days),t=normalizeContractText(text);
+ // 작은 셀에서 '월'의 ㅇ/ㅝ 획이 뭉개져 '일'로 읽히는 사례가 반복된다.
+ // '일,화,수...'처럼 일요일 다음 월요일이 빠지고 화/수가 이어질 때만 월요일 오독으로 보정한다.
+ if(out.includes(0)&&!out.includes(1)&&(out.includes(2)||out.includes(3))&&/(?:^|[^가-힣])일\s*[,·.\s]*화/.test(t))out=[...new Set(out.map(d=>d===0?1:d))].sort((a,b)=>a-b);
+ return out;
+}
+function contractDaysFromCandidates(texts,expectedCount=0){
+ let c=[];for(const raw of (texts||[])){if(!raw)continue;let days=repairLikelyContractDayOcr(contractTemplateDaysFromText(raw),raw);if(!days.length)continue;let countPenalty=expectedCount?Math.abs(days.length-expectedCount)*20:0,continuity=contractDaySetContinuityScore(days),score=countPenalty-continuity*2-days.length;c.push({days,score,raw})}
+ c.sort((a,b)=>a.score-b.score);return c[0]?.days||[];
+}
+function trustedContractScheduleTerms(terms){
+ let out=sanitizeContractTermsConsistency(terms);if(!out)return null;
+ let expected=contractExpectedWorkdayCount(out),days=normalizedWorkDays(out.work_days);
+ if(expected&&days.length!==expected)out.work_days=[];
+ if(out.default_start_time&&out.default_end_time&&Number(out.daily_hours||0)>0){let span=contractMinutesBetween(out.default_start_time,out.default_end_time),br=Number(out.break_minutes||0);if(!br){let x=span-Number(out.daily_hours)*60;if(x>=10&&x<=240){out.break_minutes=Math.round(x);br=Math.round(x)}}if(Math.abs(span-br-Number(out.daily_hours)*60)>30){out.default_start_time=null;out.default_end_time=null}}
+ return sanitizeContractTermsConsistency(out);
+}
+function contractMatchingWorkPairs(texts,expectedMinutes=0){
+ let times=[];(texts||[]).forEach(x=>times.push(...contractTimeMatches(x)));let pairs=[];
+ for(let i=0;i<times.length;i++)for(let j=i+1;j<times.length;j++){let mins=contractMinutesBetween(times[i],times[j]);if(mins<120||mins>840)continue;if(expectedMinutes>0&&Math.abs(mins-expectedMinutes)>30)continue;let key=times[i]+'~'+times[j];if(!pairs.some(p=>p.key===key))pairs.push({key,start:times[i],end:times[j],mins})}
+ return pairs;
 }
 async function recognizeContractDaysCell(Tesseract,source){
  // 근무요일은 숫자보다 한글 획이 얇아 이진화 강도에 따라 빠지는 경우가 있어 서로 다른 강도로 두 번 읽는다.
@@ -7954,9 +7997,9 @@ function contractDailyHoursFromNote(text){
  let t=normalizeContractText(text),m=t.match(/1\s*일\s*(\d+(?:\.\d+)?)\s*시간\s*근무/);return m?Number(m[1]):0;
 }
 function buildContractTemplateTerms({daysText='',workTexts=[],breakTexts=[],noteText='',fallbackTerms=null,dayRules=[]}={}){
- let fallback=fallbackTerms||{},rules=normalizeContractDayRules(dayRules),days=rules.length?contractDayRulesUnionDays(rules):contractTemplateDaysFromText(daysText);let daily=contractDailyHoursFromNote(noteText)||Number(fallback.daily_hours||0);let breakPair=contractTimePairFromTexts(breakTexts,Number(fallback.break_minutes||0)||60,10,240);let breakMinutes=breakPair?.mins||Number(fallback.break_minutes||0)||0;
+ let fallback=trustedContractScheduleTerms(fallbackTerms)||fallbackTerms||{},rules=normalizeContractDayRules(dayRules),directDays=contractTemplateDaysFromText(daysText),fallbackDays=normalizedWorkDays(fallback.work_days),days=rules.length?contractDayRulesUnionDays(rules):(directDays.length?directDays:fallbackDays);let daily=contractDailyHoursFromNote(noteText)||Number(fallback.daily_hours||0);let breakPair=contractTimePairFromTexts(breakTexts,Number(fallback.break_minutes||0)||60,10,240);let breakMinutes=breakPair?.mins||Number(fallback.break_minutes||0)||0;
  if(rules.length){rules=rules.map(r=>({...r,break_minutes:Number(r.break_minutes||breakMinutes||0)}));let primary=contractPrimaryDayRule(rules),weekly=contractDayRulesWeeklyHours(rules),note=contractDayRulesSummary(rules),workType='custom';let sameDaily=[...new Set(rules.map(r=>Number(r.daily_hours||0)))].length===1,sameTime=[...new Set(rules.map(r=>r.start+'~'+r.end))].length===1;if(sameDaily&&sameTime&&days.length===5&&Math.abs(Number(primary?.daily_hours||0)-8)<0.01&&Math.abs(weekly-40)<0.01)workType='40';else if(sameDaily&&sameTime&&days.length===4&&Math.abs(Number(primary?.daily_hours||0)-9)<0.01&&Math.abs(weekly-36)<0.01)workType='36';let out={day_rules:rules,work_days:days,default_start_time:primary?.start||null,default_end_time:primary?.end||null,break_start_time:breakPair?.a||null,break_end_time:breakPair?.b||null,break_minutes:Number(breakMinutes||primary?.break_minutes||0),daily_hours:Number(primary?.daily_hours||0),weekly_hours:Number(weekly||fallback.weekly_hours||0),work_type:workType,note,schedule_based:true,variable_daily_hours:!sameDaily||!sameTime};out.score=[rules.length>0,days.length>0,!!out.default_start_time,!!out.default_end_time,Number(out.break_minutes)>0,Number(out.weekly_hours)>0].filter(Boolean).length+2;return sanitizeContractTermsConsistency(out)}
- let expectedWork=daily>0?Math.round(daily*60+breakMinutes):0,workPair=contractTimePairFromTexts(workTexts,expectedWork,2*60,14*60);if(!daily&&workPair&&breakMinutes)daily=Math.round((workPair.mins-breakMinutes)/6)/10;if(!breakMinutes&&workPair&&daily>0){let b=workPair.mins-daily*60;if(b>=10&&b<=240)breakMinutes=Math.round(b)}if(workPair&&daily>0){let expected=daily*60+breakMinutes;if(Math.abs(workPair.mins-expected)>20)workPair=null}if(breakPair&&breakMinutes>0&&Math.abs(breakPair.mins-breakMinutes)>15)breakPair=null;let weekly=Number(fallback.weekly_hours||0);if(!weekly&&days?.length&&daily>0)weekly=Math.round(daily*days.length*100)/100;let note=(normalizeContractText(noteText).match(/1\s*일\s*\d+(?:\.\d+)?\s*시간\s*근무/)||[])[0]||fallback.note||'';let workType='custom';if(days?.length===5&&Math.abs(daily-8)<0.01&&Math.abs(weekly-40)<0.01)workType='40';else if(days?.length===4&&Math.abs(daily-9)<0.01&&Math.abs(weekly-36)<0.01)workType='36';let out={day_rules:[],work_days:days||[],default_start_time:workPair?.a||null,default_end_time:workPair?.b||null,break_start_time:breakPair?.a||null,break_end_time:breakPair?.b||null,break_minutes:Number(breakMinutes||0),daily_hours:Number(daily||0),weekly_hours:Number(weekly||0),work_type:workType,note,schedule_based:true};out.score=[out.work_days?.length>0,!!out.default_start_time,!!out.default_end_time,Number(out.break_minutes)>0,Number(out.daily_hours)>0,Number(out.weekly_hours)>0].filter(Boolean).length;return sanitizeContractTermsConsistency(out)
+ let expectedWork=daily>0?Math.round(daily*60+breakMinutes):0,workPair=contractTimePairFromTexts(workTexts,expectedWork,2*60,14*60);if(!workPair&&fallback.default_start_time&&fallback.default_end_time){let mins=contractMinutesBetween(fallback.default_start_time,fallback.default_end_time),expected=expectedWork||mins;if(Math.abs(mins-expected)<=30)workPair={a:fallback.default_start_time,b:fallback.default_end_time,mins,score:0}}if(!daily&&workPair&&breakMinutes)daily=Math.round((workPair.mins-breakMinutes)/6)/10;if(!breakMinutes&&workPair&&daily>0){let b=workPair.mins-daily*60;if(b>=10&&b<=240)breakMinutes=Math.round(b)}if(workPair&&daily>0){let expected=daily*60+breakMinutes;if(Math.abs(workPair.mins-expected)>20)workPair=null}if(breakPair&&breakMinutes>0&&Math.abs(breakPair.mins-breakMinutes)>15)breakPair=null;let weekly=Number(fallback.weekly_hours||0);if(!weekly&&days?.length&&daily>0)weekly=Math.round(daily*days.length*100)/100;let note=(normalizeContractText(noteText).match(/1\s*일\s*\d+(?:\.\d+)?\s*시간\s*근무/)||[])[0]||fallback.note||'';let alternatives=contractMatchingWorkPairs(workTexts,expectedWork);if(alternatives.length>1){let txt='근무시간 선택: '+alternatives.slice(0,3).map(p=>p.start+'~'+p.end).join(' 또는 ');if(!String(note).includes('근무시간 선택'))note=(txt+(note?' · '+note:'')).trim()}let workType='custom';if(days?.length===5&&Math.abs(daily-8)<0.01&&Math.abs(weekly-40)<0.01)workType='40';else if(days?.length===4&&Math.abs(daily-9)<0.01&&Math.abs(weekly-36)<0.01)workType='36';let out={day_rules:[],work_days:days||[],default_start_time:workPair?.a||null,default_end_time:workPair?.b||null,break_start_time:breakPair?.a||null,break_end_time:breakPair?.b||null,break_minutes:Number(breakMinutes||0),daily_hours:Number(daily||0),weekly_hours:Number(weekly||0),work_type:workType,note,schedule_based:true};out.score=[out.work_days?.length>0,!!out.default_start_time,!!out.default_end_time,Number(out.break_minutes)>0,Number(out.daily_hours)>0,Number(out.weekly_hours)>0].filter(Boolean).length;return sanitizeContractTermsConsistency(out)
 }
 async function readContractDataFromPdf(file,expectedEmployeeName=''){
  const pdfjs=await loadContractPdfJs();let data=await file.arrayBuffer();let pdf=await pdfjs.getDocument({data}).promise;
@@ -7989,8 +8032,8 @@ async function readContractDataFromPdf(file,expectedEmployeeName=''){
  let daysHi=enhanceContractOcrCanvas(daysInner,3.0,210),workHi=enhanceContractOcrCanvas(workInner,3.4,210),breakHi=enhanceContractOcrCanvas(breakInner,3.4,210),noteHi=enhanceContractOcrCanvas(noteInner,2.6,210);
  let daysOcr=await recognizeContractDaysCell(Tesseract,daysRaw);let workOcr1=await recognizeContractCropMulti(Tesseract,workInner,'eng',['7','6','13'],'0123456789:~.- ');let workOcr2=await recognizeContractCropMulti(Tesseract,workHi,'eng',['7','6','13'],'0123456789:~.- ');let breakOcr1=await recognizeContractCropMulti(Tesseract,breakInner,'eng',['6','7','11'],'0123456789:~.- ');let breakOcr2=await recognizeContractCropMulti(Tesseract,breakHi,'eng',['6','7','11'],'0123456789:~.- ');let noteOcr=await recognizeContractCropMulti(Tesseract,noteHi,'kor+eng',['7','6']);
  let sharedBreakPair=contractTimePairFromTexts([breakOcr1,breakOcr2],60,10,240),sharedBreak=sharedBreakPair?.mins||0,rowRules=[],rowDebug=[],rowParts=[];
- for(const row of dataRows){try{let rd=cropContractTableRowCell(canvas,tableGeom,0,row,0.004,0.001),rw=cropContractTableRowCell(canvas,tableGeom,1,row,0.004,0.001),rn=cropContractTableRowCell(canvas,tableGeom,3,row,0.004,0.001);let rdHi=enhanceContractOcrCanvas(insetContractCanvas(rd,0.02,0.07,0.02,0.07),3.2,210),rwHi=enhanceContractOcrCanvas(insetContractCanvas(rw,0.015,0.07,0.015,0.07),3.8,205),rnHi=enhanceContractOcrCanvas(insetContractCanvas(rn,0.02,0.07,0.02,0.07),3.0,210);let rdText=await recognizeContractDaysCell(Tesseract,rd);let rwText=await recognizeContractCropMulti(Tesseract,rwHi,'eng',['7','6','13'],'0123456789:~.- ');let rnText=await recognizeContractCropMulti(Tesseract,rnHi,'kor+eng',['7','6']);rowParts.push({days:rdText,work:rwText,note:rnText});let rule=contractRuleFromRowTexts(rdText,rwText,rnText,sharedBreak);if(rule)rowRules.push(rule);rowDebug.push(rdText+' '+rwText+' '+rnText)}catch(e){console.warn('근로계약서 행별 OCR 실패',e)}}
- let section3Crop=enhanceContractOcrCanvas(cropContractCanvas(canvas,0.11,0.495,0.78,0.255),1.4,205);let section3Ocr=await recognizeContractCrop(Tesseract,section3Crop,'kor+eng','6');let rawScheduleText=[text,section3Ocr,daysOcr,workOcr1,workOcr2,breakOcr1,breakOcr2,noteOcr,...rowDebug].join(' ');let fallback=sanitizeContractTermsConsistency(extractContractTermsFromText(rawScheduleText));if(!sharedBreak)sharedBreak=Number(fallback?.break_minutes||0);if(rowParts.length&&sharedBreak){let retry=rowParts.map(p=>contractRuleFromRowTexts(p.days,p.work,p.note,sharedBreak)).filter(Boolean);if(retry.length)rowRules=retry}if(rowRules.length)rowRules=rowRules.map(r=>({...r,break_minutes:Number(r.break_minutes||sharedBreak||0)}));let allDetectedDays=contractTemplateDaysFromText(daysOcr);if(rowRules.length)rowRules=repairContractDayRules(rowRules,allDetectedDays,Number(fallback?.weekly_hours||textTerms?.weekly_hours||0));let exactTerms=buildContractTemplateTerms({daysText:daysOcr,workTexts:[workOcr1,workOcr2],breakTexts:[breakOcr1,breakOcr2],noteText:noteOcr,fallbackTerms:fallback,dayRules:rowRules});let directRecovery=!normalizeContractDayRules(exactTerms?.day_rules).length?recoverContractTermsDirect(rawScheduleText,exactTerms||fallback||textTerms):null;let finalTerms=mergeContractTerms(exactTerms,directRecovery,safeConsistentContractOcrTimes(fallback),safeConsistentContractOcrTimes(textTerms),safeBroadContractOcrTerms(fallback),safeBroadContractOcrTerms(textTerms));finalTerms=sanitizeContractTermsConsistency(finalTerms);if(finalTerms?.daily_hours>0&&finalTerms?.work_days?.length&&(!finalTerms.weekly_hours||finalTerms.weekly_hours<=0)&&!normalizeContractDayRules(finalTerms.day_rules).length)finalTerms.weekly_hours=Math.round(finalTerms.daily_hours*finalTerms.work_days.length*100)/100;return {period:finalPeriod,terms:finalTerms,nameCheck,method:normalizeContractDayRules(finalTerms?.day_rules).length>1?'ocr-template-multirow':'ocr-template-cells',text:rawScheduleText};
+ for(const row of dataRows){try{let rd=cropContractTableRowCell(canvas,tableGeom,0,row,0.004,0.001),rw=cropContractTableRowCell(canvas,tableGeom,1,row,0.004,0.001),rn=cropContractTableRowCell(canvas,tableGeom,3,row,0.004,0.001),rf=cropContractCanvas(canvas,tableGeom.x[0]+0.003,row.top+0.001,Math.max(0.02,tableGeom.x[4]-tableGeom.x[0]-0.006),Math.max(0.01,row.bottom-row.top-0.002));let rwHi=enhanceContractOcrCanvas(insetContractCanvas(rw,0.015,0.07,0.015,0.07),3.8,205),rnHi=enhanceContractOcrCanvas(insetContractCanvas(rn,0.02,0.07,0.02,0.07),3.0,210),rfHi=enhanceContractOcrCanvas(rf,2.8,205);let rdText=await recognizeContractDaysCell(Tesseract,rd);let rwText=await recognizeContractCropMulti(Tesseract,rwHi,'eng',['7','6','13'],'0123456789:~.- ');let rnText=await recognizeContractCropMulti(Tesseract,rnHi,'kor+eng',['7','6']);let rfText=await recognizeContractCropMulti(Tesseract,rfHi,'kor+eng',['6','11']);let rowDays=contractDaysFromCandidates([rdText,rfText]);let combinedWork=[rwText,rfText].filter(Boolean).join(' '),combinedNote=[rnText,rfText].filter(Boolean).join(' ');rowParts.push({days:rowDays,daysText:rdText+' '+rfText,work:combinedWork,note:combinedNote});let rule=contractRuleFromRowTexts(rowDays,combinedWork,combinedNote,sharedBreak);if(rule)rowRules.push(rule);rowDebug.push(rdText+' '+rfText+' '+rwText+' '+rnText)}catch(e){console.warn('근로계약서 행별 OCR 실패',e)}}
+ let section3Crop=enhanceContractOcrCanvas(cropContractCanvas(canvas,0.11,0.465,0.78,0.315),1.55,200);let section3OcrA=await recognizeContractCrop(Tesseract,section3Crop,'kor+eng','6');let section3OcrB=await recognizeContractCrop(Tesseract,section3Crop,'kor+eng','11');let scheduleOnlyText=[section3OcrA,section3OcrB,daysOcr,workOcr1,workOcr2,breakOcr1,breakOcr2,noteOcr,...rowDebug].join(' ');let rawScheduleText=[text,scheduleOnlyText].join(' ');let scheduleFallback=trustedContractScheduleTerms(extractContractTermsFromText(scheduleOnlyText));let broadFallback=sanitizeContractTermsConsistency(extractContractTermsFromText(rawScheduleText));let fallback=mergeContractTerms(scheduleFallback,safeBroadContractOcrTerms(broadFallback),safeBroadContractOcrTerms(textTerms));if(!sharedBreak)sharedBreak=Number(scheduleFallback?.break_minutes||broadFallback?.break_minutes||0);if(rowParts.length&&sharedBreak){let retry=rowParts.map(p=>contractRuleFromRowTexts(p.days?.length?p.days:p.daysText,p.work,p.note,sharedBreak)).filter(Boolean);if(retry.length)rowRules=retry}if(rowRules.length)rowRules=rowRules.map(r=>({...r,break_minutes:Number(r.break_minutes||sharedBreak||0)}));let allDetectedDays=contractTemplateDaysFromText(daysOcr);if(!allDetectedDays.length)allDetectedDays=normalizedWorkDays(scheduleFallback?.work_days);if(rowRules.length)rowRules=repairContractDayRules(rowRules,allDetectedDays,Number(scheduleFallback?.weekly_hours||broadFallback?.weekly_hours||textTerms?.weekly_hours||0));let exactTerms=buildContractTemplateTerms({daysText:daysOcr,workTexts:[workOcr1,workOcr2],breakTexts:[breakOcr1,breakOcr2],noteText:noteOcr,fallbackTerms:mergeContractTerms(scheduleFallback,fallback),dayRules:rowRules});let directRecovery=!normalizeContractDayRules(exactTerms?.day_rules).length?recoverContractTermsDirect(scheduleOnlyText,exactTerms||scheduleFallback||fallback||textTerms):null;let finalTerms=mergeContractTerms(exactTerms,directRecovery,scheduleFallback,safeConsistentContractOcrTimes(broadFallback),safeConsistentContractOcrTimes(textTerms),safeBroadContractOcrTerms(broadFallback),safeBroadContractOcrTerms(textTerms));finalTerms=sanitizeContractTermsConsistency(finalTerms);if(finalTerms?.daily_hours>0&&finalTerms?.work_days?.length&&(!finalTerms.weekly_hours||finalTerms.weekly_hours<=0)&&!normalizeContractDayRules(finalTerms.day_rules).length)finalTerms.weekly_hours=Math.round(finalTerms.daily_hours*finalTerms.work_days.length*100)/100;return {period:finalPeriod,terms:finalTerms,nameCheck,method:normalizeContractDayRules(finalTerms?.day_rules).length>1?'ocr-template-multirow':'ocr-template-cells',text:rawScheduleText};
 }
 function contractDayLabel(days){return (days||[]).length?(days||[]).map(d=>'일월화수목금토'[d]).join('·'):'미확인'}
 function contractTermsSummary(terms){if(!terms)return '';let rules=normalizeContractDayRules(terms.day_rules),parts=[];if(rules.length>1)parts.push(`요일별 ${contractDayRulesSummary(rules)}`);else{if(terms.work_days?.length)parts.push(`근무일 ${contractDayLabel(terms.work_days)}`);if(terms.default_start_time||terms.default_end_time)parts.push(`${terms.default_start_time||'?'}~${terms.default_end_time||'?'}`);if(terms.daily_hours)parts.push(`1일 ${terms.daily_hours}h`)}if(terms.break_minutes)parts.push(`휴게 ${terms.break_minutes}분`);if(terms.weekly_hours)parts.push(`주 ${terms.weekly_hours}h`);return parts.join(' · ')}
@@ -8239,14 +8282,15 @@ function printResignation(id){
     </div>
    </div>
 
-   <div class="docResignStatement" style="margin-bottom:4mm!important">
-      상기 본인은 마지막 근무일인 ${lastText}자로<br>
-      귀사에서 사직하고자 하오니 수락하여 주시기 바랍니다.
+   <div class="docResignBottom">
+     <div class="docResignStatement">
+        상기 본인은 마지막 근무일인 ${lastText}자로<br>
+        귀사에서 사직하고자 하오니 수락하여 주시기 바랍니다.
+     </div>
+     <div class="docIssueDate">${fmtDateKo(isoToday())}</div>
+     <div class="docSignature">제출자&nbsp;&nbsp;&nbsp; ${v(e.name)} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (서명 또는 인)</div>
+     <div class="docCompanyName">${v(s.name)} 귀하</div>
    </div>
-
-   <div class="docIssueDate">${fmtDateKo(isoToday())}</div>
-   <div class="docSignature">제출자&nbsp;&nbsp;&nbsp; ${v(e.name)} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (서명 또는 인)</div>
-   <div class="docCompanyName">${v(s.name)} 귀하</div>
  </div>`;
  window.print();
 }
