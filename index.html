@@ -973,12 +973,12 @@ body.resizingEmployeeColumn *{
    <div class="attendanceHeroRow">
     <div><div class="attendanceHeroTitle">텔레캅 근태 확인</div><div class="attendanceHeroSub">지문기록은 스케줄 확인용이며 근로시간을 자동으로 바꾸지 않습니다.</div></div>
     <div class="toolbar">
-     <input type="file" id="attendanceFile" accept=".xlsx,.xls,.xlsm" style="display:none" onchange="importAttendanceFile(this.files?.[0]);this.value=''">
-     <button class="btn attendanceUploadBtn" onclick="$('attendanceFile').click()">텔레캅 파일 불러오기</button>
+     <input type="file" id="attendanceFile" accept=".xls" style="display:none" onchange="importAttendanceFile(this.files?.[0]);this.value=''">
+     <button class="btn attendanceUploadBtn" onclick="$('attendanceFile').click()">텔레캅 근태이력 불러오기</button>
      <button id="attendanceRuleBtn" class="btn gray small adminOnly" onclick="openAttendanceRules()">기준 설정</button>
     </div>
    </div>
-   <div id="attendanceImportLine" style="margin-top:9px"><span class="help">선택월 텔레캅 파일을 불러오세요.</span></div>
+   <div id="attendanceImportLine" style="margin-top:9px"><span class="help">선택월 텔레캅 근태이력(.xls) 파일을 불러오세요.</span></div>
    <div class="attendanceSummary">
     <div class="attendanceStat"><div class="k">정상</div><div class="v" id="attNormalCount">0</div></div>
     <div class="attendanceStat need"><div class="k">확인 필요</div><div class="v" id="attNeedCount">0</div></div>
@@ -998,7 +998,7 @@ body.resizingEmployeeColumn *{
 
 <section id="payrollPage" class="page">
  <div class="row">
-  <div><h1 class="title">급여관리 <span style="font-size:12px;color:#315efb;background:#eef3ff;border-radius:999px;padding:4px 8px;vertical-align:middle">v2026.08.21-2335</span></h1><div class="sub">월별 급여대장을 검산하고, 기간별·직원별 누적 급여도 조회합니다.</div></div>
+  <div><h1 class="title">급여관리 <span style="font-size:12px;color:#315efb;background:#eef3ff;border-radius:999px;padding:4px 8px;vertical-align:middle">v2026.08.23-1210</span></h1><div class="sub">월별 급여대장을 검산하고, 기간별·직원별 누적 급여도 조회합니다.</div></div>
   <div class="toolbar">
    <input type="file" id="payrollFile" accept=".xlsx,.xls,.xlsm" multiple style="display:none" onchange="importPayrollFiles(this.files);this.value=''">
    <button class="btn" onclick="$('payrollFile').click()">급여대장 여러개 불러오기</button>
@@ -3062,13 +3062,68 @@ function parseAttendanceRowsWithMap(rows,map,ym){
  }
  let items=[...grouped.values()];items.forEach(g=>{g.punch_times=[...new Set(g.punch_times.filter(Boolean))].sort();if(!g.check_in&&g.punch_times.length>=2)g.check_in=g.punch_times[0];if(!g.check_out&&g.punch_times.length>=2)g.check_out=g.punch_times[g.punch_times.length-1];g.source_key=`${normalizeName(g.employee_name)}|${g.work_date}|${g.check_in}|${g.check_out}|${g.punch_times.join(',')}`});return items;
 }
-async function parseAttendanceWorkbook(file){
- let buf=await file.arrayBuffer(),wb=XLSX.read(buf,{type:'array',cellDates:true});let ym=$('monthSelect').value,best=null,fallback=null;
- for(const name of wb.SheetNames){let ws=wb.Sheets[name],rows=XLSX.utils.sheet_to_json(ws,{header:1,defval:'',raw:true});if(!rows.length)continue;let head=bestAttendanceHeaderRow(rows);if(head){let items=parseAttendanceRowsWithMap(rows,{headerRow:head.row,name:head.name,date:head.date,cin:head.cin,cout:head.cout,time:head.time},ym);let score=items.length*10+head.score;if(!best||score>best.score)best={sheetName:name,rows,head,items,score}}
-  let rr=rows.slice(0,30).map((x,i)=>({i,row:x,filled:x.filter(v=>String(v??'').trim()).length})).sort((a,b)=>b.filled-a.filled)[0];if(rr&&(!fallback||rr.filled>fallback.filled))fallback={sheetName:name,rows,headerRow:rr.i,headers:rr.row.map(x=>String(x??'').trim()),filled:rr.filled};
+function telecopFixedHeaderMap(rows){
+ const required=['일자','요일','사번','이름','회사','부서','직책','직위','출근','출근위치','퇴근','퇴근위치','총근무시간'];
+ for(let r=0;r<Math.min(50,rows.length);r++){
+  const hs=(rows[r]||[]).map(attendanceNormHeader),idx={};
+  required.forEach(k=>idx[k]=hs.findIndex(x=>x===k));
+  if(required.every(k=>idx[k]>=0))return {headerRow:r,idx};
  }
- if(best&&best.items.length)return {items:best.items,sheetName:best.sheetName,mode:(best.head.cin>=0||best.head.cout>=0)?'summary':'punch'};
- return {error:'텔레캅 Excel의 열을 자동으로 찾지 못했습니다.',fallback};
+ return null;
+}
+function parseTelecopFixedRows(rows,head,ym){
+ const i=head.idx,raw=[];
+ for(let r=head.headerRow+1;r<rows.length;r++){
+  const row=rows[r]||[],name=String(row[i['이름']]??'').trim();
+  if(!name)continue;
+  const date=attendanceDateValue(row[i['일자']],ym);if(!date)continue;
+  raw.push({
+   raw_name:name,
+   employee_no:String(row[i['사번']]??'').trim(),
+   work_date:date,
+   check_in:attendanceTimeValue(row[i['출근']]),
+   check_out:attendanceTimeValue(row[i['퇴근']]),
+   total_work_time:String(row[i['총근무시간']]??'').trim(),
+   raw_row:row.slice(0,13)
+  });
+ }
+ // 같은 이름에 서로 다른 사번이 실제로 존재하면 서로 다른 텔레캅 원본으로 보존한다.
+ // 이런 이름은 자동 이름매칭하지 않고 1회 직원 연결을 통해 안전하게 지정할 수 있게 표시한다.
+ const nosByName=new Map();
+ raw.forEach(x=>{let k=normalizeName(x.raw_name);if(!nosByName.has(k))nosByName.set(k,new Set());if(x.employee_no)nosByName.get(k).add(x.employee_no)});
+ const ambiguous=new Set([...nosByName.entries()].filter(([,s])=>s.size>1).map(([k])=>k));
+ const grouped=new Map();
+ for(const x of raw){
+  const displayName=ambiguous.has(normalizeName(x.raw_name))&&x.employee_no?`${x.raw_name} [사번 ${x.employee_no}]`:x.raw_name;
+  const key=`${normalizeName(displayName)}|${x.work_date}`;
+  if(!grouped.has(key))grouped.set(key,{employee_name:displayName,source_employee_no:x.employee_no,work_date:x.work_date,check_in:'',check_out:'',punch_times:[],raw_rows:[],total_work_time:x.total_work_time});
+  const g=grouped.get(key);
+  // 이 양식은 출근/퇴근이 별도 열이므로 누락값을 다른 값으로 추정하지 않는다.
+  if(x.check_in&&!g.check_in)g.check_in=x.check_in;
+  if(x.check_out)g.check_out=x.check_out;
+  if(x.check_in)g.punch_times.push(x.check_in);
+  if(x.check_out)g.punch_times.push(x.check_out);
+  if(!g.total_work_time&&x.total_work_time)g.total_work_time=x.total_work_time;
+  g.raw_rows.push(x.raw_row);
+ }
+ const items=[...grouped.values()];
+ items.forEach(g=>{
+  g.punch_times=[...new Set(g.punch_times.filter(Boolean))].sort();
+  g.source_key=`${normalizeName(g.employee_name)}|${g.source_employee_no||''}|${g.work_date}|${g.check_in}|${g.check_out}`;
+ });
+ return items;
+}
+async function parseAttendanceWorkbook(file){
+ if(!/\.xls$/i.test(String(file?.name||'')))return {error:'텔레캅 근태이력 .xls 파일만 불러올 수 있습니다.'};
+ let buf=await file.arrayBuffer(),wb=XLSX.read(buf,{type:'array',cellDates:true}),ym=$('monthSelect').value;
+ for(const name of wb.SheetNames){
+  let ws=wb.Sheets[name],rows=XLSX.utils.sheet_to_json(ws,{header:1,defval:'',raw:true});
+  if(!rows.length)continue;
+  let head=telecopFixedHeaderMap(rows);if(!head)continue;
+  let items=parseTelecopFixedRows(rows,head,ym);
+  if(items.length)return {items,sheetName:name,mode:'telecop_fixed'};
+ }
+ return {error:'지정된 텔레캅 근태이력 양식이 아닙니다.\n\n필수 열: 일 자 · 요 일 · 사 번 · 이 름 · 회 사 · 부 서 · 직 책 · 직 위 · 출 근 · 출근위치 · 퇴 근 · 퇴근위치 · 총 근무시간'};
 }
 function openAttendanceColumnMapper(file,draft){
  let headers=draft?.headers||[];if(!headers.length)return alert('Excel의 제목 행을 찾지 못했습니다. 실제 텔레캅 파일 형식을 확인해 주세요.');attendancePendingManualParse={file,draft};
@@ -3082,7 +3137,7 @@ function attendanceSafeFileName(name){let ext=(String(name).match(/\.[A-Za-z0-9]
 async function importAttendanceFile(file){
  if(!file)return;if(!canViewModule('hours'))return alert('근태 확인 권한이 없습니다.');let ym=$('monthSelect').value;if(!ym)return alert('먼저 월을 선택하세요.');
  try{
-  let parsed=await parseAttendanceWorkbook(file);if(parsed.error){if(parsed.fallback)return openAttendanceColumnMapper(file,parsed.fallback);return alert(parsed.error)}
+  let parsed=await parseAttendanceWorkbook(file);if(parsed.error)return alert(parsed.error)
   await persistAttendanceImport(file,parsed);
  }catch(err){console.error(err);alert('텔레캅 파일을 불러오지 못했습니다.\n'+(err.message||err))}
 }
@@ -3093,10 +3148,10 @@ async function persistAttendanceImport(file,parsed){
  let path=`${sid}/${ym}/${attendanceSafeFileName(file.name)}`,up=await sb.storage.from('attendance-sources').upload(path,file,{contentType:file.type||'application/octet-stream',upsert:false});if(up.error){if(attendanceMissingSchemaError(up.error))throw new Error('근태 기능용 SQL/Storage 설정이 필요합니다.');throw up.error}
  let prev=await sb.from('attendance_imports').select('id').eq('store_id',sid).eq('work_month',ym+'-01').eq('is_active',true);if(prev.error){if(attendanceMissingSchemaError(prev.error))throw new Error('근태 기능용 SQL을 먼저 실행하세요.');throw prev.error}
  let iq=await sb.from('attendance_imports').insert({store_id:sid,work_month:ym+'-01',file_name:file.name,storage_path:path,sheet_name:parsed.sheetName||'',parser_mode:parsed.mode||'auto',row_count:items.length,is_active:false,uploaded_by:currentSessionUser?.id||null}).select('*').single();if(iq.error)throw iq.error;let iid=iq.data.id;
- let rows=items.map(x=>({import_id:iid,store_id:sid,employee_id:x.employee_id||null,employee_name:x.employee_name,work_date:x.work_date,check_in:x.check_in||null,check_out:x.check_out||null,punch_times:x.punch_times||[],punch_count:(x.punch_times||[]).length,source_key:x.source_key,raw_json:{rows:(x.raw_rows||[]).slice(0,10)}}));
+ let rows=items.map(x=>({import_id:iid,store_id:sid,employee_id:x.employee_id||null,employee_name:x.employee_name,work_date:x.work_date,check_in:x.check_in||null,check_out:x.check_out||null,punch_times:x.punch_times||[],punch_count:(x.punch_times||[]).length,source_key:x.source_key,raw_json:{format:'telecop_fixed',source_employee_no:x.source_employee_no||'',total_work_time:x.total_work_time||'',rows:(x.raw_rows||[]).slice(0,10)}}));
  for(let i=0;i<rows.length;i+=400){let q=await sb.from('attendance_records').insert(rows.slice(i,i+400));if(q.error)throw q.error}
  let oldIds=(prev.data||[]).map(x=>x.id);if(oldIds.length){let off=await sb.from('attendance_imports').update({is_active:false}).in('id',oldIds);if(off.error)throw off.error}let on=await sb.from('attendance_imports').update({is_active:true}).eq('id',iid);if(on.error)throw on.error;
- attendanceSchemaAvailable=true;await loadAttendanceData(sid,ym);setHoursView('attendance');renderAttendance();alert(`텔레캅 파일을 불러왔습니다.\n${ym} · ${items.length}건\n\n확인 필요한 기록만 확인하면 됩니다.`);
+ attendanceSchemaAvailable=true;await loadAttendanceData(sid,ym);setHoursView('attendance');renderAttendance();alert(`텔레캅 근태이력을 불러왔습니다.\n${ym} · ${items.length}건\n\n확인 필요한 기록만 확인하면 됩니다.`);
 }
 async function loadAttendanceData(sid=storeId(),ym=$('monthSelect').value){
  attendanceActiveImport=null;attendanceRecords=[];attendanceReviews=[];attendanceSelected.clear();if(attendanceSchemaAvailable===false){renderAttendance();return}
@@ -3140,7 +3195,7 @@ function renderAttendance(){
  if(attendanceSchemaAvailable===false){body.innerHTML='<tr><td colspan="7" class="attEmpty">근태 기능용 SQL을 먼저 실행해야 합니다.</td></tr>';$('attendanceImportLine').innerHTML='<span class="attStatusTag info">최초 1회 설정 필요</span>';return}
  let rows=buildAttendanceRows(),normal=rows.filter(x=>x.code==='normal').length,done=rows.filter(x=>x.code==='confirmed').length,need=rows.filter(x=>!['normal','confirmed'].includes(x.code)).length;
  if($('attNormalCount'))$('attNormalCount').textContent=normal;if($('attNeedCount'))$('attNeedCount').textContent=need;if($('attDoneCount'))$('attDoneCount').textContent=done;if($('attendanceNeedBadge')){$('attendanceNeedBadge').textContent=need;$('attendanceNeedBadge').style.display=need?'inline-flex':'none'}
- if($('attendanceImportLine'))$('attendanceImportLine').innerHTML=attendanceActiveImport?`<span class="attFileName">${esc(attendanceActiveImport.file_name||'텔레캅 Excel')}</span> <span class="help">${fmtDateTime(attendanceActiveImport.uploaded_at)} · ${attendanceActiveImport.row_count||attendanceRecords.length}건</span>`:'<span class="help">선택월 텔레캅 파일을 불러오세요.</span>';
+ if($('attendanceImportLine'))$('attendanceImportLine').innerHTML=attendanceActiveImport?`<span class="attFileName">${esc(attendanceActiveImport.file_name||'텔레캅 Excel')}</span> <span class="help">${fmtDateTime(attendanceActiveImport.uploaded_at)} · ${attendanceActiveImport.row_count||attendanceRecords.length}건</span>`:'<span class="help">선택월 텔레캅 근태이력(.xls) 파일을 불러오세요.</span>';
  let statusCodes=[...new Set(rows.filter(x=>!['normal','confirmed'].includes(x.code)).map(x=>x.code))],sel=$('attendanceStatusFilter');if(sel){let current=sel.value;sel.innerHTML='<option value="">전체 종류</option>'+statusCodes.map(c=>`<option value="${c}">${esc(attendanceStatusLabel(c))}</option>`).join('');if(statusCodes.includes(current))sel.value=current}
  $('attPendingBtn')?.classList.toggle('gray',attendanceListMode!=='pending');$('attDoneBtn')?.classList.toggle('gray',attendanceListMode!=='done');let filter=$('attendanceStatusFilter')?.value||'';
  let visible=rows.filter(x=>attendanceListMode==='done'?x.code==='confirmed':!['normal','confirmed'].includes(x.code)).filter(x=>!filter||x.code===filter);
