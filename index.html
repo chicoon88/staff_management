@@ -262,6 +262,32 @@ input,select{border:1px solid #d2d7e0;background:white;border-radius:9px;padding
  border-bottom:1px solid #222!important;
  vertical-align:bottom!important;
 }
+.docResignPaper{padding-top:20mm!important;padding-bottom:18mm!important}
+.docResignTitleWrap{margin:2mm 0 14mm!important;text-align:center!important}
+.docResignTitle{font-size:32px!important;font-weight:900!important;letter-spacing:16px!important;line-height:1.2!important;margin:0!important}
+.docResignTitleDeco{margin-top:7mm!important;display:flex!important;align-items:center!important;justify-content:center!important;gap:3mm!important}
+.docResignTitleDeco .line{width:43mm!important;height:0!important;border-top:2px solid #203a78!important}
+.docResignTitleDeco .dot{width:4mm!important;height:4mm!important;border-radius:50%!important;background:#203a78!important;display:inline-block!important}
+.docResignInfoTable{border:1.8px solid #333!important;margin-bottom:12mm!important}
+.docResignInfoTable .docGrid{grid-template-columns:34mm 1.35fr 36mm 1.15fr!important}
+.docResignInfoTable .docCellLabel,.docResignInfoTable .docCellValue{min-height:18mm!important;font-size:13px!important;border-bottom:1px solid #444!important}
+.docResignInfoTable .docCellLabel{background:#fff!important;font-weight:900!important}
+.docResignInfoTable .docCellValue{font-weight:600!important}
+.docResignInfoTable .docWideLabel{min-height:30mm!important;align-items:center!important}
+.docResignInfoTable .docWideValue{min-height:30mm!important}
+.docResignStatementBox{border:2px solid #203a78!important;border-radius:6mm!important;padding:11mm 10mm!important;margin:0 0 13mm!important}
+.docResignStatementBox .docResignStatement{margin:0!important;font-size:16px!important;line-height:2.05!important;text-align:center!important}
+.docResignStatementBox .docResignFirstLine{font-size:16px!important;gap:2mm!important}
+.docResignDate{margin:0!important;text-align:center!important;font-size:17px!important;letter-spacing:0.5px!important}
+.docResignSignRow{margin-top:16mm!important;display:flex!important;justify-content:center!important;align-items:center!important;font-size:16px!important;line-height:1.8!important}
+.docResignSignRow .label{margin-right:22mm!important;font-weight:700!important}
+.docResignSignRow .name{margin-right:7mm!important;font-weight:700!important}
+.docResignSignRow .sign-note{font-weight:500!important}
+.docResignFooter{margin-top:18mm!important}
+.docResignFooterLine{display:flex!important;align-items:center!important;justify-content:center!important;gap:3mm!important}
+.docResignFooterLine .line{height:0!important;border-top:2px solid #203a78!important;flex:1 1 auto!important;max-width:86mm!important}
+.docResignFooterLine .dot{width:4mm!important;height:4mm!important;border-radius:50%!important;background:#203a78!important;display:inline-block!important;flex:0 0 auto!important}
+.docResignFooterCompany{text-align:center!important;font-size:24px!important;font-weight:900!important;letter-spacing:2px!important;margin-top:12mm!important}
 @media print{
  .docPaper{
    width:194mm!important;
@@ -8540,10 +8566,13 @@ function printResignation(id){
  let last=e.resign_date||'';
  let lastText=last?fmtDateKo(last):`<span class="docResignLastDate"><span class="docUnderline"></span>년 <span class="docUnderline" style="min-width:11mm"></span>월 <span class="docUnderline" style="min-width:11mm"></span>일</span>`;
  if(last)lastText=`<span class="docResignLastDate">${fmtDateKo(last)}</span>`;
- $('printArea').innerHTML=`<div class="docPaper">
-   <div class="docTitle">사 직 서</div>
+ $('printArea').innerHTML=`<div class="docPaper docResignPaper">
+   <div class="docResignTitleWrap">
+     <div class="docResignTitle">사 직 서</div>
+     <div class="docResignTitleDeco"><span class="line"></span><span class="dot"></span><span class="line"></span></div>
+   </div>
 
-   <div class="docSection">
+   <div class="docResignInfoTable">
     <div class="docGrid">
       <div class="docCellLabel">성&nbsp;&nbsp;&nbsp;&nbsp;명</div><div class="docCellValue">${v(e.name)}</div>
       <div class="docCellLabel">생년월일</div><div class="docCellValue">${employeeBirthDate(e)?fmtDateKo(employeeBirthDate(e)):''}</div>
@@ -8551,19 +8580,29 @@ function printResignation(id){
       <div class="docCellLabel">담당업무</div><div class="docCellValue">${v(e.department)}</div>
       <div class="docCellLabel">입 사 일</div><div class="docCellValue">${e.hire_date?fmtDateKo(e.hire_date):''}</div>
 
-      <div class="docCellLabel docWideLabel docNoBottom" style="min-height:48mm">사직사유</div>
-      <div class="docCellValue docWideValue docNoBottom" style="min-height:48mm"></div>
+      <div class="docCellLabel docWideLabel docNoBottom">사직사유</div>
+      <div class="docCellValue docWideValue docNoBottom"></div>
     </div>
    </div>
 
-   <div class="docResignBottom">
+   <div class="docResignStatementBox">
      <div class="docResignStatement">
        <div class="docResignLine docResignFirstLine">상기 본인은 마지막 근무일인 ${lastText}자로</div>
        <div class="docResignLine">귀사에서 사직하고자 하오니 수락하여 주시기 바랍니다.</div>
      </div>
-     <div class="docIssueDate">${fmtDateKo(isoToday())}</div>
-     <div class="docSignature">제출자&nbsp;&nbsp;&nbsp; ${v(e.name)} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (서명 또는 인)</div>
-     <div class="docCompanyName">${v(s.name)} 귀하</div>
+   </div>
+
+   <div class="docResignDate">${fmtDateKo(isoToday())}</div>
+
+   <div class="docResignSignRow">
+     <span class="label">제출자</span>
+     <span class="name">${v(e.name)}</span>
+     <span class="sign-note">(서명 또는 인)</span>
+   </div>
+
+   <div class="docResignFooter">
+     <div class="docResignFooterLine"><span class="line"></span><span class="dot"></span><span class="line"></span></div>
+     <div class="docResignFooterCompany">${v(s.name)}</div>
    </div>
  </div>`;
  window.print();
