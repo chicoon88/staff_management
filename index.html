@@ -7551,6 +7551,35 @@ function contractMinutesBetween(a,b){
  if(!a||!b)return 0;let [ah,am]=a.split(':').map(Number),[bh,bm]=b.split(':').map(Number),n=(bh*60+bm)-(ah*60+am);if(n<0)n+=1440;return n;
 }
 function contractMinutesOfDay(t){if(!t)return -1;let [h,m]=String(t).split(':').map(Number);return h*60+m}
+function recoverContractTimesFromWholeText(text,dailyHours=0,knownBreakMinutes=0){
+ let times=[...new Set(contractTimeMatches(text))];if(times.length<2)return null;
+ let daily=Number(dailyHours||0),knownBreak=Number(knownBreakMinutes||0),best=null;
+ for(let i=0;i<times.length;i++)for(let j=0;j<times.length;j++){
+   if(i===j)continue;
+   let start=times[i],end=times[j],ws=contractMinutesOfDay(start),we=contractMinutesOfDay(end),span=contractMinutesBetween(start,end);
+   if(span<2*60||span>14*60)continue;
+   let overnight=we<ws,basePenalty=overnight?180:0;
+   if(ws<4*60||ws>18*60)basePenalty+=50;
+   if(we<6*60||we>23*60+59)basePenalty+=30;
+   let breakCandidates=[{start:'',end:'',mins:knownBreak||0,penalty:knownBreak?0:35}];
+   for(let a=0;a<times.length;a++)for(let b=0;b<times.length;b++){
+     if(a===b||a===i||b===j)continue;
+     let bs=times[a],be=times[b],bm=contractMinutesBetween(bs,be);if(bm<10||bm>240)continue;
+     let bsm=contractMinutesOfDay(bs),bem=contractMinutesOfDay(be),normEnd=we<ws?we+1440:we,normBs=bsm<ws?bsm+1440:bsm,normBe=bem<ws?bem+1440:bem;
+     if(normBs<ws||normBe>normEnd||normBe<=normBs)continue;
+     let p=knownBreak?Math.abs(bm-knownBreak):Math.abs(bm-60)*0.15;
+     breakCandidates.push({start:bs,end:be,mins:bm,penalty:p});
+   }
+   for(const br of breakCandidates){
+     let usedBreak=br.mins||knownBreak||0,net=span-usedBreak;if(net<=0)continue;
+     let err=daily>0?Math.abs(net-daily*60):0;
+     if(daily>0&&err>45)continue;
+     let score=err+basePenalty+Number(br.penalty||0);
+     if(!best||score<best.score)best={start,end,breakStart:br.start||'',breakEnd:br.end||'',breakMinutes:usedBreak,score};
+   }
+ }
+ return best;
+}
 function extractContractWorkDays(text){
  let t=normalizeContractText(text),zone=t;
  // 노무사 양식의 제3조 ② 표(근로일 / 근로시간 / 휴게시간 / 비고)를 최우선으로 읽는다.
@@ -7652,6 +7681,11 @@ function extractContractTermsFromText(text){
  let daily=0,weekly=0;
  let dm=section.match(/1\s*일\s*(?:소정근로시간[^0-9]{0,15})?(\d+(?:\.\d+)?)\s*시간(?:\s*근무)?/)||t.match(/1\s*일\s*(?:소정근로시간[^0-9]{0,15})?(\d+(?:\.\d+)?)\s*시간(?:\s*근무)?/);if(dm)daily=Number(dm[1]);
  let wm=t.match(/1\s*주\s*(?:소정근로시간[^0-9]{0,15})?(\d+(?:\.\d+)?)\s*시간/);if(wm)weekly=Number(wm[1]);
+ // PDF 텍스트 추출 순서가 표의 시각을 문서 뒤쪽으로 보내는 경우가 있어,
+ // 1일 소정시간과 수학적으로 일치하는 출퇴근/휴게 시간쌍을 전체 페이지에서 한 번 더 찾는다.
+ let wholeTimes=recoverContractTimesFromWholeText(t,daily,breakMinutes);
+ if((!start||!end)&&wholeTimes?.start&&wholeTimes?.end){start=wholeTimes.start;end=wholeTimes.end}
+ if(!breakMinutes&&wholeTimes?.breakMinutes){breakMinutes=wholeTimes.breakMinutes;breakStart=wholeTimes.breakStart||null;breakEnd=wholeTimes.breakEnd||null}
  if(!daily&&start&&end){let mins=contractMinutesBetween(start,end)-Number(breakMinutes||0);if(mins>0)daily=Math.round(mins/6)/10}
  if(!weekly&&daily&&days.length)weekly=Math.round(daily*days.length*100)/100;
 
@@ -7700,6 +7734,15 @@ function safeBroadContractOcrTerms(terms){
  // 전체 페이지 OCR은 날짜/시간/서명 숫자가 뒤섞일 수 있어 근무요일·출퇴근 시각은 절대 채우지 않는다.
  // 그 값들은 아래의 고정 근무표 영역 OCR에서만 가져온다.
  return sanitizeContractTermsConsistency({...terms,work_days:[],default_start_time:null,default_end_time:null,break_start_time:null,break_end_time:null,break_minutes:0,note:''});
+}
+function safeConsistentContractOcrTimes(terms){
+ if(!terms)return null;
+ let out=sanitizeContractTermsConsistency({...terms,work_days:[],note:''});if(!out?.default_start_time||!out?.default_end_time||Number(out.daily_hours||0)<=0)return null;
+ let span=contractMinutesBetween(out.default_start_time,out.default_end_time),daily=Number(out.daily_hours||0),br=Number(out.break_minutes||0);
+ if(!br){let inferred=Math.round(span-daily*60);if(inferred>=10&&inferred<=240)br=inferred}
+ if(br<0||Math.abs(span-br-daily*60)>30)return null;
+ out.break_minutes=br;out.score=[!!out.default_start_time,!!out.default_end_time,Number(out.break_minutes)>0,Number(out.daily_hours)>0,Number(out.weekly_hours)>0].filter(Boolean).length;
+ return out;
 }
 function contractFixedTableTerms(text){
  let out=extractContractTermsFromText(text);
@@ -7785,6 +7828,50 @@ function insetContractCanvas(source,left=0.03,top=0.12,right=0.03,bottom=0.12){
  let w=Math.max(0.05,1-left-right),h=Math.max(0.05,1-top-bottom);
  return cropContractCanvas(source,left,top,w,h);
 }
+function contractGroupNear(values,maxGap=5){
+ let groups=[];for(const v of values){if(!groups.length||v-groups[groups.length-1][groups[groups.length-1].length-1]>maxGap)groups.push([v]);else groups[groups.length-1].push(v)}
+ return groups.map(g=>Math.round(g.reduce((a,b)=>a+b,0)/g.length));
+}
+function detectContractScheduleTable(source){
+ try{
+   let tw=900,th=Math.max(1,Math.round(source.height*tw/source.width)),c=document.createElement('canvas');c.width=tw;c.height=th;
+   let ctx=c.getContext('2d',{willReadFrequently:true});ctx.drawImage(source,0,0,tw,th);
+   let im=ctx.getImageData(0,0,tw,th),d=im.data,isDark=(x,y,threshold=185)=>{
+     let i=(y*tw+x)*4;return (d[i]*0.299+d[i+1]*0.587+d[i+2]*0.114)<threshold;
+   };
+   let hCand=[],x0=Math.floor(tw*0.10),x1=Math.floor(tw*0.90);
+   for(let y=Math.floor(th*0.48);y<=Math.floor(th*0.70);y++){
+     let dark=0,total=0;for(let x=x0;x<=x1;x+=2){total++;if(isDark(x,y,185))dark++}
+     if(total&&dark/total>=0.46)hCand.push(y);
+   }
+   let hLines=contractGroupNear(hCand,5),trip=null;
+   for(let i=0;i+2<hLines.length;i++){
+     let a=hLines[i],b=hLines[i+1],z=hLines[i+2],g1=b-a,g2=z-b;
+     if(g1>=8&&g1<=42&&g2>=15&&g2<=78){trip=[a,b,z];break}
+   }
+   if(!trip)return null;
+   let [top,headerBottom,bottom]=trip,vCand=[];
+   for(let x=Math.floor(tw*0.12);x<=Math.floor(tw*0.90);x++){
+     let dark=0,total=0;for(let y=top;y<=bottom;y++){total++;if(isDark(x,y,200))dark++}
+     if(total&&dark/total>=0.70)vCand.push(x);
+   }
+   let vLines=contractGroupNear(vCand,4),chosen=null;
+   for(let i=0;i+4<vLines.length;i++){
+     let a=vLines.slice(i,i+5),gaps=a.slice(0,4).map((x,j)=>a[j+1]-x);
+     if(gaps.every(g=>g>40)&&a[4]-a[0]>tw*0.60){chosen=a;break}
+   }
+   if(!chosen)return null;
+   return {x:chosen.map(v=>v/tw),dataTop:(headerBottom+2)/th,dataBottom:(bottom-2)/th,detected:true};
+ }catch(e){console.warn('근로시간 표 위치 자동탐지 실패',e);return null}
+}
+function contractScheduleTableGeometry(source){
+ // 자동탐지가 실패해도 이 노무사 양식의 실제 제3조 표 위치를 기준으로 재시도한다.
+ return detectContractScheduleTable(source)||{x:[0.161,0.240,0.444,0.733,0.861],dataTop:0.587,dataBottom:0.620,detected:false};
+}
+function cropContractTableCell(source,geom,col,padX=0.006,padY=0.003){
+ let x1=geom.x[col]+padX,x2=geom.x[col+1]-padX,y1=geom.dataTop+padY,y2=geom.dataBottom-padY;
+ return cropContractCanvas(source,x1,y1,Math.max(0.01,x2-x1),Math.max(0.01,y2-y1));
+}
 function contractTimePairFromTexts(texts,expectedMinutes=0,minMinutes=60,maxMinutes=14*60){
  let times=[];(texts||[]).forEach(x=>times.push(...contractTimeMatches(x)));times=[...new Set(times)];
  let pairs=[];for(let i=0;i<times.length;i++)for(let j=0;j<times.length;j++)if(i!==j){
@@ -7848,18 +7935,21 @@ async function readContractDataFromPdf(file,expectedEmployeeName=''){
  let periodOcr=await recognizeContractCrop(Tesseract,periodCrop,'kor+eng','6');
  let finalPeriod=extractContractPeriodFromText(text+' '+periodOcr)||period;
 
- // 제3조 표의 데이터 행을 열별로 잘라 읽는다: 근로일 / 근로시간 / 휴게시간 / 비고.
- let daysRaw=cropContractCanvas(canvas,0.155,0.653,0.115,0.050);
- let workRaw=cropContractCanvas(canvas,0.268,0.653,0.185,0.050);
- let breakRaw=cropContractCanvas(canvas,0.450,0.650,0.300,0.055);
- let noteRaw=cropContractCanvas(canvas,0.748,0.653,0.132,0.050);
+ // 제3조 표의 데이터 행을 열별로 읽는다: 근로일 / 근로시간 / 휴게시간 / 비고.
+ // 이전 고정 Y좌표(0.653)는 실제 표보다 아래 문장을 잘라 출퇴근 시각이 비는 원인이었다.
+ // 이제 표의 가로·세로 선을 화면에서 직접 찾아 데이터 행을 동적으로 자른다.
+ let tableGeom=contractScheduleTableGeometry(canvas);
+ let daysRaw=cropContractTableCell(canvas,tableGeom,0,0.004,0.002);
+ let workRaw=cropContractTableCell(canvas,tableGeom,1,0.004,0.002);
+ let breakRaw=cropContractTableCell(canvas,tableGeom,2,0.004,0.002);
+ let noteRaw=cropContractTableCell(canvas,tableGeom,3,0.004,0.002);
 
- // 표 테두리와 휴게시간의 두 번째 설명문이 OCR을 방해하므로 실제 값이 있는 내부만 다시 자른다.
- let daysInner=insetContractCanvas(daysRaw,0.04,0.15,0.04,0.15);
- let workInner=insetContractCanvas(workRaw,0.025,0.14,0.025,0.14);
- // 휴게 셀은 첫 줄(예: 12:00 ~ 13:00)만 읽는다.
- let breakInner=cropContractCanvas(breakRaw,0.025,0.14,0.95,0.43);
- let noteInner=insetContractCanvas(noteRaw,0.03,0.14,0.03,0.14);
+ // 표 테두리를 한 번 더 제거하고 실제 값 내부를 읽는다.
+ let daysInner=insetContractCanvas(daysRaw,0.02,0.08,0.02,0.08);
+ let workInner=insetContractCanvas(workRaw,0.015,0.08,0.015,0.08);
+ // 휴게 셀에 설명문이 함께 있는 양식은 첫 줄을 우선한다.
+ let breakInner=cropContractCanvas(breakRaw,0.015,0.06,0.97,0.62);
+ let noteInner=insetContractCanvas(noteRaw,0.02,0.08,0.02,0.08);
 
  let daysHi=enhanceContractOcrCanvas(daysInner,3.0,210),
      workHi=enhanceContractOcrCanvas(workInner,3.4,210),
@@ -7881,7 +7971,8 @@ async function readContractDataFromPdf(file,expectedEmployeeName=''){
  let section3Ocr=await recognizeContractCrop(Tesseract,section3Crop,'kor+eng','6');
  let fallback=sanitizeContractTermsConsistency(extractContractTermsFromText(text+' '+section3Ocr));
  let exactTerms=buildContractTemplateTerms({daysText:daysOcr,workTexts:[workOcr1,workOcr2],breakTexts:[breakOcr1,breakOcr2],noteText:noteOcr,fallbackTerms:fallback});
- let finalTerms=mergeContractTerms(exactTerms,safeBroadContractOcrTerms(fallback),safeBroadContractOcrTerms(textTerms));
+ // 셀 OCR이 실패해도 제3조 전체 OCR에서 나온 시각이 1일 소정시간+휴게시간과 정확히 맞으면 보조값으로 허용한다.
+ let finalTerms=mergeContractTerms(exactTerms,safeConsistentContractOcrTimes(fallback),safeConsistentContractOcrTimes(textTerms),safeBroadContractOcrTerms(fallback),safeBroadContractOcrTerms(textTerms));
  finalTerms=sanitizeContractTermsConsistency(finalTerms);
  if(finalTerms?.daily_hours>0&&finalTerms?.work_days?.length&&(!finalTerms.weekly_hours||finalTerms.weekly_hours<=0))finalTerms.weekly_hours=Math.round(finalTerms.daily_hours*finalTerms.work_days.length*100)/100;
  return {period:finalPeriod,terms:finalTerms,nameCheck,method:'ocr-template-cells',text:text+' '+nameOcr+' '+periodOcr+' '+daysOcr+' '+workOcr1+' '+workOcr2+' '+breakOcr1+' '+breakOcr2+' '+noteOcr+' '+section3Ocr};
