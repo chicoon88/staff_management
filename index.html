@@ -1054,7 +1054,7 @@ body.resizingEmployeeColumn *{
 
 <section id="payrollPage" class="page">
  <div class="row">
-  <div><h1 class="title">급여관리 <span style="font-size:12px;color:#315efb;background:#eef3ff;border-radius:999px;padding:4px 8px;vertical-align:middle">v2026.08.23-1530</span></h1><div class="sub">월별 급여대장을 검산하고, 기간별·직원별 누적 급여도 조회합니다.</div></div>
+  <div><h1 class="title">급여관리 <span style="font-size:12px;color:#315efb;background:#eef3ff;border-radius:999px;padding:4px 8px;vertical-align:middle">v2026.08.23-1545</span></h1><div class="sub">월별 급여대장을 검산하고, 기간별·직원별 누적 급여도 조회합니다.</div></div>
   <div class="toolbar">
    <input type="file" id="payrollFile" accept=".xlsx,.xls,.xlsm" multiple style="display:none" onchange="importPayrollFiles(this.files);this.value=''">
    <button class="btn" onclick="$('payrollFile').click()">급여대장 여러개 불러오기</button>
@@ -4991,7 +4991,6 @@ async function openWorkConditionHistory(employeeId,presetDate='',presetNote='',p
    <div class="field"><label>1년 미만 월 발생(h)</label><input id="wcLeaveMonthly" type="number" step="1" value="${Number(c.leave_monthly_hours||8)}"></div>
    <div class="field"><label>연차 하루 사용(h)</label><input id="wcLeaveDay" type="number" step=".5" value="${Number(c.leave_day_hours||8)}"></div>
    <div class="field" style="grid-column:span 3"><label>변경 메모</label><input id="wcNote" value="${esc(presetCondition?.note||presetNote||'')}" placeholder="예: 2026년 8월부터 주5일 → 주4일 변경"></div>
-   ${presetCondition?`<div class="field" style="grid-column:span 2"><label>계약서 담당업무</label><input id="wcContractDuty" value="${esc(presetCondition.contract_duty||'')}" placeholder="확인 후 직원관리 업무에도 반영"></div><div class="field" style="grid-column:span 2"><label>계약서 근무장소</label><input id="wcContractWorkplace" value="${esc(presetCondition.contract_workplace||'')}" placeholder="근무조건 메모에 보존"></div>`:''}
   </div>
   <div style="margin-top:8px"><b style="font-size:12px">기본 근무요일</b><div style="margin-top:5px">${checks}</div></div>
   <div class="help" style="margin-top:8px">${presetCondition?'<b>계약서에서 읽은 값이 자동으로 채워졌습니다. 이 화면에서 마지막 확인 후 “이 조건 등록”을 누를 때만 실제 근무조건에 반영됩니다.</b><br>':''}예: 7월까지 주5일 8시간, 8/1부터 주4일 9시간이면 <b>20260801</b>을 적용 시작일로 새 조건을 등록하세요. 주4일 9시간이 ‘소정 8h + 추가 1h’ 구조라면 1일 소정시간은 8h로 두고 출퇴근/휴게로 실제 9h가 나오게 설정합니다. 7월 스케줄은 이전 조건, 8월 자동채우기는 새 조건을 사용합니다.</div>
@@ -5037,8 +5036,6 @@ async function addWorkCondition(employeeId){
    leave_day_hours:Number($('wcLeaveDay')?.value||8),
    note:$('wcNote')?.value?.trim()||null
  };
- let contractDuty=$('wcContractDuty')?.value?.trim()||'',contractWorkplace=$('wcContractWorkplace')?.value?.trim()||'';
- if(contractWorkplace&&!String(payload.note||'').includes('근무장소:'))payload.note=[payload.note,`근무장소: ${contractWorkplace}`].filter(Boolean).join(' · ');
  if(!Number.isFinite(payload.daily_hours)||payload.daily_hours<=0)return alert('1일 소정시간을 확인하세요.');
  let existing=workConditionRowsForEmployee(employeeId);
  // 첫 변경을 등록할 때는 입사일부터 변경 전날까지의 기존 기본조건을 자동 보존한다.
@@ -5056,10 +5053,6 @@ async function addWorkCondition(employeeId){
    return alert('근무조건 이력 저장 오류:\n'+q.error.message);
  }
  await loadEmployeeWorkConditions(storeId());
- if(contractDuty){
-   let du=await sb.from('employees').update({department:contractDuty}).eq('id',employeeId);
-   if(du.error)console.warn('계약서 담당업무 직원마스터 반영 오류',du.error.message);else e.department=contractDuty;
- }
  if(effective<=isoToday())await syncEmployeeMasterToCurrentCondition(employeeId);
  await loadWorkConditionHistory(employeeId);
  renderEmployees();renderSchedule();if(scheduleView==='weekly')renderWeeklyPlanner();if($('hoursPage')?.classList.contains('active'))renderHours();
@@ -7527,59 +7520,107 @@ function extractContractPeriodFromText(text){
  if(dates.length>=2)return {start:dates[0],end:dates[1]};
  return null;
 }
-function contractClock(h,m){let hh=Number(h),mm=Number(m);if(hh>23||mm>59)return '';return `${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')}`}
+function contractClock(h,m,ampm=''){
+ let hh=Number(h),mm=Number(m),ap=String(ampm||'').trim();
+ if(mm>59)return '';
+ if(ap==='오전'){if(hh===12)hh=0}
+ else if(ap==='오후'){if(hh<12)hh+=12}
+ if(hh>23)return '';
+ return `${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')}`
+}
 function contractTimeMatches(text){
  let t=normalizeContractText(text).replace(/[OoＯｏ]/g,'0');
- return [...t.matchAll(/(?:오전|오후)?\s*([0-2]?\d)\s*[:.]\s*([0-5]\d)/g)].map(m=>contractClock(m[1],m[2])).filter(Boolean);
+ return [...t.matchAll(/(오전|오후)?\s*([0-2]?\d)\s*[:.]\s*([0-5]\d)/g)].map(m=>contractClock(m[2],m[3],m[1]||'')).filter(Boolean);
 }
 function contractMinutesBetween(a,b){
  if(!a||!b)return 0;let [ah,am]=a.split(':').map(Number),[bh,bm]=b.split(':').map(Number),n=(bh*60+bm)-(ah*60+am);if(n<0)n+=1440;return n;
 }
+function contractMinutesOfDay(t){if(!t)return -1;let [h,m]=String(t).split(':').map(Number);return h*60+m}
 function extractContractWorkDays(text){
  let t=normalizeContractText(text),zone=t;
- let idx=t.search(/근로일|근무일|소정근로일/);if(idx>=0)zone=t.slice(idx,Math.min(t.length,idx+220));
+ // 노무사 양식의 제3조 ② 표(근로일 / 근로시간 / 휴게시간 / 비고)를 최우선으로 읽는다.
+ let si=t.search(/(?:시업\s*및\s*종업시간[^③제]{0,80}휴게시간|근로일\s*근로시간\s*휴게시간)/);
+ if(si>=0){zone=t.slice(si,Math.min(t.length,si+700));let cut=zone.search(/(?:③|제\s*4\s*조)/);if(cut>0)zone=zone.slice(0,cut)}
+ else {let idx=t.search(/근로일|근무일|소정근로일/);if(idx>=0)zone=t.slice(idx,Math.min(t.length,idx+500))}
  const dayIndex={일:0,월:1,화:2,수:3,목:4,금:5,토:6};
  let range=zone.match(/([일월화수목금토])\s*(?:요일)?\s*(?:~|\-|–|—|부터)\s*([일월화수목금토])\s*(?:요일)?/);
  if(range){let a=dayIndex[range[1]],b=dayIndex[range[2]],out=[];for(let i=a;;i=(i+1)%7){out.push(i);if(i===b||out.length>=7)break}return out.sort((x,y)=>x-y)}
- let line=(zone.match(/(?:근로일|근무일|소정근로일)\s*[:：]?\s*([^.;]{1,90})/)||[])[1]||'';
+ // OCR에서 '월~금'의 물결표가 빠지는 경우: 표 안에 월 금이 연이어 잡히고 그 사이가 짧으면 월~금으로 본다.
+ let compact=zone.match(/(?:근로일[^가-힣0-9]{0,20})?월\s*(?:요일)?\s{0,8}(?:-|~|부터)?\s*금\s*(?:요일)?/);
+ if(compact)return [1,2,3,4,5];
+ let line=(zone.match(/(?:근로일|근무일|소정근로일)\s*[:：]?\s*([^.;]{1,140})/)||[])[1]||zone;
  let names=[...line.matchAll(/([일월화수목금토])\s*(?:요일)?/g)].map(m=>dayIndex[m[1]]);
  return [...new Set(names)].sort((a,b)=>a-b);
 }
 function extractNearbyField(t,labels,maxLen=100){
  for(const label of labels){let idx=t.indexOf(label);if(idx<0)continue;let z=t.slice(idx+label.length,idx+label.length+maxLen).replace(/^\s*[:：]?\s*/,'');let cut=z.search(/(?:제\s*\d+\s*조|①|②|③|④|⑤|근로일|근로시간|휴게시간|비고|임금|휴일|연차|계약기간)/);if(cut>0)z=z.slice(0,cut);z=z.split(/(?:로\s*한다|으로\s*한다|로\s*한다\.)/)[0];z=z.trim();if(z)return z}return '';
 }
+function contractScheduleSection(t){
+ let start=t.search(/(?:시업\s*및\s*종업시간[^③제]{0,90}휴게시간|근로일\s*근로시간\s*휴게시간)/);
+ if(start<0)start=t.search(/근로일|근무일/);
+ if(start<0)return t;
+ let z=t.slice(start,Math.min(t.length,start+900));
+ let cut=z.search(/(?:③|제\s*4\s*조)/);if(cut>0)z=z.slice(0,cut);
+ return z;
+}
+function chooseContractWorkAndBreakTimes(times){
+ let a=[...new Set((times||[]).filter(Boolean))];
+ let pairs=[];
+ for(let i=0;i<a.length;i++)for(let j=i+1;j<a.length;j++){
+   let mins=contractMinutesBetween(a[i],a[j]);
+   if(mins>=15&&mins<=14*60)pairs.push({a:a[i],b:a[j],mins});
+ }
+ // 근로시간은 표 안에서 가장 긴 합리적 시간구간(최대 14시간)을 우선한다.
+ let work=pairs.filter(x=>x.mins>=3*60).sort((x,y)=>y.mins-x.mins)[0]||null;
+ let br=null;
+ if(work){
+   let ws=contractMinutesOfDay(work.a),we=contractMinutesOfDay(work.b);
+   br=pairs.filter(x=>x.mins>=15&&x.mins<=180&&!(x.a===work.a&&x.b===work.b)).filter(x=>{
+     let s=contractMinutesOfDay(x.a),e=contractMinutesOfDay(x.b);return ws<=we?s>=ws&&e<=we:true;
+   }).sort((x,y)=>x.mins-y.mins)[0]||null;
+ }
+ if(!br)br=pairs.filter(x=>x.mins>=15&&x.mins<=180&&!(work&&x.a===work.a&&x.b===work.b)).sort((x,y)=>x.mins-y.mins)[0]||null;
+ return {start:work?.a||'',end:work?.b||'',breakStart:br?.a||'',breakEnd:br?.b||'',breakMinutes:br?.mins||0};
+}
 function extractContractTermsFromText(text){
  let t=normalizeContractText(text);if(!t)return null;
- let days=extractContractWorkDays(t);
- let start='',end='',breakStart='',breakEnd='',breakMinutes=0;
- let tableMatch=t.match(/(?:근로일|근무일)[^.;]{0,40}(?:근로시간|근무시간)[^.;]{0,40}휴게시간[^.;]{0,260}/);
- let tableTimes=tableMatch?contractTimeMatches(tableMatch[0]):[];
- if(tableTimes.length>=2){start=tableTimes[0];end=tableTimes[1]}
- if(tableTimes.length>=4){breakStart=tableTimes[2];breakEnd=tableTimes[3];breakMinutes=contractMinutesBetween(breakStart,breakEnd)}
- if(!start||!end){let workZone=t,wi=t.search(/근로시간|근무시간/);if(wi>=0)workZone=t.slice(wi,wi+350);let workTimes=contractTimeMatches(workZone);start=start||workTimes[0]||'';end=end||workTimes[1]||''}
- let breakZone=t,bi=t.search(/휴게시간|휴게 시간|휴게/);if(bi>=0)breakZone=t.slice(bi,bi+260);
- if(!breakMinutes){let direct=breakZone.match(/(?:휴게시간|휴게)[^0-9]{0,35}([0-2]?\d)\s*[:.]\s*([0-5]\d)\s*(?:~|\-|–|—)\s*([0-2]?\d)\s*[:.]\s*([0-5]\d)/);if(direct){breakStart=contractClock(direct[1],direct[2]);breakEnd=contractClock(direct[3],direct[4]);breakMinutes=contractMinutesBetween(breakStart,breakEnd)}}
- let bm=breakZone.match(/(?:휴게시간|휴게)[^0-9]{0,20}(\d{1,3})\s*분/);if(!breakMinutes&&bm)breakMinutes=Number(bm[1]);
+ let section=contractScheduleSection(t),days=extractContractWorkDays(t);
+ let allTimes=contractTimeMatches(section),picked=chooseContractWorkAndBreakTimes(allTimes);
+ let start=picked.start,end=picked.end,breakStart=picked.breakStart,breakEnd=picked.breakEnd,breakMinutes=picked.breakMinutes;
+
+ // 보조 경로: 표 읽기 순서가 깨진 PDF에서도 '근로시간'과 '휴게시간' 주변을 따로 확인한다.
+ if(!start||!end){
+   let wi=section.search(/근로시간|근무시간/),bi=section.search(/휴게시간|휴게 시간/),workZone='';
+   if(wi>=0)workZone=section.slice(wi,bi>wi?bi:Math.min(section.length,wi+260));
+   let wt=contractTimeMatches(workZone);if(wt.length>=2){start=wt[0];end=wt[1]}
+ }
+ if(!breakMinutes){
+   let bi=section.search(/휴게시간|휴게 시간|휴게/),breakZone=bi>=0?section.slice(bi,Math.min(section.length,bi+300)):section;
+   let bt=contractTimeMatches(breakZone),bp=chooseContractWorkAndBreakTimes(bt);
+   if(bt.length>=2){
+     let cand=[];for(let i=0;i<bt.length;i++)for(let j=i+1;j<bt.length;j++){let m=contractMinutesBetween(bt[i],bt[j]);if(m>=15&&m<=180)cand.push({a:bt[i],b:bt[j],mins:m})}
+     let z=cand.sort((x,y)=>x.mins-y.mins)[0];if(z){breakStart=z.a;breakEnd=z.b;breakMinutes=z.mins}
+   } else if(bp.breakMinutes){breakStart=bp.breakStart;breakEnd=bp.breakEnd;breakMinutes=bp.breakMinutes}
+   let bm=breakZone.match(/(?:휴게시간|휴게)[^0-9]{0,25}(\d{1,3})\s*분/);if(!breakMinutes&&bm)breakMinutes=Number(bm[1]);
+ }
+
  let daily=0,weekly=0;
- let dm=t.match(/1\s*일\s*(?:소정근로시간[^0-9]{0,12})?(\d+(?:\.\d+)?)\s*시간/)||t.match(/1일\s*(\d+(?:\.\d+)?)\s*시간\s*근무/);if(dm)daily=Number(dm[1]);
- let wm=t.match(/1\s*주\s*(?:소정근로시간[^0-9]{0,12})?(\d+(?:\.\d+)?)\s*시간/);if(wm)weekly=Number(wm[1]);
+ let dm=section.match(/1\s*일\s*(?:소정근로시간[^0-9]{0,15})?(\d+(?:\.\d+)?)\s*시간(?:\s*근무)?/)||t.match(/1\s*일\s*(?:소정근로시간[^0-9]{0,15})?(\d+(?:\.\d+)?)\s*시간(?:\s*근무)?/);if(dm)daily=Number(dm[1]);
+ let wm=t.match(/1\s*주\s*(?:소정근로시간[^0-9]{0,15})?(\d+(?:\.\d+)?)\s*시간/);if(wm)weekly=Number(wm[1]);
  if(!daily&&start&&end){let mins=contractMinutesBetween(start,end)-Number(breakMinutes||0);if(mins>0)daily=Math.round(mins/6)/10}
  if(!weekly&&daily&&days.length)weekly=Math.round(daily*days.length*100)/100;
- let duty='';
- let dutyM=t.match(/담당(?:하는)?\s*업무(?:는|:)\s*([^.;]{1,70}?)(?=\s*(?:및|와|과)\s*(?:그|관련|이에)|\s*로\s*한다|\.|$)/);if(dutyM)duty=dutyM[1].trim();
- if(!duty){let d2=extractNearbyField(t,['담당업무','업무내용'],70);if(d2)duty=d2.replace(/^(?:는|:)\s*/,'').trim()}
- let workplace='';
- let placeM=t.match(/근로장소(?:는|:)\s*([^.;]{2,140}?)(?=\s*(?:로|으로)\s*한다|\.|$)/);if(placeM)workplace=placeM[1].trim();
+
+ // 이 계약서 양식에서 비고는 근무표의 마지막 열을 의미한다. 담당업무/근무장소는 자동읽기 대상에서 제외한다.
  let note='';
- if(daily){let n=t.match(new RegExp(`1\\s*일\\s*${String(daily).replace('.','\\.')}\\s*시간\\s*근무`));if(n)note=n[0].replace(/\s+/g,' ')}
- if(!note){let noteM=t.match(/비고\s*[:：]?\s*([^.;]{1,80})/);if(noteM)note=noteM[1].trim()}
+ let noteM=section.match(/1\s*일\s*\d+(?:\.\d+)?\s*시간\s*근무/);if(noteM)note=noteM[0].replace(/\s+/g,' ');
+ if(!note){let nm=section.match(/비고\s*[:：]?\s*([^.;]{1,100})/);if(nm)note=nm[1].trim()}
  let scheduleBased=/스케줄\s*근무|근무스케줄|주\s*또는\s*월단위로\s*작성되는\s*근무스케줄/.test(t);
  let workType='custom';
  if(/주\s*4일\s*스케줄/.test(t)||(days.length===4&&daily>=8&&weekly>=32))workType='36';
  else if(/주\s*5일\s*스케줄/.test(t)||(days.length===5&&Math.abs(daily-8)<0.01&&Math.abs(weekly-40)<0.01))workType='40';
- let score=[days.length>0,!!start,!!end,breakMinutes>0,daily>0,weekly>0,!!duty,!!workplace,!!note].filter(Boolean).length;
+ let score=[days.length>0,!!start,!!end,breakMinutes>0,daily>0,weekly>0,!!note].filter(Boolean).length;
  if(!score)return null;
- return {work_days:days,default_start_time:start||null,default_end_time:end||null,break_minutes:Number(breakMinutes||0),daily_hours:Number(daily||0),weekly_hours:Number(weekly||0),work_type:workType,duty,workplace,note,schedule_based:scheduleBased,score};
+ return {work_days:days,default_start_time:start||null,default_end_time:end||null,break_start_time:breakStart||null,break_end_time:breakEnd||null,break_minutes:Number(breakMinutes||0),daily_hours:Number(daily||0),weekly_hours:Number(weekly||0),work_type:workType,note,schedule_based:scheduleBased,score};
 }
 let contractPdfJsPromise=null,contractTesseractPromise=null;
 async function loadContractPdfJs(){
@@ -7608,7 +7649,7 @@ async function readContractDataFromPdf(file){
 function contractDayLabel(days){return (days||[]).length?(days||[]).map(d=>'일월화수목금토'[d]).join('·'):'미확인'}
 function contractTermsSummary(terms){
  if(!terms)return '';
- let parts=[];if(terms.work_days?.length)parts.push(`근무일 ${contractDayLabel(terms.work_days)}`);if(terms.default_start_time||terms.default_end_time)parts.push(`${terms.default_start_time||'?'}~${terms.default_end_time||'?'}`);if(terms.break_minutes)parts.push(`휴게 ${terms.break_minutes}분`);if(terms.daily_hours)parts.push(`1일 ${terms.daily_hours}h`);if(terms.weekly_hours)parts.push(`주 ${terms.weekly_hours}h`);if(terms.duty)parts.push(`업무 ${terms.duty}`);return parts.join(' · ');
+ let parts=[];if(terms.work_days?.length)parts.push(`근무일 ${contractDayLabel(terms.work_days)}`);if(terms.default_start_time||terms.default_end_time)parts.push(`${terms.default_start_time||'?'}~${terms.default_end_time||'?'}`);if(terms.break_minutes)parts.push(`휴게 ${terms.break_minutes}분`);if(terms.daily_hours)parts.push(`1일 ${terms.daily_hours}h`);if(terms.weekly_hours)parts.push(`주 ${terms.weekly_hours}h`);return parts.join(' · ');
 }
 function showContractTermsReview(terms){
  let host=$('contractTermsReview');if(!host)return;
@@ -7624,8 +7665,6 @@ function showContractTermsReview(terms){
    <div class="field"><label>휴게(분)</label><input id="contractTermBreak" type="number" value="${Number(terms.break_minutes||0)||''}"></div>
    <div class="field"><label>주 소정시간</label><input id="contractTermWeekly" type="number" step=".5" value="${Number(terms.weekly_hours||0)||''}"></div>
    <div class="field wide"><label>근무요일</label><div class="contractTermsDays">${dayChecks}</div></div>
-   <div class="field wide"><label>담당업무</label><input id="contractTermDuty" value="${esc(terms.duty||'')}"></div>
-   <div class="field wide"><label>근무장소</label><input id="contractTermWorkplace" value="${esc(terms.workplace||'')}"></div>
    <div class="field wide"><label>계약서 비고/특이사항</label><input id="contractTermNote" value="${esc(terms.note||'')}"></div>
   </div><div class="contractTermsHint">자동인식 값은 바로 DB를 덮어쓰지 않습니다. 여기서 확인한 뒤 업로드하고, 이어지는 근무조건 확인창에서 마지막으로 확인 후 적용합니다.</div>`;
  host.classList.add('show');
@@ -7636,12 +7675,12 @@ function collectContractTermsReview(){
  let daily=Number($('contractTermDaily')?.value||0),weekly=Number($('contractTermWeekly')?.value||0),start=$('contractTermStart')?.value||null,end=$('contractTermEnd')?.value||null,breakMinutes=Number($('contractTermBreak')?.value||0);
  if(!daily&&start&&end){let mins=contractMinutesBetween(start,end)-breakMinutes;if(mins>0)daily=Math.round(mins/6)/10}
  if(!weekly&&daily&&days.length)weekly=Math.round(daily*days.length*100)/100;
- return {work_type:normalizeWorkTypeValue($('contractTermWorkType')?.value||'custom'),daily_hours:daily,default_start_time:start,default_end_time:end,break_minutes:breakMinutes,work_days:days,weekly_hours:weekly,duty:$('contractTermDuty')?.value?.trim()||'',workplace:$('contractTermWorkplace')?.value?.trim()||'',note:$('contractTermNote')?.value?.trim()||''};
+ return {work_type:normalizeWorkTypeValue($('contractTermWorkType')?.value||'custom'),daily_hours:daily,default_start_time:start,default_end_time:end,break_minutes:breakMinutes,work_days:days,weekly_hours:weekly,note:$('contractTermNote')?.value?.trim()||''};
 }
 async function openEmployeeDocuments(employeeId,type){
  let e=findEmployeeAny(employeeId);if(!e)return alert('직원정보를 찾지 못했습니다.');
  let label=employeeDocTypeLabel(type),isResignation=type==='resignation',isContract=!isResignation;
- let vaultHelp=isResignation?'작성 완료한 사직서 PDF 원본을 서버에 보관합니다. 삭제하지 않는 한 직원 기록과 함께 계속 남습니다.':'PDF 원본은 서버에 누적 보관합니다. <b>재계약 D-day는 근로계약서의 계약 종료일</b>을 기준으로 표시합니다. PDF를 선택하면 계약기간뿐 아니라 <b>근무요일·출퇴근시간·휴게시간·1일/주 소정시간·담당업무·근무장소·비고</b>를 자동으로 읽어 확인창에 채웁니다. 스캔본도 문자인식을 시도하며, 인식값은 사용자가 확인한 뒤에만 근무조건으로 적용됩니다.'+(type==='work_contract'?' <b>근무조건이 함께 바뀌면 “이 계약일부터 근무조건 변경 있음”을 체크</b>하세요. 업로드 직후 적용일이 계약 시작일로 채워진 근무조건 등록창이 열리고, 이후 기본근무 채우기·주간목표·연차 계산이 그 적용일부터 새 조건을 사용합니다.':'');
+ let vaultHelp=isResignation?'작성 완료한 사직서 PDF 원본을 서버에 보관합니다. 삭제하지 않는 한 직원 기록과 함께 계속 남습니다.':'PDF 원본은 서버에 누적 보관합니다. <b>재계약 D-day는 근로계약서의 계약 종료일</b>을 기준으로 표시합니다. PDF를 선택하면 계약기간뿐 아니라 <b>근무요일·출퇴근시간·휴게시간·1일/주 소정시간·비고</b>를 자동으로 읽어 확인창에 채웁니다. 스캔본도 문자인식을 시도하며, 인식값은 사용자가 확인한 뒤에만 근무조건으로 적용됩니다.'+(type==='work_contract'?' <b>근무조건이 함께 바뀌면 “이 계약일부터 근무조건 변경 있음”을 체크</b>하세요. 업로드 직후 적용일이 계약 시작일로 채워진 근무조건 등록창이 열리고, 이후 기본근무 채우기·주간목표·연차 계산이 그 적용일부터 새 조건을 사용합니다.':'');
  let periodFields=isContract?`<div class="field" style="margin:0"><label>계약 시작일</label><input id="contractStartDate" type="text" inputmode="numeric" maxlength="8" placeholder="YYYYMMDD" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,8)"></div>
  <div class="field" style="margin:0"><label>계약 종료일</label><input id="contractEndDate" type="text" inputmode="numeric" maxlength="8" placeholder="YYYYMMDD" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,8)"></div>`:'';
  modal(`<div class="contractVaultHead"><div><h2 style="margin:0">${esc(e.name)} · ${label}</h2>
@@ -7742,7 +7781,6 @@ async function uploadEmployeeDocument(employeeId,type){
    let preset=null;
    if(extractedTerms){
      let noteParts=['근로계약서 자동읽기 확인값'];
-     if(extractedTerms.workplace)noteParts.push('근무장소: '+extractedTerms.workplace);
      if(extractedTerms.note)noteParts.push('비고: '+extractedTerms.note);
      preset={
        work_type:extractedTerms.work_type||'custom',daily_hours:Number(extractedTerms.daily_hours||0)||8,
@@ -7750,7 +7788,7 @@ async function uploadEmployeeDocument(employeeId,type){
        break_minutes:Number(extractedTerms.break_minutes||0),work_days:extractedTerms.work_days||[],
        leave_weekly_hours:Number(extractedTerms.weekly_hours||0)||Number(extractedTerms.daily_hours||0)*(extractedTerms.work_days?.length||0),
        leave_monthly_hours:Number(extractedTerms.daily_hours||0)||8,leave_day_hours:Number(extractedTerms.daily_hours||0)||8,
-       note:noteParts.join(' · '),contract_duty:extractedTerms.duty||'',contract_workplace:extractedTerms.workplace||'',contract_note:extractedTerms.note||''
+       note:noteParts.join(' · ')
      };
    }
    return openWorkConditionHistory(employeeId,contractStart||date,'근로계약 갱신에 따른 근무조건 변경',preset);
