@@ -851,6 +851,7 @@ body.resizingEmployeeColumn *{
 .permissionGrid{display:grid;grid-template-columns:minmax(170px,1fr) 90px 90px;gap:0;border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-top:10px}
 .permissionGrid>div{padding:8px 10px;border-bottom:1px solid var(--line);background:#fff}.permissionGrid>.head{font-weight:900;background:#f7f9fc}.permissionGrid>div:nth-last-child(-n+3){border-bottom:0}
 .permissionStoreList{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:8px;margin-top:8px}.permissionStoreCheck{display:flex!important;align-items:center!important;gap:9px!important;border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:#fff;white-space:nowrap!important;word-break:keep-all!important;line-height:1.25!important;min-width:0}.permissionStoreCheck input[type=checkbox]{width:18px!important;min-width:18px!important;height:18px!important;flex:0 0 18px!important;margin:0!important}.permissionStoreCheck:hover{background:#f8fbff;border-color:#b9c9ff}.modalBack>.modal input[type=checkbox],.modalBack>.modal input[type=radio]{width:18px!important;min-width:18px!important;height:18px!important;flex:0 0 18px!important;padding:0!important;margin:0!important}.modalBack>.modal label{word-break:keep-all}.modalBack>.modal .accountUseRow{display:inline-flex!important;align-items:center!important;gap:8px!important;width:auto!important;white-space:nowrap!important;word-break:keep-all!important;line-height:1.2!important}.permissionGrid>div{word-break:keep-all}.permissionGrid>.head{white-space:nowrap}.permissionTable th,.permissionTable td{word-break:keep-all}
+.permissionTable .toolbar{flex-wrap:nowrap;white-space:nowrap}.permissionTable .btn{white-space:nowrap}.permissionTable td:last-child{min-width:245px}
 .readOnlyScheduleNotice{display:none;padding:8px 11px;border-radius:9px;background:#fff7ed;color:#9a5215;font-weight:800;margin-top:8px}
 #schedulePage.scheduleReadOnly .readOnlyScheduleNotice{display:block}
 #schedulePage.scheduleReadOnly input.code,#schedulePage.scheduleReadOnly input.weekCode{background:#f8fafc!important;color:#475569!important;cursor:not-allowed}
@@ -1051,7 +1052,7 @@ body.resizingEmployeeColumn *{
 
 <section id="payrollPage" class="page">
  <div class="row">
-  <div><h1 class="title">급여관리 <span style="font-size:12px;color:#315efb;background:#eef3ff;border-radius:999px;padding:4px 8px;vertical-align:middle">v2026.08.23-1445</span></h1><div class="sub">월별 급여대장을 검산하고, 기간별·직원별 누적 급여도 조회합니다.</div></div>
+  <div><h1 class="title">급여관리 <span style="font-size:12px;color:#315efb;background:#eef3ff;border-radius:999px;padding:4px 8px;vertical-align:middle">v2026.08.23-1455</span></h1><div class="sub">월별 급여대장을 검산하고, 기간별·직원별 누적 급여도 조회합니다.</div></div>
   <div class="toolbar">
    <input type="file" id="payrollFile" accept=".xlsx,.xls,.xlsm" multiple style="display:none" onchange="importPayrollFiles(this.files);this.value=''">
    <button class="btn" onclick="$('payrollFile').click()">급여대장 여러개 불러오기</button>
@@ -1614,7 +1615,11 @@ async function deleteDashboardUser(uid){
    await invokeSchedulerAccountAdmin({action:'delete_user_account',user_id:uid});
    closeModal();await loadAdminAccountDirectory();await loadUsersAdminPage();await loadAuditPage();
    alert(`${name} 계정을 삭제했습니다.`);
- }catch(err){alert('계정 삭제 오류\n\n'+(err?.message||err))}
+ }catch(err){
+   let msg=String(err?.message||err||'');
+   if(/지원하지 않는 작업|unsupported/i.test(msg))msg='현재 배포된 scheduler-account-admin 코드가 이전 버전입니다. 아래 최신 index.ts로 전체 교체 후 Deploy updates를 눌러 주세요.';
+   alert('계정 삭제 오류\n\n'+msg)
+ }
 }
 
 async function loadUsersAdminPage(){
@@ -1625,7 +1630,7 @@ async function loadUsersAdminPage(){
  $('userPermissionBody').innerHTML=adminUsers.map(x=>{
    let me=x.user_id===currentSessionUser?.id;
    let loginLine=x.login_id?`<br><span class="permTag">아이디 ${esc(x.login_id)}</span>`:`<br><span class="help">아이디 미설정</span>`;
-   let actions=`<div class="toolbar" style="gap:6px"><button class="btn gray small" onclick="openUserAccountEditor('${x.user_id}')">${me&&x.is_admin?'내 로그인 설정':'계정 설정'}</button>${x.is_admin?'':`<button class="btn small" onclick="openUserPermissionEditor('${x.user_id}')">권한 설정</button>`}</div>`;
+   let actions=`<div class="toolbar" style="gap:6px"><button class="btn gray small" onclick="openUserAccountEditor('${x.user_id}')">${me&&x.is_admin?'내 로그인 설정':'계정 설정'}</button>${x.is_admin?'':`<button class="btn small" onclick="openUserPermissionEditor('${x.user_id}')">권한 설정</button><button class="btn red small" onclick="deleteDashboardUser('${x.user_id}')">삭제</button>`}</div>`;
    return `<tr><td><b>${esc(x.display_name||x.login_id||'사용자')}</b>${loginLine}${x.is_admin?'<br><span class="permTag edit">최고관리자</span>':''}</td><td>${x.active===false?'<span style="color:#b42318;font-weight:900">사용중지</span>':'사용중'}</td><td>${x.is_admin?'<span class="storeTag">전체 업장</span>':storeSummaryForUser(x.user_id)}</td><td><div class="permTags">${x.is_admin?'<span class="permTag edit">전체 권한</span>':permissionSummaryForUser(x.user_id)}</div></td><td>${lastMap.get(x.user_id)?fmtDateTime(lastMap.get(x.user_id)):'-'}</td><td>${actions}</td></tr>`
  }).join('')||'<tr><td colspan="6" style="padding:20px">등록된 사용자가 없습니다.</td></tr>';
 }
@@ -5262,7 +5267,6 @@ function storeFormHtml(s){
   <div class="field"><label>대표자명</label><input id="sRep" value="${esc(s.representative_name||'')}"></div>
   <div class="field"><label>전화번호</label><input id="sPhone" value="${esc(s.phone||'')}"></div>
   <div class="field" style="grid-column:span 2"><label>주소</label><input id="sAddress" value="${esc(s.address||'')}"></div>
-  ${isAppAdmin()?`<div class="storeAccountBox"><b>사용자 계정은 사람별로 관리합니다.</b><div class="help" style="margin-top:6px">한 업장에 여러 명을 등록하려면 “사용자 / 권한”에서 사용자를 추가한 뒤 이 업장을 선택하세요.</div><button type="button" class="btn green small" style="margin-top:10px" onclick="closeModal();document.querySelector('.nav[data-page=\"users\"]')?.click()">사용자 / 권한 열기</button></div>`:''}
  </div>`
 }
 async function editStore(id){
