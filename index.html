@@ -8899,6 +8899,200 @@ function printScheduleNow(employeeIds=null){
  $('printArea').innerHTML=h;window.print();
 }
 function printSchedule(){openScheduleOutput()}
+
+
+/* ===== V7 수기 최종수정 우선 =====
+   - 기존 근로계약서 OCR/판독 로직은 변경하지 않는다.
+   - 업로드 후 계약기간/문서정보/근무조건을 언제든 다시 수정할 수 있다.
+   - employee_work_conditions의 해당 이력 행을 직접 UPDATE하여 마지막 수기 저장값을 날짜별 기준값으로 사용한다.
+   - 이미 입력된 월간/주간 스케줄 셀은 자동으로 덮어쓰지 않는다.
+===== */
+let workConditionEditContextV7={id:null,employeeId:null,originalEffective:''};
+let contractManualEditContextV7=null;
+
+function contractManualIndefiniteToggleV7(){
+ let chk=$('ceIndefinite'),end=$('ceEnd');if(!end)return;
+ end.disabled=!!chk?.checked;
+ if(chk?.checked)end.value='';
+}
+
+async function refreshFinalManualDataV7(employeeId,{syncLeave=true}={}){
+ try{await loadEmployeeWorkConditions(storeId())}catch(e){console.warn(e)}
+ try{await syncEmployeeMasterToCurrentCondition(employeeId)}catch(e){console.warn(e)}
+ if(syncLeave&&canEditModule('employees')){
+   try{await syncLeaveLedger();await loadLeaveLedger()}catch(e){console.warn('수기 최종값 연차 재계산 보조 실패',e)}
+ }
+ try{await loadEmployeeDocumentStatus(storeId())}catch(e){console.warn(e)}
+ if(canViewModule('employees'))renderEmployees();
+ if(canViewModule('schedule')){renderSchedule();if(scheduleView==='weekly')renderWeeklyPlanner()}
+ if($('hoursPage')?.classList.contains('active')&&canViewModule('hours'))renderHours();
+ if($('homePage')?.classList.contains('active')&&canViewModule('home'))renderHome();
+ if(canViewModule('home'))refreshAdminTasks(false);
+}
+
+/* 문서목록: 기존 '계약기간' 버튼을 '계약정보 수정'으로 확장하고 근로조건 수정 진입점도 함께 둔다. */
+async function loadEmployeeDocuments(employeeId,type){
+ let host=$('contractDocList');if(!host)return;
+ let q=await sb.from('employee_documents').select('*').eq('employee_id',employeeId).eq('document_type',type)
+ .order('document_date',{ascending:false,nullsFirst:false}).order('created_at',{ascending:false});
+ if(q.error){host.innerHTML=`<div class="contractEmpty">문서 목록 조회 오류<br>${esc(q.error.message)}</div>`;return}
+ let rows=q.data||[];
+ host.innerHTML=rows.length?rows.map(d=>{
+   let period=type==='work_contract'&&(d.contract_start_date||d.contract_end_date||d.contract_is_indefinite)?`<div class="contractDocMeta"><b>계약기간</b> ${d.contract_start_date||'?'} ~ ${d.contract_is_indefinite?'기간의 정함 없음':d.contract_end_date||'종료일 미입력'}</div>`:'';
+   let editButtons=type==='work_contract'?`<button class="btn gray small" onclick="editEmployeeDocumentPeriod(${d.id},${employeeId},'${type}')">계약정보 수정</button><button class="btn gray small" onclick="openContractWorkConditionEditorV7(${d.id},${employeeId})">근로조건 수정</button>`:'';
+   return `<div class="contractDocRow"><div><div class="contractDocName">${esc(d.title||d.file_name)}</div>
+    <div class="contractDocMeta">${esc(d.file_name)} · ${d.created_at?new Date(d.created_at).toLocaleString('ko-KR'):'-'}</div>${period}</div>
+    <div>${d.document_date||'-'}</div>${editButtons}<button class="btn green small" onclick="downloadEmployeeDocument(${d.id})">원본 다운로드</button>
+    <button class="btn red small" onclick="deleteEmployeeDocument(${d.id},${employeeId},'${type}')">삭제</button></div>`;
+ }).join(''):`<div class="contractEmpty">저장된 ${employeeDocTypeLabel(type)}가 없습니다.</div>`;
+}
+
+/* 기존 함수명 유지: 다른 화면에서 호출해도 새 편집창이 열린다. */
+async function editEmployeeDocumentPeriod(documentId,employeeId,type){
+ if(type!=='work_contract')return;
+ let q=await sb.from('employee_documents').select('*').eq('id',documentId).single();
+ if(q.error)return alert(q.error.message);
+ let d=q.data||{},e=findEmployeeAny(employeeId);if(!e)return alert('직원정보를 찾지 못했습니다.');
+ await loadEmployeeWorkConditions(storeId());
+ let exact=workConditionRowsForEmployee(employeeId).find(x=>String(x.effective_from||'')===String(d.contract_start_date||''))||null;
+ contractManualEditContextV7={documentId,employeeId,originalStart:String(d.contract_start_date||''),linkedConditionId:exact?.id||null};
+ let docDate=String(d.document_date||'').replace(/-/g,''),start=String(d.contract_start_date||'').replace(/-/g,''),end=String(d.contract_end_date||'').replace(/-/g,'');
+ modal(`<div class="row"><div><h2 style="margin:0">${esc(e.name)} · 근로계약 정보 수정</h2><div class="help" style="margin-top:4px"><b>여기서 저장한 값이 최종 수기값</b>입니다. PDF 원본은 그대로 보관하고 계약기간/표시정보만 다시 수정합니다.</div></div><button class="btn gray" onclick="closeModal()">닫기</button></div>
+ <div class="infoBox" style="margin-top:10px"><b>중요</b> · 계약서 자동인식 결과가 틀렸더라도 아래 값을 직접 고쳐 저장할 수 있습니다. 저장 후 직원관리의 재계약 D-day와 현황 화면도 다시 계산됩니다.</div>
+ <div class="formgrid" style="margin-top:12px">
+  <div class="field"><label>문서 작성일</label><input id="ceDocDate" type="text" inputmode="numeric" maxlength="8" value="${esc(docDate)}" placeholder="YYYYMMDD"></div>
+  <div class="field"><label>계약 시작일</label><input id="ceStart" type="text" inputmode="numeric" maxlength="8" value="${esc(start)}" placeholder="YYYYMMDD"></div>
+  <div class="field"><label>계약 종료일</label><input id="ceEnd" type="text" inputmode="numeric" maxlength="8" value="${esc(end)}" placeholder="YYYYMMDD" ${d.contract_is_indefinite?'disabled':''}></div>
+  <div class="field"><label>표시명</label><input id="ceTitle" value="${esc(d.title||'')}"></div>
+ </div>
+ <label style="display:flex;align-items:center;gap:8px;margin-top:10px;font-weight:800"><input id="ceIndefinite" type="checkbox" ${d.contract_is_indefinite?'checked':''} onchange="contractManualIndefiniteToggleV7()">기간의 정함 없음 (무기계약)</label>
+ ${exact?`<label style="display:flex;align-items:center;gap:8px;margin-top:10px"><input id="ceMoveConditionDate" type="checkbox" checked>계약 시작일을 바꾸면 연결된 근로조건 적용 시작일도 같이 변경</label>`:''}
+ <div class="modalActions"><button class="btn gray" onclick="openContractWorkConditionEditorV7(${documentId},${employeeId})">근로조건도 수정</button><button class="btn" onclick="saveEmployeeDocumentManualV7(${documentId},${employeeId})">최종 수정값 저장</button></div>`);
+ contractManualIndefiniteToggleV7();
+}
+
+async function saveEmployeeDocumentManualV7(documentId,employeeId){
+ let ctx=contractManualEditContextV7&&Number(contractManualEditContextV7.documentId)===Number(documentId)?contractManualEditContextV7:null;
+ let docRaw=$('ceDocDate')?.value?.trim()||'',startRaw=$('ceStart')?.value?.trim()||'',endRaw=$('ceEnd')?.value?.trim()||'',indefinite=$('ceIndefinite')?.checked===true;
+ let documentDate=docRaw?normalizeCompactDateInput(docRaw):null,start=startRaw?normalizeCompactDateInput(startRaw):null,end=!indefinite&&endRaw?normalizeCompactDateInput(endRaw):null;
+ if(docRaw&&!documentDate)return alert('문서 작성일을 확인하세요. 예: 20260824');
+ if(startRaw&&!start)return alert('계약 시작일을 확인하세요. 예: 20260801');
+ if(!indefinite&&endRaw&&!end)return alert('계약 종료일을 확인하세요. 예: 20270731');
+ if(!indefinite&&!end)return alert('계약 종료일을 입력하거나 “기간의 정함 없음”을 체크하세요.');
+ if(start&&end&&end<start)return alert('계약 종료일이 시작일보다 빠릅니다.');
+ if(indefinite&&!employeeDocumentIndefiniteColumnAvailable){await loadEmployeeDocumentStatus(storeId());if(!employeeDocumentIndefiniteColumnAvailable)return alert('무기계약 저장용 contract_is_indefinite 컬럼을 Supabase에 먼저 추가해 주세요.');}
+ let patch={document_date:documentDate,title:$('ceTitle')?.value?.trim()||null,contract_start_date:start,contract_end_date:indefinite?null:end};
+ if(employeeDocumentIndefiniteColumnAvailable)patch.contract_is_indefinite=indefinite;
+ let u=await sb.from('employee_documents').update(patch).eq('id',documentId);
+ if(u.error)return alert('계약정보 저장 오류:\n'+u.error.message);
+ let moveFailed='';
+ if(ctx?.linkedConditionId&&$('ceMoveConditionDate')?.checked&&ctx.originalStart&&start&&ctx.originalStart!==start){
+   let conflict=workConditionRowsForEmployee(employeeId).find(x=>Number(x.id)!==Number(ctx.linkedConditionId)&&String(x.effective_from||'')===start);
+   if(conflict){
+     let ok=confirm(`${start}에 이미 다른 근로조건 이력이 있습니다.\n\n새 계약 시작일의 조건을 현재 수정값 기준으로 사용하려면 기존 ${start} 이력을 삭제하고 연결된 조건을 이동합니다. 계속할까요?`);
+     if(ok){let del=await sb.from('employee_work_conditions').delete().eq('id',conflict.id);if(del.error)moveFailed=del.error.message;}
+     else moveFailed='근로조건 적용일 이동을 취소했습니다.';
+   }
+   if(!moveFailed){let w=await sb.from('employee_work_conditions').update({effective_from:start}).eq('id',ctx.linkedConditionId);if(w.error)moveFailed=w.error.message;}
+ }
+ await refreshFinalManualDataV7(employeeId,{syncLeave:false});
+ closeModal();
+ if(moveFailed)alert('계약정보는 저장되었습니다.\n다만 근로조건 적용 시작일은 변경하지 못했습니다:\n'+moveFailed+'\n\n문서관리의 “근로조건 수정”에서 적용 시작일을 확인해 주세요.');
+ else alert('최종 수정값을 저장했습니다.\n재계약 D-day/직원관리 현황에도 새 계약정보가 반영됩니다.');
+}
+
+async function openContractWorkConditionEditorV7(documentId,employeeId){
+ let q=await sb.from('employee_documents').select('*').eq('id',documentId).single();if(q.error)return alert(q.error.message);
+ let d=q.data||{},start=String(d.contract_start_date||'');
+ await loadEmployeeWorkConditions(storeId());
+ let exact=start?workConditionRowsForEmployee(employeeId).find(x=>String(x.effective_from||'')===start):null;
+ if(exact)return editWorkConditionV7(exact.id,employeeId);
+ let e=findEmployeeAny(employeeId);if(!e)return alert('직원정보를 찾지 못했습니다.');
+ let base=workConditionForDate(e,start||isoToday());
+ let preset={...base,day_rules:conditionDayRules(base),schedule_mode:conditionScheduleMode(base),note:'근로계약서 수기 최종값'};
+ return openWorkConditionHistory(employeeId,start||e.hire_date||isoToday(),'근로계약서 수기 최종값',preset,null);
+}
+
+/* 근무조건 이력창: 기존 이력을 직접 수정할 수 있도록 확장 */
+async function openWorkConditionHistory(employeeId,presetDate='',presetNote='',presetCondition=null,editConditionId=null){
+ let e=findEmployeeAny(employeeId);if(!e)return alert('직원정보를 찾지 못했습니다.');
+ if(employeeWorkConditionTableAvailable===false){return alert('근무조건 이력용 DB 테이블이 아직 없습니다.\nemployee_work_conditions 최초 1회 SQL을 Supabase SQL Editor에서 실행한 뒤 새로고침하세요.');}
+ workConditionEditContextV7={id:editConditionId?Number(editConditionId):null,employeeId:Number(employeeId),originalEffective:editConditionId?String(presetDate||''):''};
+ let baseCondition=workConditionForDate(e,isoToday()),c=presetCondition?{...baseCondition,...presetCondition,work_days:normalizedWorkDays(presetCondition.work_days)}:baseCondition;
+ let presetRules=normalizeContractDayRules(presetCondition?.day_rules||conditionDayRules(c)),ruleEncoded=encodeURIComponent(JSON.stringify(presetRules)),ruleSummary=presetRules.length?contractDayRulesSummary(presetRules):'';
+ let scheduleMode=presetCondition?(presetCondition.schedule_mode==='auto'?'auto':'manual'):conditionScheduleMode(c);
+ let checks=[0,1,2,3,4,5,6].map(d=>`<label style="font-size:12px"><input type="checkbox" class="wcDay" value="${d}" ${normalizedWorkDays(c.work_days).includes(d)?'checked':''}>${'일월화수목금토'[d]}</label>`).join(' ');
+ let editBanner=editConditionId?`<div class="infoBox" style="margin-top:10px"><b>기존 근로조건 수정 중</b> · 새 이력을 하나 더 만드는 것이 아니라 이 날짜의 기존 조건 자체를 수정합니다. <b>저장한 값이 최종값</b>으로 날짜별 계산에 사용됩니다.</div>`:'';
+ modal(`<div class="row"><div><h2 style="margin:0">${esc(e.name)} · 근무조건 이력</h2><div class="help" style="margin-top:4px">근무형태가 바뀌어도 과거 조건을 지우지 않고 <b>적용 시작일</b>부터 새 조건을 사용합니다. 직접 수정한 최종값은 주간목표·연차·근로시간·기본근무 기준에 반영됩니다.</div></div><button class="btn gray" onclick="closeModal()">닫기</button></div>${editBanner}
+  <div class="historyAddBox"><div class="historyGrid" style="grid-template-columns:repeat(4,minmax(0,1fr))">
+   <div class="field"><label>적용 시작일</label><input id="wcEffective" type="text" inputmode="numeric" maxlength="8" placeholder="YYYYMMDD" value="${String(presetDate||isoToday()).replace(/-/g,'')}" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,8)"></div>
+   <div class="field"><label>근무형태</label><input id="wcType" list="employeeWorkTypeSuggestions" value="${esc(workTypeLabelValue(c.work_type))}" onchange="applyWorkConditionPreset()"></div>
+   <div class="field"><label>1일 소정시간</label><input id="wcDaily" type="number" step=".5" value="${Number(c.daily_hours||8)}"></div>
+   <div class="field"><label>휴게(분)</label><input id="wcBreak" type="number" value="${Number(c.break_minutes||0)}"></div>
+   <div class="field"><label>기본 출근</label><input id="wcStart" type="time" value="${String(c.default_start_time||'').slice(0,5)}"></div>
+   <div class="field"><label>기본 퇴근</label><input id="wcEnd" type="time" value="${String(c.default_end_time||'').slice(0,5)}"></div>
+   <div class="field"><label>연차 산정 주 소정시간</label><input id="wcLeaveWeekly" type="number" step=".5" value="${Number(c.leave_weekly_hours||0)}"></div>
+   <div class="field"><label>1년 미만 월 발생(h)</label><input id="wcLeaveMonthly" type="number" step="1" value="${Number(c.leave_monthly_hours||0)}"></div>
+   <div class="field"><label>연차 하루 사용(h)</label><input id="wcLeaveDay" type="number" step=".5" value="${Number(c.leave_day_hours||0)}"></div>
+   <div class="field"><label>스케줄 편성 방식</label><select id="wcScheduleMode"><option value="manual" ${scheduleMode==='manual'?'selected':''}>직접 입력 (기본)</option><option value="auto" ${scheduleMode==='auto'?'selected':''}>고정요일 자동채우기</option></select></div>
+   <div class="field" style="grid-column:span 3"><label>변경 메모</label><input id="wcNote" value="${esc(workConditionHumanNote(presetCondition?.note||presetNote||''))}" placeholder="예: 계약서 확인 후 수기 최종확정"></div>
+   <input id="wcDayRules" type="hidden" value="${esc(ruleEncoded)}">
+  </div>
+  ${presetRules.length?`<div style="margin-top:8px;padding:9px 11px;border:1px solid #b9d7ff;background:#eef6ff;border-radius:10px;font-size:12px"><b>기존 요일별 상세규칙</b><br>${esc(ruleSummary)}<br><label style="display:flex;align-items:center;gap:7px;margin-top:7px"><input id="wcFlattenRules" type="checkbox">OCR 상세규칙이 틀렸으면 체크 — 상세규칙을 해제하고 위의 기본 출퇴근/1일시간/근무요일을 최종값으로 사용</label></div>`:''}
+  <div style="margin-top:8px"><b style="font-size:12px">근무요일</b><div style="margin-top:5px">${checks}</div></div>
+  <div class="help" style="margin-top:8px"><b>중요:</b> 이 수정은 이미 입력해 둔 월간/주간 스케줄 셀을 자동으로 바꾸지 않습니다. 대신 이 적용일부터 기본근무 채우기, 주간 목표, 연차시간, 근로시간 계산이 수정된 조건을 사용합니다.</div>
+  <div class="modalActions"><button class="btn" onclick="addWorkCondition(${employeeId})">${editConditionId?'최종 수정값 저장':presetCondition?'확인 후 직원관리에 적용':'이 조건 등록'}</button></div></div>
+  <div id="workConditionList" class="historyList"><div class="help">불러오는 중...</div></div>`);
+ await loadWorkConditionHistory(employeeId);
+}
+
+async function editWorkConditionV7(conditionId,employeeId){
+ let q=await sb.from('employee_work_conditions').select('*').eq('id',conditionId).single();
+ if(q.error)return alert('근무조건 조회 오류:\n'+q.error.message);
+ let x=q.data||{},preset={...x,work_days:normalizedWorkDays(x.work_days),day_rules:workConditionDayRulesFromNote(x.note),schedule_mode:workConditionScheduleModeFromNote(x.note),note:workConditionHumanNote(x.note)};
+ return openWorkConditionHistory(employeeId,x.effective_from,preset.note,preset,conditionId);
+}
+
+async function loadWorkConditionHistory(employeeId){
+ let host=$('workConditionList');if(!host)return;
+ if(employeeWorkConditionTableAvailable===false){host.innerHTML='<div class="warn">근무조건 이력 DB 테이블을 먼저 생성하세요.</div>';return}
+ let q=await sb.from('employee_work_conditions').select('*').eq('employee_id',employeeId).order('effective_from',{ascending:false});
+ if(q.error){if(isMissingWorkConditionTableError(q.error)){employeeWorkConditionTableAvailable=false;host.innerHTML='<div class="warn">근무조건 이력 DB 테이블이 없습니다. 최초 1회 SQL을 실행하세요.</div>';return}host.innerHTML=`<div class="warn">근무조건 이력 조회 오류: ${esc(q.error.message)}</div>`;return;}
+ let rows=q.data||[],e=findEmployeeAny(employeeId),activeId=e?workConditionForDate(e,isoToday())._history_id:null;
+ host.innerHTML=rows.length?rows.map(x=>{
+   let wt=workTypeLabelValue(x.work_type),rules=workConditionDayRulesFromNote(x.note),days=workConditionDaysLabel(x.work_days),times=rules.length?contractDayRulesSummary(rules):([String(x.default_start_time||'').slice(0,5),String(x.default_end_time||'').slice(0,5)].filter(Boolean).join('~')||'-'),humanNote=workConditionHumanNote(x.note),reserved=String(x.effective_from||'')>isoToday(),scheduleLabel=workConditionScheduleModeFromNote(x.note)==='auto'?'고정요일 자동채우기':'직접 입력',active=Number(activeId)===Number(x.id);
+   return `<div class="historyRow"><div><b>${x.effective_from}부터 · ${esc(wt)} ${active?'<span class="pill">현재 적용</span>':reserved?'<span class="pill">예약</span>':''}</b><div class="help">스케줄 ${scheduleLabel} · ${esc(days)} · ${times} · 소정 ${Number(x.daily_hours||0)}h · 기본 실근무 ${conditionWorkedDayHours(x)}h · 휴게 ${Number(x.break_minutes||0)}분 · 연차 주 ${Number(x.leave_weekly_hours||0)}h / 월 +${Number(x.leave_monthly_hours||0)}h / 1일 -${Number(x.leave_day_hours||0)}h${humanNote?' · '+esc(humanNote):''}</div></div><div style="display:flex;gap:5px"><button class="btn gray small" onclick="editWorkConditionV7(${x.id},${employeeId})">수정</button><button class="btn red small" onclick="deleteWorkCondition(${x.id},${employeeId})">삭제</button></div></div>`;
+ }).join(''):'<div class="help" style="padding:16px">아직 별도 근무조건 이력이 없습니다. 현재 직원 기본값이 그대로 사용됩니다.</div>';
+}
+
+async function addWorkCondition(employeeId){
+ let e=findEmployeeAny(employeeId);if(!e)return;
+ let raw=$('wcEffective')?.value||'',effective=normalizeCompactDateInput(raw);if(!effective)return alert('적용 시작일을 8자리로 입력하세요. 예: 20260801');
+ if(e.hire_date&&effective<e.hire_date)return alert('근무조건 적용일은 입사일보다 빠를 수 없습니다.');
+ let dayRules=[];try{dayRules=normalizeContractDayRules(JSON.parse(decodeURIComponent($('wcDayRules')?.value||'%5B%5D')))}catch(_){dayRules=[]}
+ let checkedWorkDays=[...document.querySelectorAll('.wcDay:checked')].map(x=>Number(x.value));
+ if($('wcFlattenRules')?.checked)dayRules=[];else if(dayRules.length)dayRules=reconcileContractDayRulesV4(dayRules,checkedWorkDays);
+ let payload={store_id:e.store_id||storeId(),employee_id:employeeId,effective_from:effective,work_type:normalizeWorkTypeValue($('wcType')?.value||'custom'),daily_hours:Number($('wcDaily')?.value||0),default_start_time:$('wcStart')?.value||null,default_end_time:$('wcEnd')?.value||null,break_minutes:Number($('wcBreak')?.value||0),work_days:normalizedWorkDays(checkedWorkDays),leave_weekly_hours:Number($('wcLeaveWeekly')?.value||0),leave_monthly_hours:Number($('wcLeaveMonthly')?.value||0),leave_day_hours:Number($('wcLeaveDay')?.value||0),note:workConditionNoteWithDayRules($('wcNote')?.value?.trim()||'',dayRules,$('wcScheduleMode')?.value||'manual')};
+ if(!Number.isFinite(payload.daily_hours)||payload.daily_hours<=0)return alert('1일 소정시간을 확인하세요.');
+ let editing=workConditionEditContextV7?.id&&Number(workConditionEditContextV7.employeeId)===Number(employeeId)?workConditionEditContextV7:null;
+ if(editing){
+   let conflict=workConditionRowsForEmployee(employeeId).find(x=>Number(x.id)!==Number(editing.id)&&String(x.effective_from||'')===effective);
+   if(conflict){if(!confirm(`${effective}에 이미 근무조건 이력이 있습니다.\n현재 수정값을 그 날짜의 최종값으로 사용하기 위해 기존 이력을 삭제하고 저장할까요?`))return;let del=await sb.from('employee_work_conditions').delete().eq('id',conflict.id);if(del.error)return alert('중복 근무조건 정리 오류:\n'+del.error.message);}
+   let q=await sb.from('employee_work_conditions').update(payload).eq('id',editing.id);
+   if(q.error)return alert('근무조건 최종 수정 오류:\n'+q.error.message);
+ }else{
+   let existing=workConditionRowsForEmployee(employeeId);
+   if(!existing.length&&e.hire_date&&e.hire_date<effective){let base={store_id:e.store_id||storeId(),employee_id:employeeId,effective_from:e.hire_date,...workConditionDbFields(employeeFallbackCondition(e)),note:'근무조건 이력 시작 전 기존 기본값 자동보존'};let b=await sb.from('employee_work_conditions').upsert(base,{onConflict:'employee_id,effective_from'});if(b.error){if(isMissingWorkConditionTableError(b.error)){employeeWorkConditionTableAvailable=false;return alert('근무조건 이력 DB 테이블이 없습니다. 최초 1회 SQL을 실행하세요.')}return alert('기존 근무조건 보존 오류:\n'+b.error.message);}}
+   let q=await sb.from('employee_work_conditions').upsert(payload,{onConflict:'employee_id,effective_from'});if(q.error){if(isMissingWorkConditionTableError(q.error)){employeeWorkConditionTableAvailable=false;return alert('근무조건 이력 DB 테이블이 없습니다. 최초 1회 SQL을 실행하세요.')}return alert('근무조건 이력 저장 오류:\n'+q.error.message);}
+ }
+ workConditionEditContextV7={id:null,employeeId:null,originalEffective:''};
+ await refreshFinalManualDataV7(employeeId,{syncLeave:true});
+ closeModal();
+ alert('근무조건 최종 수정값을 저장했습니다.\n이 적용일부터 주간목표·연차·근로시간·기본근무 기준에 반영됩니다.\n이미 입력된 스케줄 셀은 자동 변경하지 않습니다.');
+}
+
+/* ===== /V7 수기 최종수정 우선 ===== */
+
 boot();
 </script>
 </body></html>
