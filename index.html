@@ -1282,7 +1282,7 @@ function closeModal(){
  document.body.style.overflow='';
 }
 $('monthSelect').value=new Date().toISOString().slice(0,7);
-let employees=[],schedules=[],payroll=[],stores=[],holidays=[],manualHolidays=[],autoHolidays=[],selectedEmployees=new Set(),leaveLedger=[],leaveAttendanceSchedules=[],scheduleSaveQueue=new Map(),scheduleSaveTimer=null,employeeImportRows=[],paymentRegister=[],incentiveRegister=[],retiredEmployees=[],employeeView='active',employeeActiveSort='manual',refreshToken=0,payrollReloadToken=0,employeeDeleteSelection=new Set(),scheduleView='monthly',employeeResidentBackfillDoneStores=new Set(),employeeSensitiveColumnsMissingDetected=false,employeeDocumentStatusMap=new Map(),employeeDocumentStatusReadyStoreId=null,employeeDocumentPeriodColumnsAvailable=true,employeeWorkConditions=[],employeeWorkConditionTableAvailable=null,currentSessionUser=null,currentAppUser=null,currentPermissions=new Map(),currentStoreAccess=new Set(),permissionSystemAvailable=null,adminUsers=[],adminUserStoreAccess=[],adminUserPermissions=[],auditLogs=[],accessLogs=[],ipAddressLabels=new Map(),scheduleMonthLocks=[],scheduleLockTableAvailable=null,adminTaskRefreshToken=0,hoursView='summary',attendanceSchemaAvailable=null,attendanceActiveImport=null,attendanceRecords=[],attendanceReviews=[],attendanceReviewHistory=[],attendanceListMode='pending',attendanceSelected=new Set(),attendancePendingManualParse=null,attendanceSettings={late_minutes:10,early_leave_minutes:10,late_out_minutes:60},scheduleOutputMode='all',scheduleOutputSelected=new Set(),pendingContractExtraction=null;
+let employees=[],schedules=[],payroll=[],stores=[],holidays=[],manualHolidays=[],autoHolidays=[],selectedEmployees=new Set(),leaveLedger=[],leaveAttendanceSchedules=[],scheduleSaveQueue=new Map(),scheduleSaveTimer=null,employeeImportRows=[],paymentRegister=[],incentiveRegister=[],retiredEmployees=[],employeeView='active',employeeActiveSort='manual',refreshToken=0,payrollReloadToken=0,employeeDeleteSelection=new Set(),scheduleView='monthly',employeeResidentBackfillDoneStores=new Set(),employeeSensitiveColumnsMissingDetected=false,employeeDocumentStatusMap=new Map(),employeeDocumentStatusReadyStoreId=null,employeeDocumentPeriodColumnsAvailable=true,employeeDocumentIndefiniteColumnAvailable=true,employeeWorkConditions=[],employeeWorkConditionTableAvailable=null,currentSessionUser=null,currentAppUser=null,currentPermissions=new Map(),currentStoreAccess=new Set(),permissionSystemAvailable=null,adminUsers=[],adminUserStoreAccess=[],adminUserPermissions=[],auditLogs=[],accessLogs=[],ipAddressLabels=new Map(),scheduleMonthLocks=[],scheduleLockTableAvailable=null,adminTaskRefreshToken=0,hoursView='summary',attendanceSchemaAvailable=null,attendanceActiveImport=null,attendanceRecords=[],attendanceReviews=[],attendanceReviewHistory=[],attendanceListMode='pending',attendanceSelected=new Set(),attendancePendingManualParse=null,attendanceSettings={late_minutes:10,early_leave_minutes:10,late_out_minutes:60},scheduleOutputMode='all',scheduleOutputSelected=new Set(),pendingContractExtraction=null;
 const money=n=>Math.round(Number(n||0)).toLocaleString('ko-KR')+'원',esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 function normalizeName(v){return String(v??'').normalize('NFKC').trim().replace(/\s+/g,'').replace(/[·ㆍ._-]/g,'').toLowerCase()}
 function monthRange(){let m=$('monthSelect').value,[y,mo]=m.split('-').map(Number),days=new Date(y,mo,0).getDate();return {m,y,mo,days,first:m+'-01',last:m+'-'+String(days).padStart(2,'0')}}
@@ -2871,6 +2871,7 @@ function renderAdminTodo(){
   let docs=documentStatusForEmployee(e.id),work=docs.work_contract,salary=docs.salary_contract;
   if(!employeeDocWarningExcluded(e,'work_contract')){
    if(!Number(work?.count||0))rows.push(adminTodoRow('danger','!',`${e.name} 근로계약서 없음`,'계약서 PDF와 계약기간을 등록하세요.'));
+   else if(work.latestIndefinite){ /* 기간의 정함이 없는 계약은 재계약 D-day 대상이 아니다. */ }
    else if(!work.latestEnd)rows.push(adminTodoRow('warn','△',`${e.name} 계약 종료일 미입력`,'재계약 D-day를 계산할 수 없습니다.'));
    else {let diff=dayDiffIso(isoToday(),work.latestEnd);if(diff<=30)rows.push(adminTodoRow(diff<0?'danger':'warn','⏱',`${e.name} 재계약 ${diff<0?'기한경과':diff===0?'D-DAY':`D-${diff}`}`,`근로계약 종료 ${work.latestEnd}`))}
   }
@@ -4361,7 +4362,7 @@ function employeeDocBadge(employeeId,type,isActive){
  if(employeeDocumentStatusReadyStoreId!==storeId())return '<span class="docStatusBadge neutral">확인중</span>';
  let st=documentStatusForEmployee(employeeId)[type],count=Number(st?.count||0),label=type==='work_contract'?'근로':type==='salary_contract'?'연봉':'사직';
  if(count){
-   let period=type==='work_contract'&&st.latestEnd?` · 계약 ${st.latestStart||'?'}~${st.latestEnd}`:'';
+   let period=type==='work_contract'?(st.latestIndefinite?` · 계약 ${st.latestStart||'?'}~기간의 정함 없음`:st.latestEnd?` · 계약 ${st.latestStart||'?'}~${st.latestEnd}`:''):'';
    let title=(st.latestDate?`최근 ${st.latestDate} · `:'')+`${count}건 저장${period}`;
    return `<span class="docStatusBadge ok" title="${esc(title)}">${label} ✓</span>`;
  }
@@ -4382,6 +4383,7 @@ function employeeRenewalHtml(e){
  let docs=documentStatusForEmployee(e.id),work=docs.work_contract;
  if(employeeDocWarningExcluded(e,'work_contract'))return '<div class="renewalBox"><b>재계약 경고 제외</b><br><span class="help">문서관리 설정</span></div>';
  if(!Number(work?.count||0))return '<div class="renewalBox"><b>근로계약서 없음</b><br><span class="due">재계약 기준 없음</span></div>';
+ if(work?.latestIndefinite)return `<div class="renewalBox"><b>기간의 정함 없음</b><br><span class="ok">재계약 D-day 대상 아님</span><br><span class="help">근로개시 ${esc(work.latestStart||'미입력')}</span></div>`;
  if(!work?.latestEnd){
    let hint=employeeDocumentPeriodColumnsAvailable?'최근 근로계약서의 계약 종료일을 입력하세요.':'계약기간 DB 컬럼 최초 1회 SQL 필요';
    return `<div class="renewalBox"><b>계약 종료일 미입력</b><br><span class="soon">재계약 D-day 확인 불가</span><br><span class="help">${esc(hint)}</span></div>`;
@@ -4392,10 +4394,19 @@ function employeeRenewalHtml(e){
  return `<div class="renewalBox"><b>다음 재계약 ${next}</b><br><span class="${cls}">${status}</span><br><span class="help">근로계약기간 ${period}</span></div>`;
 }
 async function loadEmployeeDocumentStatus(sid=storeId()){
- let q=await sb.from('employee_documents').select('employee_id,document_type,document_date,contract_start_date,contract_end_date,created_at').eq('store_id',sid);
+ let fullCols='employee_id,document_type,document_date,contract_start_date,contract_end_date,contract_is_indefinite,created_at';
+ let periodCols='employee_id,document_type,document_date,contract_start_date,contract_end_date,created_at';
+ let basicCols='employee_id,document_type,document_date,created_at';
+ let q=await sb.from('employee_documents').select(fullCols).eq('store_id',sid);
+ if(q.error && /contract_is_indefinite|column/i.test(String(q.error.message||''))){
+   employeeDocumentIndefiniteColumnAvailable=false;
+   q=await sb.from('employee_documents').select(periodCols).eq('store_id',sid);
+ }else if(!q.error){
+   employeeDocumentIndefiniteColumnAvailable=true;
+ }
  if(q.error && /contract_start_date|contract_end_date|column/i.test(String(q.error.message||''))){
    employeeDocumentPeriodColumnsAvailable=false;
-   q=await sb.from('employee_documents').select('employee_id,document_type,document_date,created_at').eq('store_id',sid);
+   q=await sb.from('employee_documents').select(basicCols).eq('store_id',sid);
  }else if(!q.error){
    employeeDocumentPeriodColumnsAvailable=true;
  }
@@ -4408,7 +4419,7 @@ async function loadEmployeeDocumentStatus(sid=storeId()){
  let map=new Map();
  (q.data||[]).forEach(d=>{
    let id=Number(d.employee_id),type=String(d.document_type||''),obj=map.get(id)||{};
-   let item=obj[type]||{count:0,latestDate:'',latestStart:'',latestEnd:'',latestKey:''};
+   let item=obj[type]||{count:0,latestDate:'',latestStart:'',latestEnd:'',latestIndefinite:false,latestKey:''};
    item.count++;
    let dt=String(d.document_date||d.created_at||'').slice(0,10);
    if(dt&&(!item.latestDate||dt>item.latestDate))item.latestDate=dt;
@@ -4417,6 +4428,7 @@ async function loadEmployeeDocumentStatus(sid=storeId()){
      item.latestKey=key;
      item.latestStart=String(d.contract_start_date||'').slice(0,10);
      item.latestEnd=String(d.contract_end_date||'').slice(0,10);
+     item.latestIndefinite=d.contract_is_indefinite===true;
    }
    obj[type]=item;map.set(id,obj);
  });
@@ -7768,7 +7780,16 @@ function extractContractPeriodFromText(text){
   /(20\d{2})[.\/-]\s*(\d{1,2})[.\/-]\s*(\d{1,2})\s*(?:부터|~|\-|–|—)\s*(20\d{2})[.\/-]\s*(\d{1,2})[.\/-]\s*(\d{1,2})/,
   /(20\d{2})\s+(\d{1,2})\s+(\d{1,2})\s*(?:부터|~|\-|–|—)\s*(20\d{2})\s+(\d{1,2})\s+(\d{1,2})/
  ];
- for(let re of patterns){let m=zone.match(re)||t.match(re);if(m){let a=contractDateIso(m[1],m[2],m[3]),b=contractDateIso(m[4],m[5],m[6]);if(a&&b)return {start:a,end:b}}}
+ for(let re of patterns){let m=zone.match(re)||t.match(re);if(m){let a=contractDateIso(m[1],m[2],m[3]),b=contractDateIso(m[4],m[5],m[6]);if(a&&b)return {start:a,end:b,indefinite:false}}}
+ // V6: 기존 유기계약 날짜범위를 먼저 판독한 뒤, 강한 '기간의 정함 없음' 문구만 별도 처리한다.
+ let indefiniteStrong=/(?:본\s*계약은|계약은|계약기간은)[^。.;]{0,90}기간\s*의?\s*정함\s*이\s*없는\s*근로계약|기간\s*의?\s*정함\s*이\s*없는\s*근로계약으로\s*(?:한다|함)/.test(zone)||/(?:본\s*계약은|계약은)[^。.;]{0,120}무기\s*근로계약/.test(zone);
+ if(indefiniteStrong){
+   let sm=zone.match(/(?:근로\s*(?:시작|개시)|근무\s*(?:시작|개시)|입사일)[^0-9]{0,35}(20\d{2})\s*년\s*(\d{1,2})\s*월\s*(\d{1,2})\s*일/)
+     ||zone.match(/(20\d{2})\s*년\s*(\d{1,2})\s*월\s*(\d{1,2})\s*일\s*부터\s*(?:근로|근무|업무)/);
+   if(sm){let a=contractDateIso(sm[1],sm[2],sm[3]);if(a)return {start:a,end:null,indefinite:true}}
+   let one=[...zone.matchAll(/(20\d{2})\s*년\s*(\d{1,2})\s*월\s*(\d{1,2})\s*일/g)].map(m=>contractDateIso(m[1],m[2],m[3])).filter(Boolean);
+   if(one.length)return {start:one[0],end:null,indefinite:true};
+ }
  let dates=[...zone.matchAll(/(20\d{2})\s*년\s*(\d{1,2})\s*월\s*(\d{1,2})\s*일/g)].map(m=>contractDateIso(m[1],m[2],m[3])).filter(Boolean);
  if(dates.length>=2)return {start:dates[0],end:dates[1]};
  return null;
@@ -7959,6 +7980,48 @@ function extractContractTermsFromText(text){
  let score=[days.length>0,!!start,!!end,breakMinutes>0,daily>0,weekly>0,!!note].filter(Boolean).length;
  if(!score)return null;
  return {work_days:days,default_start_time:start||null,default_end_time:end||null,break_start_time:breakStart||null,break_end_time:breakEnd||null,break_minutes:Number(breakMinutes||0),daily_hours:Number(daily||0),weekly_hours:Number(weekly||0),work_type:workType,note,schedule_based:scheduleBased,score};
+}
+
+
+/* ===== 근로계약서 V6: 표가 없는 문장형/무기계약 보조 판독 =====
+   기존 표 양식 OCR은 그대로 두고, 표 탐지 실패 + 강한 문장형 표지가 있을 때만 사용한다. */
+function isNarrativeIndefiniteContractV6(text){
+ let t=normalizeContractText(text);
+ return /(?:본\s*계약은|계약은|계약기간은)[^。.;]{0,100}기간\s*의?\s*정함\s*이\s*없는\s*근로계약|기간\s*의?\s*정함\s*이\s*없는\s*근로계약으로\s*(?:한다|함)/.test(t);
+}
+function explicitNarrativeWorkDaysV6(text){
+ let t=normalizeContractText(text),m=t.match(/(?:근무요일|근로요일|근로일)\s*[:：]?\s*([^。.;]{1,100})/);if(!m)return [];
+ let z=m[1];if(/주휴|휴일/.test(z))return [];
+ const di={일:0,월:1,화:2,수:3,목:4,금:5,토:6};
+ let range=z.match(/([일월화수목금토])\s*(?:요일)?\s*(?:~|\-|–|—|부터|내지)\s*([일월화수목금토])\s*(?:요일)?/);
+ if(range){let a=di[range[1]],b=di[range[2]],out=[];for(let i=a;;i=(i+1)%7){out.push(i);if(i===b||out.length>=7)break}return out.sort((x,y)=>x-y)}
+ return [...new Set([...z.matchAll(/([일월화수목금토])\s*(?:요일)?/g)].map(x=>di[x[1]]))].sort((a,b)=>a-b);
+}
+function extractNarrativeContractTermsV6(text){
+ let t=normalizeContractText(text);if(!t)return null;
+ let strong=isNarrativeIndefiniteContractV6(t)||/장애인\s*표준사업장\s*근로계약서/.test(t);
+ let hasNarrativeHours=/1\s*일\s*(?:소정\s*)?근로시간|주\s*소정근로시간/.test(t);
+ if(!strong&&!hasNarrativeHours)return null;
+ let daily=0,weekly=0,start=null,end=null,breakMinutes=0;
+ let dm=t.match(/1\s*일\s*(?:소정\s*)?근로시간\s*[:：]?\s*(\d+(?:\.\d+)?)\s*시간/)
+   ||t.match(/1\s*일\s*근무시간\s*[:：]?\s*(\d+(?:\.\d+)?)\s*시간/);
+ if(dm)daily=Number(dm[1]);
+ let wm=t.match(/(?:1\s*)?주\s*소정근로시간\s*[:：]?\s*(\d+(?:\.\d+)?)\s*시간/)
+   ||t.match(/주\s*근로시간\s*[:：]?\s*(\d+(?:\.\d+)?)\s*시간/);
+ if(wm)weekly=Number(wm[1]);
+ let wi=t.search(/1\s*일\s*(?:소정\s*)?근로시간|1\s*일\s*근무시간/),zone=wi>=0?t.slice(wi,Math.min(t.length,wi+220)):t;
+ let range=zone.match(/(?:오전|오후)?\s*([0-2]?\d)\s*(?:[:.;·,]|시)\s*([0-5]\d)\s*(?:분)?\s*(?:~|\-|–|—|부터)\s*(?:오전|오후)?\s*([0-2]?\d)\s*(?:[:.;·,]|시)\s*([0-5]\d)\s*(?:분)?/);
+ if(range){start=contractClock(range[1],range[2]);end=contractClock(range[3],range[4])}
+ if(!start||!end){let times=contractTimeMatches(zone);if(times.length>=2){start=times[0];end=times[1]}}
+ let bm=zone.match(/(?:휴게시간|휴게)\s*[:：]?\s*(\d{1,3})\s*분/);if(bm)breakMinutes=Number(bm[1]);
+ if(!daily&&start&&end){let mins=contractMinutesBetween(start,end)-breakMinutes;if(mins>0)daily=Math.round(mins/6)/10}
+ let days=explicitNarrativeWorkDaysV6(t),warnings=[];
+ if(!days.length&&daily>0&&weekly>0){let cnt=weekly/daily,rounded=Math.round(cnt);if(rounded>=1&&rounded<=7&&Math.abs(cnt-rounded)<.08)warnings.push(`주 ${weekly}시간 / 1일 ${daily}시간이지만 구체 근무요일은 계약서에 명시되지 않아 임의 지정하지 않았습니다.`)}
+ if(!days.length)warnings.push('문장형 계약서에서 구체 근무요일을 확인하지 못했습니다. 실제 근무요일은 직접 확인해 주세요.');
+ let note='문장형 근로계약서';
+ let score=[!!start,!!end,daily>0,weekly>0,days.length>0].filter(Boolean).length;
+ if(!score)return null;
+ return sanitizeContractTermsConsistency({day_rules:[],work_days:days,default_start_time:start,default_end_time:end,break_start_time:null,break_end_time:null,break_minutes:breakMinutes,daily_hours:daily,weekly_hours:weekly,work_type:'custom',note,schedule_based:false,score:Math.max(score,6),_warnings:warnings});
 }
 
 function sanitizeContractTermsConsistency(terms){
@@ -8461,6 +8524,20 @@ async function readContractDataFromPdf(file,expectedEmployeeName=''){
  let terms=sanitizeContractTermsConsistency({day_rules:dayRules,work_days:workDays,default_start_time:primaryStart,default_end_time:primaryEnd,break_start_time:sharedBreakRange?.start||null,break_end_time:sharedBreakRange?.end||null,break_minutes:breakMinutes,daily_hours:daily,weekly_hours:weekly,work_type:workType,note,schedule_based:true,score:9,_warnings:warnings});
  // sanitize가 낮은 신뢰도의 규칙 때문에 명시 요일을 줄이는 일이 없도록 마지막 검증.
  if(dayRules.length){let valid=validateContractDayRulesV4(dayRules,weekly,workDays);if(!valid.length){terms.day_rules=[];terms.work_days=workDays}}
+ // V6 보조 경로: 기존 표 탐지가 실패한 경우에만 페이지 본문을 넓게 OCR한다.
+ // 강한 '기간의 정함 없음/문장형 계약서' 표지가 확인될 때만 기존 결과를 대체한다.
+ if(!geom?.detected){
+   try{
+     setContractAutoReadStatus('표가 없는 근로계약서 형식을 추가 확인하는 중...','reading');
+     let broad=cropContractCanvas(canvas,.055,.10,.89,.86),broadTexts=await recognizeContractVariantsV4(Tesseract,broad,'kor+eng','',{passes:[{scale:.72,binary:false,psms:['6','11']},{scale:.78,binary:true,threshold:210,psms:['6','11']}]}),narrativeText=[text,...broadTexts].join(' ');
+     let narrativePeriod=extractContractPeriodFromText(narrativeText),narrativeTerms=extractNarrativeContractTermsV6(narrativeText),strongNarrative=isNarrativeIndefiniteContractV6(narrativeText)||/장애인\s*표준사업장\s*근로계약서/.test(normalizeContractText(narrativeText));
+     if(strongNarrative&&(narrativePeriod?.indefinite||narrativeTerms)){
+       if(narrativePeriod)period=narrativePeriod;
+       if(narrativeTerms)terms=narrativeTerms;
+       return {period,terms,nameCheck,method:'ocr-v6-narrative',text:narrativeText};
+     }
+   }catch(e){console.warn('문장형 근로계약서 V6 보조인식 실패',e)}
+ }
  return {period,terms,nameCheck,method:dayRules.length>1?'ocr-v4-multirow':'ocr-v4-table',text:scheduleText};
 }
 function contractReviewDaysChangedV4(){let h=$('contractTermsReview');if(h)h.dataset.daysEdited='1'}
@@ -8486,6 +8563,9 @@ function collectContractTermsReview(){
 /* ===== /근로계약서 스캔/반영 V5 ===== */
 
 
+function setContractIndefiniteUi(checked){
+ let c=$('contractIndefinite'),end=$('contractEndDate');if(c)c.checked=!!checked;if(end){end.disabled=!!checked;if(checked)end.value='';end.placeholder=checked?'기간의 정함 없음':'YYYYMMDD'}
+}
 async function openEmployeeDocuments(employeeId,type){
  let e=findEmployeeAny(employeeId);if(!e)return alert('직원정보를 찾지 못했습니다.');
  let label=employeeDocTypeLabel(type),isResignation=type==='resignation',isWorkContract=type==='work_contract',isSalaryContract=type==='salary_contract';
@@ -8493,9 +8573,10 @@ async function openEmployeeDocuments(employeeId,type){
    ?'작성 완료한 사직서 PDF 원본을 서버에 보관합니다. 삭제하지 않는 한 직원 기록과 함께 계속 남습니다.'
    :isSalaryContract
      ?'<b>연봉계약서는 원본 PDF 보관용</b>입니다. 연봉계약서의 적용기간은 별도로 읽거나 입력하지 않고 <b>근로계약서에 명시된 계약기간을 따릅니다.</b> 근로시간·근무요일·급여내용 OCR도 하지 않으며, 선택한 직원의 문서함에 원본만 누적 보관합니다.'
-     :'PDF 원본은 서버에 누적 보관합니다. <b>재계약 D-day는 근로계약서의 계약 종료일</b>을 기준으로 표시합니다. PDF를 선택하면 계약기간뿐 아니라 <b>근무요일·출퇴근시간·휴게시간·1일/주 소정시간·비고</b>를 자동으로 읽어 확인창에 채웁니다. <b>요일별 근로시간이 다른 표도 행별로 따로 읽습니다.</b> 직원 확인은 손글씨를 읽지 않고 <b>PDF 파일명과 선택 직원명</b>을 대조하며, 제3조 근로시간 표는 각 셀과 행 전체를 함께 정밀인식합니다. 인식값은 사용자가 확인한 뒤에만 근무조건으로 적용됩니다. <b>근무조건이 함께 바뀌면 “이 계약일부터 근무조건 변경 있음”을 체크</b>하세요. 업로드 직후 적용일이 계약 시작일로 채워진 근무조건 등록창이 열리고, 이후 기본근무 채우기·주간목표·연차 계산이 그 적용일부터 새 조건을 사용합니다.';
+     :'PDF 원본은 서버에 누적 보관합니다. <b>기존 표 형식 근로계약서는 지금 방식 그대로 정밀인식</b>하고, 표가 없는 문장형 계약서는 기존 표 탐지가 실패한 경우에만 별도 보조인식을 사용합니다. <b>기간의 정함이 없는 계약은 종료일 없이 정상 저장</b>하며 재계약 D-day 대상에서 제외합니다. PDF를 선택하면 계약기간뿐 아니라 <b>근무요일·출퇴근시간·휴게시간·1일/주 소정시간·비고</b>를 자동으로 읽어 확인창에 채웁니다. <b>요일별 근로시간이 다른 표도 행별로 따로 읽습니다.</b> 직원 확인은 손글씨를 읽지 않고 <b>PDF 파일명과 선택 직원명</b>을 대조합니다. 인식값은 사용자가 확인한 뒤에만 근무조건으로 적용되며, 계약서에 구체 근무요일이 없으면 임의로 월~금 등을 만들지 않습니다. <b>근무조건이 함께 바뀌면 “이 계약일부터 근무조건 변경 있음”을 체크</b>하세요.';
  let periodFields=isWorkContract?`<div class="field" style="margin:0"><label>계약 시작일</label><input id="contractStartDate" type="text" inputmode="numeric" maxlength="8" placeholder="YYYYMMDD" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,8)"></div>
- <div class="field" style="margin:0"><label>계약 종료일</label><input id="contractEndDate" type="text" inputmode="numeric" maxlength="8" placeholder="YYYYMMDD" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,8)"></div>`:'';
+ <div class="field" style="margin:0"><label>계약 종료일</label><input id="contractEndDate" type="text" inputmode="numeric" maxlength="8" placeholder="YYYYMMDD" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,8)"></div>
+ <label class="contractWorkChange" style="display:flex;align-items:center;gap:7px;padding:9px 10px;border:1px solid #d9e2f2;border-radius:10px;background:#f8fbff;font-size:12px;font-weight:800"><input id="contractIndefinite" type="checkbox" onchange="setContractIndefiniteUi(this.checked)">기간의 정함 없음 (무기계약)</label>`:'';
  modal(`<div class="contractVaultHead"><div><h2 style="margin:0">${esc(e.name)} · ${label}</h2>
  <div class="help" style="margin-top:4px">${vaultHelp}</div></div>
  <button class="btn gray" onclick="closeModal()">닫기</button></div>
@@ -8528,10 +8609,11 @@ async function fillContractMetaFromFile(file,type,employeeId=null){
    let data=await readContractDataFromPdf(file,type==='work_contract'?expectedName:''),period=data?.period,terms=data?.terms,nameCheck=data?.nameCheck||null;
    pendingContractExtraction={period,terms,nameCheck,method:data?.method||'text',employee_id:employeeId||null};
    if(period){
-     if($('contractStartDate')&&!hadStart)$('contractStartDate').value=period.start.replace(/-/g,'');
-     if($('contractEndDate')&&!hadEnd)$('contractEndDate').value=period.end.replace(/-/g,'');
-     if($('contractDocDate')&&!hadDocDate)$('contractDocDate').value=period.start.replace(/-/g,'');
-     if($('contractDocTitle')&&!hadTitle)$('contractDocTitle').value=`${period.start.slice(0,4)}년 ${employeeDocTypeLabel(type)}`;
+     if($('contractStartDate')&&!hadStart&&period.start)$('contractStartDate').value=period.start.replace(/-/g,'');
+     if(period.indefinite)setContractIndefiniteUi(true);
+     else {setContractIndefiniteUi(false);if($('contractEndDate')&&!hadEnd&&period.end)$('contractEndDate').value=period.end.replace(/-/g,'')}
+     if($('contractDocDate')&&!hadDocDate&&period.start)$('contractDocDate').value=period.start.replace(/-/g,'');
+     if($('contractDocTitle')&&!hadTitle&&period.start)$('contractDocTitle').value=`${period.start.slice(0,4)}년 ${employeeDocTypeLabel(type)}${period.indefinite?' · 기간의 정함 없음':''}`;
    }else if($('contractStartDate')&&!$('contractStartDate').value&&d)$('contractStartDate').value=d.replace(/-/g,'');
    if(type==='work_contract'){
      showContractTermsReview(terms||{},nameCheck);
@@ -8541,7 +8623,7 @@ async function fillContractMetaFromFile(file,type,employeeId=null){
    if(nameCheck?.status==='matched')parts.push(`파일명 일치 ${nameCheck.expected}`);
    else if(nameCheck?.status==='mismatch')parts.push(`파일명 불일치 ${nameCheck.expected}≠${nameCheck.candidate||'미확인'}`);
    else if(type==='work_contract'&&expectedName)parts.push('파일명 직원확인 필요');
-   if(period)parts.push(`${period.start} ~ ${period.end}`);if(type==='work_contract'&&terms)parts.push(contractTermsSummary(terms));
+   if(period)parts.push(`${period.start||'?'} ~ ${period.indefinite?'기간의 정함 없음':period.end||'종료일 미확인'}`);if(type==='work_contract'&&terms)parts.push(contractTermsSummary(terms));
    let kind=nameCheck?.status==='mismatch'||(type==='work_contract'&&nameCheck?.status!=='matched')?'warn':'ok';
    if(parts.length)setContractAutoReadStatus(`자동확인: ${parts.join(' · ')}${String(data?.method||'').startsWith('ocr')?' (스캔본 정밀인식)':''}`,kind);
    else setContractAutoReadStatus('계약 내용을 자동으로 찾지 못했습니다. 계약서 내용을 확인해 직접 입력해 주세요.','warn');
@@ -8560,7 +8642,7 @@ async function loadEmployeeDocuments(employeeId,type){
  if(q.error){host.innerHTML=`<div class="contractEmpty">문서 목록 조회 오류<br>${esc(q.error.message)}</div>`;return}
  let rows=q.data||[];
  host.innerHTML=rows.length?rows.map(d=>{
-   let period=type==='work_contract'&&(d.contract_start_date||d.contract_end_date)?`<div class="contractDocMeta"><b>계약기간</b> ${d.contract_start_date||'?'} ~ ${d.contract_end_date||'종료일 미입력'}</div>`:'';
+   let period=type==='work_contract'&&(d.contract_start_date||d.contract_end_date||d.contract_is_indefinite)?`<div class="contractDocMeta"><b>계약기간</b> ${d.contract_start_date||'?'} ~ ${d.contract_is_indefinite?'기간의 정함 없음':d.contract_end_date||'종료일 미입력'}</div>`:'';
    return `<div class="contractDocRow"><div><div class="contractDocName">${esc(d.title||d.file_name)}</div>
     <div class="contractDocMeta">${esc(d.file_name)} · ${d.created_at?new Date(d.created_at).toLocaleString('ko-KR'):'-'}</div>${period}</div>
     <div>${d.document_date||'-'}</div>${type==='work_contract'?`<button class="btn gray small" onclick="editEmployeeDocumentPeriod(${d.id},${employeeId},'${type}')">계약기간</button>`:''}<button class="btn green small" onclick="downloadEmployeeDocument(${d.id})">원본 다운로드</button>
@@ -8583,26 +8665,32 @@ async function uploadEmployeeDocument(employeeId,type){
  let date=dateRaw?normalizeCompactDateInput(dateRaw):(guessContractDateFromFilename(file.name)||isoToday());
  if(dateRaw&&!date)return alert('문서 작성일은 8자리로 입력하세요.\n예: 20260815');
  let startRaw=type==='work_contract'?($('contractStartDate')?.value||''):'',endRaw=type==='work_contract'?($('contractEndDate')?.value||''):'';
+ let contractIndefinite=type==='work_contract'&&$('contractIndefinite')?.checked===true;
  let contractStart=type==='work_contract'&&startRaw?normalizeCompactDateInput(startRaw):null;
- let contractEnd=type==='work_contract'&&endRaw?normalizeCompactDateInput(endRaw):null;
+ let contractEnd=type==='work_contract'&&!contractIndefinite&&endRaw?normalizeCompactDateInput(endRaw):null;
  if(type==='work_contract'&&startRaw&&!contractStart)return alert('계약 시작일을 8자리로 입력하세요. 예: 20260801');
- if(type==='work_contract'&&endRaw&&!contractEnd)return alert('계약 종료일을 8자리로 입력하세요. 예: 20270731');
+ if(type==='work_contract'&&!contractIndefinite&&endRaw&&!contractEnd)return alert('계약 종료일을 8자리로 입력하세요. 예: 20270731');
  if(type==='work_contract'&&contractStart&&contractEnd&&contractEnd<contractStart)return alert('계약 종료일이 시작일보다 빠릅니다.');
- if(type==='work_contract'&&!contractEnd){
-   return alert('계약 종료일을 확인하지 못했습니다.\nPDF를 다시 선택해 자동읽기를 시도하거나, 계약서에 적힌 종료일을 8자리로 입력해 주세요.\n예: 20261231');
+ if(type==='work_contract'&&!contractIndefinite&&!contractEnd){
+   return alert('계약 종료일을 확인하지 못했습니다.\nPDF를 다시 선택해 자동읽기를 시도하거나, 계약서에 적힌 종료일을 8자리로 입력해 주세요.\n기간의 정함이 없는 계약이면 “기간의 정함 없음 (무기계약)”을 체크하세요.');
+ }
+ if(type==='work_contract'&&contractIndefinite&&!employeeDocumentIndefiniteColumnAvailable){
+   await loadEmployeeDocumentStatus(storeId());
+   if(!employeeDocumentIndefiniteColumnAvailable)return alert('기간의 정함이 없는 근로계약을 저장하려면 Supabase employee_documents에 contract_is_indefinite 컬럼을 최초 1회 추가해야 합니다.\n\nSQL 적용 후 다시 업로드해 주세요.');
  }
  let title=$('contractDocTitle')?.value?.trim()||`${date.slice(0,4)}년 ${employeeDocTypeLabel(type)}`;
  let path=contractStoragePath(employeeId,type,file);
  let up=await sb.storage.from(EMPLOYEE_DOC_BUCKET).upload(path,file,{contentType:'application/pdf',upsert:false});
  if(up.error)return alert('계약서 파일 업로드 오류:\n'+up.error.message);
  let obj={store_id:storeId(),employee_id:employeeId,document_type:type,title,document_date:date||null,file_name:file.name,storage_path:path};
- if(type==='work_contract'){obj.contract_start_date=contractStart;obj.contract_end_date=contractEnd}
+ if(type==='work_contract'){obj.contract_start_date=contractStart;obj.contract_end_date=contractIndefinite?null:contractEnd;if(contractIndefinite)obj.contract_is_indefinite=true}
  let ins=await sb.from('employee_documents').insert(obj);
  if(ins.error){
    await sb.storage.from(EMPLOYEE_DOC_BUCKET).remove([path]);
    let msg=String(ins.error.message||'');
    let hint='';
-   if(/contract_start_date|contract_end_date|column/i.test(msg))hint='\n\n계약기간 저장용 contract_start_date / contract_end_date 컬럼 추가 SQL을 최초 1회 실행하세요.';
+   if(/contract_is_indefinite/i.test(msg))hint='\n\n기간의 정함 없음 저장용 contract_is_indefinite 컬럼 추가 SQL을 최초 1회 실행하세요.';
+   else if(/contract_start_date|contract_end_date|column/i.test(msg))hint='\n\n계약기간 저장용 contract_start_date / contract_end_date 컬럼 추가 SQL을 최초 1회 실행하세요.';
    else if(type==='resignation'&&/check|document_type/i.test(msg))hint='\n\n사직서 파일 보관용 document_type 확장 SQL을 최초 1회 실행하세요.';
    return alert('문서 이력 저장 오류:\n'+msg+hint);
  }
@@ -8630,16 +8718,18 @@ async function uploadEmployeeDocument(employeeId,type){
 async function editEmployeeDocumentPeriod(documentId,employeeId,type){
  let q=await sb.from('employee_documents').select('*').eq('id',documentId).single();
  if(q.error)return alert(q.error.message);
- let d=q.data||{},s0=String(d.contract_start_date||'').replace(/-/g,''),e0=String(d.contract_end_date||'').replace(/-/g,'');
+ let d=q.data||{},s0=String(d.contract_start_date||'').replace(/-/g,''),e0=d.contract_is_indefinite?'무기':String(d.contract_end_date||'').replace(/-/g,'');
  let sr=prompt('계약서에 적힌 계약 시작일을 입력하세요. (YYYYMMDD)',s0);if(sr===null)return;
- let er=prompt('계약서에 적힌 계약 종료일을 입력하세요. (YYYYMMDD)',e0);if(er===null)return;
- let start=sr.trim()?normalizeCompactDateInput(sr):null,end=er.trim()?normalizeCompactDateInput(er):null;
+ let er=prompt('계약 종료일을 입력하세요. (YYYYMMDD)\n기간의 정함이 없으면 “무기”라고 입력하세요.',e0);if(er===null)return;
+ let indefinite=/^(?:무기|없음|기간의정함없음|기간의 정함 없음)$/i.test(er.trim()),start=sr.trim()?normalizeCompactDateInput(sr):null,end=!indefinite&&er.trim()?normalizeCompactDateInput(er):null;
  if(sr.trim()&&!start)return alert('계약 시작일이 올바르지 않습니다. 예: 20260801');
- if(er.trim()&&!end)return alert('계약 종료일이 올바르지 않습니다. 예: 20270731');
+ if(!indefinite&&er.trim()&&!end)return alert('계약 종료일이 올바르지 않습니다. 예: 20270731 또는 무기');
  if(start&&end&&end<start)return alert('계약 종료일이 시작일보다 빠릅니다.');
- let u=await sb.from('employee_documents').update({contract_start_date:start,contract_end_date:end}).eq('id',documentId);
+ if(indefinite&&!employeeDocumentIndefiniteColumnAvailable){await loadEmployeeDocumentStatus(storeId());if(!employeeDocumentIndefiniteColumnAvailable)return alert('무기계약 저장용 contract_is_indefinite 컬럼을 Supabase에 먼저 추가해 주세요.')}
+ let patch={contract_start_date:start,contract_end_date:indefinite?null:end};if(employeeDocumentIndefiniteColumnAvailable)patch.contract_is_indefinite=indefinite;
+ let u=await sb.from('employee_documents').update(patch).eq('id',documentId);
  if(u.error){
-   let hint=/contract_start_date|contract_end_date|column/i.test(String(u.error.message||''))?'\n\n계약기간 저장용 컬럼 추가 SQL을 최초 1회 실행하세요.':'';
+   let hint=/contract_is_indefinite/i.test(String(u.error.message||''))?'\n\n무기계약 저장용 contract_is_indefinite 컬럼 추가 SQL을 최초 1회 실행하세요.':/contract_start_date|contract_end_date|column/i.test(String(u.error.message||''))?'\n\n계약기간 저장용 컬럼 추가 SQL을 최초 1회 실행하세요.':'';
    return alert('계약기간 저장 오류:\n'+u.error.message+hint);
  }
  await loadEmployeeDocuments(employeeId,type);
