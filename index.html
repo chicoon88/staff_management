@@ -2214,6 +2214,36 @@ function nextMonthlyAccrualStatus(e,through=isoToday(),attendanceSchedules=(leav
  }
  return null;
 }
+function monthlyAccrualEmployeeBadge(e,through=isoToday()){
+ if(!e?.hire_date)return '';
+ let first=addMonthsClamped(e.hire_date,1);
+ let oneYear=addYearsClamped(e.hire_date,1);
+ if(through>=oneYear)return '';
+ let st=nextMonthlyAccrualStatus(e,through);
+ if(st){
+   if(st.status==='pending'){
+     let miss=(st.missing||[]).length;
+     return `<br><span class="reviewWarn" title="확인기간 ${st.periodStart} ~ ${st.periodEnd} · 스케줄 미입력 ${miss}일">연차 확인 중 · 미입력 ${miss}일</span>`;
+   }
+   if(st.status==='fail'){
+     let sick=(st.sick||[]).length;
+     return `<br><span class="warn" title="확인기간 ${st.periodStart} ~ ${st.periodEnd} · 병가 ${sick}일">병가로 미발생</span>`;
+   }
+   if(st.status==='pass'){
+     return `<br><span class="ok" title="확인기간 ${st.periodStart} ~ ${st.periodEnd} · 개근 확인 완료">발생 처리 중</span>`;
+   }
+ }
+ // nextMonthlyAccrualStatus가 null이면: 아직 첫 1개월이 안 지났거나, 지난 월차가 이미 원장에 반영된 상태다.
+ let monthlyRows=leaveLedger.filter(x=>Number(x.employee_id)===Number(e.id)&&String(x.source_key||'').startsWith(`accrual-month:${e.id}:`)&&String(x.event_date||'')<=through);
+ if(monthlyRows.length){
+   let latest=[...monthlyRows].sort((a,b)=>String(b.event_date||'').localeCompare(String(a.event_date||'')))[0];
+   return `<br><span class="ok" title="${latest.event_date} 월차 ${Number(latest.hours||0)}h 원장 반영 완료">발생완료</span>`;
+ }
+ if(first>through){
+   return `<br><span class="help" title="입사 후 첫 1개월 구간이 끝난 뒤 개근 여부를 확인합니다.">${String(first).slice(5).replace('-','/')} 확인예정</span>`;
+ }
+ return '';
+}
 async function syncLeaveLedger(){
  if(!employees.length)return;
  const ids=employees.map(e=>e.id);
@@ -4307,13 +4337,7 @@ function renderEmployees(){
    <td class="empInlineCell">${payTypeCell}</td>
 
    <!-- 연차기준: 원래 compact 표시 -->
-   <td>주 ${leaveWeeklyHours(e)}h<br><span class="help">월 +${leaveMonthlyHours(e)}h / 1일 -${leaveDayHours(e)}h</span>${(()=>{
-     let st=nextMonthlyAccrualStatus(e,isoToday());
-     if(!st)return '';
-     if(st.status==='pending')return `<br><span class="reviewWarn" title="근무기간과 스케줄을 확인한 후 연차가 자동 계산됩니다.">연차 확인 중</span>`;
-     if(st.status==='fail')return `<br><span class="warn">해당월 미발생</span>`;
-     return '';
-   })()}</td>
+   <td>주 ${leaveWeeklyHours(e)}h<br><span class="help">월 +${leaveMonthlyHours(e)}h / 1일 -${leaveDayHours(e)}h</span>${monthlyAccrualEmployeeBadge(e,isoToday())}</td>
 
    <td>${employeeView==='active'?`<b data-leave-balance="${e.id}">${ls.balance}h</b><br><button class="btn gray small" onclick="adjustLeave(${e.id})">조정</button>`:'-'}</td>
 
@@ -8576,7 +8600,7 @@ function printResignation(id){
          <div class="docResignLine">귀사에서 사직하고자 하오니 수락하여 주시기 바랍니다.</div>
        </div>
      </div>
-     <div class="docIssueDate">${fmtDateKo(isoToday())}</div>
+     <div class="docIssueDate"><span class="docUnderline" style="min-width:18mm"></span>년&nbsp;&nbsp;<span class="docUnderline" style="min-width:11mm"></span>월&nbsp;&nbsp;<span class="docUnderline" style="min-width:11mm"></span>일</div>
      <div class="docSignature"><span class="sigLabel">제출자</span><span class="sigName">${v(e.name)}</span><span class="sigMark">(서명 또는 인)</span></div>
      <div class="docCompanyName">${v(s.name)}</div>
    </div>
