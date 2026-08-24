@@ -200,10 +200,17 @@ input,select{border:1px solid #d2d7e0;background:white;border-radius:9px;padding
  font-size:14px!important;
 }
 .docResignStatement{
- margin:0 9mm!important;
+ margin:0!important;
  font-size:15px!important;
- line-height:2!important;
+ line-height:1.9!important;
  text-align:center!important;
+}
+.docResignBox{
+ border:1.5px solid #1f3b66!important;
+ border-radius:12px!important;
+ padding:12mm 7mm!important;
+ margin:0!important;
+ background:#fff!important;
 }
 .docResignLine{
  margin:0!important;
@@ -212,9 +219,9 @@ input,select{border:1px solid #d2d7e0;background:white;border-radius:9px;padding
  display:flex!important;
  justify-content:center!important;
  align-items:flex-end!important;
- gap:1.6mm!important;
+ gap:1.4mm!important;
  white-space:nowrap!important;
- font-size:15px!important;
+ font-size:14.5px!important;
 }
 .docResignLine + .docResignLine{
  margin-top:5mm!important;
@@ -222,72 +229,44 @@ input,select{border:1px solid #d2d7e0;background:white;border-radius:9px;padding
 .docResignLastDate{
  display:inline-flex!important;
  align-items:flex-end!important;
- gap:1.8mm!important;
+ gap:1.4mm!important;
  white-space:nowrap!important;
 }
 .docSignature{
- margin-top:0!important;
- padding-top:0!important;
- text-align:right!important;
+ display:flex!important;
+ justify-content:center!important;
+ align-items:center!important;
  font-size:16px!important;
- line-height:2.2!important;
- margin-right:8mm!important;
+ line-height:1.8!important;
 }
+.docSignature .sigLabel{margin-right:18mm!important}
+.docSignature .sigName{font-weight:600!important;margin-right:4mm!important}
+.docSignature .sigMark{white-space:nowrap!important}
 .docResignBottom{
  margin-top:auto!important;
- padding-top:12mm!important;
+ padding-top:14mm!important;
  display:flex!important;
  flex-direction:column!important;
  gap:14mm!important;
 }
-.docResignBottom .docResignStatement{
- margin:0 9mm!important;
- line-height:2.05!important;
-}
 .docResignBottom .docIssueDate{
  margin:0!important;
-}
-.docResignBottom .docSignature{
- margin:0 8mm 0 0!important;
- padding-top:0!important;
- line-height:2.25!important;
+ font-size:16px!important;
 }
 .docResignBottom .docCompanyName{
- margin-top:4mm!important;
+ margin:2mm 0 0!important;
+ text-align:center!important;
+ font-size:22px!important;
+ font-weight:900!important;
+ letter-spacing:1.5px!important;
 }
 .docUnderline{
  display:inline-block!important;
- min-width:15mm!important;
- height:5.5mm!important;
+ min-width:13mm!important;
+ height:5mm!important;
  border-bottom:1px solid #222!important;
  vertical-align:bottom!important;
 }
-.docResignPaper{padding-top:20mm!important;padding-bottom:18mm!important}
-.docResignTitleWrap{margin:2mm 0 14mm!important;text-align:center!important}
-.docResignTitle{font-size:32px!important;font-weight:900!important;letter-spacing:16px!important;line-height:1.2!important;margin:0!important}
-.docResignTitleDeco{margin-top:7mm!important;display:flex!important;align-items:center!important;justify-content:center!important;gap:3mm!important}
-.docResignTitleDeco .line{width:43mm!important;height:0!important;border-top:2px solid #203a78!important}
-.docResignTitleDeco .dot{width:4mm!important;height:4mm!important;border-radius:50%!important;background:#203a78!important;display:inline-block!important}
-.docResignInfoTable{border:1.8px solid #333!important;margin-bottom:12mm!important}
-.docResignInfoTable .docGrid{grid-template-columns:34mm 1.35fr 36mm 1.15fr!important}
-.docResignInfoTable .docCellLabel,.docResignInfoTable .docCellValue{min-height:18mm!important;font-size:13px!important;border-bottom:1px solid #444!important}
-.docResignInfoTable .docCellLabel{background:#fff!important;font-weight:900!important}
-.docResignInfoTable .docCellValue{font-weight:600!important}
-.docResignInfoTable .docWideLabel{min-height:30mm!important;align-items:center!important}
-.docResignInfoTable .docWideValue{min-height:30mm!important}
-.docResignStatementBox{border:2px solid #203a78!important;border-radius:6mm!important;padding:11mm 10mm!important;margin:0 0 13mm!important}
-.docResignStatementBox .docResignStatement{margin:0!important;font-size:16px!important;line-height:2.05!important;text-align:center!important}
-.docResignStatementBox .docResignFirstLine{font-size:16px!important;gap:2mm!important}
-.docResignDate{margin:0!important;text-align:center!important;font-size:17px!important;letter-spacing:0.5px!important}
-.docResignSignRow{margin-top:16mm!important;display:flex!important;justify-content:center!important;align-items:center!important;font-size:16px!important;line-height:1.8!important}
-.docResignSignRow .label{margin-right:22mm!important;font-weight:700!important}
-.docResignSignRow .name{margin-right:7mm!important;font-weight:700!important}
-.docResignSignRow .sign-note{font-weight:500!important}
-.docResignFooter{margin-top:18mm!important}
-.docResignFooterLine{display:flex!important;align-items:center!important;justify-content:center!important;gap:3mm!important}
-.docResignFooterLine .line{height:0!important;border-top:2px solid #203a78!important;flex:1 1 auto!important;max-width:86mm!important}
-.docResignFooterLine .dot{width:4mm!important;height:4mm!important;border-radius:50%!important;background:#203a78!important;display:inline-block!important;flex:0 0 auto!important}
-.docResignFooterCompany{text-align:center!important;font-size:24px!important;font-weight:900!important;letter-spacing:2px!important;margin-top:12mm!important}
 @media print{
  .docPaper{
    width:194mm!important;
@@ -596,6 +575,13 @@ tr[draggable="true"]:active,.empDragHandle:active{cursor:grabbing}
 .contractDocRow{display:grid;grid-template-columns:minmax(180px,1fr) 110px 120px auto;gap:8px;align-items:center;border:1px solid var(--line);border-radius:10px;padding:10px}
 .contractDocName{font-weight:900}.contractDocMeta{font-size:11px;color:#667085}.contractUploadBox{border:1px dashed #b8c2d1;background:#f8fafc;border-radius:12px;padding:12px}
 .contractUploadGrid{display:grid;grid-template-columns:135px 1fr 1fr auto;gap:8px;align-items:end}.contractEmpty{text-align:center;padding:24px;color:#667085}
+.contractUploadGrid.salaryContractGrid{grid-template-columns:170px minmax(260px,1fr) minmax(380px,1.35fr) auto;column-gap:12px;align-items:end}
+.contractUploadGrid.salaryContractGrid .field{min-width:0}
+.contractUploadGrid.salaryContractGrid .field>label{display:block;white-space:nowrap;margin-bottom:6px}
+.contractUploadGrid.salaryContractGrid input[type="text"],
+.contractUploadGrid.salaryContractGrid input[type="file"]{box-sizing:border-box;width:100%;height:44px}
+.contractUploadGrid.salaryContractGrid input[type="file"]{padding:6px 8px}
+.contractUploadGrid.salaryContractGrid>.btn{height:44px;align-self:end}
 @media(max-width:900px){.contractTermsGrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:760px){.contractDocRow,.contractUploadGrid,.contractTermsGrid{grid-template-columns:1fr}.contractTermsGrid .wide,.contractTermsGrid .full{grid-column:1}}
 
@@ -5088,13 +5074,12 @@ async function openWorkConditionHistory(employeeId,presetDate='',presetNote='',p
    <div class="field"><label>스케줄 편성 방식</label><select id="wcScheduleMode"><option value="manual" ${scheduleMode==='manual'?'selected':''}>직접 입력 (기본)</option><option value="auto" ${scheduleMode==='auto'?'selected':''}>고정요일 자동채우기</option></select></div>
    <div class="field" style="grid-column:span 3"><label>변경 메모</label><input id="wcNote" value="${esc(workConditionHumanNote(presetCondition?.note||presetNote||''))}" placeholder="예: 2026년 8월부터 주5일 → 주4일 변경"></div>
    <input id="wcDayRules" type="hidden" value="${esc(ruleEncoded)}">
-   <input id="wcEditingId" type="hidden" value="">
   </div>
   ${presetRules.length>1?`<div style="margin-top:8px;padding:9px 11px;border:1px solid #b9d7ff;background:#eef6ff;border-radius:10px;font-size:12px"><b>계약서의 요일별 근로시간</b><br>${esc(ruleSummary)}<br><span style="color:#52657a">이 값은 계약조건/수기입력 시 참고합니다. <b>직접 입력</b> 모드에서는 스케줄 날짜를 자동으로 만들지 않습니다.</span></div>`:''}
   <div style="margin-top:8px"><b style="font-size:12px">근무요일 (계약서/참고값)</b><div style="margin-top:5px">${checks}</div></div>
   <div class="help" style="margin-top:8px">${presetCondition?'<b>계약서에서 읽은 값이 자동으로 채워졌습니다. 계약서의 근무요일이 실제 매주 고정이라는 뜻은 아니므로 스케줄 편성은 기본적으로 “직접 입력”으로 저장됩니다.</b><br>':''}<b>직접 입력:</b> 월간/주간 스케줄에서 사용자가 근무일과 시간을 직접 입력합니다. 주2일·주5일이라도 요일이 매주 바뀌거나 계약서에 실제 고정요일이 없으면 이 방식을 사용하세요.<br><b>고정요일 자동채우기:</b> 실제로 매주 같은 요일에 근무하는 직원에게만 선택하세요. 이때 위 체크한 요일만 “선택 직원 기본근무 채우기”에 사용하며, 주5일이라고 해서 월~금으로 임의 추정하지 않습니다.</div>
-  <div class="modalActions"><button id="wcCancelEditBtn" class="btn gray" style="display:none" onclick="cancelWorkConditionEdit(${employeeId})">수정 취소</button><button id="wcSaveBtn" class="btn" data-default-label="${presetCondition?'확인 후 직원관리에 적용':'이 조건 등록'}" onclick="addWorkCondition(${employeeId})">${presetCondition?'확인 후 직원관리에 적용':'이 조건 등록'}</button></div></div>
-  <div style="margin-top:10px" class="help"><b>기존 이력도 수정할 수 있습니다.</b> 아래 이력의 ‘수정’을 누르면 위 입력칸으로 불러와 고친 뒤 다시 반영합니다. 과거 이력을 수정하면 해당 적용기간의 계산 기준이 바뀌며, 현재 적용 중인 조건이면 직원관리 현재값도 즉시 다시 동기화합니다. <b>입사일을 잘못 입력해 자동보존된 첫 이력을 삭제하는 경우에는 다음 근무조건 시작일과 비교해 입사일도 함께 바로잡을지 확인합니다.</b> 이미 직접 입력해 둔 스케줄·급여 원본은 자동으로 삭제하거나 덮어쓰지 않습니다.</div><div id="workConditionList" class="historyList"><div class="help">불러오는 중...</div></div>`);
+  <div class="modalActions"><button class="btn" onclick="addWorkCondition(${employeeId})">${presetCondition?'확인 후 직원관리에 적용':'이 조건 등록'}</button></div></div>
+  <div id="workConditionList" class="historyList"><div class="help">불러오는 중...</div></div>`);
  await loadWorkConditionHistory(employeeId);
 }
 function applyWorkConditionPreset(){
@@ -5115,60 +5100,11 @@ async function loadWorkConditionHistory(employeeId){
    let wt=workTypeLabelValue(x.work_type),rules=workConditionDayRulesFromNote(x.note),days=workConditionDaysLabel(x.work_days),times=rules.length?contractDayRulesSummary(rules):([String(x.default_start_time||'').slice(0,5),String(x.default_end_time||'').slice(0,5)].filter(Boolean).join('~')||'-'),humanNote=workConditionHumanNote(x.note),reserved=String(x.effective_from||'')>isoToday(),scheduleLabel=workConditionScheduleModeFromNote(x.note)==='auto'?'고정요일 자동채우기':'직접 입력';
    return `<div class="historyRow"><div><b>${x.effective_from}부터 · ${esc(wt)} ${reserved?'<span class="pill">예약</span>':''}</b>
     <div class="help">스케줄 ${scheduleLabel} · ${esc(days)} · ${times} · 소정 ${Number(x.daily_hours||0)}h · 기본 실근무 ${conditionWorkedDayHours(x)}h · 휴게 ${Number(x.break_minutes||0)}분 · 연차 주 ${Number(x.leave_weekly_hours||0)}h / 월 +${Number(x.leave_monthly_hours||0)}h / 1일 -${Number(x.leave_day_hours||0)}h${humanNote?' · '+esc(humanNote):''}</div></div>
-    <div style="display:flex;gap:6px;align-items:center"><button class="btn gray small" onclick="editWorkCondition(${x.id},${employeeId})">수정</button><button class="btn red small" onclick="deleteWorkCondition(${x.id},${employeeId})">삭제</button></div></div>`;
+    <button class="btn red small" onclick="deleteWorkCondition(${x.id},${employeeId})">삭제</button></div>`;
   }).join(''):'<div class="help" style="padding:16px">아직 별도 근무조건 이력이 없습니다. 현재 직원 기본값이 그대로 사용됩니다.</div>';
-}
-function setWorkConditionEditorFromRow(x,employeeId){
- if(!x)return;
- if($('wcEditingId'))$('wcEditingId').value=String(x.id||'');
- if($('wcEffective'))$('wcEffective').value=String(x.effective_from||'').replace(/-/g,'');
- if($('wcType'))$('wcType').value=workTypeLabelValue(x.work_type);
- if($('wcDaily'))$('wcDaily').value=Number(x.daily_hours||0)||8;
- if($('wcBreak'))$('wcBreak').value=Number(x.break_minutes||0);
- if($('wcStart'))$('wcStart').value=String(x.default_start_time||'').slice(0,5);
- if($('wcEnd'))$('wcEnd').value=String(x.default_end_time||'').slice(0,5);
- if($('wcLeaveWeekly'))$('wcLeaveWeekly').value=Number(x.leave_weekly_hours||0);
- if($('wcLeaveMonthly'))$('wcLeaveMonthly').value=Number(x.leave_monthly_hours||0);
- if($('wcLeaveDay'))$('wcLeaveDay').value=Number(x.leave_day_hours||0);
- if($('wcScheduleMode'))$('wcScheduleMode').value=workConditionScheduleModeFromNote(x.note)==='auto'?'auto':'manual';
- if($('wcNote'))$('wcNote').value=workConditionHumanNote(x.note||'');
- let rules=workConditionDayRulesFromNote(x.note),encoded=encodeURIComponent(JSON.stringify(rules));
- if($('wcDayRules'))$('wcDayRules').value=encoded;
- let days=normalizedWorkDays(x.work_days);
- document.querySelectorAll('.wcDay').forEach(cb=>{cb.checked=days.includes(Number(cb.value))});
- let save=$('wcSaveBtn'),cancel=$('wcCancelEditBtn');
- if(save)save.textContent='수정 내용 반영';
- if(cancel)cancel.style.display='inline-flex';
- let box=$('wcEffective')?.closest('.historyAddBox')||$('wcEffective')?.parentElement;
- try{box?.scrollIntoView({behavior:'smooth',block:'start'})}catch(_){ }
-}
-function editWorkCondition(conditionId,employeeId){
- let x=employeeWorkConditions.find(r=>Number(r.id)===Number(conditionId)&&Number(r.employee_id)===Number(employeeId));
- if(!x)return alert('수정할 근무조건을 찾지 못했습니다. 화면을 새로고침한 뒤 다시 시도하세요.');
- setWorkConditionEditorFromRow(x,employeeId);
-}
-function cancelWorkConditionEdit(employeeId){
- let e=findEmployeeAny(employeeId);if(!e)return;
- let c=workConditionForDate(e,isoToday());
- if($('wcEditingId'))$('wcEditingId').value='';
- if($('wcEffective'))$('wcEffective').value=String(isoToday()).replace(/-/g,'');
- if($('wcType'))$('wcType').value=workTypeLabelValue(c.work_type);
- if($('wcDaily'))$('wcDaily').value=Number(c.daily_hours||8);
- if($('wcBreak'))$('wcBreak').value=Number(c.break_minutes||0);
- if($('wcStart'))$('wcStart').value=String(c.default_start_time||'').slice(0,5);
- if($('wcEnd'))$('wcEnd').value=String(c.default_end_time||'').slice(0,5);
- if($('wcLeaveWeekly'))$('wcLeaveWeekly').value=Number(c.leave_weekly_hours||0);
- if($('wcLeaveMonthly'))$('wcLeaveMonthly').value=Number(c.leave_monthly_hours||0);
- if($('wcLeaveDay'))$('wcLeaveDay').value=Number(c.leave_day_hours||0);
- if($('wcScheduleMode'))$('wcScheduleMode').value=conditionScheduleMode(c);
- if($('wcNote'))$('wcNote').value=workConditionHumanNote(c.note||'');
- let rules=conditionDayRules(c),encoded=encodeURIComponent(JSON.stringify(rules));if($('wcDayRules'))$('wcDayRules').value=encoded;
- let days=normalizedWorkDays(c.work_days);document.querySelectorAll('.wcDay').forEach(cb=>{cb.checked=days.includes(Number(cb.value))});
- let save=$('wcSaveBtn'),cancel=$('wcCancelEditBtn');if(save)save.textContent=save.dataset.defaultLabel||'이 조건 등록';if(cancel)cancel.style.display='none';
 }
 async function addWorkCondition(employeeId){
  let e=findEmployeeAny(employeeId);if(!e)return;
- let editingId=Number($('wcEditingId')?.value||0);
  let raw=$('wcEffective')?.value||'',effective=normalizeCompactDateInput(raw);
  if(!effective)return alert('적용 시작일을 8자리로 입력하세요. 예: 20260801');
  if(e.hire_date&&effective<e.hire_date)return alert('근무조건 적용일은 입사일보다 빠를 수 없습니다.');
@@ -5188,23 +5124,6 @@ async function addWorkCondition(employeeId){
    note:workConditionNoteWithDayRules($('wcNote')?.value?.trim()||'',dayRules,$('wcScheduleMode')?.value||'manual')
  };
  if(!Number.isFinite(payload.daily_hours)||payload.daily_hours<=0)return alert('1일 소정시간을 확인하세요.');
- if(editingId){
-   let before=employeeWorkConditions.find(r=>Number(r.id)===editingId&&Number(r.employee_id)===Number(employeeId));
-   if(!before)return alert('수정 대상 근무조건을 찾지 못했습니다. 화면을 새로고침한 뒤 다시 시도하세요.');
-   let q=await sb.from('employee_work_conditions').update(payload).eq('id',editingId).eq('employee_id',employeeId);
-   if(q.error){
-     if(isMissingWorkConditionTableError(q.error)){employeeWorkConditionTableAvailable=false;return alert('근무조건 이력 DB 테이블이 없습니다. 최초 1회 SQL을 실행하세요.')}
-     return alert('근무조건 수정 오류:\n'+q.error.message);
-   }
-   await loadEmployeeWorkConditions(storeId());
-   await syncEmployeeMasterToCurrentCondition(employeeId);
-   await loadWorkConditionHistory(employeeId);
-   if($('wcEditingId'))$('wcEditingId').value='';
-   let save=$('wcSaveBtn'),cancel=$('wcCancelEditBtn');if(save)save.textContent=save.dataset.defaultLabel||'이 조건 등록';if(cancel)cancel.style.display='none';
-   renderEmployees();renderSchedule();if(scheduleView==='weekly')renderWeeklyPlanner();if($('hoursPage')?.classList.contains('active'))renderHours();
-   alert('근무조건 수정 내용을 반영했습니다.\n\n직원관리의 현재 근무조건과 날짜별 계산 기준은 다시 동기화했습니다. 이미 직접 입력된 스케줄 날짜/시간은 자동으로 덮어쓰지 않습니다.');
-   return;
- }
  let existing=workConditionRowsForEmployee(employeeId);
  // 첫 변경을 등록할 때는 입사일부터 변경 전날까지의 기존 기본조건을 자동 보존한다.
  if(!existing.length && e.hire_date && e.hire_date<effective){
@@ -5226,85 +5145,13 @@ async function addWorkCondition(employeeId){
  renderEmployees();renderSchedule();if(scheduleView==='weekly')renderWeeklyPlanner();if($('hoursPage')?.classList.contains('active'))renderHours();
 }
 async function deleteWorkCondition(conditionId,employeeId){
- let e=findEmployeeAny(employeeId);
- if(!e)return alert('직원정보를 찾지 못했습니다.');
-
- let target=employeeWorkConditions.find(x=>Number(x.id)===Number(conditionId)&&Number(x.employee_id)===Number(employeeId));
- if(!target){
-   let tq=await sb.from('employee_work_conditions').select('*').eq('id',conditionId).eq('employee_id',employeeId).single();
-   if(tq.error)return alert('삭제할 근무조건을 찾지 못했습니다.\n'+tq.error.message);
-   target=tq.data;
- }
- let targetDate=String(target?.effective_from||'');
- let isAutoBase=String(target?.note||'').includes('근무조건 이력 시작 전 기존 기본값 자동보존');
- let remaining=workConditionRowsForEmployee(employeeId).filter(x=>Number(x.id)!==Number(conditionId));
- let nextRow=remaining.filter(x=>String(x.effective_from||'')>targetDate)
-                      .sort((a,b)=>String(a.effective_from||'').localeCompare(String(b.effective_from||'')))[0]||null;
- let nextDate=String(nextRow?.effective_from||'');
- let canSuggestHireFix=!!(isAutoBase&&targetDate&&nextDate&&String(e.hire_date||'')===targetDate);
-
- if(!confirm(`이 근무조건 이력을 삭제할까요?\n\n삭제 대상: ${targetDate||'-'}부터\n이미 입력된 과거 스케줄·급여 자료 자체는 삭제되지 않습니다.`))return;
-
- let changeHireDate=false,gapScheduleCount=0;
- if(canSuggestHireFix){
-   try{
-     let sq=await sb.from('schedules').select('id',{count:'exact',head:true})
-       .eq('employee_id',employeeId).gte('work_date',targetDate).lt('work_date',nextDate);
-     if(!sq.error)gapScheduleCount=Number(sq.count||0);
-   }catch(_){}
-
-   let extra=gapScheduleCount
-     ?`\n\n주의: ${targetDate} ~ ${addDaysIso(nextDate,-1)} 사이에 이미 입력된 스케줄 ${gapScheduleCount}건이 있습니다. 입사일을 바꿔도 그 스케줄은 자동 삭제하지 않습니다.`
-     :'';
-   changeHireDate=confirm(
-`${e.name}의 현재 입사일도 ${targetDate}이고,
-삭제하려는 항목은 시스템이 입사일부터 자동보존했던 기존 조건입니다.
-
-다음 실제 근무조건 시작일은 ${nextDate}입니다.
-
-직원관리의 입사일도 ${nextDate}로 함께 수정할까요?
-
-[확인] 이력 삭제 + 입사일 ${nextDate}로 수정
-[취소] 이력만 삭제하고 입사일은 ${targetDate} 유지${extra}`
-   );
- }
-
- let q=await sb.from('employee_work_conditions').delete().eq('id',conditionId).eq('employee_id',employeeId);
+ if(!confirm('이 근무조건 이력만 삭제할까요?\n이미 입력된 과거 스케줄 자체는 삭제되지 않습니다.'))return;
+ let q=await sb.from('employee_work_conditions').delete().eq('id',conditionId);
  if(q.error)return alert('근무조건 이력 삭제 오류:\n'+q.error.message);
-
- if(changeHireDate){
-   let uq=await sb.from('employees').update({hire_date:nextDate}).eq('id',employeeId);
-   if(uq.error){
-     // 근무조건 삭제는 이미 완료되었으므로 상황을 명확히 안내한다.
-     await loadEmployeeWorkConditions(storeId());
-     await syncEmployeeMasterToCurrentCondition(employeeId);
-     await loadWorkConditionHistory(employeeId);
-     renderEmployees();renderSchedule();if(scheduleView==='weekly')renderWeeklyPlanner();if($('hoursPage')?.classList.contains('active'))renderHours();
-     return alert(`근무조건 이력은 삭제했지만 입사일 변경에 실패했습니다.\n\n${uq.error.message}\n\n직원관리에서 입사일을 직접 ${nextDate.replace(/-/g,'')}로 수정해 주세요.`);
-   }
-   e.hire_date=nextDate;
- }
-
- // 삭제 후 남아 있는 날짜별 조건을 다시 읽어 현재 직원값을 재동기화한다.
  await loadEmployeeWorkConditions(storeId());
  await syncEmployeeMasterToCurrentCondition(employeeId);
-
- if(changeHireDate){
-   // 입사일은 연차 발생 기준에도 직접 영향을 주므로 새 날짜 기준으로 자동원장을 다시 계산한다.
-   await refreshAll();
-   try{
-     await syncLeaveLedger();
-     await loadLeaveLedger();
-   }catch(err){console.warn('입사일 변경 후 연차 재계산 오류',err)}
- }else{
-   renderEmployees();renderSchedule();if(scheduleView==='weekly')renderWeeklyPlanner();if($('hoursPage')?.classList.contains('active'))renderHours();
- }
-
  await loadWorkConditionHistory(employeeId);
-
- if(changeHireDate){
-   alert(`${e.name}의 잘못된 기존 근무조건을 삭제하고 입사일을 ${nextDate}로 수정했습니다.\n\n- 현재 근무조건: ${nextDate}부터 조건으로 재반영\n- 직원관리 입사일: ${nextDate}\n- 연차 기준: 새 입사일 기준으로 재계산\n- 기존 스케줄·급여 원본: 삭제하지 않음${gapScheduleCount?`\n- 수정 전 기간 스케줄 ${gapScheduleCount}건은 그대로 보존`:''}`);
- }
+ renderEmployees();renderSchedule();if(scheduleView==='weekly')renderWeeklyPlanner();if($('hoursPage')?.classList.contains('active'))renderHours();
 }
 
 function employmentHistoryKey(employeeId,startDate,endDate,source='manual'){
@@ -7954,7 +7801,7 @@ function sanitizeContractTermsConsistency(terms){
  let rules=out.day_rules,daily=Number(out.daily_hours||0),weekly=Number(out.weekly_hours||0),breakMin=Number(out.break_minutes||0);
  if(rules.length){out.work_days=contractDayRulesUnionDays(rules);let primary=contractPrimaryDayRule(rules),wh=contractDayRulesWeeklyHours(rules);if(primary){out.default_start_time=primary.start;out.default_end_time=primary.end;out.daily_hours=Number(primary.daily_hours||out.daily_hours||0);if(!breakMin){breakMin=Number(primary.break_minutes||0);out.break_minutes=breakMin}}if(wh>0){weekly=wh;out.weekly_hours=wh}}
  if(!rules.length&&daily>0&&weekly>0){let cnt=weekly/daily,rounded=Math.round(cnt);if(rounded>=1&&rounded<=7&&Math.abs(cnt-rounded)<0.08&&out.work_days?.length&&out.work_days.length!==rounded)out.work_days=[]}
- if(out.default_start_time&&out.default_end_time){let span=contractMinutesBetween(out.default_start_time,out.default_end_time),expected=0,breakIncluded=/휴게\s*시간\s*포함|휴게\s*포함/.test(String(out.note||'')),overtimeMin=Number(out._overtime_minutes||contractOvertimeMinutesV6(out.note||'')||0),explicitRange=out._explicit_work_range===true;if(rules.length){let primary=contractPrimaryDayRule(rules);expected=primary?Number(primary.daily_hours||0)*60+(breakIncluded?0:Number(primary.break_minutes||out.break_minutes||0))+overtimeMin:0}else expected=daily>0?daily*60+(breakIncluded?0:(breakMin>0?breakMin:0))+overtimeMin:0;if(span<60||span>14*60||(!explicitRange&&expected>0&&Math.abs(span-expected)>45)){out.default_start_time=null;out.default_end_time=null}}
+ if(out.default_start_time&&out.default_end_time){let span=contractMinutesBetween(out.default_start_time,out.default_end_time),expected=0,breakIncluded=/휴게\s*시간\s*포함|휴게\s*포함/.test(String(out.note||''));if(rules.length){let primary=contractPrimaryDayRule(rules);expected=primary?Number(primary.daily_hours||0)*60+(breakIncluded?0:Number(primary.break_minutes||out.break_minutes||0)):0}else expected=daily>0?daily*60+(breakIncluded?0:(breakMin>0?breakMin:0)):0;if(span<60||span>14*60||(expected>0&&Math.abs(span-expected)>45)){out.default_start_time=null;out.default_end_time=null}}
  if(out.break_start_time&&out.break_end_time){let bm=contractMinutesBetween(out.break_start_time,out.break_end_time);if(bm<10||bm>240||(breakMin>0&&Math.abs(bm-breakMin)>20)){out.break_start_time=null;out.break_end_time=null}else if(!breakMin)out.break_minutes=bm}
  out.score=[rules.length>0,out.work_days?.length>0,!!out.default_start_time,!!out.default_end_time,Number(out.break_minutes)>0,Number(out.daily_hours)>0,Number(out.weekly_hours)>0,!!out.note].filter(Boolean).length;
  return out;
@@ -8338,8 +8185,7 @@ function contractEmployeeFromFilenameV5(fileName,expectedName=''){
  if(candidate)return {status:'mismatch',expected,candidate,source:'filename',file_name:String(fileName||'')};
  return {status:'unreadable',expected,candidate:'',source:'filename',file_name:String(fileName||'')};
 }
-function contractDailyHoursV4(text){let t=normalizeContractText(text),m=t.match(/1\s*일\s*(?:(?:기본|소정(?:근로)?)\s*)?(\d+(?:\.\d+)?)\s*시간(?:\s*근무)?/);return m?Number(m[1]):0}
-function contractOvertimeMinutesV6(text){let t=normalizeContractText(text),m=t.match(/(?:\+\s*)?(?:연장(?:근로)?|추가)\s*(\d+(?:\.\d+)?)\s*시간/);if(m){let v=Math.round(Number(m[1])*60);if(v>0&&v<=360)return v}let mm=t.match(/(?:연장(?:근로)?|추가)[^0-9]{0,12}(\d{1,3})\s*분/);if(mm){let v=Number(mm[1]);if(v>0&&v<=360)return v}return 0}
+function contractDailyHoursV4(text){let t=normalizeContractText(text),m=t.match(/1\s*일\s*(\d+(?:\.\d+)?)\s*시간(?:\s*근무)?/);return m?Number(m[1]):0}
 function contractWeeklyHoursV4(text){let t=normalizeContractText(text),m=t.match(/1\s*주\s*(?:소정근로시간[^0-9]{0,20})?(\d+(?:\.\d+)?)\s*시간/);return m?Number(m[1]):0}
 function contractBreakIncludedV5(text){return /휴게\s*시간\s*(?:을\s*)?포함|휴게\s*포함/.test(normalizeContractText(text))}
 function contractWorkdayCountHintV4(text,daily=0,weekly=0){
@@ -8351,12 +8197,12 @@ function contractWorkdayCountHintV4(text,daily=0,weekly=0){
  return 0;
 }
 function contractRuleFromV4Parts(days,workTexts,noteTexts,breakMinutes,fallbackDaily=0){
- let d=normalizedWorkDays(days),noteText=(noteTexts||[]).join(' '),daily=contractDailyHoursV4(noteText)||Number(fallbackDaily||0),breakIncluded=contractBreakIncludedV5(noteText),overtimeMin=contractOvertimeMinutesV6(noteText);
- let expected=daily>0?daily*60+(breakIncluded?0:Number(breakMinutes||0))+overtimeMin:0,wr=chooseExplicitWorkRangeV4(workTexts,expected),p=wr.primary;
+ let d=normalizedWorkDays(days),noteText=(noteTexts||[]).join(' '),daily=contractDailyHoursV4(noteText)||Number(fallbackDaily||0),breakIncluded=contractBreakIncludedV5(noteText);
+ let expected=daily>0?daily*60+(breakIncluded?0:Number(breakMinutes||0)):0,wr=chooseExplicitWorkRangeV4(workTexts,expected),p=wr.primary;
  if(!p)return null;
- if(!daily){let span=contractMinutesBetween(p.start,p.end),net=breakIncluded?span:span-Number(breakMinutes||0)-overtimeMin;if(net>0)daily=Math.round(net/6)/10}
+ if(!daily){let span=contractMinutesBetween(p.start,p.end),net=breakIncluded?span:span-Number(breakMinutes||0);if(net>0)daily=Math.round(net/6)/10}
  if(!d.length||!(daily>0))return null;
- return {days:d,start:p.start,end:p.end,break_minutes:Number(breakMinutes||0),daily_hours:Number(daily),alternatives:wr.alternatives,break_included:breakIncluded,overtime_minutes:overtimeMin};
+ return {days:d,start:p.start,end:p.end,break_minutes:Number(breakMinutes||0),daily_hours:Number(daily),alternatives:wr.alternatives,break_included:breakIncluded};
 }
 function validateContractDayRulesV4(rules,weeklyHours=0,explicitDays=[]){
  let a=normalizeContractDayRules(rules);if(!a.length)return [];
@@ -8380,7 +8226,7 @@ async function readContractDataFromPdf(file,expectedEmployeeName=''){
  let period=extractContractPeriodFromText(text),nameCheck=contractEmployeeFromFilenameV5(file?.name||'',expectedEmployeeName),textTerms=sanitizeContractTermsConsistency(extractContractTermsFromText(text));
  // 근무조건은 텍스트 PDF도 반드시 표를 렌더링해 한 번 더 확인한다. PDF 내부 텍스트 순서는 표의 시각적 행/열 순서를 보장하지 않기 때문이다.
  let page=await pdf.getPage(1),vp=page.getViewport({scale:4.2}),canvas=document.createElement('canvas'),ctx=canvas.getContext('2d');canvas.width=Math.ceil(vp.width);canvas.height=Math.ceil(vp.height);await page.render({canvasContext:ctx,viewport:vp}).promise;
- const Tesseract=await loadContractTesseract();setContractAutoReadStatus('근로시간 표의 요일·시간·연장근로를 행별로 검증하는 중...','reading');
+ const Tesseract=await loadContractTesseract();setContractAutoReadStatus('근로시간 표의 요일·시간을 행별로 검증하는 중...','reading');
  // 직원 확인은 손글씨 OCR을 사용하지 않고 파일명과 선택 직원을 대조한다. 계약기간만 OCR로 보강한다.
  try{let pc=cropContractCanvas(canvas,.10,.17,.80,.18),pv=await recognizeContractVariantsV4(Tesseract,pc,'kor+eng','',{passes:[{scale:1.2,binary:false,psms:['6','11']},{scale:1.3,binary:true,threshold:210,psms:['6']}]}),pp=extractContractPeriodFromText(text+' '+pv.join(' '));if(pp)period=pp}catch(_){ }
  let geom=contractScheduleTableGeometry(canvas),rows=detectContractTableDataRows(canvas,geom),warnings=[];if(!geom?.detected)warnings.push('근로시간 표 위치를 자동탐지하지 못해 양식 기준 위치로 재시도했습니다.');
@@ -8430,15 +8276,13 @@ async function readContractDataFromPdf(file,expectedEmployeeName=''){
    dayRules=rules;workDays=contractDayRulesUnionDays(rules);let primary=contractPrimaryDayRule(rules);primaryStart=primary?.start||null;primaryEnd=primary?.end||null;daily=Number(primary?.daily_hours||0);if(!weekly)weekly=contractDayRulesWeeklyHours(rules);note=contractDayRulesSummary(rules);
  }else{
    let p=rowParts[0]||{},rowNote=(p.noteTexts||[]).join(' '),rowDaily=contractDailyHoursV4(rowNote)||sectionDaily,breakIncluded=contractBreakIncludedV5(rowNote)||contractBreakIncludedV5(scheduleText);
-   let overtimeMinutes=contractOvertimeMinutesV6(rowNote)||contractOvertimeMinutesV6(noteTexts.join(' '));
-   let expected=rowDaily>0?rowDaily*60+(breakIncluded?0:breakMinutes)+overtimeMinutes:0,wr=chooseExplicitWorkRangeV4([...(p.workTexts||[]),...workTexts,...sectionTexts],expected);
+   let expected=rowDaily>0?rowDaily*60+(breakIncluded?0:breakMinutes):0,wr=chooseExplicitWorkRangeV4([...(p.workTexts||[]),...workTexts,...sectionTexts],expected);
    primaryStart=wr.primary?.start||null;primaryEnd=wr.primary?.end||null;daily=Number(rowDaily||0);
-   if(!daily&&primaryStart&&primaryEnd){let span=contractMinutesBetween(primaryStart,primaryEnd),net=breakIncluded?span:span-breakMinutes-overtimeMinutes;if(net>0)daily=Math.round(net/6)/10}
+   if(!daily&&primaryStart&&primaryEnd){let span=contractMinutesBetween(primaryStart,primaryEnd),net=breakIncluded?span:span-breakMinutes;if(net>0)daily=Math.round(net/6)/10}
    let expectedDays=contractWorkdayCountHintV4(scheduleText,daily,weekly);workDays=contractDaysFromCandidatesV4((p.daysTexts||[]).length?p.daysTexts:daysTexts,expectedDays);if(!workDays.length)workDays=explicitAllDays;
    if(!weekly&&daily&&expectedDays)weekly=Math.round(daily*expectedDays*100)/100;else if(!weekly&&daily&&workDays.length)weekly=Math.round(daily*workDays.length*100)/100;
    let alt=wr.alternatives||[];
    if(breakIncluded)note='휴게시간 포함';
-   if(overtimeMinutes>0){let oh=Math.round(overtimeMinutes/6)/10;note=(note?note+' · ':'')+`1일 기본 ${daily||rowDaily||''}시간 + 연장 ${oh}시간`}
    if(alt.length>1)note=(note?note+' · ':'')+'근무시간 선택: '+alt.slice(0,4).map(x=>x.start+'~'+x.end).join(' 또는 ');
  }
  // 스캔 표에서 확보하지 못한 항목만 텍스트 추출값으로 보완한다. 요일/시간은 표값이 있으면 절대 덮어쓰지 않는다.
@@ -8448,8 +8292,7 @@ async function readContractDataFromPdf(file,expectedEmployeeName=''){
  if(!workDays.length&&countHint){let sn=normalizeContractText(scheduleText);if(/주\s*7\s*일\s*중\s*[1-7]\s*일\s*근무/.test(sn))warnings.push(`계약서에는 주7일 중 ${countHint}일 근무로 되어 있어 구체 근무요일은 직접 선택해야 합니다.`);else warnings.push(`계약서에는 주${countHint}일로 표시되지만 구체적인 요일을 확정해서 읽지 못했습니다. 요일을 임의로 만들지 않았습니다.`)}
  if(!primaryStart||!primaryEnd)warnings.push('기본 출퇴근시간을 표에서 확정하지 못했습니다.');
  let workType='custom',scheduleNorm=normalizeContractText(scheduleText);if((/주\s*5\s*일/.test(scheduleNorm)&&Number(weekly)===40)||(Number(weekly)===40&&workDays.length===5))workType='40';else if(/주\s*4\s*일/.test(scheduleNorm)||workDays.length===4)workType='36';
- let overtimeMinutesFinal=contractOvertimeMinutesV6(note)||contractOvertimeMinutesV6(noteTexts.join(' '))||0;
- let terms=sanitizeContractTermsConsistency({day_rules:dayRules,work_days:workDays,default_start_time:primaryStart,default_end_time:primaryEnd,break_start_time:sharedBreakRange?.start||null,break_end_time:sharedBreakRange?.end||null,break_minutes:breakMinutes,daily_hours:daily,weekly_hours:weekly,work_type:workType,note,schedule_based:true,score:9,_warnings:warnings,_explicit_work_range:!!(primaryStart&&primaryEnd),_overtime_minutes:overtimeMinutesFinal});
+ let terms=sanitizeContractTermsConsistency({day_rules:dayRules,work_days:workDays,default_start_time:primaryStart,default_end_time:primaryEnd,break_start_time:sharedBreakRange?.start||null,break_end_time:sharedBreakRange?.end||null,break_minutes:breakMinutes,daily_hours:daily,weekly_hours:weekly,work_type:workType,note,schedule_based:true,score:9,_warnings:warnings});
  // sanitize가 낮은 신뢰도의 규칙 때문에 명시 요일을 줄이는 일이 없도록 마지막 검증.
  if(dayRules.length){let valid=validateContractDayRulesV4(dayRules,weekly,workDays);if(!valid.length){terms.day_rules=[];terms.work_days=workDays}}
  return {period,terms,nameCheck,method:dayRules.length>1?'ocr-v4-multirow':'ocr-v4-table',text:scheduleText};
@@ -8474,7 +8317,7 @@ function collectContractTermsReview(){
  if(!rules.length&&!weekly&&daily&&days.length)weekly=Math.round(daily*days.length*100)/100;
  return {day_rules:rules,work_type:normalizeWorkTypeValue($('contractTermWorkType')?.value||'custom'),daily_hours:daily,default_start_time:start,default_end_time:end,break_minutes:breakMinutes,work_days:normalizedWorkDays(days),weekly_hours:weekly,note:$('contractTermNote')?.value?.trim()||''};
 }
-/* ===== /근로계약서 스캔/반영 V6 - 명시시간 우선 + 연장근로 지원 ===== */
+/* ===== /근로계약서 스캔/반영 V5 ===== */
 
 
 async function openEmployeeDocuments(employeeId,type){
@@ -8483,7 +8326,7 @@ async function openEmployeeDocuments(employeeId,type){
  let vaultHelp=isResignation
    ?'작성 완료한 사직서 PDF 원본을 서버에 보관합니다. 삭제하지 않는 한 직원 기록과 함께 계속 남습니다.'
    :isSalaryContract
-     ?'<b>연봉계약서는 원본 PDF 보관용</b>입니다. 적용기간은 <b>근로계약서에 명시된 계약기간</b>을 따릅니다. 연봉계약서의 근로시간·근무요일·급여내용 OCR은 하지 않습니다. 대신 <b>문서 작성일은 실제 계약서를 작성한 날짜로 직접 기록</b>하고, 시스템의 실제 업로드일은 별도로 자동 보관합니다. 과거 연봉계약서도 작성일을 나중에 수정할 수 있습니다.'
+     ?'<b>연봉계약서는 원본 PDF 보관용</b>입니다. 연봉계약서의 적용기간은 별도로 읽거나 입력하지 않고 <b>근로계약서에 명시된 계약기간을 따릅니다.</b> 근로시간·근무요일·급여내용 OCR도 하지 않으며, 선택한 직원의 문서함에 원본만 누적 보관합니다.'
      :'PDF 원본은 서버에 누적 보관합니다. <b>재계약 D-day는 근로계약서의 계약 종료일</b>을 기준으로 표시합니다. PDF를 선택하면 계약기간뿐 아니라 <b>근무요일·출퇴근시간·휴게시간·1일/주 소정시간·비고</b>를 자동으로 읽어 확인창에 채웁니다. <b>요일별 근로시간이 다른 표도 행별로 따로 읽습니다.</b> 직원 확인은 손글씨를 읽지 않고 <b>PDF 파일명과 선택 직원명</b>을 대조하며, 제3조 근로시간 표는 각 셀과 행 전체를 함께 정밀인식합니다. 인식값은 사용자가 확인한 뒤에만 근무조건으로 적용됩니다. <b>근무조건이 함께 바뀌면 “이 계약일부터 근무조건 변경 있음”을 체크</b>하세요. 업로드 직후 적용일이 계약 시작일로 채워진 근무조건 등록창이 열리고, 이후 기본근무 채우기·주간목표·연차 계산이 그 적용일부터 새 조건을 사용합니다.';
  let periodFields=isWorkContract?`<div class="field" style="margin:0"><label>계약 시작일</label><input id="contractStartDate" type="text" inputmode="numeric" maxlength="8" placeholder="YYYYMMDD" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,8)"></div>
  <div class="field" style="margin:0"><label>계약 종료일</label><input id="contractEndDate" type="text" inputmode="numeric" maxlength="8" placeholder="YYYYMMDD" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,8)"></div>`:'';
@@ -8491,8 +8334,8 @@ async function openEmployeeDocuments(employeeId,type){
  <div class="help" style="margin-top:4px">${vaultHelp}</div></div>
  <button class="btn gray" onclick="closeModal()">닫기</button></div>
  <div class="contractUploadBox"><div style="font-weight:900;margin-bottom:8px">새 ${label} 업로드</div>
- <div class="contractUploadGrid">
- <div class="field" style="margin:0"><label>${isResignation?'작성일':isSalaryContract?'연봉계약서 작성일':'문서 작성일'}</label><input id="contractDocDate" type="text" inputmode="numeric" maxlength="8" placeholder="${isSalaryContract?'실제 작성일 YYYYMMDD':'YYYYMMDD'}" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,8)"></div>
+ <div class="contractUploadGrid ${isSalaryContract?'salaryContractGrid':''}">
+ <div class="field" style="margin:0"><label>${isResignation?'작성일':isSalaryContract?'연봉계약서 작성일':'문서 작성일'}</label><input id="contractDocDate" type="text" inputmode="numeric" maxlength="8" placeholder="YYYYMMDD" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,8)"></div>
  ${periodFields}
  <div class="field" style="margin:0"><label>표시명</label><input id="contractDocTitle" placeholder="예: 2026년 ${label}"></div>
  ${type==='work_contract'?`<label class="contractWorkChange" style="display:flex;align-items:center;gap:7px;padding:9px 10px;border:1px solid #d9e2f2;border-radius:10px;background:#f8fbff;font-size:12px;font-weight:800"><input id="contractWorkConditionChange" type="checkbox">이 계약일부터 근무조건 변경 있음</label>`:''}
@@ -8511,7 +8354,7 @@ async function fillContractMetaFromFile(file,type,employeeId=null){
  if(type==='resignation')return;
  if(type==='salary_contract'){
    pendingContractExtraction={period:null,terms:null,nameCheck:null,method:'storage-only',employee_id:employeeId||null};
-   setContractAutoReadStatus('연봉계약서는 내용 OCR 없이 원본만 보관합니다. 위의 “연봉계약서 작성일”에는 오늘이 아니라 실제 계약서를 작성한 날짜를 입력하세요. 업로드일은 시스템이 별도로 자동 기록합니다.','ok');
+   setContractAutoReadStatus('연봉계약서는 별도 기간·근무조건을 읽지 않습니다. 근로계약서의 계약기간을 따르며 PDF 원본만 보관합니다.','ok');
    return;
  }
  setContractAutoReadStatus('PDF 파일명·계약기간·근무시간 표를 확인하는 중...','reading');
@@ -8552,11 +8395,9 @@ async function loadEmployeeDocuments(employeeId,type){
  let rows=q.data||[];
  host.innerHTML=rows.length?rows.map(d=>{
    let period=type==='work_contract'&&(d.contract_start_date||d.contract_end_date)?`<div class="contractDocMeta"><b>계약기간</b> ${d.contract_start_date||'?'} ~ ${d.contract_end_date||'종료일 미입력'}</div>`:'';
-   let uploadedAt=d.created_at?new Date(d.created_at).toLocaleString('ko-KR'):'-';
    return `<div class="contractDocRow"><div><div class="contractDocName">${esc(d.title||d.file_name)}</div>
-    <div class="contractDocMeta">${esc(d.file_name)}</div>
-    <div class="contractDocMeta"><b>작성일</b> ${d.document_date||'미입력'} · <b>업로드일</b> ${uploadedAt}</div>${period}</div>
-    <div>${d.document_date||'-'}</div><button class="btn gray small" onclick="editEmployeeDocumentDate(${d.id},${employeeId},'${type}')">작성일 수정</button>${type==='work_contract'?`<button class="btn gray small" onclick="editEmployeeDocumentPeriod(${d.id},${employeeId},'${type}')">계약기간</button>`:''}<button class="btn green small" onclick="downloadEmployeeDocument(${d.id})">원본 다운로드</button>
+    <div class="contractDocMeta">${esc(d.file_name)} · ${d.created_at?new Date(d.created_at).toLocaleString('ko-KR'):'-'}</div>${period}</div>
+    <div>${d.document_date||'-'}</div>${type==='work_contract'?`<button class="btn gray small" onclick="editEmployeeDocumentPeriod(${d.id},${employeeId},'${type}')">계약기간</button>`:''}<button class="btn green small" onclick="downloadEmployeeDocument(${d.id})">원본 다운로드</button>
     <button class="btn red small" onclick="deleteEmployeeDocument(${d.id},${employeeId},'${type}')">삭제</button></div>`;
  }).join(''):`<div class="contractEmpty">저장된 ${employeeDocTypeLabel(type)}가 없습니다.</div>`;
 }
@@ -8572,10 +8413,9 @@ async function uploadEmployeeDocument(employeeId,type){
  let registerWorkCondition=type==='work_contract'&&$('contractWorkConditionChange')?.checked===true;
  let extractedTerms=type==='work_contract'?collectContractTermsReview():null;
  if(!/\.pdf$/i.test(file.name))return alert('PDF 파일만 업로드할 수 있습니다.');
- let dateRaw=$('contractDocDate')?.value||'',filenameDate=guessContractDateFromFilename(file.name)||null;
- let date=dateRaw?normalizeCompactDateInput(dateRaw):(filenameDate||(type==='salary_contract'?null:isoToday()));
- if(dateRaw&&!date)return alert('문서 작성일은 8자리로 입력하세요.\n예: 20260715');
- if(type==='salary_contract'&&!date)return alert('연봉계약서는 실제 작성일을 기록해야 나중에 이력을 찾기 쉽습니다.\n\n계약서에 서명한 실제 작성일을 YYYYMMDD 8자리로 입력한 뒤 업로드해 주세요.\n예: 20260715\n\n업로드한 오늘 날짜는 시스템이 “업로드일”로 별도 자동 기록합니다.');
+ let dateRaw=$('contractDocDate')?.value||'';
+ let date=dateRaw?normalizeCompactDateInput(dateRaw):(guessContractDateFromFilename(file.name)||isoToday());
+ if(dateRaw&&!date)return alert('문서 작성일은 8자리로 입력하세요.\n예: 20260815');
  let startRaw=type==='work_contract'?($('contractStartDate')?.value||''):'',endRaw=type==='work_contract'?($('contractEndDate')?.value||''):'';
  let contractStart=type==='work_contract'&&startRaw?normalizeCompactDateInput(startRaw):null;
  let contractEnd=type==='work_contract'&&endRaw?normalizeCompactDateInput(endRaw):null;
@@ -8620,22 +8460,6 @@ async function uploadEmployeeDocument(employeeId,type){
    }
    return openWorkConditionHistory(employeeId,contractStart||date,'근로계약 갱신에 따른 근무조건 변경',preset);
  }
-}
-async function editEmployeeDocumentDate(documentId,employeeId,type){
- let q=await sb.from('employee_documents').select('*').eq('id',documentId).single();
- if(q.error)return alert(q.error.message);
- let d=q.data||{},old=String(d.document_date||'').replace(/-/g,'');
- let label=type==='salary_contract'?'연봉계약서 작성일':type==='resignation'?'사직서 작성일':'문서 작성일';
- let raw=prompt(`${label}을 입력하세요. (YYYYMMDD)\n\n※ 업로드일은 수정하지 않습니다. 실제 파일을 올린 시각은 별도로 그대로 보존됩니다.`,old);
- if(raw===null)return;
- let date=raw.trim()?normalizeCompactDateInput(raw):null;
- if(raw.trim()&&!date)return alert('작성일이 올바르지 않습니다. 예: 20260715');
- if(type==='salary_contract'&&!date)return alert('연봉계약서는 실제 작성일을 입력해 주세요.');
- let u=await sb.from('employee_documents').update({document_date:date}).eq('id',documentId);
- if(u.error)return alert('문서 작성일 저장 오류:\n'+u.error.message);
- await loadEmployeeDocuments(employeeId,type);
- await loadEmployeeDocumentStatus(storeId());
- if($('employeesPage')?.classList.contains('active'))renderEmployees();
 }
 async function editEmployeeDocumentPeriod(documentId,employeeId,type){
  let q=await sb.from('employee_documents').select('*').eq('id',documentId).single();
@@ -8726,15 +8550,13 @@ function printResignation(id){
  let e=findEmployeeAny(id),s=currentStore();if(!e)return;
  const v=x=>esc(x||'');
  let last=e.resign_date||'';
- let lastText=last?fmtDateKo(last):`<span class="docResignLastDate"><span class="docUnderline"></span>년 <span class="docUnderline" style="min-width:11mm"></span>월 <span class="docUnderline" style="min-width:11mm"></span>일</span>`;
- if(last)lastText=`<span class="docResignLastDate">${fmtDateKo(last)}</span>`;
- $('printArea').innerHTML=`<div class="docPaper docResignPaper">
-   <div class="docResignTitleWrap">
-     <div class="docResignTitle">사 직 서</div>
-     <div class="docResignTitleDeco"><span class="line"></span><span class="dot"></span><span class="line"></span></div>
-   </div>
+ let lastText=last
+   ?`<span class="docResignLastDate">${fmtDateKo(last)}</span>`
+   :`<span class="docResignLastDate"><span class="docUnderline"></span>년 <span class="docUnderline" style="min-width:10mm"></span>월 <span class="docUnderline" style="min-width:10mm"></span>일</span>`;
+ $('printArea').innerHTML=`<div class="docPaper">
+   <div class="docTitle">사 직 서</div>
 
-   <div class="docResignInfoTable">
+   <div class="docSection">
     <div class="docGrid">
       <div class="docCellLabel">성&nbsp;&nbsp;&nbsp;&nbsp;명</div><div class="docCellValue">${v(e.name)}</div>
       <div class="docCellLabel">생년월일</div><div class="docCellValue">${employeeBirthDate(e)?fmtDateKo(employeeBirthDate(e)):''}</div>
@@ -8742,29 +8564,21 @@ function printResignation(id){
       <div class="docCellLabel">담당업무</div><div class="docCellValue">${v(e.department)}</div>
       <div class="docCellLabel">입 사 일</div><div class="docCellValue">${e.hire_date?fmtDateKo(e.hire_date):''}</div>
 
-      <div class="docCellLabel docWideLabel docNoBottom">사직사유</div>
-      <div class="docCellValue docWideValue docNoBottom"></div>
+      <div class="docCellLabel docWideLabel docNoBottom" style="min-height:48mm">사직사유</div>
+      <div class="docCellValue docWideValue docNoBottom" style="min-height:48mm"></div>
     </div>
    </div>
 
-   <div class="docResignStatementBox">
-     <div class="docResignStatement">
-       <div class="docResignLine docResignFirstLine">상기 본인은 마지막 근무일인 ${lastText}자로</div>
-       <div class="docResignLine">귀사에서 사직하고자 하오니 수락하여 주시기 바랍니다.</div>
+   <div class="docResignBottom">
+     <div class="docResignBox">
+       <div class="docResignStatement">
+         <div class="docResignLine docResignFirstLine">상기 본인은 마지막 근무일인 ${lastText}자로</div>
+         <div class="docResignLine">귀사에서 사직하고자 하오니 수락하여 주시기 바랍니다.</div>
+       </div>
      </div>
-   </div>
-
-   <div class="docResignDate">${fmtDateKo(isoToday())}</div>
-
-   <div class="docResignSignRow">
-     <span class="label">제출자</span>
-     <span class="name">${v(e.name)}</span>
-     <span class="sign-note">(서명 또는 인)</span>
-   </div>
-
-   <div class="docResignFooter">
-     <div class="docResignFooterLine"><span class="line"></span><span class="dot"></span><span class="line"></span></div>
-     <div class="docResignFooterCompany">${v(s.name)}</div>
+     <div class="docIssueDate">${fmtDateKo(isoToday())}</div>
+     <div class="docSignature"><span class="sigLabel">제출자</span><span class="sigName">${v(e.name)}</span><span class="sigMark">(서명 또는 인)</span></div>
+     <div class="docCompanyName">${v(s.name)}</div>
    </div>
  </div>`;
  window.print();
