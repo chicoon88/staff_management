@@ -978,6 +978,65 @@ body.resizingEmployeeColumn *{
 @media(max-width:520px){.attendanceSummary{grid-template-columns:1fr}.attendanceStat{display:flex;justify-content:space-between;align-items:center}.attendanceStat .v{font-size:19px}.outputModeRow{grid-template-columns:1fr}.outputEmployeeList{grid-template-columns:1fr}.outputPickerTop{align-items:flex-start}.outputPickerActions{width:100%}}
 
 
+
+/* ===== 2026-08-25 V8 · 스케줄 전용 직원순서 + 고정 날짜헤더 ===== */
+#schedulePage .scheduleGridScroll{
+  max-height:calc(100vh - 235px);
+  min-height:360px;
+  overflow:auto;
+  position:relative;
+  overscroll-behavior:contain;
+  scrollbar-gutter:stable;
+}
+#schedulePage .scheduleGridScroll table{border-collapse:separate;border-spacing:0}
+#schedulePage .scheduleGridScroll thead th{
+  position:sticky!important;
+  top:0!important;
+  z-index:18!important;
+  box-shadow:0 1px 0 #d9dee7,0 3px 7px rgba(17,24,39,.06);
+}
+#schedulePage .scheduleGridScroll thead th.name{
+  left:0!important;
+  z-index:24!important;
+}
+#schedulePage .scheduleGridScroll tbody td.name{
+  position:sticky!important;
+  left:0!important;
+  z-index:12!important;
+  background:#fff;
+  box-shadow:1px 0 0 #e5e7eb;
+}
+#schedulePage .scheduleGridScroll tbody tr.selectedRow td.name{background:#f1f5ff!important}
+#schedulePage .scheduleNameCell{min-width:145px}
+#schedulePage .scheduleDragHandle{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  max-width:118px;
+  cursor:grab;
+  user-select:none;
+  -webkit-user-select:none;
+  touch-action:none;
+  padding:3px 5px;
+  border-radius:7px;
+}
+#schedulePage .scheduleDragHandle:hover{background:#eef3ff;color:#2348bd}
+#schedulePage .scheduleDragHandle:active{cursor:grabbing}
+#schedulePage .scheduleDragGrip{font-size:14px;color:#98a2b3;line-height:1}
+#schedulePage tr.scheduleDragging{opacity:.46}
+#schedulePage tr.scheduleDropBefore>td{border-top:3px solid #315efb!important}
+#schedulePage tr.scheduleDropAfter>td{border-bottom:3px solid #315efb!important}
+#schedulePage th.activeScheduleDate{background:#dfe8ff!important;color:#1746b8!important;box-shadow:inset 0 -3px 0 #315efb,0 2px 6px rgba(49,94,251,.13)!important}
+#schedulePage tr.activeScheduleRow td.name{background:#eef3ff!important;color:#2348bd}
+#schedulePage .scheduleOrderHint{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:850;color:#475569}
+#schedulePage .scheduleOrderHint.warn{color:#9a5215}
+#schedulePage .weekBlock .scheduleGridScroll{max-height:min(64vh,680px);min-height:260px}
+@media(max-width:900px){
+  #schedulePage .scheduleGridScroll{max-height:calc(100vh - 205px);min-height:320px}
+  #schedulePage .scheduleNameCell{min-width:130px}
+  #schedulePage .scheduleDragHandle{max-width:103px}
+}
+
 .schedulerMode #scheduleStoreState,.schedulerMode #scheduleLoadState,.schedulerMode #schedulePage>.row>.toolbar>span.help{display:none!important}
 .schedulerMode #scheduleLockBadge.open{display:none!important}
 
@@ -1050,12 +1109,12 @@ body.resizingEmployeeColumn *{
   <span id="scheduleStoreState" class="saveState"></span><span id="scheduleLoadState" class="saveState saved">준비</span><span id="scheduleSaveState" class="saveState saved">저장완료</span><span class="help">연차잔여는 입력 즉시 반영</span>
  </div>
  </div>
- <div class="legend"><span class="tag">8 = 8시간</span><span class="tag">9 = 9시간</span><span class="tag">0 = 휴무</span><span class="tag">연 = 연차</span><span class="tag">병 = 병가(연차판정 확인)</span><span class="tag">결 = 결근</span><span class="tag">법 = 법정 출근간주</span><span class="tag">주5일 목표 40h</span><span class="tag">주4일 목표 36h</span><span class="tag">공휴일은 주말보다 우선</span></div>
+ <div class="legend"><span class="tag">8 = 8시간</span><span class="tag">9 = 9시간</span><span class="tag">0 = 휴무</span><span class="tag">연 = 연차</span><span class="tag">병 = 병가(연차판정 확인)</span><span class="tag">결 = 결근</span><span class="tag">법 = 법정 출근간주</span><span class="tag">주5일 목표 40h</span><span class="tag">주4일 목표 36h</span><span class="tag">공휴일은 주말보다 우선</span><span id="scheduleOrderHint" class="tag scheduleOrderHint">↕ 이름을 끌어 스케줄 순서 변경</span></div>
  <div class="readOnlyScheduleNotice" id="scheduleReadOnlyNotice">보기 전용 권한입니다. 스케줄 확인은 가능하지만 수정은 할 수 없습니다.</div><div class="schedulerFocusNote infoBox help" style="margin-top:8px"><b>사용 순서</b> · 스케줄 입력 → 근태 확인 → 스케줄 출력</div>
 
  <div id="monthlyScheduleWrap">
-   <div class="tablewrap"><table><thead id="schHead"></thead><tbody id="schBody"></tbody></table></div>
-   <div class="help" style="margin-top:7px">※ 월간표는 선택한 달의 전체 스케줄을 표시합니다.</div>
+   <div class="tablewrap scheduleGridScroll"><table><thead id="schHead"></thead><tbody id="schBody"></tbody></table></div>
+   <div class="help" style="margin-top:7px">※ 월간표는 선택한 달의 전체 스케줄을 표시합니다. 아래로 스크롤해도 날짜 머리글이 고정되며, 이름을 끌어 스케줄 전용 순서를 바꿀 수 있습니다.</div>
  </div>
 
  <div id="weeklyScheduleWrap" class="hidden">
@@ -1282,7 +1341,7 @@ function closeModal(){
  document.body.style.overflow='';
 }
 $('monthSelect').value=new Date().toISOString().slice(0,7);
-let employees=[],schedules=[],payroll=[],stores=[],holidays=[],manualHolidays=[],autoHolidays=[],selectedEmployees=new Set(),leaveLedger=[],leaveAttendanceSchedules=[],scheduleSaveQueue=new Map(),scheduleSaveTimer=null,employeeImportRows=[],paymentRegister=[],incentiveRegister=[],retiredEmployees=[],employeeView='active',employeeActiveSort='manual',refreshToken=0,payrollReloadToken=0,employeeDeleteSelection=new Set(),scheduleView='monthly',employeeResidentBackfillDoneStores=new Set(),employeeSensitiveColumnsMissingDetected=false,employeeDocumentStatusMap=new Map(),employeeDocumentStatusReadyStoreId=null,employeeDocumentPeriodColumnsAvailable=true,employeeDocumentIndefiniteColumnAvailable=true,employeeWorkConditions=[],employeeWorkConditionTableAvailable=null,currentSessionUser=null,currentAppUser=null,currentPermissions=new Map(),currentStoreAccess=new Set(),permissionSystemAvailable=null,adminUsers=[],adminUserStoreAccess=[],adminUserPermissions=[],auditLogs=[],accessLogs=[],ipAddressLabels=new Map(),scheduleMonthLocks=[],scheduleLockTableAvailable=null,adminTaskRefreshToken=0,hoursView='summary',attendanceSchemaAvailable=null,attendanceActiveImport=null,attendanceRecords=[],attendanceReviews=[],attendanceReviewHistory=[],attendanceListMode='pending',attendanceSelected=new Set(),attendancePendingManualParse=null,attendanceSettings={late_minutes:10,early_leave_minutes:10,late_out_minutes:60},scheduleOutputMode='all',scheduleOutputSelected=new Set(),pendingContractExtraction=null;
+let employees=[],schedules=[],payroll=[],stores=[],holidays=[],manualHolidays=[],autoHolidays=[],selectedEmployees=new Set(),leaveLedger=[],leaveAttendanceSchedules=[],scheduleSaveQueue=new Map(),scheduleSaveTimer=null,employeeImportRows=[],paymentRegister=[],incentiveRegister=[],retiredEmployees=[],employeeView='active',employeeActiveSort='manual',refreshToken=0,payrollReloadToken=0,employeeDeleteSelection=new Set(),scheduleView='monthly',employeeResidentBackfillDoneStores=new Set(),employeeSensitiveColumnsMissingDetected=false,employeeDocumentStatusMap=new Map(),employeeDocumentStatusReadyStoreId=null,employeeDocumentPeriodColumnsAvailable=true,employeeDocumentIndefiniteColumnAvailable=true,employeeWorkConditions=[],employeeWorkConditionTableAvailable=null,currentSessionUser=null,currentAppUser=null,currentPermissions=new Map(),currentStoreAccess=new Set(),permissionSystemAvailable=null,adminUsers=[],adminUserStoreAccess=[],adminUserPermissions=[],auditLogs=[],accessLogs=[],ipAddressLabels=new Map(),scheduleMonthLocks=[],scheduleLockTableAvailable=null,adminTaskRefreshToken=0,hoursView='summary',attendanceSchemaAvailable=null,attendanceActiveImport=null,attendanceRecords=[],attendanceReviews=[],attendanceReviewHistory=[],attendanceListMode='pending',attendanceSelected=new Set(),attendancePendingManualParse=null,attendanceSettings={late_minutes:10,early_leave_minutes:10,late_out_minutes:60},scheduleOutputMode='all',scheduleOutputSelected=new Set(),pendingContractExtraction=null,scheduleEmployeeOrderMap=new Map(),scheduleEmployeeOrderTableAvailable=null,scheduleDragEmployeeId=null,scheduleDragPosition='before';
 const money=n=>Math.round(Number(n||0)).toLocaleString('ko-KR')+'원',esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 function normalizeName(v){return String(v??'').normalize('NFKC').trim().replace(/\s+/g,'').replace(/[·ㆍ._-]/g,'').toLowerCase()}
 function monthRange(){let m=$('monthSelect').value,[y,mo]=m.split('-').map(Number),days=new Date(y,mo,0).getDate();return {m,y,mo,days,first:m+'-01',last:m+'-'+String(days).padStart(2,'0')}}
@@ -1369,12 +1428,86 @@ function scheduleManagedEmployees(ym){
  return employeesForMonth(ym).filter(e=>e.hide_monthly_schedule!==true);
 }
 function monthlyScheduleEmployees(ym){
- return scheduleManagedEmployees(ym);
+ return sortEmployeesForSchedule(scheduleManagedEmployees(ym));
 }
 function workTimeEmployees(ym){
  return scheduleManagedEmployees(ym);
 }
 function employeeMonthlyScheduleHidden(e){return e?.hide_monthly_schedule===true}
+
+
+/* ===== V8 스케줄 전용 직원순서 ===== */
+function isMissingScheduleEmployeeOrderTableError(err){let m=String(err?.message||'')+' '+String(err?.details||'')+' '+String(err?.code||'');return /schedule_employee_orders|relation .* does not exist|42P01|schema cache/i.test(m)}
+function scheduleEmployeeOrderValue(e){
+ let v=scheduleEmployeeOrderMap.get(Number(e?.id));
+ if(Number.isFinite(Number(v)))return Number(v);
+ return 100000+Number(e?.print_order??9999);
+}
+function sortEmployeesForSchedule(list){
+ return [...(list||[])].sort((a,b)=>(scheduleEmployeeOrderValue(a)-scheduleEmployeeOrderValue(b))||(Number(a.print_order??9999)-Number(b.print_order??9999))||String(a.name||'').localeCompare(String(b.name||''),'ko'));
+}
+async function loadScheduleEmployeeOrders(sid=storeId()){
+ scheduleEmployeeOrderMap=new Map();
+ if(scheduleEmployeeOrderTableAvailable===false){updateScheduleOrderHint();return {missing:true}}
+ let q=await sb.from('schedule_employee_orders').select('employee_id,order_no').eq('store_id',sid).order('order_no');
+ if(q.error){
+   if(isMissingScheduleEmployeeOrderTableError(q.error)){scheduleEmployeeOrderTableAvailable=false;updateScheduleOrderHint();return {missing:true,error:q.error}}
+   console.warn('스케줄 직원순서 조회 오류',q.error.message);updateScheduleOrderHint();return {error:q.error};
+ }
+ scheduleEmployeeOrderTableAvailable=true;
+ (q.data||[]).forEach(r=>scheduleEmployeeOrderMap.set(Number(r.employee_id),Number(r.order_no)));
+ updateScheduleOrderHint();return {updated:true};
+}
+function updateScheduleOrderHint(){
+ let el=$('scheduleOrderHint');if(!el)return;
+ if(scheduleEmployeeOrderTableAvailable===false){el.className='tag scheduleOrderHint warn';el.textContent='↕ 순서저장 SQL 필요';el.title='스케줄 전용 순서 저장 테이블이 없습니다.'}
+ else if(!canEditModule('schedule')){el.className='tag scheduleOrderHint';el.textContent='↕ 스케줄 순서 보기';el.title='수정 권한이 있는 사용자는 이름을 끌어 순서를 변경할 수 있습니다.'}
+ else {el.className='tag scheduleOrderHint';el.textContent='↕ 이름을 끌어 스케줄 순서 변경';el.title='직원관리 순서와 별개로 업장별 스케줄 순서가 저장됩니다.'}
+}
+function scheduleOrderAllEmployees(){return sortEmployeesForSchedule(allEmployees())}
+function clearScheduleDragMarks(){document.querySelectorAll('#schedulePage tr.scheduleDragging,#schedulePage tr.scheduleDropBefore,#schedulePage tr.scheduleDropAfter').forEach(r=>r.classList.remove('scheduleDragging','scheduleDropBefore','scheduleDropAfter'))}
+function scheduleDragStart(ev,employeeId){
+ if(!canEditModule('schedule')){ev.preventDefault();return}
+ if(scheduleEmployeeOrderTableAvailable===false){ev.preventDefault();alert('스케줄 전용 순서 저장 SQL을 먼저 실행하세요.');return}
+ scheduleDragEmployeeId=Number(employeeId);scheduleDragPosition='before';
+ try{ev.dataTransfer.effectAllowed='move';ev.dataTransfer.setData('text/plain',String(employeeId))}catch(_){ }
+ ev.currentTarget?.closest('tr')?.classList.add('scheduleDragging');
+}
+function scheduleDragOver(ev,targetId){
+ if(!scheduleDragEmployeeId||Number(targetId)===Number(scheduleDragEmployeeId))return;
+ ev.preventDefault();try{ev.dataTransfer.dropEffect='move'}catch(_){ }
+ let row=ev.currentTarget?.closest('tr')||ev.currentTarget;if(!row)return;
+ document.querySelectorAll('#schedulePage tr.scheduleDropBefore,#schedulePage tr.scheduleDropAfter').forEach(r=>{if(r!==row)r.classList.remove('scheduleDropBefore','scheduleDropAfter')});
+ let rect=row.getBoundingClientRect(),after=ev.clientY>rect.top+rect.height/2;scheduleDragPosition=after?'after':'before';
+ row.classList.toggle('scheduleDropBefore',!after);row.classList.toggle('scheduleDropAfter',after);
+}
+async function scheduleDrop(ev,targetId){
+ ev.preventDefault();let dragId=Number(scheduleDragEmployeeId),target=Number(targetId);clearScheduleDragMarks();scheduleDragEmployeeId=null;
+ if(!dragId||!target||dragId===target)return;
+ let full=scheduleOrderAllEmployees(),from=full.findIndex(e=>Number(e.id)===dragId),to=full.findIndex(e=>Number(e.id)===target);if(from<0||to<0)return;
+ let [moved]=full.splice(from,1);to=full.findIndex(e=>Number(e.id)===target);if(scheduleDragPosition==='after')to++;full.splice(Math.max(0,to),0,moved);
+ let ids=full.map(e=>Number(e.id));ids.forEach((id,i)=>scheduleEmployeeOrderMap.set(id,i+1));
+ renderSchedule();if(scheduleView==='weekly')renderWeeklyPlanner();
+ let rows=ids.map((employee_id,i)=>({store_id:storeId(),employee_id,order_no:i+1,updated_at:new Date().toISOString(),updated_by:currentSessionUser?.id||null}));
+ let q=await sb.from('schedule_employee_orders').upsert(rows,{onConflict:'store_id,employee_id'});
+ if(q.error){
+   if(isMissingScheduleEmployeeOrderTableError(q.error))scheduleEmployeeOrderTableAvailable=false;
+   alert('스케줄 직원순서 저장 오류\n'+q.error.message);await loadScheduleEmployeeOrders();renderSchedule();if(scheduleView==='weekly')renderWeeklyPlanner();return;
+ }
+ scheduleEmployeeOrderTableAvailable=true;updateScheduleOrderHint();
+}
+function scheduleDragEnd(){scheduleDragEmployeeId=null;clearScheduleDragMarks()}
+function scheduleDragHandleHtml(e){
+ let drag=canEditModule('schedule')?'true':'false';
+ return `<span class="scheduleDragHandle" draggable="${drag}" ondragstart="scheduleDragStart(event,${e.id})" ondragend="scheduleDragEnd()" title="이름을 잡아 위아래로 끌면 스케줄 순서만 바뀝니다"><span class="scheduleDragGrip">⋮⋮</span><b>${esc(e.name)}</b></span>`;
+}
+function highlightScheduleContext(input){
+ let table=input?.closest('table');if(!table)return;
+ table.querySelectorAll('.activeScheduleDate').forEach(x=>x.classList.remove('activeScheduleDate'));
+ table.querySelectorAll('tr.activeScheduleRow').forEach(x=>x.classList.remove('activeScheduleRow'));
+ let date=input.dataset.date,th=date?table.querySelector(`thead th[data-schedule-date="${date}"]`):null;if(th)th.classList.add('activeScheduleDate');
+ input.closest('tr')?.classList.add('activeScheduleRow');
+}
 
 // 날짜별 근무조건 이력. 기록이 없으면 기존 employees 기본값을 그대로 사용한다.
 function normalizedWorkDays(v){
@@ -1890,7 +2023,7 @@ async function loadStores(){
 }
 
 function clearStoreScopedUI(){
- employees=[];retiredEmployees=[];schedules=[];payroll=[];leaveLedger=[];paymentRegister=[];incentiveRegister=[];employeeDocumentStatusMap=new Map();employeeDocumentStatusReadyStoreId=null;scheduleMonthLocks=[];
+ employees=[];retiredEmployees=[];schedules=[];payroll=[];leaveLedger=[];paymentRegister=[];incentiveRegister=[];employeeDocumentStatusMap=new Map();employeeDocumentStatusReadyStoreId=null;scheduleMonthLocks=[];scheduleEmployeeOrderMap=new Map();scheduleEmployeeOrderTableAvailable=null;scheduleDragEmployeeId=null;
  selectedEmployees.clear();
  if($('schBody'))$('schBody').innerHTML='<tr><td colspan="40" style="padding:20px;text-align:center">직원·스케줄 불러오는 중...</td></tr>';
  if($('employeeBody'))$('employeeBody').innerHTML='<tr><td colspan="20" style="padding:20px;text-align:center">직원 불러오는 중...</td></tr>';
@@ -1925,6 +2058,7 @@ async function refreshAll(){
  let all=(q.data||[]).sort((a,b)=>(Number(a.print_order??9999)-Number(b.print_order??9999))||a.name.localeCompare(b.name,'ko'));
  employees=all.filter(x=>x.active!==false);
  retiredEmployees=all.filter(x=>x.active===false);
+ if(canViewModule('schedule'))await loadScheduleEmployeeOrders(sid);else {scheduleEmployeeOrderMap=new Map();scheduleEmployeeOrderTableAvailable=null}
 
  // 날짜별 근무조건 이력과 스케줄은 실제로 필요한 권한에서만 불러온다.
  let needScheduleData=canViewModule('schedule')||canViewModule('hours')||canViewModule('home')||canViewModule('employees');
@@ -2975,12 +3109,13 @@ function weeklyWorkedHours(e,weekStart){
 }
 function weeklyPlannerEmployees(){
  let pr=plannerRange();
- return allEmployees().filter(e=>{
+ let list=allEmployees().filter(e=>{
    // 직원관리에서 '스케줄·근로 제외'한 인원은 주간편성에도 나오면 안 된다.
    if(e.hide_monthly_schedule===true)return false;
    if(!e.hire_date)return false;
    return e.hire_date<=pr.end && (!e.resign_date || e.resign_date>=pr.start);
- }).sort((a,b)=>(Number(a.print_order??9999)-Number(b.print_order??9999))||a.name.localeCompare(b.name,'ko'));
+ });
+ return sortEmployeesForSchedule(list);
 }
 function setScheduleView(v){
  scheduleView=v;
@@ -3005,7 +3140,7 @@ function renderWeeklyPlanner(){
    for(let d=0;d<7;d++){
      let date=addDaysIso(ws,d),[yy,mm,dd]=date.split('-').map(Number),wd=new Date(yy,mm-1,dd).getDay(),hol=holidayFor(date);
      let out=!date.startsWith(selectedMonth),cl=hol?'weekHoliday':(wd===0||wd===6?'weekWeekend':'');
-     th+=`<th class="weekDayHead ${cl} ${out?'weekOutsideMonth':''}">${mm}/${dd}<br>${'일월화수목금토'[wd]}${hol?`<span class="weekHolidayLabel">${esc(hol.name)}</span>`:''}</th>`;
+     th+=`<th data-schedule-date="${date}" class="weekDayHead ${cl} ${out?'weekOutsideMonth':''}">${mm}/${dd}<br>${'일월화수목금토'[wd]}${hol?`<span class="weekHolidayLabel">${esc(hol.name)}</span>`:''}</th>`;
    }
    th+='<th>주간합계</th><th>기준대비</th></tr>';
 
@@ -3013,7 +3148,7 @@ function renderWeeklyPlanner(){
      let target=weeklyTargetHours(e,ws),total=weeklyWorkedHours(e,ws),diff=Math.round((total-target)*100)/100;
      let diffClass=target===0?'':(diff===0?'exact':(diff<0?'under':'over'));
      let diffText=target===0?'-':(diff===0?'맞음':`${diff>0?'+':''}${diff}h`);
-     let row=`<tr><td class="name"><b>${esc(e.name)}</b></td><td>${workTypeForWeek(e,ws)}</td><td class="weekTarget">${target?target+'h':'-'}</td>`;
+     let row=`<tr data-schedule-emp="${e.id}" ondragover="scheduleDragOver(event,${e.id})" ondrop="scheduleDrop(event,${e.id})"><td class="name scheduleNameCell">${scheduleDragHandleHtml(e)}</td><td>${workTypeForWeek(e,ws)}</td><td class="weekTarget">${target?target+'h':'-'}</td>`;
      for(let d=0;d<7;d++){
        let date=addDaysIso(ws,d),valid=employedOn(e,date),s=sched(e,date),v=s?.work_code||'';
        let [yy,mm,dd]=date.split('-').map(Number),wd=new Date(yy,mm-1,dd).getDay(),hol=holidayFor(date);
@@ -3023,16 +3158,16 @@ function renderWeeklyPlanner(){
        }else{
          row+=`<td class="${cl} ${out?'weekOutsideMonth':''}" ondblclick="openShift(${e.id},'${date}')" title="${hol?esc(hol.name):date}">
            <input class="weekCode code${esc(v)}" data-weekstart="${ws}" data-emp="${e.id}" data-date="${date}" value="${esc(v)}" maxlength="4"
-             oninput="weeklyScheduleInput(${e.id},'${date}',this.value,this)" onkeydown="weeklyScheduleKey(event,this)">
+             oninput="weeklyScheduleInput(${e.id},'${date}',this.value,this)" onkeydown="weeklyScheduleKey(event,this)" onfocus="highlightScheduleContext(this)">
          </td>`;
        }
      }
      row+=`<td id="weekTotal-${e.id}-${ws}" class="weekTotal">${total}h</td><td id="weekDiff-${e.id}-${ws}"><span class="weekDiff ${diffClass}">${diffText}</span></td></tr>`;
      return row;
    }).join('');
-   return head+`<div class="tablewrap"><table class="weekTable"><thead>${th}</thead><tbody>${body}</tbody></table></div></div>`;
+   return head+`<div class="tablewrap scheduleGridScroll"><table class="weekTable"><thead>${th}</thead><tbody>${body}</tbody></table></div></div>`;
  }).join('');
- applyScheduleEditState();
+ applyScheduleEditState();updateScheduleOrderHint();
 }
 function refreshWeeklyRow(employeeId,date){
  if(scheduleView!=='weekly')return;
@@ -3087,13 +3222,13 @@ function renderSchedule(){
  let r=monthRange(),list=monthlyScheduleEmployees(r.m),st=stores.find(s=>s.id===storeId());if($('scheduleStoreState'))$('scheduleStoreState').textContent=st?.name||'업장';h='<tr><th class="name">선택 · 직원</th>';
  for(let d=1;d<=r.days;d++){
   let date=r.m+'-'+String(d).padStart(2,'0'),wd=new Date(r.y,r.mo-1,d).getDay(),hol=holidayFor(date),cl=hol?'holidayHead':(wd===0||wd===6?'weekendHead':'');
-  h+=`<th class="${cl}" title="${hol?esc(hol.name):''}">${d}<br>${'일월화수목금토'[wd]}${hol?`<span class="holidayName">${esc(hol.name)}</span>`:''}</th>`;
+  h+=`<th data-schedule-date="${date}" class="${cl}" title="${hol?esc(hol.name):''}">${d}<br>${'일월화수목금토'[wd]}${hol?`<span class="holidayName">${esc(hol.name)}</span>`:''}</th>`;
  }
  h+='<th>실근로</th><th>연장</th></tr>';
  $('schHead').innerHTML=h;
  $('schBody').innerHTML=list.map((e,ri)=>{
   let x=calc(e),checked=selectedEmployees.has(e.id);
-  let row=`<tr class="${checked?'selectedRow':''}"><td class="name"><label style="display:flex;gap:8px;align-items:center"><input class="selectEmp" type="checkbox" ${checked?'checked':''} onchange="toggleEmployee(${e.id},this.checked)"><span><b>${esc(e.name)}</b><br><span class="pill">${workTypeForDate(e,r.first)}</span></span></label></td>`;
+  let row=`<tr data-schedule-emp="${e.id}" ondragover="scheduleDragOver(event,${e.id})" ondrop="scheduleDrop(event,${e.id})" class="${checked?'selectedRow':''}"><td class="name scheduleNameCell"><div style="display:flex;gap:6px;align-items:center"><input class="selectEmp" type="checkbox" ${checked?'checked':''} onchange="toggleEmployee(${e.id},this.checked)"><span>${scheduleDragHandleHtml(e)}<br><span class="pill">${workTypeForDate(e,r.first)}</span></span></div></td>`;
   for(let d=1;d<=r.days;d++){
    let date=r.m+'-'+String(d).padStart(2,'0'),valid=employedOn(e,date),s=sched(e,date),v=s?.work_code||'',wd=new Date(r.y,r.mo-1,d).getDay(),hol=holidayFor(date),cl=hol?' holidayHead':(wd===0||wd===6?' weekendHead':'');
    if(!valid){
@@ -3101,13 +3236,13 @@ function renderSchedule(){
    }else{
     row+=`<td class="${cl}" ondblclick="openShift(${e.id},'${date}')" title="${hol?esc(hol.name):''}">
      <input id="sc-${e.id}-${d}" data-row="${ri}" data-col="${d}" data-emp="${e.id}" data-date="${date}" class="code code${esc(v)}" value="${esc(v)}" maxlength="4"
-       oninput="scheduleInput(${e.id},'${date}',this.value,this)" onkeydown="scheduleKey(event,this)" title="Enter/Tab/방향키 이동 · 더블클릭 상세시간">
+       oninput="scheduleInput(${e.id},'${date}',this.value,this)" onkeydown="scheduleKey(event,this)" onfocus="highlightScheduleContext(this)" title="Enter/Tab/방향키 이동 · 더블클릭 상세시간">
     </td>`;
    }
   }
   return row+`<td id="workTotal-${e.id}"><b>${x.worked}h</b></td><td id="otTotal-${e.id}">${x.ot}h</td></tr>`;
  }).join('');
- applyScheduleEditState();
+ applyScheduleEditState();updateScheduleOrderHint();
 }
 
 function schedulePayload(id,date,raw){
