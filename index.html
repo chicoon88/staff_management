@@ -922,8 +922,8 @@ body.resizingEmployeeColumn *{
 .auditChange{font-size:12px;line-height:1.45;white-space:nowrap}.auditBefore{color:#64748b}.auditArrow{padding:0 5px;color:#94a3b8}.auditAfter{font-weight:900;color:#1f2937}.accessEvent{font-weight:800}
 .activityRowLogin td{background:#f1fbf6!important}.activityRowLogout td{background:#fff7f1!important}.activityRowStore td{background:#f8faff!important}
 .activityBadge{display:inline-flex;align-items:center;justify-content:center;min-width:58px;padding:4px 8px;border-radius:999px;font-size:11px;font-weight:900;white-space:nowrap}.activityBadge.edit{background:#eef3ff;color:#315efb}.activityBadge.accessLogin{background:#e7f8f1;color:#087451}.activityBadge.accessLogout{background:#fff0e8;color:#b54708}.activityBadge.accessStore{background:#f1f3f8;color:#596273}
-.sessionStatus{display:inline-flex;align-items:center;padding:4px 8px;border-radius:999px;font-size:11px;font-weight:900;white-space:nowrap}.sessionStatus.closed{background:#eef1f6;color:#596273}.sessionStatus.live{background:#e7f8f1;color:#087451}.sessionStatus.open{background:#fff8e8;color:#8a5300}
-.sessionDuration{font-variant-numeric:tabular-nums;font-weight:800}.auditAccessSummary{display:flex;align-items:center;gap:7px;white-space:nowrap}.auditAccessSummary .muted{color:#70798c}.accessSessionHelp{margin-top:5px;font-size:11px;color:#70798c;line-height:1.5}
+.sessionStatus{display:inline-flex;align-items:center;padding:4px 8px;border-radius:999px;font-size:11px;font-weight:900;white-space:nowrap}.sessionStatus.closed{background:#eef1f6;color:#596273}.sessionStatus.live{background:#e7f8f1;color:#087451}.sessionStatus.open{background:#fff8e8;color:#8a5300}.sessionStatus.pageleft{background:#fff0e8;color:#b54708}.sessionStatus.stale{background:#fff4d8;color:#8a5d00}.sessionStatus.sqlneed{background:#f1f5f9;color:#64748b}
+.sessionDuration{font-variant-numeric:tabular-nums;font-weight:800}.sessionLastSeen{font-variant-numeric:tabular-nums;white-space:nowrap}.auditAccessSummary{display:flex;align-items:center;gap:7px;white-space:nowrap}.auditAccessSummary .muted{color:#70798c}.accessSessionHelp{margin-top:5px;font-size:11px;color:#70798c;line-height:1.5}.sessionLegend{display:flex;gap:6px;flex-wrap:wrap;margin-top:7px}
 .ipCell{white-space:nowrap}.ipDisplay{display:flex;align-items:center;gap:6px;flex-wrap:wrap}.ipAddressText{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:11px}.ipAlias{display:inline-flex;align-items:center;padding:3px 7px;border-radius:999px;background:#eef3ff;color:#315efb;font-size:11px;font-weight:900}.ipAlias.none{background:#f1f5f9;color:#64748b}.ipLabelManager{display:grid;grid-template-columns:minmax(160px,220px) minmax(220px,1fr);gap:8px 12px;align-items:center;max-height:430px;overflow:auto;padding-right:4px}.ipLabelManager .ipKey{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12px;font-weight:800}.ipLabelManager input{width:100%}.homePayrollSensitive{}
 @media(max-width:700px){.ipLabelManager{grid-template-columns:1fr}.ipLabelManager .ipKey{margin-top:6px}}
 
@@ -1299,8 +1299,8 @@ body.resizingEmployeeColumn *{
    <div class="tablewrap" style="margin-top:10px"><table><thead><tr><th>일시</th><th>사용자</th><th>업장</th><th>대상</th><th>날짜</th><th>구분</th><th>변경내용</th><th>IP / 위치이름</th><th>복구</th></tr></thead><tbody id="auditLogBody"></tbody></table></div>
  </div>
  <div class="card" style="margin-top:12px">
-   <div class="row"><div><h3 style="margin:0">로그인 / 로그아웃 세션</h3><div class="accessSessionHelp">로그인 시각과 로그아웃 시각을 한 줄로 묶어 보여줍니다. <b>로그아웃 버튼을 누르지 않고 창을 닫은 경우에는 정확한 로그아웃 시각을 알 수 없어 ‘종료기록 없음’으로 표시</b>합니다.</div></div></div>
-   <div class="tablewrap" style="margin-top:10px"><table><thead><tr><th>사용자</th><th>로그인 시각</th><th>로그아웃 시각</th><th>접속시간</th><th>상태</th><th>업장</th><th>IP / 위치이름</th><th>기기</th></tr></thead><tbody id="accessSessionBody"></tbody></table></div>
+   <div class="row"><div><h3 style="margin:0">로그인 / 접속 상태</h3><div class="accessSessionHelp">로그인 후 <b>1분마다 생존신호</b>를 저장합니다. 마지막 신호가 3분 이내면 ‘현재 접속중’, 신호가 끊기면 종료로 추정합니다. 로그아웃 버튼은 정확한 종료시각으로 기록하고, 창 닫기 신호가 남은 경우에는 ‘창 닫음 추정’으로 구분합니다. 컴퓨터 강제종료·전원OFF·인터넷 단절은 마지막 생존신호 시각 기준으로 표시됩니다.</div><div class="sessionLegend"><span class="sessionStatus live">현재 접속중</span><span class="sessionStatus closed">정상 로그아웃</span><span class="sessionStatus pageleft">창 닫음 추정</span><span class="sessionStatus stale">PC종료/연결끊김 추정</span></div></div></div>
+   <div class="tablewrap" style="margin-top:10px"><table><thead><tr><th>사용자</th><th>로그인 시각</th><th>로그아웃 / 종료 추정</th><th>접속시간</th><th>상태</th><th>마지막 확인</th><th>업장</th><th>IP / 위치이름</th><th>기기</th></tr></thead><tbody id="accessSessionBody"></tbody></table></div>
  </div>
  <div class="card" style="margin-top:12px">
    <h3 style="margin-top:0">접속 상세기록</h3>
@@ -1316,6 +1316,7 @@ body.resizingEmployeeColumn *{
 <div id="printArea"></div>
 
 <script>
+/* V8.6.2: 실시간 접속 생존신호 / 창닫음·PC종료 추정 */
 const SUPABASE_URL="https://gxdimhvslurvniwughrs.supabase.co";
 const SUPABASE_KEY="sb_publishable_KQm77StbhQkIZv5UjZnoXQ_OWZ7HHzF";
 const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY),$=id=>document.getElementById(id);
@@ -1352,7 +1353,7 @@ function closeModal(){
  document.body.style.overflow='';
 }
 $('monthSelect').value=new Date().toISOString().slice(0,7);
-let employees=[],schedules=[],payroll=[],stores=[],holidays=[],manualHolidays=[],autoHolidays=[],selectedEmployees=new Set(),leaveLedger=[],leaveAttendanceSchedules=[],scheduleSaveQueue=new Map(),scheduleSaveTimer=null,employeeImportRows=[],paymentRegister=[],incentiveRegister=[],retiredEmployees=[],employeeView='active',employeeActiveSort='manual',refreshToken=0,payrollReloadToken=0,employeeDeleteSelection=new Set(),scheduleView='monthly',employeeResidentBackfillDoneStores=new Set(),employeeSensitiveColumnsMissingDetected=false,employeeDocumentStatusMap=new Map(),employeeDocumentStatusReadyStoreId=null,employeeDocumentPeriodColumnsAvailable=true,employeeDocumentIndefiniteColumnAvailable=true,employeeWorkConditions=[],employeeWorkConditionTableAvailable=null,currentSessionUser=null,currentAppUser=null,currentPermissions=new Map(),currentStoreAccess=new Set(),permissionSystemAvailable=null,adminUsers=[],adminUserStoreAccess=[],adminUserPermissions=[],auditLogs=[],accessLogs=[],ipAddressLabels=new Map(),scheduleMonthLocks=[],scheduleLockTableAvailable=null,adminTaskRefreshToken=0,hoursView='summary',attendanceSchemaAvailable=null,attendanceActiveImport=null,attendanceRecords=[],attendanceReviews=[],attendanceReviewHistory=[],attendanceListMode='pending',attendanceSelected=new Set(),attendancePendingManualParse=null,attendanceSettings={late_minutes:10,early_leave_minutes:10,late_out_minutes:60},scheduleOutputMode='all',scheduleOutputSelected=new Set(),pendingContractExtraction=null,scheduleEmployeeOrderMap=new Map(),scheduleEmployeeOrderTableAvailable=null,scheduleDragEmployeeId=null,scheduleDragPosition='before';
+let employees=[],schedules=[],payroll=[],stores=[],holidays=[],manualHolidays=[],autoHolidays=[],selectedEmployees=new Set(),leaveLedger=[],leaveAttendanceSchedules=[],scheduleSaveQueue=new Map(),scheduleSaveTimer=null,employeeImportRows=[],paymentRegister=[],incentiveRegister=[],retiredEmployees=[],employeeView='active',employeeActiveSort='manual',refreshToken=0,payrollReloadToken=0,employeeDeleteSelection=new Set(),scheduleView='monthly',employeeResidentBackfillDoneStores=new Set(),employeeSensitiveColumnsMissingDetected=false,employeeDocumentStatusMap=new Map(),employeeDocumentStatusReadyStoreId=null,employeeDocumentPeriodColumnsAvailable=true,employeeDocumentIndefiniteColumnAvailable=true,employeeWorkConditions=[],employeeWorkConditionTableAvailable=null,currentSessionUser=null,currentAppUser=null,currentPermissions=new Map(),currentStoreAccess=new Set(),permissionSystemAvailable=null,adminUsers=[],adminUserStoreAccess=[],adminUserPermissions=[],auditLogs=[],accessLogs=[],accessSessions=[],accessSessionTableAvailable=null,accessHeartbeatTimer=null,accessSessionRefreshTimer=null,currentAccessToken='',ipAddressLabels=new Map(),scheduleMonthLocks=[],scheduleLockTableAvailable=null,adminTaskRefreshToken=0,hoursView='summary',attendanceSchemaAvailable=null,attendanceActiveImport=null,attendanceRecords=[],attendanceReviews=[],attendanceReviewHistory=[],attendanceListMode='pending',attendanceSelected=new Set(),attendancePendingManualParse=null,attendanceSettings={late_minutes:10,early_leave_minutes:10,late_out_minutes:60},scheduleOutputMode='all',scheduleOutputSelected=new Set(),pendingContractExtraction=null,scheduleEmployeeOrderMap=new Map(),scheduleEmployeeOrderTableAvailable=null,scheduleDragEmployeeId=null,scheduleDragPosition='before';
 const money=n=>Math.round(Number(n||0)).toLocaleString('ko-KR')+'원',esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 function normalizeName(v){return String(v??'').normalize('NFKC').trim().replace(/\s+/g,'').replace(/[·ㆍ._-]/g,'').toLowerCase()}
 function monthRange(){let m=$('monthSelect').value,[y,mo]=m.split('-').map(Number),days=new Date(y,mo,0).getDate();return {m,y,mo,days,first:m+'-01',last:m+'-'+String(days).padStart(2,'0')}}
@@ -1643,7 +1644,7 @@ function canEditModule(module){if(module==='users'||module==='audit')return isAp
 function requireModuleEdit(module,msg='이 계정에는 수정 권한이 없습니다.'){if(canEditModule(module))return true;alert(msg);return false}
 function userDeviceLabel(){let ua=navigator.userAgent||'',mobile=/iPhone|iPad|Android|Mobile/i.test(ua);return `${mobile?'모바일':'PC'} · ${navigator.platform||'기기'}`.slice(0,120)}
 async function loadCurrentAccessContext(){
- let ses=await sb.auth.getSession();currentSessionUser=ses.data?.session?.user||null;currentAppUser=null;currentPermissions=new Map();currentStoreAccess=new Set();if(!currentSessionUser)return false;
+ let ses=await sb.auth.getSession();currentSessionUser=ses.data?.session?.user||null;currentAccessToken=ses.data?.session?.access_token||'';currentAppUser=null;currentPermissions=new Map();currentStoreAccess=new Set();if(!currentSessionUser)return false;
  let prof=await sb.from('app_users').select('*').eq('user_id',currentSessionUser.id).maybeSingle();
  if(prof.error){if(isPermissionTableMissing(prof.error)){permissionSystemAvailable=false;currentAppUser={user_id:currentSessionUser.id,email:currentSessionUser.email,display_name:currentSessionUser.email?.split('@')[0]||'관리자',is_admin:true,active:true};return true}throw prof.error}
  permissionSystemAvailable=true;currentAppUser=prof.data;
@@ -1960,29 +1961,88 @@ function accessSessionIdFromLog(x){let d=x?.details||{};return String(d.access_s
 function currentAccessSessionId(){return String(sessionStorage.getItem('staff_access_session_id')||'').trim()}
 function newAccessSessionId(){return `s_${Date.now().toString(36)}_${Math.random().toString(36).slice(2,10)}`}
 function ensureAccessSessionId(){let id=currentAccessSessionId();if(!id){id=newAccessSessionId();sessionStorage.setItem('staff_access_session_id',id)}return id}
+function isMissingAccessSessionTableError(err){let m=String(err?.message||'')+' '+String(err?.details||'')+' '+String(err?.code||'');return /access_sessions|relation .* does not exist|42P01|schema cache/i.test(m)}
+function accessSessionStoreId(){return $('storeSelect')?.value?storeId():null}
+function accessSessionNow(){return new Date().toISOString()}
 function formatSessionDuration(start,end){if(!start||!end)return '-';let ms=Math.max(0,new Date(end)-new Date(start)),mins=Math.round(ms/60000);if(mins<60)return `${mins}분`;let h=Math.floor(mins/60),m=mins%60;return `${h}시간${m?` ${m}분`:''}`}
-function buildAccessSessions(){
+function accessSessionRelative(ts){if(!ts)return '-';let sec=Math.max(0,Math.floor((Date.now()-new Date(ts))/1000));if(sec<60)return '방금';let m=Math.floor(sec/60);if(m<60)return `${m}분 전`;let h=Math.floor(m/60);return `${h}시간 전`}
+async function startAccessSessionRecord(){
+ if(permissionSystemAvailable!==true||!currentSessionUser||accessSessionTableAvailable===false)return;
+ let id=ensureAccessSessionId(),now=accessSessionNow(),started=sessionStorage.getItem('staff_access_session_db_started')==='1';
+ try{
+   if(!started){
+     let q=await sb.from('access_sessions').insert({session_id:id,user_id:currentSessionUser.id,actor_email:currentSessionUser.email||currentAppUser?.email||null,actor_name:currentAppUser?.display_name||null,store_id:accessSessionStoreId(),device:userDeviceLabel(),login_at:now,last_seen_at:now,page_left_at:null,ended_at:null,end_reason:null});
+     if(q.error){if(isMissingAccessSessionTableError(q.error)){accessSessionTableAvailable=false;return}if(!/duplicate key|23505/i.test(String(q.error.message||'')+' '+String(q.error.code||'')))throw q.error}
+     sessionStorage.setItem('staff_access_session_db_started','1');
+   }
+   accessSessionTableAvailable=true;
+   await touchAccessSession(false);
+ }catch(err){console.warn('실시간 접속세션 시작 오류',err)}
+}
+async function touchAccessSession(pageLeft=false){
+ if(permissionSystemAvailable!==true||!currentSessionUser||accessSessionTableAvailable===false)return;
+ let id=currentAccessSessionId();if(!id)return;let now=accessSessionNow(),patch={last_seen_at:now,store_id:accessSessionStoreId(),updated_at:now};
+ patch.page_left_at=pageLeft?now:null;
+ try{let q=await sb.from('access_sessions').update(patch).eq('session_id',id).eq('user_id',currentSessionUser.id);if(q.error){if(isMissingAccessSessionTableError(q.error))accessSessionTableAvailable=false;else console.warn('접속 생존신호 저장 오류',q.error.message)}}catch(err){console.warn('접속 생존신호 저장 오류',err)}
+}
+async function closeAccessSession(reason='logout'){
+ if(permissionSystemAvailable!==true||!currentSessionUser||accessSessionTableAvailable===false)return;
+ let id=currentAccessSessionId();if(!id)return;let now=accessSessionNow();
+ try{let q=await sb.from('access_sessions').update({last_seen_at:now,ended_at:now,end_reason:reason,page_left_at:null,store_id:accessSessionStoreId(),updated_at:now}).eq('session_id',id).eq('user_id',currentSessionUser.id);if(q.error&&!isMissingAccessSessionTableError(q.error))console.warn('접속세션 종료 저장 오류',q.error.message)}catch(err){console.warn('접속세션 종료 저장 오류',err)}
+}
+function keepalivePageLeft(){
+ if(permissionSystemAvailable!==true||!currentSessionUser||!currentAccessToken||accessSessionTableAvailable!==true)return;
+ let id=currentAccessSessionId();if(!id)return;let now=accessSessionNow(),url=`${SUPABASE_URL}/rest/v1/access_sessions?session_id=eq.${encodeURIComponent(id)}&user_id=eq.${encodeURIComponent(currentSessionUser.id)}`;
+ try{fetch(url,{method:'PATCH',keepalive:true,headers:{apikey:SUPABASE_KEY,Authorization:`Bearer ${currentAccessToken}`,'Content-Type':'application/json',Prefer:'return=minimal'},body:JSON.stringify({last_seen_at:now,page_left_at:now,store_id:accessSessionStoreId(),updated_at:now})}).catch(()=>{})}catch(_){ }
+}
+function stopAccessSessionTracking(){clearInterval(accessHeartbeatTimer);accessHeartbeatTimer=null;clearInterval(accessSessionRefreshTimer);accessSessionRefreshTimer=null}
+async function refreshAccessSessionsOnly(){
+ if(!isAppAdmin()||accessSessionTableAvailable===false||!$('auditPage')?.classList.contains('active'))return;
+ let q=await sb.from('access_sessions').select('*').order('login_at',{ascending:false}).limit(1000);
+ if(q.error){if(isMissingAccessSessionTableError(q.error))accessSessionTableAvailable=false;return}
+ accessSessionTableAvailable=true;accessSessions=q.data||[];renderAccessSessions();
+}
+async function startAccessSessionTracking(){
+ stopAccessSessionTracking();await startAccessSessionRecord();
+ if(accessSessionTableAvailable!==false)accessHeartbeatTimer=setInterval(()=>touchAccessSession(false),60000);
+ accessSessionRefreshTimer=setInterval(()=>refreshAccessSessionsOnly(),30000);
+}
+function legacyAccessSessions(excludeIds=new Set()){
  let src=[...accessLogs].sort((a,b)=>new Date(a.created_at)-new Date(b.created_at)),sessions=[],byId=new Map(),legacyOpen=new Map();
  for(const x of src){
    if(x.event_type!=='login'&&x.event_type!=='logout'&&x.event_type!=='store_open')continue;
    let sid=accessSessionIdFromLog(x),uid=String(x.user_id||x.actor_email||x.actor_name||'unknown');
+   if(sid&&excludeIds.has(sid))continue;
    if(sid){
      let s=byId.get(sid);
-     if(x.event_type==='login'){if(!s){s={id:sid,user_id:x.user_id,actor_name:x.actor_name,actor_email:x.actor_email,login_at:x.created_at,logout_at:null,store_id:x.store_id,ip_address:x.ip_address,device:x.device};byId.set(sid,s);sessions.push(s)}}
-     else if(x.event_type==='logout'){if(!s){s={id:sid,user_id:x.user_id,actor_name:x.actor_name,actor_email:x.actor_email,login_at:null,logout_at:x.created_at,store_id:x.store_id,ip_address:x.ip_address,device:x.device};byId.set(sid,s);sessions.push(s)}else s.logout_at=x.created_at}
+     if(x.event_type==='login'){if(!s){s={id:sid,user_id:x.user_id,actor_name:x.actor_name,actor_email:x.actor_email,login_at:x.created_at,logout_at:null,last_seen_at:null,store_id:x.store_id,ip_address:x.ip_address,device:x.device,legacy:true};byId.set(sid,s);sessions.push(s)}}
+     else if(x.event_type==='logout'){if(!s){s={id:sid,user_id:x.user_id,actor_name:x.actor_name,actor_email:x.actor_email,login_at:null,logout_at:x.created_at,last_seen_at:null,store_id:x.store_id,ip_address:x.ip_address,device:x.device,legacy:true};byId.set(sid,s);sessions.push(s)}else s.logout_at=x.created_at}
      else if(s&&x.store_id)s.store_id=x.store_id;
      continue;
    }
-   if(x.event_type==='login'){let s={id:'legacy_'+x.id,user_id:x.user_id,actor_name:x.actor_name,actor_email:x.actor_email,login_at:x.created_at,logout_at:null,store_id:x.store_id,ip_address:x.ip_address,device:x.device,legacy:true};sessions.push(s);if(!legacyOpen.has(uid))legacyOpen.set(uid,[]);legacyOpen.get(uid).push(s)}
-   else if(x.event_type==='logout'){let arr=legacyOpen.get(uid)||[],s=arr.pop();if(s&&!s.logout_at)s.logout_at=x.created_at;else sessions.push({id:'legacy_logout_'+x.id,user_id:x.user_id,actor_name:x.actor_name,actor_email:x.actor_email,login_at:null,logout_at:x.created_at,store_id:x.store_id,ip_address:x.ip_address,device:x.device,legacy:true})}
+   if(x.event_type==='login'){let s={id:'legacy_'+x.id,user_id:x.user_id,actor_name:x.actor_name,actor_email:x.actor_email,login_at:x.created_at,logout_at:null,last_seen_at:null,store_id:x.store_id,ip_address:x.ip_address,device:x.device,legacy:true};sessions.push(s);if(!legacyOpen.has(uid))legacyOpen.set(uid,[]);legacyOpen.get(uid).push(s)}
+   else if(x.event_type==='logout'){let arr=legacyOpen.get(uid)||[],s=arr.pop();if(s&&!s.logout_at)s.logout_at=x.created_at;else sessions.push({id:'legacy_logout_'+x.id,user_id:x.user_id,actor_name:x.actor_name,actor_email:x.actor_email,login_at:null,logout_at:x.created_at,last_seen_at:null,store_id:x.store_id,ip_address:x.ip_address,device:x.device,legacy:true})}
    else {let arr=legacyOpen.get(uid)||[],s=arr[arr.length-1];if(s&&x.store_id)s.store_id=x.store_id}
  }
+ return sessions;
+}
+function buildAccessSessions(){
+ let modern=(accessSessionTableAvailable===true?accessSessions:[]).map(x=>({id:String(x.session_id||''),user_id:x.user_id,actor_name:x.actor_name,actor_email:x.actor_email,login_at:x.login_at,logout_at:x.ended_at||null,last_seen_at:x.last_seen_at||x.login_at,page_left_at:x.page_left_at||null,end_reason:x.end_reason||null,store_id:x.store_id,device:x.device,modern:true}));
+ let ids=new Set(modern.map(x=>x.id).filter(Boolean)),logBySession=new Map();
+ for(const l of accessLogs){let sid=accessSessionIdFromLog(l);if(sid&&!logBySession.has(sid)&&l.event_type==='login')logBySession.set(sid,l)}
+ modern.forEach(s=>{let l=logBySession.get(s.id);if(l)s.ip_address=l.ip_address||null});
+ let sessions=[...modern,...legacyAccessSessions(ids)];
  return sessions.sort((a,b)=>new Date(b.login_at||b.logout_at)-new Date(a.login_at||a.logout_at));
 }
+function accessSessionPresentation(x){
+ if(x.logout_at){let label=x.end_reason==='logout'?'정상 로그아웃':'종료';return {status:`<span class="sessionStatus closed">${label}</span>`,end:x.logout_at,durationEnd:x.logout_at}}
+ if(x.modern){let last=x.last_seen_at||x.login_at,age=last?Date.now()-new Date(last):Infinity;if(age<=180000)return {status:'<span class="sessionStatus live">현재 접속중</span>',end:null,durationEnd:null};if(x.page_left_at){return {status:'<span class="sessionStatus pageleft">창 닫음 추정</span>',end:last,durationEnd:last}}return {status:'<span class="sessionStatus stale">PC종료/연결끊김 추정</span>',end:last,durationEnd:last}}
+ let live=!!(x.id&&currentAccessSessionId()&&x.id===currentAccessSessionId());return {status:live?'<span class="sessionStatus live">현재 접속중</span>':'<span class="sessionStatus open">과거 종료시각 미확인</span>',end:null,durationEnd:null};
+}
 function renderAccessSessions(){
- let host=$('accessSessionBody');if(!host)return;let sf=$('auditStoreFilter')?.value||'',uf=$('auditUserFilter')?.value||'',cur=currentAccessSessionId();
- let rows=buildAccessSessions().filter(x=>(!sf||String(x.store_id)===sf)&&(!uf||String(x.user_id)===uf));
- host.innerHTML=rows.map(x=>{let live=!!(x.id&&cur&&x.id===cur&&!x.logout_at),status=x.logout_at?'<span class="sessionStatus closed">종료</span>':live?'<span class="sessionStatus live">현재 접속중</span>':'<span class="sessionStatus open">종료기록 없음</span>';return `<tr><td>${esc(x.actor_name||x.actor_email||'-')}</td><td>${fmtDateTime(x.login_at)}</td><td>${x.logout_at?fmtDateTime(x.logout_at):'-'}</td><td class="sessionDuration">${formatSessionDuration(x.login_at,x.logout_at)}</td><td>${status}</td><td>${esc(stores.find(s=>s.id===Number(x.store_id))?.name||'-')}</td><td class="ipCell">${ipDisplayHtml(x.ip_address)}</td><td>${esc(x.device||'-')}</td></tr>`}).join('')||'<tr><td colspan="8" style="padding:20px">조건에 맞는 로그인 기록이 없습니다.</td></tr>';
+ let host=$('accessSessionBody');if(!host)return;let sf=$('auditStoreFilter')?.value||'',uf=$('auditUserFilter')?.value||'',rows=buildAccessSessions().filter(x=>(!sf||String(x.store_id)===sf)&&(!uf||String(x.user_id)===uf));
+ if(accessSessionTableAvailable===false&&rows.length===0){host.innerHTML='<tr><td colspan="9" style="padding:20px"><span class="sessionStatus sqlneed">실시간 세션 SQL 필요</span> 아래 SQL을 1회 적용하면 현재 접속/창 닫음/PC 종료 추정이 표시됩니다.</td></tr>';return}
+ host.innerHTML=rows.map(x=>{let p=accessSessionPresentation(x),end=p.end,displayEnd=end?fmtDateTime(end):'-',duration=formatSessionDuration(x.login_at,p.durationEnd),last=x.last_seen_at?`${fmtDateTime(x.last_seen_at)}<div class="help">${accessSessionRelative(x.last_seen_at)}</div>`:'-';return `<tr><td>${esc(x.actor_name||x.actor_email||'-')}</td><td>${fmtDateTime(x.login_at)}</td><td>${displayEnd}</td><td class="sessionDuration">${duration}</td><td>${p.status}</td><td class="sessionLastSeen">${last}</td><td>${esc(stores.find(s=>s.id===Number(x.store_id))?.name||'-')}</td><td class="ipCell">${ipDisplayHtml(x.ip_address)}</td><td>${esc(x.device||'-')}</td></tr>`}).join('')||'<tr><td colspan="9" style="padding:20px">조건에 맞는 로그인 기록이 없습니다.</td></tr>';
 }
 function scheduleSnapshotForUndo(v){
  let src=v||{},keys=['employee_id','work_date','work_code','scheduled_hours','worked_hours','overtime_hours','start_time','end_time','break_minutes','status'],o={};
@@ -2017,14 +2077,17 @@ async function undoScheduleAudit(id){
 
 async function loadAuditPage(){
  if(!isAppAdmin()||permissionSystemAvailable!==true)return;
- let [a,l,u,il]=await Promise.all([
+ let sessionQuery=accessSessionTableAvailable===false?Promise.resolve({data:[],error:null,_missing:true}):sb.from('access_sessions').select('*').order('login_at',{ascending:false}).limit(1000);
+ let [a,l,u,il,ss]=await Promise.all([
    sb.from('audit_logs').select('*').order('created_at',{ascending:false}).limit(1500),
    sb.from('access_logs').select('*').order('created_at',{ascending:false}).limit(1000),
    sb.from('app_users').select('user_id,email,display_name').order('display_name'),
-   sb.from('ip_address_labels').select('ip_address,label').order('ip_address')
+   sb.from('ip_address_labels').select('ip_address,label').order('ip_address'),
+   sessionQuery
  ]);
  if(a.error||l.error)return alert((a.error||l.error).message);
  if(il.error)console.warn('IP 이름 조회 오류 · SQL 적용 전이면 무시됩니다.',il.error.message);
+ if(ss?.error){if(isMissingAccessSessionTableError(ss.error)){accessSessionTableAvailable=false;accessSessions=[]}else console.warn('실시간 접속세션 조회 오류',ss.error.message)}else if(!ss?._missing){accessSessionTableAvailable=true;accessSessions=ss.data||[]}
  auditLogs=a.data||[];accessLogs=l.data||[];adminUsers=u.data||adminUsers;ipAddressLabels=new Map((il.data||[]).map(x=>[ipKey(x.ip_address),x.label||'']));
  if($('auditStoreFilter'))$('auditStoreFilter').innerHTML='<option value="">전체 업장</option>'+stores.map(st=>`<option value="${st.id}">${esc(st.name)}</option>`).join('');
  if($('auditUserFilter'))$('auditUserFilter').innerHTML='<option value="">전체 사용자</option>'+adminUsers.map(x=>`<option value="${x.user_id}">${esc(x.display_name||x.email||'사용자')}</option>`).join('');
@@ -2040,17 +2103,18 @@ async function signIn(){
   let email=raw.includes('@')?raw:await loginIdToInternalEmail(raw);
   let {error}=await sb.auth.signInWithPassword({email,password});
   if(error){$('loginMsg').textContent=raw.includes('@')?error.message:'아이디 또는 비밀번호가 맞지 않습니다.';return}
-  sessionStorage.removeItem('staff_access_logged');sessionStorage.removeItem('staff_access_session_id');
+  sessionStorage.removeItem('staff_access_logged');sessionStorage.removeItem('staff_access_session_id');sessionStorage.removeItem('staff_access_session_db_started');
   $('loginMsg').textContent='';openApp();
  }catch(err){$('loginMsg').textContent=err?.message||String(err)}
 }
-async function signOut(){await logAccessEvent('logout',{store_id:$('storeSelect')?.value?storeId():null});sessionStorage.removeItem('staff_access_logged');sessionStorage.removeItem('staff_access_session_id');await sb.auth.signOut();location.reload()}
+async function signOut(){stopAccessSessionTracking();await closeAccessSession('logout');await logAccessEvent('logout',{store_id:$('storeSelect')?.value?storeId():null});sessionStorage.removeItem('staff_access_logged');sessionStorage.removeItem('staff_access_session_id');sessionStorage.removeItem('staff_access_session_db_started');await sb.auth.signOut();location.reload()}
 async function boot(){let {data}=await sb.auth.getSession();if(data.session)openApp()}
 async function openApp(){
  try{
   let ok=await loadCurrentAccessContext();if(!ok)return;
   $('login').classList.add('hidden');$('app').classList.remove('hidden');applyPermissionUI();setHoursView(isAppAdmin()?(localStorage.getItem('staff_hours_view')||'summary'):'attendance');await loadStores();if(isAppAdmin()&&permissionSystemAvailable===true){try{await loadAdminAccountDirectory()}catch(err){console.warn(err)}}selectInitialPermittedPage();applyPermissionUI();await refreshAll();
   if(sessionStorage.getItem('staff_access_logged')!=='1'){ensureAccessSessionId();await logAccessEvent('login',{store_id:$('storeSelect')?.value?storeId():null});sessionStorage.setItem('staff_access_logged','1')}
+  await startAccessSessionTracking();
  }catch(err){console.error(err);$('loginMsg').textContent=err?.message||String(err)}
 }
 [$('loginEmail'),$('loginPassword')].forEach(el=>el&&el.addEventListener('keydown',e=>{if(e.key==='Enter')signIn()}));
@@ -2096,7 +2160,7 @@ async function switchMonth(){
 }
 async function switchStore(){
  const sid=storeId();if(!isAppAdmin()&&permissionSystemAvailable===true&&!currentStoreAccess.has(Number(sid)))return alert('이 업장에 접근 권한이 없습니다.');
- localStorage.setItem('staff_dashboard_store_id',String(sid));++payrollReloadToken;clearStoreScopedUI();await refreshAll();await logAccessEvent('store_open',{store_id:sid});
+ localStorage.setItem('staff_dashboard_store_id',String(sid));++payrollReloadToken;clearStoreScopedUI();await refreshAll();await logAccessEvent('store_open',{store_id:sid});await touchAccessSession(false);
 }
 
 async function refreshAll(){
@@ -3505,6 +3569,8 @@ function scheduleKey(ev,input){
  let target=$(`sc-${list[nr]?.id}-${nc}`);
  if(target){target.focus();target.select()}
 }
+window.addEventListener('pagehide',()=>{keepalivePageLeft()});
+window.addEventListener('pageshow',()=>{if(currentSessionUser&&accessSessionTableAvailable===true)touchAccessSession(false)});
 window.addEventListener('beforeunload',()=>{if(scheduleSaveQueue.size)flushScheduleQueue()});
 function mins(t){if(!t)return null;let [h,m]=t.slice(0,5).split(':').map(Number);return h*60+m}function hoursBetween(a,b,br){let x=mins(a),y=mins(b);if(x==null||y==null)return 0;if(y<x)y+=1440;return Math.max(0,(y-x-Number(br||0))/60)}
 function openShift(id,date){if(!requireScheduleDateEdit(date))return;let e=employees.find(x=>x.id===id),cond=workConditionForDate(e||{},date),rule=conditionTimesForDate(cond,date),s=sched(e,date)||{},start=(s.start_time||rule.start||'').slice(0,5),end=(s.end_time||rule.end||'').slice(0,5),br=s.break_minutes??rule.break_minutes??60;modal(`<h2>${esc(e.name)} · ${date}</h2><div class="formgrid"><div class="field"><label>구분</label><select id="mCode"><option value="work">근무</option><option value="leave">연차</option><option value="sick">병가(확인필요)</option><option value="absence">결근</option><option value="deemed">법정 출근간주</option><option value="reserve">예비군(연차 차감 없음)</option><option value="off">휴무</option></select></div><div class="field"><label>출근</label><input id="mStart" type="time" value="${start}"></div><div class="field"><label>퇴근</label><input id="mEnd" type="time" value="${end}"></div><div class="field"><label>휴게(분)</label><input id="mBreak" type="number" value="${br}"></div></div><div class="help">이 날짜에 적용되는 근무조건(${esc(workTypeForDate(e,date))}) 기준입니다. 소정 ${rule.daily_hours||cond.daily_hours||8}h를 넘는 부분은 연장으로 표시합니다.</div><div class="modalActions"><button class="btn gray" onclick="closeModal()">취소</button><button class="btn" onclick="saveShiftDetail(${id},'${date}')">저장</button></div>`);$('mCode').value=s.status||((s.work_code==='연')?'leave':(s.work_code==='병')?'sick':(s.work_code==='결')?'absence':(s.work_code==='법')?'deemed':(s.work_code==='예')?'reserve':(s.work_code==='0')?'off':'work')}
