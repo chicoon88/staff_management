@@ -1135,7 +1135,7 @@ body.commerceStoreMode #renameStoreBtn{display:none!important}
 </div>
 
 <section id="commercePage" class="page">
- <div class="commerceHero"><h1 class="title">88커머스</h1><div class="sub">기준 Excel 전체 시트를 홈페이지에서 그대로 조회 · 카페24는 원본수량과 품목환산을 분리 · 신규만 자동입력 · 불일치는 검토</div></div>
+ <div class="commerceHero"><h1 class="title">88커머스 <span style="font-size:12px;opacity:.8">V9.5</span></h1><div class="sub">기준 Excel 전체 시트를 홈페이지에서 그대로 조회 · 카페24는 원본수량과 품목환산을 분리 · 신규만 자동입력 · 불일치는 검토</div></div>
 
  <div id="commerceDashboardView" class="commerceView">
   <div class="commerceKpis">
@@ -1773,7 +1773,27 @@ function applyPermissionUI(){
  document.querySelectorAll('.homePayrollSensitive').forEach(el=>{el.style.display=isAppAdmin()?'':'none'});
  updateCurrentUserBadge();applyScheduleEditState();if($('adminTaskBoard'))$('adminTaskBoard').style.display=canViewModule('home')?'':'none';
 }
-function selectInitialPermittedPage(){let active=document.querySelector('.page.active'),key=active?.id?.replace(/Page$/,'');if(key&&canViewModule(key))return;let first=['commerce','schedule','hours','home','employees','payroll','stores','holidays'].find(canViewModule);if(!first){document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));alert('이 계정에 허용된 대시보드가 없습니다. 관리자에게 권한을 요청하세요.');return}document.querySelectorAll('.nav').forEach(x=>x.classList.remove('active'));document.querySelectorAll(`[data-page="${first}"]`).forEach(x=>x.classList.add('active'));document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));$(`${first}Page`)?.classList.add('active')}
+function selectInitialPermittedPage(){
+ let commerce=isCommerceStore();
+ let active=document.querySelector('.page.active'),key=active?.id?.replace(/Page$/,'');
+ if(commerce){
+  if(canViewModule('commerce')){
+   document.querySelectorAll('.nav').forEach(x=>x.classList.remove('active'));
+   activateCommerceNav(document.querySelector('.commerceNavBtn[data-commerce-view="dashboard"]'));
+   document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+   $('commercePage')?.classList.add('active');
+   return;
+  }
+ }else{
+  if(key&&key!=='commerce'&&canViewModule(key))return;
+ }
+ let first=(commerce?['commerce','stores']:['schedule','hours','home','employees','payroll','stores','holidays']).find(canViewModule);
+ if(!first){document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));alert('이 계정에 허용된 대시보드가 없습니다. 관리자에게 권한을 요청하세요.');return}
+ document.querySelectorAll('.nav').forEach(x=>x.classList.remove('active'));
+ document.querySelectorAll(`[data-page="${first}"]`).forEach(x=>x.classList.add('active'));
+ document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+ $(`${first}Page`)?.classList.add('active')
+}
 async function logAccessEvent(eventType,details={}){
  if(permissionSystemAvailable!==true||!currentSessionUser)return;
  let sessionId=eventType==='login'?ensureAccessSessionId():(currentAccessSessionId()||ensureAccessSessionId()),mergedDetails={...details,access_session_id:sessionId};
@@ -2225,6 +2245,7 @@ async function openApp(){
 }
 [$('loginEmail'),$('loginPassword')].forEach(el=>el&&el.addEventListener('keydown',e=>{if(e.key==='Enter')signIn()}));
 document.querySelectorAll('.nav:not(.commerceNavBtn)').forEach(b=>b.onclick=()=>{
+ if(b.dataset.page==='commerce'&&!isCommerceStore())return;
  if(!canViewModule(b.dataset.page))return alert('이 계정에는 해당 화면 보기 권한이 없습니다.');
  document.querySelectorAll('.nav').forEach(x=>x.classList.remove('active'));
  document.querySelectorAll(`[data-page="${b.dataset.page}"]`).forEach(x=>x.classList.add('active'));
@@ -2247,7 +2268,26 @@ let commerceCurrentSheet='',commerceCurrentSheetRows=[],commerceCurrentSheetDate
 function isCommerceStore(sid=storeId()){return commerceStoreIds.has(Number(sid))}
 async function loadCommerceStoreSettings(){let q=await sb.from('commerce_store_settings').select('store_id,active').eq('active',true);if(q.error){commerceStoreIds=new Set();if(!/does not exist|42P01|schema cache/i.test(String(q.error.message||'')))console.warn('커머스 업장 설정 조회',q.error.message);return}commerceStoreIds=new Set((q.data||[]).map(x=>Number(x.store_id)))}
 function activateCommerceNav(el){document.querySelectorAll('.commerceNavBtn').forEach(x=>x.classList.remove('active'));if(el)el.classList.add('active')}
-function applyStoreModeUI(){let commerce=isCommerceStore();document.body.classList.toggle('commerceStoreMode',commerce);if(commerce){document.querySelectorAll('.nav').forEach(x=>x.classList.remove('active'));activateCommerceNav(document.querySelector('.commerceNavBtn[data-commerce-view="dashboard"]'));document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));$('commercePage')?.classList.add('active');openCommerceNav('dashboard',false)}else if($('commercePage')?.classList.contains('active')){document.querySelectorAll('.nav').forEach(x=>x.classList.remove('active'));document.querySelectorAll('[data-page="home"]').forEach(x=>x.classList.add('active'));document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));$('homePage')?.classList.add('active')}}
+function applyStoreModeUI(){
+ let commerce=isCommerceStore();
+ document.body.classList.toggle('commerceStoreMode',commerce);
+ if(commerce){
+  document.querySelectorAll('.nav').forEach(x=>x.classList.remove('active'));
+  activateCommerceNav(document.querySelector('.commerceNavBtn[data-commerce-view="dashboard"]'));
+  document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+  $('commercePage')?.classList.add('active');
+  openCommerceNav('dashboard',false);
+ }else{
+  let active=document.querySelector('.page.active')?.id||'';
+  if(active==='commercePage'||document.querySelector('.commerceNavBtn.active')){
+   document.querySelectorAll('.nav').forEach(x=>x.classList.remove('active'));
+   let target=['schedule','hours','home','employees','payroll','stores','holidays'].find(canViewModule)||'home';
+   document.querySelectorAll(`[data-page="${target}"]`).forEach(x=>x.classList.add('active'));
+   document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+   $(`${target}Page`)?.classList.add('active');
+  }
+ }
+}
 function showCommerceView(id){document.querySelectorAll('.commerceView').forEach(x=>x.classList.add('hidden'));$(id)?.classList.remove('hidden')}
 function openCommerceNav(view,mark=true){if(!isCommerceStore()||!canViewModule('commerce'))return;if(mark)activateCommerceNav(document.querySelector(`.commerceNavBtn[data-commerce-view="${view}"]`));commerceCurrentView=view;if(view==='dashboard'){showCommerceView('commerceDashboardView');loadCommerceDashboard()}else if(view==='import'){showCommerceView('commerceImportView')}else if(view==='products'){showCommerceView('commerceProductsView');loadCommerceMappings()}else if(view==='workbook'){showCommerceView('commerceWorkbookView');loadCommerceWorkbookInfo()}}
 function openCommerceSheet(sheetName){if(!isCommerceStore()||!canViewModule('commerce'))return;activateCommerceNav(document.querySelector(`.commerceNavBtn[data-commerce-sheet="${CSS.escape(sheetName)}"]`));commerceCurrentView='sheet';showCommerceView('commerceSheetView');commerceCurrentSheet=sheetName;commerceCurrentSheetPage=1;$('commerceSheetTitle').textContent=sheetName;$('commerceSheetBadge').textContent='Excel 시트';loadCommerceSheet(sheetName)}
@@ -2289,7 +2329,7 @@ async function loadStores(){
  let previous=$('storeSelect').value;$('storeSelect').innerHTML=stores.map(s=>`<option value="${s.id}">${esc(s.name)}</option>`).join('');
  let saved=localStorage.getItem('staff_dashboard_store_id');
  let target=stores.some(s=>String(s.id)===String(previous))?String(previous):stores.some(s=>String(s.id)===String(saved))?String(saved):(stores[0]?String(stores[0].id):'');
- if(target)$('storeSelect').value=target;applyStoreModeUI();if(!stores.length&&permissionSystemAvailable===true&&!isAppAdmin())alert('이 계정에 허용된 업장이 없습니다. 관리자에게 업장 권한을 요청하세요.');
+ if(target)$('storeSelect').value=target;applyStoreModeUI();applyPermissionUI();if(!stores.length&&permissionSystemAvailable===true&&!isAppAdmin())alert('이 계정에 허용된 업장이 없습니다. 관리자에게 업장 권한을 요청하세요.');
 }
 
 function clearStoreScopedUI(){
@@ -2309,7 +2349,7 @@ async function switchMonth(){
 }
 async function switchStore(){
  const sid=storeId();if(!isAppAdmin()&&permissionSystemAvailable===true&&!currentStoreAccess.has(Number(sid)))return alert('이 업장에 접근 권한이 없습니다.');
- localStorage.setItem('staff_dashboard_store_id',String(sid));++payrollReloadToken;clearStoreScopedUI();applyStoreModeUI();await refreshAll();await logAccessEvent('store_open',{store_id:sid});await touchAccessSession(false);
+ localStorage.setItem('staff_dashboard_store_id',String(sid));++payrollReloadToken;clearStoreScopedUI();applyStoreModeUI();applyPermissionUI();await refreshAll();await logAccessEvent('store_open',{store_id:sid});await touchAccessSession(false);
 }
 
 async function refreshAll(){
