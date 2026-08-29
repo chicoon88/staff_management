@@ -1046,6 +1046,24 @@ body.resizingEmployeeColumn *{
 .schedulerMode #scheduleStoreState,.schedulerMode #scheduleLoadState,.schedulerMode #schedulePage>.row>.toolbar>span.help{display:none!important}
 .schedulerMode #scheduleLockBadge.open{display:none!important}
 
+
+
+/* ===== V9 · 88커머스 ===== */
+body.commerceStoreMode .staffOnlyNav{display:none!important}
+body:not(.commerceStoreMode) .commerceOnlyNav{display:none!important}
+body.commerceStoreMode #renameStoreBtn{display:none!important}
+.commerceHero{background:linear-gradient(135deg,#111827,#1f4a61);color:#fff;border-radius:16px;padding:18px;margin-bottom:12px}
+.commerceHero .title{color:#fff}.commerceHero .sub{color:#d9e6ee}
+.commerceKpis{display:grid;grid-template-columns:repeat(5,minmax(130px,1fr));gap:10px;margin:12px 0}
+.commerceKpis .card .v{font-size:22px}
+.commerceTabs{display:flex;gap:6px;flex-wrap:wrap;margin:12px 0}
+.commerceTab{border:1px solid var(--line);background:#fff;border-radius:999px;padding:8px 12px;font-weight:900;cursor:pointer}
+.commerceTab.active{background:#111827;color:#fff;border-color:#111827}
+.commerceImportDrop{border:2px dashed #b8c5d4;border-radius:14px;background:#f8fafc;padding:20px;text-align:center}
+.commercePreviewStats{display:grid;grid-template-columns:repeat(6,minmax(110px,1fr));gap:8px;margin:12px 0}
+.commerceStat{background:#fff;border:1px solid var(--line);border-radius:11px;padding:10px}.commerceStat b{font-size:20px;display:block;margin-top:3px}
+.statusNew{color:#087451;font-weight:900}.statusDup{color:#667085;font-weight:900}.statusChanged{color:#a15c00;font-weight:900}.statusExcluded{color:#8b5e00;font-weight:900}.statusReview{color:#b42318;font-weight:900}
+@media(max-width:1000px){.commerceKpis{grid-template-columns:repeat(2,1fr)}.commercePreviewStats{grid-template-columns:repeat(2,1fr)}}
 </style>
 </head>
 <body>
@@ -1056,17 +1074,19 @@ body.resizingEmployeeColumn *{
 <section id="app" class="app hidden">
 <header class="top"><div class="brand">직원관리 대시보드<small>업장 · 스케줄 · 근로시간 · 급여</small></div><div class="toolbar" style="margin-left:auto"><span id="currentUserBadge" class="userBadge">사용자 확인 중</span><button onclick="signOut()">로그아웃</button></div></header>
 <div class="mobileNav">
- <button class="nav active" data-page="home">현황</button><button class="nav" data-page="schedule">스케줄</button><button class="nav" data-page="hours">근로</button><button class="nav" data-page="payroll">급여</button><button class="nav" data-page="employees">직원</button><button class="nav" data-page="stores">업장</button>
+ <button class="nav active staffOnlyNav" data-page="home">현황</button><button class="nav staffOnlyNav" data-page="schedule">스케줄</button><button class="nav staffOnlyNav" data-page="hours">근로</button><button class="nav staffOnlyNav" data-page="payroll">급여</button><button class="nav staffOnlyNav" data-page="employees">직원</button><button class="nav" data-page="stores">업장</button>
+ <button class="nav commerceOnlyNav" data-page="commerce">88커머스</button>
 </div>
 <div class="layout">
 <aside class="side">
+ <button class="nav commerceOnlyNav" data-page="commerce">▦ 88커머스</button>
  <button class="nav active" data-page="home">▦ 전체 현황</button>
  <button class="nav" data-page="schedule">▣ 월간 스케줄</button>
  <button class="nav" data-page="hours">◷ 근로시간</button>
  <button class="nav" data-page="payroll">₩ 급여관리</button>
  <button class="nav" data-page="employees">♙ 직원관리</button>
  <button class="nav" data-page="stores">⌂ 업장관리</button>
- <button class="nav" data-page="holidays">★ 공휴일관리</button>
+ <button class="nav staffOnlyNav" data-page="holidays">★ 공휴일관리</button>
  <div id="adminNavDivider" class="sideDivider"></div>
  <button class="nav" data-page="users">♟ 사용자 / 권한</button>
  <button class="nav" data-page="audit">☷ 접속 / 수정이력</button>
@@ -1077,6 +1097,47 @@ body.resizingEmployeeColumn *{
  <button id="renameStoreBtn" class="btn gray small" onclick="renameCurrentStore()">업장명 수정</button>
  <input id="monthSelect" type="month" onchange="switchMonth()">
 </div>
+
+<section id="commercePage" class="page">
+ <div class="commerceHero"><h1 class="title">88커머스</h1><div class="sub">카페24 원본수량 보존 · 주문번호/상품행 기준 중복검사 · 변경건은 자동수정하지 않고 검토 후 적용</div></div>
+ <div class="commerceTabs">
+  <button class="commerceTab active" data-commerce-view="dashboard" onclick="setCommerceView('dashboard')">현황</button>
+  <button class="commerceTab" data-commerce-view="sales" onclick="setCommerceView('sales')">매출</button>
+  <button class="commerceTab" data-commerce-view="import" onclick="setCommerceView('import')">카페24 불러오기</button>
+  <button class="commerceTab" data-commerce-view="products" onclick="setCommerceView('products')">상품매핑</button>
+  <button class="commerceTab" data-commerce-view="expenses" onclick="setCommerceView('expenses')">비용/정산</button>
+  <button class="commerceTab" data-commerce-view="bank" onclick="setCommerceView('bank')">통장</button>
+  <button class="commerceTab" data-commerce-view="reports" onclick="setCommerceView('reports')">분석</button>
+ </div>
+ <div id="commerceDashboardView" class="commerceView">
+  <div class="commerceKpis">
+   <div class="card"><div class="k">선택월 매출</div><div class="v" id="commerceSalesTotal">0원</div></div>
+   <div class="card"><div class="k">주문행</div><div class="v" id="commerceSalesCount">0건</div></div>
+   <div class="card"><div class="k">상품매핑 확인</div><div class="v" id="commerceMappingTodo">0건</div></div>
+   <div class="card"><div class="k">최근 업로드</div><div class="v" id="commerceLastImport" style="font-size:14px">-</div></div>
+   <div class="card"><div class="k">변경 확인 필요</div><div class="v" id="commerceReviewCount">0건</div></div>
+  </div>
+  <div class="card"><h3 style="margin-top:0">1단계 상태</h3><div class="help">DB 구조와 카페24 검증 수입부터 연결합니다. 매입·비용·통장·기존 Excel 이관은 다음 단계에서 같은 88커머스 화면 안에 이어 붙입니다.</div></div>
+ </div>
+ <div id="commerceImportView" class="commerceView hidden">
+  <div class="card">
+   <div class="row"><div><h3 style="margin:0">카페24 주문 파일 검증</h3><div class="help">바로 저장하지 않고 먼저 신규/중복/변경/제외를 분류합니다.</div></div><span id="commerceImportState" class="saveState saved">대기</span></div>
+   <div class="commerceImportDrop" style="margin-top:12px">
+    <input id="commerceCafe24File" type="file" accept=".csv,.xlsx,.xls" style="display:none" onchange="previewCommerceCafe24(this.files?.[0]);this.value=''">
+    <button class="btn" onclick="$(`commerceCafe24File`).click()">카페24 파일 선택</button>
+    <div class="help" style="margin-top:8px"><b>중요:</b> 주문수량은 카페24의 「수량」 컬럼 그대로 사용합니다. 옵션명의 10개/60정/2EA 숫자는 주문수량으로 사용하지 않습니다.</div>
+   </div>
+   <div id="commercePreviewStats" class="commercePreviewStats hidden"></div>
+   <div id="commercePreviewWrap" class="tablewrap hidden" style="margin-top:10px"><table style="min-width:1250px"><thead><tr><th>상태</th><th>주문일</th><th>주문번호</th><th>채널</th><th>원본수량</th><th>주문금액</th><th>결제금액</th><th style="min-width:360px">상품/옵션</th><th>수령인</th><th>판정이유</th></tr></thead><tbody id="commercePreviewBody"></tbody></table></div>
+   <div id="commerceImportActions" class="row hidden" style="justify-content:flex-end;margin-top:10px"><button class="btn gray" onclick="clearCommerceImportPreview()">취소</button><button class="btn" onclick="applyCommerceImportPreview()">신규 주문 적용</button></div>
+  </div>
+ </div>
+ <div id="commerceSalesView" class="commerceView hidden"><div class="card"><h3>매출</h3><div class="help">1단계 DB 적용 후 월별·판매처·상품별 조회를 연결합니다.</div></div></div>
+ <div id="commerceProductsView" class="commerceView hidden"><div class="card"><h3>상품매핑</h3><div class="help">카페24 상품/옵션과 엑셀의 우리 품목을 1회 연결하고 이후 자동 사용합니다.</div></div></div>
+ <div id="commerceExpensesView" class="commerceView hidden"><div class="card"><h3>비용/정산</h3><div class="help">현재 통합 Excel의 비용지출·정산관리 구조를 다음 단계에서 이관합니다.</div></div></div>
+ <div id="commerceBankView" class="commerceView hidden"><div class="card"><h3>통장</h3><div class="help">현재 통합 Excel의 통장관리와 정산키 검증을 다음 단계에서 이관합니다.</div></div></div>
+ <div id="commerceReportsView" class="commerceView hidden"><div class="card"><h3>분석</h3><div class="help">연/월/판매처/상품/비용구분을 선택하여 원하는 데이터만 조회하도록 연결합니다.</div></div></div>
+</section>
 
 <section id="homePage" class="page active">
  <div class="row"><div><h1 class="title" id="homeTitle">현황</h1><div class="sub">업장과 월을 선택하면 모든 정보가 같이 바뀝니다.</div></div></div>
@@ -1634,7 +1695,7 @@ async function loadEmployeeWorkConditions(sid=storeId()){
 
 const APP_PERMISSION_MODULES=[
  {key:'home',label:'전체 현황'},{key:'schedule',label:'월간·주간 스케줄'},{key:'hours',label:'근로시간'},
- {key:'payroll',label:'급여관리'},{key:'employees',label:'직원관리'},{key:'stores',label:'업장관리'},{key:'holidays',label:'공휴일관리'}
+ {key:'payroll',label:'급여관리'},{key:'employees',label:'직원관리'},{key:'stores',label:'업장관리'},{key:'holidays',label:'공휴일관리'},{key:'commerce',label:'88커머스'}
 ];
 function isPermissionTableMissing(err){let m=String(err?.message||'')+' '+String(err?.details||'')+' '+String(err?.code||'');return /app_users|user_permissions|user_store_access|audit_logs|access_logs|relation .* does not exist|42P01|schema cache/i.test(m)}
 function isAppAdmin(){return permissionSystemAvailable===false||currentAppUser?.is_admin===true}
@@ -1667,7 +1728,7 @@ function applyPermissionUI(){
  document.querySelectorAll('.homePayrollSensitive').forEach(el=>{el.style.display=isAppAdmin()?'':'none'});
  updateCurrentUserBadge();applyScheduleEditState();if($('adminTaskBoard'))$('adminTaskBoard').style.display=canViewModule('home')?'':'none';
 }
-function selectInitialPermittedPage(){let active=document.querySelector('.page.active'),key=active?.id?.replace(/Page$/,'');if(key&&canViewModule(key))return;let first=['schedule','hours','home','employees','payroll','stores','holidays'].find(canViewModule);if(!first){document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));alert('이 계정에 허용된 대시보드가 없습니다. 관리자에게 권한을 요청하세요.');return}document.querySelectorAll('.nav').forEach(x=>x.classList.remove('active'));document.querySelectorAll(`[data-page="${first}"]`).forEach(x=>x.classList.add('active'));document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));$(`${first}Page`)?.classList.add('active')}
+function selectInitialPermittedPage(){let active=document.querySelector('.page.active'),key=active?.id?.replace(/Page$/,'');if(key&&canViewModule(key))return;let first=['commerce','schedule','hours','home','employees','payroll','stores','holidays'].find(canViewModule);if(!first){document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));alert('이 계정에 허용된 대시보드가 없습니다. 관리자에게 권한을 요청하세요.');return}document.querySelectorAll('.nav').forEach(x=>x.classList.remove('active'));document.querySelectorAll(`[data-page="${first}"]`).forEach(x=>x.classList.add('active'));document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));$(`${first}Page`)?.classList.add('active')}
 async function logAccessEvent(eventType,details={}){
  if(permissionSystemAvailable!==true||!currentSessionUser)return;
  let sessionId=eventType==='login'?ensureAccessSessionId():(currentAccessSessionId()||ensureAccessSessionId()),mergedDetails={...details,access_session_id:sessionId};
@@ -2130,17 +2191,86 @@ document.querySelectorAll('.nav').forEach(b=>b.onclick=()=>{
  else if(b.dataset.page==='payroll'){applyPayrollColumnWidths();loadPayrollSimple()}
  else if(b.dataset.page==='holidays')loadHolidayManagementYear();
  else if(b.dataset.page==='home')loadHomePageData();
+ else if(b.dataset.page==='commerce')loadCommerceDashboard();
  else if(b.dataset.page==='stores'){if(isAppAdmin()&&permissionSystemAvailable===true)loadAdminAccountDirectory().then(renderStores).catch(err=>console.warn(err));else renderStores()}
  else if(b.dataset.page==='users')loadUsersAdminPage();
  else if(b.dataset.page==='audit')loadAuditPage();
 })
+
+let commerceStoreIds=new Set(),commerceCurrentView='dashboard',commercePreviewRows=[],commercePreviewFileMeta=null;
+function isCommerceStore(sid=storeId()){return commerceStoreIds.has(Number(sid))}
+async function loadCommerceStoreSettings(){
+ let q=await sb.from('commerce_store_settings').select('store_id,active').eq('active',true);
+ if(q.error){commerceStoreIds=new Set();if(!/does not exist|42P01|schema cache/i.test(String(q.error.message||'')))console.warn('커머스 업장 설정 조회',q.error.message);return}
+ commerceStoreIds=new Set((q.data||[]).map(x=>Number(x.store_id)));
+}
+function applyStoreModeUI(){
+ let commerce=isCommerceStore();document.body.classList.toggle('commerceStoreMode',commerce);
+ if(commerce){
+  document.querySelectorAll('.nav').forEach(x=>x.classList.remove('active'));document.querySelectorAll('[data-page="commerce"]').forEach(x=>x.classList.add('active'));
+  document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));$('commercePage')?.classList.add('active');
+ }else if($('commercePage')?.classList.contains('active')){
+  document.querySelectorAll('.nav').forEach(x=>x.classList.remove('active'));document.querySelectorAll('[data-page="home"]').forEach(x=>x.classList.add('active'));
+  document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));$('homePage')?.classList.add('active');
+ }
+}
+function setCommerceView(view){commerceCurrentView=view;document.querySelectorAll('.commerceTab').forEach(x=>x.classList.toggle('active',x.dataset.commerceView===view));document.querySelectorAll('.commerceView').forEach(x=>x.classList.add('hidden'));let id='commerce'+view.charAt(0).toUpperCase()+view.slice(1)+'View';$(id)?.classList.remove('hidden');if(view==='dashboard')loadCommerceDashboard()}
+function commerceStatusLabel(s){return s==='new'?'신규':s==='duplicate'?'기존':s==='changed'?'변경확인':s==='cancel_changed'?'취소변경':s==='excluded'?'제외':'확인필요'}
+function commerceStatusClass(s){return s==='new'?'statusNew':s==='duplicate'?'statusDup':(s==='changed'||s==='cancel_changed')?'statusChanged':s==='excluded'?'statusExcluded':'statusReview'}
+async function sha256Text(text){let b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(text));return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('')}
+function normalizeCafe24Row(r){
+ let qty=Number(r['수량']??0)||0,orderAmount=Number(String(r['총 주문금액']??0).replace(/,/g,''))||0,paymentAmount=Number(String(r['총 결제금액']??0).replace(/,/g,''))||0;
+ return {source_channel:String(r['주문경로']||'').trim(),order_datetime:String(r['주문일시']||r['발주일']||'').trim(),source_order_no:String(r['주문번호']||'').trim(),source_qty:qty,total_order_amount:orderAmount,total_payment_amount:paymentAmount,product_option_name:String(r['주문상품명(옵션포함)']||'').trim(),recipient:String(r['수령인']||'').trim(),recipient_phone:String(r['수령인 휴대전화']||'').trim(),recipient_zip:String(r['수령인 우편번호']||'').trim(),recipient_address:String(r['수령인 주소(전체)']||'').trim(),delivery_message:String(r['배송메시지']||'').trim()}
+}
+async function previewCommerceCafe24(file){
+ if(!file||!isCommerceStore())return;setCommerceImportState('파일 읽는 중','saving');
+ try{
+  let arr=[];
+  if(/\.csv$/i.test(file.name)){let txt=await file.text(),wb=XLSX.read(txt,{type:'string',raw:true});arr=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{defval:'',raw:true})}
+  else {let buf=await file.arrayBuffer(),wb=XLSX.read(buf,{type:'array',cellDates:false});arr=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{defval:'',raw:true})}
+  let required=['주문번호','수량','총 주문금액','총 결제금액','주문상품명(옵션포함)'];let keys=Object.keys(arr[0]||{}),missing=required.filter(k=>!keys.includes(k));if(missing.length)throw new Error('필수 컬럼 없음: '+missing.join(', '));
+  let normalized=arr.map((x,i)=>({...normalizeCafe24Row(x),row_no:i+2,raw_json:x}));
+  let occurrence=new Map();for(const r of normalized){let identity=[r.source_channel,r.source_order_no,r.product_option_name,r.recipient].join('|'),n=(occurrence.get(identity)||0)+1;occurrence.set(identity,n);r.source_line_key=await sha256Text(identity+'|'+n);r.source_hash=await sha256Text(JSON.stringify([r.source_channel,r.order_datetime,r.source_order_no,r.source_qty,r.total_order_amount,r.total_payment_amount,r.product_option_name,r.recipient,r.recipient_phone,r.recipient_address]));}commercePreviewFileMeta={name:file.name,size:file.size||0};
+  let keysToCheck=normalized.map(x=>x.source_line_key),existing=[];for(let i=0;i<keysToCheck.length;i+=300){let q=await sb.from('commerce_sales').select('source_line_key,last_source_hash,record_status,source_qty,total_order_amount,total_payment_amount').eq('store_id',storeId()).in('source_line_key',keysToCheck.slice(i,i+300));if(q.error)throw q.error;existing.push(...(q.data||[]))}
+  let em=new Map(existing.map(x=>[x.source_line_key,x]));
+  normalized.forEach(r=>{let old=em.get(r.source_line_key),zero=r.total_order_amount===0||r.total_payment_amount===0;if(!old){r.compare_status=zero?'excluded':'new';r.compare_reason=zero?'0원/취소성 행':'새 주문행'}else if(old.last_source_hash===r.source_hash){r.compare_status='duplicate';r.compare_reason='이미 저장된 동일 주문행'}else if(zero&&old.record_status!=='cancelled'){r.compare_status='cancel_changed';r.compare_reason='기존 주문이 0원/취소성 값으로 변경'}else{r.compare_status='changed';r.compare_reason='기존 주문의 수량/금액/상품/수령정보 변경'}});
+  commercePreviewRows=normalized;renderCommercePreview(file);
+ }catch(err){console.error(err);setCommerceImportState('검증 오류','error');alert('카페24 파일 확인 오류\n\n'+(err?.message||err))}
+}
+function renderCommercePreview(file){
+ let count=s=>commercePreviewRows.filter(x=>x.compare_status===s).length,stats=[['전체',commercePreviewRows.length],['신규',count('new')],['기존 건너뜀',count('duplicate')],['변경 확인',count('changed')+count('cancel_changed')],['제외',count('excluded')],['확인필요',count('review')]];
+ $('commercePreviewStats').innerHTML=stats.map(([a,b])=>`<div class="commerceStat"><span class="help">${a}</span><b>${b}건</b></div>`).join('');$('commercePreviewStats').classList.remove('hidden');$('commercePreviewWrap').classList.remove('hidden');$('commerceImportActions').classList.remove('hidden');
+ $('commercePreviewBody').innerHTML=commercePreviewRows.map(r=>`<tr><td class="${commerceStatusClass(r.compare_status)}">${commerceStatusLabel(r.compare_status)}</td><td>${esc(String(r.order_datetime).slice(0,16))}</td><td>${esc(r.source_order_no)}</td><td>${esc(r.source_channel)}</td><td><b>${r.source_qty}</b></td><td class="money">${money(r.total_order_amount)}</td><td class="money">${money(r.total_payment_amount)}</td><td style="text-align:left;white-space:normal">${esc(r.product_option_name)}</td><td>${esc(r.recipient)}</td><td style="text-align:left">${esc(r.compare_reason)}</td></tr>`).join('');setCommerceImportState(`${file?.name||''} · 검증완료`,'saved')
+}
+function setCommerceImportState(text,state='saved'){let e=$('commerceImportState');if(e){e.textContent=text;e.className='saveState '+state}}
+function clearCommerceImportPreview(){commercePreviewRows=[];$('commercePreviewStats')?.classList.add('hidden');$('commercePreviewWrap')?.classList.add('hidden');$('commerceImportActions')?.classList.add('hidden');setCommerceImportState('대기','saved')}
+async function applyCommerceImportPreview(){
+ if(!requireModuleEdit('commerce'))return;if(!commercePreviewRows.length)return;let fresh=commercePreviewRows.filter(x=>x.compare_status==='new');if(!fresh.length)return alert('새로 추가할 주문이 없습니다. 기존/변경건은 자동 추가하지 않습니다.');
+ if(!confirm(`신규 ${fresh.length}건만 저장할까요?\n\n기존 중복은 건너뛰고, 변경/취소변경 건은 자동으로 덮어쓰지 않습니다.`))return;
+ setCommerceImportState('신규 주문 저장 중','saving');
+ let payload=fresh.map(r=>({store_id:storeId(),order_datetime:r.order_datetime||new Date().toISOString(),source_channel:r.source_channel,source_order_no:r.source_order_no,source_line_key:r.source_line_key,source_product_option:r.product_option_name,source_qty:r.source_qty,stock_multiplier:1,total_order_amount:r.total_order_amount,total_payment_amount:r.total_payment_amount,sales_amount:r.source_channel==='스마트스토어'?r.total_payment_amount:r.total_order_amount,recipient:r.recipient,recipient_phone:r.recipient_phone,recipient_zip:r.recipient_zip,recipient_address:r.recipient_address,delivery_message:r.delivery_message,record_status:'active',last_source_hash:r.source_hash}));
+ let stats={new_rows:fresh.length,duplicate_rows:commercePreviewRows.filter(x=>x.compare_status==='duplicate').length,changed_rows:commercePreviewRows.filter(x=>x.compare_status==='changed'||x.compare_status==='cancel_changed').length,excluded_rows:commercePreviewRows.filter(x=>x.compare_status==='excluded').length,review_rows:commercePreviewRows.filter(x=>x.compare_status==='review').length};
+ let bq=await sb.from('commerce_import_batches').insert({store_id:storeId(),source_type:'cafe24',source_file_name:commercePreviewFileMeta?.name||'업로드파일',source_file_size:commercePreviewFileMeta?.size||null,uploaded_by:currentSessionUser?.id||null,total_rows:commercePreviewRows.length,...stats}).select('id').single();if(bq.error){setCommerceImportState('업로드 이력 저장 오류','error');return alert(bq.error.message)}let batchId=bq.data.id;
+ let rawPayload=commercePreviewRows.map(r=>({batch_id:batchId,store_id:storeId(),row_no:r.row_no,source_channel:r.source_channel,order_datetime:r.order_datetime||null,source_order_no:r.source_order_no,source_qty:r.source_qty,total_order_amount:r.total_order_amount,total_payment_amount:r.total_payment_amount,product_option_name:r.product_option_name,recipient:r.recipient,recipient_phone:r.recipient_phone,recipient_zip:r.recipient_zip,recipient_address:r.recipient_address,delivery_message:r.delivery_message,source_line_key:r.source_line_key,source_hash:r.source_hash,compare_status:r.compare_status,compare_reason:r.compare_reason,raw_json:r.raw_json||{}}));
+ for(let i=0;i<rawPayload.length;i+=300){let rq=await sb.from('commerce_import_rows').insert(rawPayload.slice(i,i+300));if(rq.error){setCommerceImportState('원본행 저장 오류','error');return alert(rq.error.message)}}
+ payload.forEach(x=>x.source_batch_id=batchId);let q=await sb.from('commerce_sales').insert(payload);if(q.error){setCommerceImportState('매출 저장 오류','error');return alert(q.error.message)}await sb.from('commerce_import_batches').update({applied_at:new Date().toISOString()}).eq('id',batchId);setCommerceImportState(`신규 ${fresh.length}건 저장완료`,'saved');await loadCommerceDashboard();alert(`신규 ${fresh.length}건을 저장했습니다.\n기존 중복은 건너뛰고, 변경/취소변경 건은 검토 이력으로 남겼습니다.`)
+}
+async function loadCommerceDashboard(){
+ if(!isCommerceStore())return;let ym=$('monthSelect')?.value||'',from=ym?ym+'-01':null,to=null;if(ym){let [y,m]=ym.split('-').map(Number),d=new Date(y,m,1);to=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-01`}
+ let q=sb.from('commerce_sales').select('sales_amount,record_status,order_datetime',{count:'exact'}).eq('store_id',storeId());if(from)q=q.gte('order_datetime',from).lt('order_datetime',to);let s=await q;if(s.error){console.warn(s.error);return}
+ let active=(s.data||[]).filter(x=>x.record_status==='active'),total=active.reduce((a,x)=>a+Number(x.sales_amount||0),0);$('commerceSalesTotal').textContent=money(total);$('commerceSalesCount').textContent=`${active.length}건`;
+ let m=await sb.from('commerce_product_mappings').select('id',{count:'exact',head:true}).eq('store_id',storeId()).is('product_id',null);if(!m.error)$('commerceMappingTodo').textContent=`${m.count||0}건`;
+ let b=await sb.from('commerce_import_batches').select('source_file_name,uploaded_at,changed_rows,review_rows').eq('store_id',storeId()).order('uploaded_at',{ascending:false}).limit(1);if(!b.error&&b.data?.[0]){$('commerceLastImport').textContent=b.data[0].source_file_name;$('commerceReviewCount').textContent=`${Number(b.data[0].changed_rows||0)+Number(b.data[0].review_rows||0)}건`}
+}
+
 async function loadStores(){
+ await loadCommerceStoreSettings();
  let q=await sb.from('stores').select('*').order('id');if(q.error){alert(q.error.message);return}
  stores=q.data||[];if(!isAppAdmin()&&permissionSystemAvailable===true)stores=stores.filter(s=>currentStoreAccess.has(Number(s.id)));
  let previous=$('storeSelect').value;$('storeSelect').innerHTML=stores.map(s=>`<option value="${s.id}">${esc(s.name)}</option>`).join('');
  let saved=localStorage.getItem('staff_dashboard_store_id');
  let target=stores.some(s=>String(s.id)===String(previous))?String(previous):stores.some(s=>String(s.id)===String(saved))?String(saved):(stores[0]?String(stores[0].id):'');
- if(target)$('storeSelect').value=target;if(!stores.length&&permissionSystemAvailable===true&&!isAppAdmin())alert('이 계정에 허용된 업장이 없습니다. 관리자에게 업장 권한을 요청하세요.');
+ if(target)$('storeSelect').value=target;applyStoreModeUI();if(!stores.length&&permissionSystemAvailable===true&&!isAppAdmin())alert('이 계정에 허용된 업장이 없습니다. 관리자에게 업장 권한을 요청하세요.');
 }
 
 function clearStoreScopedUI(){
@@ -2160,12 +2290,13 @@ async function switchMonth(){
 }
 async function switchStore(){
  const sid=storeId();if(!isAppAdmin()&&permissionSystemAvailable===true&&!currentStoreAccess.has(Number(sid)))return alert('이 업장에 접근 권한이 없습니다.');
- localStorage.setItem('staff_dashboard_store_id',String(sid));++payrollReloadToken;clearStoreScopedUI();await refreshAll();await logAccessEvent('store_open',{store_id:sid});await touchAccessSession(false);
+ localStorage.setItem('staff_dashboard_store_id',String(sid));++payrollReloadToken;clearStoreScopedUI();applyStoreModeUI();await refreshAll();await logAccessEvent('store_open',{store_id:sid});await touchAccessSession(false);
 }
 
 async function refreshAll(){
  if(!$('storeSelect')?.value)return;
  const token=++refreshToken,sid=storeId(),r=monthRange(),started=performance.now();
+ if(isCommerceStore(sid)){applyStoreModeUI();await loadCommerceDashboard();return}
  seedCurrentYearHolidaysSync();
  if($('scheduleLoadState')){$('scheduleLoadState').textContent='불러오는 중';$('scheduleLoadState').className='saveState saving'}
 
