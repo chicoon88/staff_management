@@ -1081,7 +1081,12 @@ body.commerceStoreMode #renameStoreBtn{display:none!important}
 .commerceWorkbookInfo>div{border:1px solid var(--line);border-radius:10px;padding:10px;background:#fafbfc}
 .commerceStatusLine{font-size:12px;font-weight:800;color:#526071}
 .commerceSheetNameBadge{display:inline-block;background:#111827;color:#fff;border-radius:999px;padding:5px 9px;font-size:11px;font-weight:900}
-@media(max-width:900px){.commerceWorkbookInfo{grid-template-columns:1fr 1fr}.commerceSheetGrid{max-height:66vh}}
+.commerceGroupBar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:0 0 13px;padding:12px 14px;background:#fff;border:1px solid var(--line);border-radius:14px}
+.commerceGroupBar.hidden{display:none!important}
+.commerceGroupBar .groupTitle{font-size:18px;font-weight:950;color:#172033}
+.commerceGroupBar .simpleTabs{margin-left:auto}
+.commerceGroupBar .simpleTab{white-space:nowrap}
+@media(max-width:900px){.commerceWorkbookInfo{grid-template-columns:1fr 1fr}.commerceSheetGrid{max-height:66vh}.commerceGroupBar{align-items:flex-start}.commerceGroupBar .simpleTabs{width:100%;overflow-x:auto;flex-wrap:nowrap}}
 
 </style>
 </head>
@@ -1099,23 +1104,12 @@ body.commerceStoreMode #renameStoreBtn{display:none!important}
 <div class="layout">
 <aside class="side">
  <div class="commerceOnlyNav commerceNavGroupTitle">88커머스</div>
- <button class="nav commerceOnlyNav commerceNavBtn active" data-commerce-view="dashboard" onclick="openCommerceNav('dashboard')">▦ 88커머스 현황</button>
- <div class="commerceOnlyNav commerceNavGroupTitle">Excel 시트</div>
- <button class="nav commerceOnlyNav commerceNavBtn" data-commerce-sheet="비용지출" onclick="openCommerceSheet('비용지출')">비용지출</button>
- <button class="nav commerceOnlyNav commerceNavBtn" data-commerce-sheet="정산관리" onclick="openCommerceSheet('정산관리')">정산관리</button>
- <button class="nav commerceOnlyNav commerceNavBtn" data-commerce-sheet="통장관리" onclick="openCommerceSheet('통장관리')">통장관리</button>
- <button class="nav commerceOnlyNav commerceNavBtn" data-commerce-sheet="지출상세내역" onclick="openCommerceSheet('지출상세내역')">지출상세내역</button>
- <button class="nav commerceOnlyNav commerceNavBtn" data-commerce-sheet="매입입력" onclick="openCommerceSheet('매입입력')">매입입력</button>
- <button class="nav commerceOnlyNav commerceNavBtn" data-commerce-sheet="매출입력" onclick="openCommerceSheet('매출입력')">매출입력</button>
- <button class="nav commerceOnlyNav commerceNavBtn" data-commerce-sheet="Sheet3" onclick="openCommerceSheet('Sheet3')">Sheet3</button>
- <button class="nav commerceOnlyNav commerceNavBtn" data-commerce-sheet="_" onclick="openCommerceSheet('_')">_</button>
- <button class="nav commerceOnlyNav commerceNavBtn" data-commerce-sheet="매출조회(월별)" onclick="openCommerceSheet('매출조회(월별)')">매출조회(월별)</button>
- <button class="nav commerceOnlyNav commerceNavBtn" data-commerce-sheet="광고조회(월별)" onclick="openCommerceSheet('광고조회(월별)')">광고조회(월별)</button>
- <button class="nav commerceOnlyNav commerceNavBtn" data-commerce-sheet="매입자료조회" onclick="openCommerceSheet('매입자료조회')">매입자료조회</button>
- <div class="commerceOnlyNav commerceNavGroupTitle">자동입력 / 관리</div>
- <button class="nav commerceOnlyNav commerceNavBtn" data-commerce-view="import" onclick="openCommerceNav('import')">⇧ 카페24 불러오기</button>
- <button class="nav commerceOnlyNav commerceNavBtn" data-commerce-view="products" onclick="openCommerceNav('products')">≡ 상품매핑</button>
- <button class="nav commerceOnlyNav commerceNavBtn" data-commerce-view="workbook" onclick="openCommerceNav('workbook')">▤ 기준 Excel 관리</button>
+ <button class="nav commerceOnlyNav commerceNavBtn active" data-commerce-group="dashboard" onclick="openCommerceGroup('dashboard')">▦ 전체현황</button>
+ <button class="nav commerceOnlyNav commerceNavBtn" data-commerce-group="sales" onclick="openCommerceGroup('sales')">▤ 매출관리</button>
+ <button class="nav commerceOnlyNav commerceNavBtn" data-commerce-group="purchase" onclick="openCommerceGroup('purchase')">▥ 매입관리</button>
+ <button class="nav commerceOnlyNav commerceNavBtn" data-commerce-group="funds" onclick="openCommerceGroup('funds')">₩ 비용·자금</button>
+ <button class="nav commerceOnlyNav commerceNavBtn" data-commerce-group="analysis" onclick="openCommerceGroup('analysis')">▧ 분석조회</button>
+ <button class="nav commerceOnlyNav commerceNavBtn" data-commerce-group="data" onclick="openCommerceGroup('data')">▣ 자료관리</button>
  <button class="nav active staffOnlyNav" data-page="home">▦ 전체 현황</button>
  <button class="nav staffOnlyNav" data-page="schedule">▣ 월간 스케줄</button>
  <button class="nav staffOnlyNav" data-page="hours">◷ 근로시간</button>
@@ -1135,7 +1129,12 @@ body.commerceStoreMode #renameStoreBtn{display:none!important}
 </div>
 
 <section id="commercePage" class="page">
- <div class="commerceHero"><h1 class="title">88커머스 <span style="font-size:12px;opacity:.8">V9.6</span></h1><div class="sub">기준 Excel 전체 시트를 홈페이지에서 그대로 조회 · 카페24는 원본수량과 품목환산을 분리 · 신규만 자동입력 · 불일치는 검토</div></div>
+ <div class="commerceHero"><h1 class="title">88커머스 <span style="font-size:12px;opacity:.8">V9.7</span></h1><div class="sub">업무별 메뉴 안에서 입력·조회·자동입력을 한 흐름으로 관리 · 기준 Excel 구조와 데이터는 그대로 보존</div></div>
+
+ <div id="commerceGroupBar" class="commerceGroupBar hidden">
+  <div><div id="commerceGroupTitle" class="groupTitle">-</div><div id="commerceGroupSub" class="help" style="margin-top:3px">-</div></div>
+  <div id="commerceGroupTabs" class="simpleTabs"></div>
+ </div>
 
  <div id="commerceDashboardView" class="commerceView">
   <div class="commerceKpis">
@@ -1145,7 +1144,7 @@ body.commerceStoreMode #renameStoreBtn{display:none!important}
    <div class="card"><div class="k">기준 Excel</div><div class="v" id="commerceWorkbookName" style="font-size:14px">미등록</div></div>
    <div class="card"><div class="k">변경 확인 필요</div><div class="v" id="commerceReviewCount">0건</div></div>
   </div>
-  <div class="card"><div class="row"><div><h3 style="margin:0">88커머스 전용 대시보드</h3><div class="help">왼쪽 Excel 시트 메뉴를 누르면 현재 기준파일의 각 시트를 그대로 조회합니다. 연/월 필터는 비용지출·통장관리·매입입력·매출입력에 적용됩니다.</div></div><button class="btn gray" onclick="openCommerceNav('workbook')">기준 Excel 확인</button></div></div>
+  <div class="card"><div class="row"><div><h3 style="margin:0">88커머스 전용 대시보드</h3><div class="help">왼쪽에는 큰 업무만 표시하고, 각 업무 안에서 상단 탭으로 매출입력·카페24·정산·분석 등을 전환합니다. 기준 Excel의 모든 시트 데이터는 계속 보존합니다.</div></div><button class="btn gray" onclick="openCommerceGroup('data','workbook')">기준 Excel 확인</button></div></div>
  </div>
 
  <div id="commerceSheetView" class="commerceView hidden">
@@ -1779,7 +1778,7 @@ function selectInitialPermittedPage(){
  if(commerce){
   if(canViewModule('commerce')){
    document.querySelectorAll('.nav').forEach(x=>x.classList.remove('active'));
-   activateCommerceNav(document.querySelector('.commerceNavBtn[data-commerce-view="dashboard"]'));
+   activateCommerceNav(document.querySelector('.commerceNavBtn[data-commerce-group="dashboard"]'));
    document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
    $('commercePage')?.classList.add('active');
    return;
@@ -2268,15 +2267,46 @@ let commerceCurrentSheet='',commerceCurrentSheetRows=[],commerceCurrentSheetDate
 function isCommerceStore(sid=storeId()){return commerceStoreIds.has(Number(sid))}
 async function loadCommerceStoreSettings(){let q=await sb.from('commerce_store_settings').select('store_id,active').eq('active',true);if(q.error){commerceStoreIds=new Set();if(!/does not exist|42P01|schema cache/i.test(String(q.error.message||'')))console.warn('커머스 업장 설정 조회',q.error.message);return}commerceStoreIds=new Set((q.data||[]).map(x=>Number(x.store_id)))}
 function activateCommerceNav(el){document.querySelectorAll('.commerceNavBtn').forEach(x=>x.classList.remove('active'));if(el)el.classList.add('active')}
+const COMMERCE_GROUPS={
+ dashboard:{title:'전체현황',sub:'88커머스의 주요 현황을 한 번에 확인합니다.',tabs:[]},
+ sales:{title:'매출관리',sub:'매출 입력부터 카페24 신규주문 검증·상품매핑까지 한 화면 흐름으로 관리합니다.',tabs:[
+  {key:'sales',label:'매출입력',type:'sheet',value:'매출입력'},
+  {key:'import',label:'카페24 불러오기',type:'view',value:'import'},
+  {key:'products',label:'상품매핑',type:'view',value:'products'}
+ ]},
+ purchase:{title:'매입관리',sub:'매입 원장과 월별 매입자료를 확인합니다.',tabs:[
+  {key:'purchase',label:'매입입력',type:'sheet',value:'매입입력'},
+  {key:'purchase-report',label:'매입자료조회',type:'sheet',value:'매입자료조회'}
+ ]},
+ funds:{title:'비용·자금',sub:'비용 입력 → 정산 → 실제 통장 흐름을 이어서 확인합니다.',tabs:[
+  {key:'expense',label:'비용지출',type:'sheet',value:'비용지출'},
+  {key:'settlement',label:'정산관리',type:'sheet',value:'정산관리'},
+  {key:'bank',label:'통장관리',type:'sheet',value:'통장관리'}
+ ]},
+ analysis:{title:'분석조회',sub:'월별 매출·광고·지출 분석을 한 곳에서 전환합니다.',tabs:[
+  {key:'sales-report',label:'매출조회(월별)',type:'sheet',value:'매출조회(월별)'},
+  {key:'ad-report',label:'광고조회(월별)',type:'sheet',value:'광고조회(월별)'},
+  {key:'expense-detail',label:'지출상세내역',type:'sheet',value:'지출상세내역'}
+ ]},
+ data:{title:'자료관리',sub:'기준 Excel 원본과 기타 보조 시트를 관리합니다.',tabs:[
+  {key:'workbook',label:'기준 Excel',type:'view',value:'workbook'},
+  {key:'sheet3',label:'Sheet3',type:'sheet',value:'Sheet3'},
+  {key:'underscore',label:'_',type:'sheet',value:'_'}
+ ]}
+};
+let commerceCurrentGroup='dashboard';
+function commerceGroupTabButton(group,t){return `<button class="simpleTab ${commerceCurrentGroup===group&&commerceCurrentSub===t.key?'active':''}" onclick="openCommerceGroup('${group}','${t.key}')">${esc(t.label)}</button>`}
+let commerceCurrentSub='';
+function renderCommerceGroupBar(group,subKey=''){let cfg=COMMERCE_GROUPS[group],bar=$('commerceGroupBar');if(!cfg||group==='dashboard'){bar?.classList.add('hidden');return}bar?.classList.remove('hidden');$('commerceGroupTitle').textContent=cfg.title;$('commerceGroupSub').textContent=cfg.sub;$('commerceGroupTabs').innerHTML=cfg.tabs.map(t=>commerceGroupTabButton(group,t)).join('')}
+function openCommerceGroup(group,subKey=''){if(!isCommerceStore()||!canViewModule('commerce'))return;let cfg=COMMERCE_GROUPS[group]||COMMERCE_GROUPS.dashboard;commerceCurrentGroup=group;activateCommerceNav(document.querySelector(`.commerceNavBtn[data-commerce-group="${group}"]`));if(group==='dashboard'){commerceCurrentSub='';renderCommerceGroupBar(group);openCommerceNav('dashboard',false);return}let tab=cfg.tabs.find(x=>x.key===subKey)||cfg.tabs[0];commerceCurrentSub=tab?.key||'';renderCommerceGroupBar(group,commerceCurrentSub);if(!tab)return;if(tab.type==='sheet')openCommerceSheet(tab.value,false);else openCommerceNav(tab.value,false)}
 function applyStoreModeUI(){
  let commerce=isCommerceStore();
  document.body.classList.toggle('commerceStoreMode',commerce);
  if(commerce){
   document.querySelectorAll('.nav').forEach(x=>x.classList.remove('active'));
-  activateCommerceNav(document.querySelector('.commerceNavBtn[data-commerce-view="dashboard"]'));
   document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
   $('commercePage')?.classList.add('active');
-  openCommerceNav('dashboard',false);
+  openCommerceGroup('dashboard');
  }else{
   let active=document.querySelector('.page.active')?.id||'';
   if(active==='commercePage'||document.querySelector('.commerceNavBtn.active')){
@@ -2289,8 +2319,8 @@ function applyStoreModeUI(){
  }
 }
 function showCommerceView(id){document.querySelectorAll('.commerceView').forEach(x=>x.classList.add('hidden'));$(id)?.classList.remove('hidden')}
-function openCommerceNav(view,mark=true){if(!isCommerceStore()||!canViewModule('commerce'))return;if(mark)activateCommerceNav(document.querySelector(`.commerceNavBtn[data-commerce-view="${view}"]`));commerceCurrentView=view;if(view==='dashboard'){showCommerceView('commerceDashboardView');loadCommerceDashboard()}else if(view==='import'){showCommerceView('commerceImportView')}else if(view==='products'){showCommerceView('commerceProductsView');loadCommerceMappings()}else if(view==='workbook'){showCommerceView('commerceWorkbookView');loadCommerceWorkbookInfo()}}
-function openCommerceSheet(sheetName){if(!isCommerceStore()||!canViewModule('commerce'))return;activateCommerceNav(document.querySelector(`.commerceNavBtn[data-commerce-sheet="${CSS.escape(sheetName)}"]`));commerceCurrentView='sheet';showCommerceView('commerceSheetView');commerceCurrentSheet=sheetName;commerceCurrentSheetPage=1;$('commerceSheetTitle').textContent=sheetName;$('commerceSheetBadge').textContent='Excel 시트';loadCommerceSheet(sheetName)}
+function openCommerceNav(view,mark=true){if(!isCommerceStore()||!canViewModule('commerce'))return;if(mark&&view==='dashboard')activateCommerceNav(document.querySelector('.commerceNavBtn[data-commerce-group="dashboard"]'));commerceCurrentView=view;if(view==='dashboard'){showCommerceView('commerceDashboardView');loadCommerceDashboard()}else if(view==='import'){showCommerceView('commerceImportView')}else if(view==='products'){showCommerceView('commerceProductsView');loadCommerceMappings()}else if(view==='workbook'){showCommerceView('commerceWorkbookView');loadCommerceWorkbookInfo()}}
+function openCommerceSheet(sheetName,mark=true){if(!isCommerceStore()||!canViewModule('commerce'))return;commerceCurrentView='sheet';showCommerceView('commerceSheetView');commerceCurrentSheet=sheetName;commerceCurrentSheetPage=1;$('commerceSheetTitle').textContent=sheetName;$('commerceSheetBadge').textContent='Excel 기준자료';loadCommerceSheet(sheetName)}
 function setCommerceView(v){openCommerceNav(v)}
 function commerceStatusLabel(s){return s==='new'?'신규':s==='duplicate'?'기존':s==='changed'?'변경확인':s==='cancel_changed'?'취소변경':s==='excluded'?'제외':'확인필요'}
 function commerceStatusClass(s){return s==='new'?'statusNew':s==='duplicate'?'statusDup':(s==='changed'||s==='cancel_changed')?'statusChanged':s==='excluded'?'statusExcluded':'statusReview'}
