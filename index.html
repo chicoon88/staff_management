@@ -9797,4 +9797,127 @@ function resetCommerceSheetFilter(){if($('commerceYearFilter'))$('commerceYearFi
 function commerceSheetPrevPage(){commerceCurrentSheetPage=Math.max(1,commerceCurrentSheetPage-1);renderCommerceSheetPage()}function commerceSheetNextPage(){commerceCurrentSheetPage++;renderCommerceSheetPage()}
 </script>
 
+
+<style id="commerceV99Style">
+/* V9.9: Excel helper columns are not UI. Keep filters readable and reports business-oriented. */
+.commerceSheetToolbar select{height:42px!important;min-width:112px!important;padding:8px 34px 8px 12px!important;line-height:1.25!important;font-size:14px!important;font-weight:750!important;overflow:visible!important}
+#commerceMonthFilter{min-width:100px!important}
+.commerceSheetToolbar input{height:42px!important;padding:8px 12px!important;line-height:1.25!important}
+.commerceMonthBadge{white-space:nowrap;min-width:88px;justify-content:center;padding:5px 10px}
+.commerceReadableTable th:first-child,.commerceReadableTable td:first-child{min-width:96px;white-space:nowrap}
+.commerceReadableTable td{line-height:1.35}
+.commerceReportNote{font-size:11px;color:#667085;font-weight:650;margin-top:4px}
+</style>
+<script id="commerceV99Override">
+const COMMERCE_V99_SOURCE_MAP={'매출조회(월별)':'매출입력','매입자료조회':'매입입력'};
+function commerceMonthText(v){let raw=String(v??'').trim();if(/^20\d{2}-\d{2}$/.test(raw))return `${raw.slice(0,4)}년 ${Number(raw.slice(5,7))}월`;let s=commerceDateText(v);if(/^\d{4}-\d{2}/.test(s))return `${s.slice(0,4)}년 ${Number(s.slice(5,7))}월`;let n=commerceNum(v);if(n>=202001&&n<=209912)return `${String(Math.trunc(n)).slice(0,4)}년 ${Number(String(Math.trunc(n)).slice(4,6))}월`;return s||'-'}
+COMMERCE_V98_DESC['매출조회(월별)']='선택한 월은 일자별로, 전체월은 월별로 매출·수수료·원가·수익을 자동 집계합니다.';
+COMMERCE_V98_DESC['매입자료조회']='매입입력 원장을 기준으로 선택 월의 실제 매입내역과 합계를 자동 집계합니다.';
+
+function commerceNum(v){
+ if(typeof v==='number')return Number.isFinite(v)?v:0;
+ let s=String(v??'').replace(/,/g,'').replace(/원|%/g,'').trim();
+ if(!s||s==='-'||/^#/.test(s))return 0;
+ let f=s.match(/^(-?\d+(?:\.\d+)?)\s*\/\s*(\d+(?:\.\d+)?)$/);
+ if(f){let den=Number(f[2]);return den?Number(f[1])/den:0}
+ let n=Number(s);return Number.isFinite(n)?n:0
+}
+function commerceCountText(map){return [...map.entries()].filter(x=>x[0]).sort((a,b)=>b[1]-a[1]).map(([k,n])=>`${k}${n}`).join(' ')||'-'}
+function commerceAddCount(map,v){let k=String(v??'').trim();if(k)map.set(k,(map.get(k)||0)+1)}
+
+async function loadCommerceSheet(name){
+ let st=$('commerceSheetState');
+ try{
+  st.textContent='불러오는 중';
+  let w=await loadActiveCommerceWorkbook();
+  if(!w){commerceCurrentSheetRows=[];commerceCurrentSheetDates=[];$('commerceSheetGrid').innerHTML='<div class="help" style="padding:20px">기준 Excel을 먼저 등록하세요.</div>';return}
+  let sourceName=COMMERCE_V99_SOURCE_MAP[name]||name;
+  let [m,c]=await Promise.all([
+   sb.from('commerce_sheet_meta').select('*').eq('workbook_id',w.id).eq('sheet_name',sourceName).maybeSingle(),
+   sb.from('commerce_sheet_chunks').select('chunk_index,rows_json,row_dates_json').eq('workbook_id',w.id).eq('sheet_name',sourceName).order('chunk_index')
+  ]);
+  if(m.error)throw m.error;if(c.error)throw c.error;if(!m.data)throw new Error(`기준 Excel에 "${sourceName}" 시트가 없습니다.`);
+  commerceCurrentSheetRows=[];commerceCurrentSheetDates=[];
+  (c.data||[]).forEach(x=>{commerceCurrentSheetRows.push(...(x.rows_json||[]));commerceCurrentSheetDates.push(...(x.row_dates_json||[]))});
+  initCommerceYearFilter();commerceCurrentSheetPage=1;rerenderCommerceSheet();
+  st.textContent=sourceName===name?`${w.file_name} · ${m.data.row_count}행`:`${w.file_name} · ${sourceName} 원장 기준 자동집계`;
+ }catch(err){console.error(err);st.textContent='조회 오류';$('commerceSheetGrid').innerHTML=`<div class="warn" style="padding:20px">${esc(err?.message||err)}</div>`}
+}
+
+function commerceSmartRows(sheet){
+ let yr=$('commerceYearFilter')?.value||'',mo=$('commerceMonthFilter')?.value||'',q=String($('commerceSheetSearch')?.value||'').trim().toLowerCase(),out=[];
+ /* 매출/매입 원장은 등록 범위가 B열부터라 JSON index 0이 실제 날짜입니다. */
+ let rules={
+  비용지출:{start:5,date:0},통장관리:{start:7,date:0},지출상세내역:{start:5,date:null},
+  매입입력:{start:14,date:0},매출입력:{start:14,date:0},
+  '매출조회(월별)':{start:14,date:0},'매입자료조회':{start:14,date:0},
+  '광고조회(월별)':{start:14,date:1}
+ }[sheet]||{start:1,date:null};
+ for(let i=rules.start-1;i<commerceCurrentSheetRows.length;i++){
+  let row=commerceCurrentSheetRows[i]||[],dt=commerceCurrentSheetDates[i]||'';
+  if(!dt&&rules.date!=null)dt=commerceDateText(row[rules.date]);
+  if(rules.date!=null&&!/^20\d{2}-\d{2}-\d{2}$/.test(String(dt)))continue;
+  if(dt&&yr&&dt.slice(0,4)!==yr)continue;if(dt&&mo&&dt.slice(5,7)!==mo)continue;
+  if(q&&!row.some(v=>String(v??'').toLowerCase().includes(q)))continue;
+  out.push({row,rowNo:i+1,date:dt});
+ }
+ return out
+}
+
+function renderCommercePurchase(){
+ let rows=commerceSmartRows('매입입력'),amount=rows.reduce((a,x)=>a+commerceNum(x.row[7]),0),qty=rows.reduce((a,x)=>a+commerceNum(x.row[3]),0),items=new Set(rows.map(x=>String(x.row[1]??'').trim()).filter(Boolean));
+ $('commerceSmartSummary').innerHTML=commerceCards([['매입 합계',commerceFmtMoney(amount)],['매입 수량',commerceFmtNum(qty)],['품목수',`${items.size}개`],['거래건수',`${rows.length.toLocaleString()}건`]]);
+ let p=commercePaginate(rows),cols=[{i:0,label:'매입일',type:'date'},{i:1,label:'품목',type:'item'},{i:2,label:'규격'},{i:3,label:'수량',type:'num'},{i:4,label:'단가',type:'money'},{i:5,label:'공급가액',type:'money'},{i:6,label:'세액',type:'money'},{i:7,label:'합계',type:'money'},{i:8,label:'제조번호'},{i:9,label:'유효기한'}];
+ $('commerceSheetGrid').innerHTML=commerceTable('매입 내역','Excel 보조열은 숨기고 실제 입력 원장만 표시합니다.',cols,p.part);return p
+}
+function renderCommerceSales(){
+ let rows=commerceSmartRows('매출입력'),sales=rows.reduce((a,x)=>a+commerceNum(x.row[3]),0),net=rows.reduce((a,x)=>a+commerceNum(x.row[7]),0),fee=rows.reduce((a,x)=>a+commerceNum(x.row[8]),0),profit=rows.reduce((a,x)=>a+commerceNum(x.row[18]),0),qty=rows.reduce((a,x)=>a+commerceNum(x.row[2]),0);
+ $('commerceSmartSummary').innerHTML=commerceCards([['총매출',commerceFmtMoney(sales)],['순매출',commerceFmtMoney(net)],['판매수수료',commerceFmtMoney(fee)],['순수익',commerceFmtMoney(profit)],['판매수량',commerceFmtNum(qty)]]);
+ let p=commercePaginate(rows),cols=[{i:0,label:'일자',type:'date'},{i:1,label:'품목',type:'item'},{i:2,label:'수량',type:'num'},{i:3,label:'총매출',type:'money'},{i:7,label:'순매출',type:'money'},{i:8,label:'판매수수료',type:'money'},{i:9,label:'정산예정',type:'money'},{i:11,label:'제품원가',type:'money'},{i:12,label:'배송비',type:'money'},{i:14,label:'영업이익',type:'money'},{i:18,label:'순수익',type:'money'},{i:19,label:'판매처'},{i:22,label:'주문자'},{i:23,label:'수령자'}];
+ $('commerceSheetGrid').innerHTML=commerceTable('매출 내역','수식용 중간열은 숨기고 실제 확인에 필요한 항목만 표시합니다.',cols,p.part);return p
+}
+
+function commerceSalesAggregate(rows,byMonth){
+ let groups=new Map();
+ for(const x of rows){
+  let key=byMonth?x.date.slice(0,7):x.date;
+  if(!groups.has(key))groups.set(key,{key,total:0,gaguma:0,refund:0,discount:0,net:0,fee:0,settle:0,actual:0,cost:0,shipping:0,extra:0,op:0,labor:0,marketing:0,other:0,profit:0,adSpend:0,channels:new Map(),types:new Map()});
+  let g=groups.get(key),r=x.row;
+  g.total+=commerceNum(r[3]);g.gaguma+=commerceNum(r[4]);g.refund+=commerceNum(r[5]);g.discount+=commerceNum(r[6]);g.net+=commerceNum(r[7]);g.fee+=commerceNum(r[8]);g.settle+=commerceNum(r[9]);g.actual+=commerceNum(r[10]);g.cost+=commerceNum(r[11]);g.shipping+=commerceNum(r[12]);g.extra+=commerceNum(r[13]);g.op+=commerceNum(r[14]);g.labor+=commerceNum(r[15]);g.marketing+=commerceNum(r[16]);g.other+=commerceNum(r[17]);g.profit+=commerceNum(r[18]);g.adSpend+=commerceNum(r[29]);commerceAddCount(g.channels,r[19]);commerceAddCount(g.types,r[21]);
+ }
+ return [...groups.values()].sort((a,b)=>a.key.localeCompare(b.key)).map(g=>({row:[g.key,g.total,g.gaguma,g.refund,g.discount,g.net,g.fee,g.settle,g.actual,g.cost,g.shipping,g.extra,g.op,g.labor,g.marketing,g.other,g.profit,commerceCountText(g.channels),commerceCountText(g.types),g.adSpend]}))
+}
+function renderCommerceSalesMonthly(){
+ let source=commerceSmartRows('매출조회(월별)'),mo=$('commerceMonthFilter')?.value||'',yr=$('commerceYearFilter')?.value||'',byMonth=!mo,rows=commerceSalesAggregate(source,byMonth);
+ let sum=(idx)=>source.reduce((a,x)=>a+commerceNum(x.row[idx]),0);
+ $('commerceSmartSummary').innerHTML=commerceCards([['총매출',commerceFmtMoney(sum(3))],['순매출',commerceFmtMoney(sum(7))],['판매수수료',commerceFmtMoney(sum(8))],['영업이익',commerceFmtMoney(sum(14))],['순수익',commerceFmtMoney(sum(18))]]);
+ let p=commercePaginate(rows),periodType=byMonth?'month':'date';
+ let cols=[{i:0,label:byMonth?'월':'일자',type:periodType},{i:1,label:'총매출',type:'money'},{i:2,label:'가구매',type:'money'},{i:3,label:'환불',type:'money'},{i:4,label:'기타할인',type:'money'},{i:5,label:'순매출',type:'money'},{i:6,label:'판매수수료',type:'money'},{i:7,label:'정산예정',type:'money'},{i:9,label:'제품원가',type:'money'},{i:10,label:'배송비',type:'money'},{i:11,label:'추가지출',type:'money'},{i:12,label:'영업이익',type:'money'},{i:13,label:'인건비',type:'money'},{i:14,label:'마케팅비',type:'money'},{i:15,label:'기타비용',type:'money'},{i:16,label:'순수익',type:'money'},{i:17,label:'구매처'},{i:18,label:'구매형태'},{i:19,label:'광고비 소진',type:'money'}];
+ let title=byMonth?`${yr?yr+'년 ':''}월별 매출 요약`:`${yr?yr+'년 ':''}${Number(mo)}월 일자별 매출`;
+ let sub=byMonth?'전체월에서는 월 단위로 합산합니다. 월을 선택하면 해당 월의 일자별 집계로 전환됩니다.':'Excel 매출조회(월별)의 일자별 구조대로 매출입력 원장에서 자동 집계합니다.';
+ $('commerceSheetGrid').innerHTML=commerceTable(title,sub,cols,p.part);return p
+}
+
+function commercePurchaseAggregate(rows){
+ let groups=new Map();
+ for(const x of rows){let key=x.date.slice(0,7);if(!groups.has(key))groups.set(key,{key,count:0,qty:0,supply:0,tax:0,total:0});let g=groups.get(key),r=x.row;g.count++;g.qty+=commerceNum(r[3]);g.supply+=commerceNum(r[5]);g.tax+=commerceNum(r[6]);g.total+=commerceNum(r[7])}
+ return [...groups.values()].sort((a,b)=>a.key.localeCompare(b.key)).map(g=>({row:[g.key,g.count,g.qty,g.supply,g.tax,g.total]}))
+}
+function renderCommercePurchaseReport(){
+ let rows=commerceSmartRows('매입자료조회'),mo=$('commerceMonthFilter')?.value||'',yr=$('commerceYearFilter')?.value||'';
+ let qty=rows.reduce((a,x)=>a+commerceNum(x.row[3]),0),supply=rows.reduce((a,x)=>a+commerceNum(x.row[5]),0),tax=rows.reduce((a,x)=>a+commerceNum(x.row[6]),0),total=rows.reduce((a,x)=>a+commerceNum(x.row[7]),0);
+ $('commerceSmartSummary').innerHTML=commerceCards([['매입 합계',commerceFmtMoney(total)],['공급가액',commerceFmtMoney(supply)],['세액',commerceFmtMoney(tax)],['매입수량',commerceFmtNum(qty)],['거래건수',`${rows.length.toLocaleString()}건`]]);
+ let p,cols,title,sub;
+ if(!mo){let grouped=commercePurchaseAggregate(rows);p=commercePaginate(grouped);cols=[{i:0,label:'월',type:'month'},{i:1,label:'거래건수',type:'num'},{i:2,label:'수량',type:'num'},{i:3,label:'공급가액',type:'money'},{i:4,label:'세액',type:'money'},{i:5,label:'합계',type:'money'}];title=`${yr?yr+'년 ':''}월별 매입 요약`;sub='매입입력 원장을 월 단위로 합산합니다. 특정 월을 선택하면 실제 매입 상세내역으로 전환됩니다.'}
+ else{p=commercePaginate(rows);cols=[{i:0,label:'일자',type:'date'},{i:1,label:'품목',type:'item'},{i:2,label:'규격'},{i:3,label:'수량',type:'num'},{i:4,label:'단가',type:'money'},{i:5,label:'공급가액',type:'money'},{i:6,label:'세액',type:'money'},{i:7,label:'합계',type:'money'},{i:8,label:'제조번호'},{i:9,label:'유효기한'}];title=`${yr?yr+'년 ':''}${Number(mo)}월 매입자료`;sub='Excel 매입자료조회처럼 선택 월의 실제 매입입력 내역만 표시합니다.'}
+ $('commerceSheetGrid').innerHTML=commerceTable(title,sub,cols,p.part);return p
+}
+
+function initCommerceYearFilter(){
+ let y=$('commerceYearFilter');if(!y)return;let years=new Set();
+ commerceCurrentSheetDates.forEach(d=>{if(/^20\d{2}-/.test(String(d)))years.add(String(d).slice(0,4))});
+ commerceCurrentSheetRows.forEach(r=>{let s=commerceDateText((r||[])[0]);if(/^20\d{2}-/.test(s))years.add(s.slice(0,4));else for(const v of r||[]){s=commerceDateText(v);if(/^20\d{2}-/.test(s)){years.add(s.slice(0,4));break}}});
+ let cur=String(new Date().getFullYear());years.add(cur);let val=y.value;y.innerHTML='<option value="">전체연도</option>'+[...years].sort().map(v=>`<option value="${v}">${v}년</option>`).join('');if([...years].includes(val))y.value=val;else if([...years].includes(cur))y.value=cur
+}
+</script>
 </body></html>
