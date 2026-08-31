@@ -1314,7 +1314,7 @@ body.commerceStoreMode #renameStoreBtn{display:none!important}
  <div id="attendanceView" class="hidden">
   <div class="card attendanceHero">
    <div class="attendanceHeroRow">
-    <div><div class="attendanceHeroTitle">텔레캅 근태 확인</div><div class="attendanceHeroSub">지문기록은 스케줄 확인용이며 근로시간을 자동으로 바꾸지 않습니다.</div></div>
+    <div><div class="attendanceHeroTitle">텔레캅 근태 확인</div><div class="attendanceHeroSub">지문기록은 스케줄 확인용이며 근로시간을 자동으로 바꾸지 않습니다. 잘못 불러온 파일은 아래에서 제거할 수 있습니다.</div></div>
     <div class="toolbar">
      <input type="file" id="attendanceFile" accept=".xls" style="display:none" onchange="importAttendanceFile(this.files?.[0]);this.value=''">
      <button class="btn attendanceUploadBtn" onclick="$('attendanceFile').click()">텔레캅 근태이력 불러오기</button>
@@ -4273,6 +4273,39 @@ async function persistAttendanceImport(file,parsed){
  let oldIds=(prev.data||[]).map(x=>x.id);if(oldIds.length){let off=await sb.from('attendance_imports').update({is_active:false}).in('id',oldIds);if(off.error)throw off.error}let on=await sb.from('attendance_imports').update({is_active:true}).eq('id',iid);if(on.error)throw on.error;
  attendanceSchemaAvailable=true;await loadAttendanceData(sid,ym);setHoursView('attendance');renderAttendance();alert(`텔레캅 근태이력을 불러왔습니다.\n${ym} · ${items.length}건\n\n확인 필요한 기록만 확인하면 됩니다.`);
 }
+async function removeAttendanceImport(){
+ if(!canViewModule('hours'))return alert('근태 확인 권한이 없습니다.');
+ let imp=attendanceActiveImport,sid=storeId(),ym=$('monthSelect').value;
+ if(!imp)return alert('현재 선택월에 제거할 텔레캅 근태이력 파일이 없습니다.');
+ let rr=monthRange(),fileName=imp.file_name||'텔레캅 근태이력',rows=Number(imp.row_count||attendanceRecords.length||0);
+ if(!confirm(`${ym} 텔레캅 근태이력 파일을 제거할까요?\n\n파일: ${fileName}\n지문기록: ${rows}건\n\n제거되는 항목\n- 업로드한 텔레캅 원본 파일\n- 이 파일에서 불러온 지문기록\n- 이 달의 근태 확인 결과 및 수정이력\n\n스케줄·직원·급여 데이터는 삭제되지 않습니다.`))return;
+ let btn=$('attendanceRemoveBtn');if(btn){btn.disabled=true;btn.textContent='제거 중...'}
+ try{
+  // 근태 확인 결과를 먼저 지운다. attendance_review_history는 FK CASCADE로 함께 정리된다.
+  let rv=await sb.from('attendance_reviews').delete().eq('store_id',sid).gte('work_date',rr.first).lte('work_date',rr.last);
+  if(rv.error)throw rv.error;
+  // import 삭제 시 attendance_records는 FK CASCADE로 함께 삭제된다.
+  let dq=await sb.from('attendance_imports').delete().eq('id',imp.id).eq('store_id',sid);
+  if(dq.error)throw dq.error;
+
+  let storageWarning='';
+  if(imp.storage_path){
+   let rm=await sb.storage.from('attendance-sources').remove([imp.storage_path]);
+   if(rm.error){console.warn('텔레캅 원본 Storage 삭제 경고',rm.error);storageWarning='\n\n※ 데이터는 제거됐지만 서버 원본 파일 정리에 실패했습니다. 화면 사용에는 영향 없습니다.'}
+  }
+
+  attendanceActiveImport=null;attendanceRecords=[];attendanceReviews=[];attendanceReviewHistory=[];attendanceSelected.clear();attendanceListMode='pending';
+  await loadAttendanceData(sid,ym);
+  renderAttendance();
+  alert(`텔레캅 근태이력을 제거했습니다.\n${ym} · ${fileName}${storageWarning}`);
+ }catch(err){
+  console.error(err);
+  alert('텔레캅 근태이력 제거 오류\n'+(err?.message||err));
+  await loadAttendanceData(sid,ym);
+ }finally{
+  btn=$('attendanceRemoveBtn');if(btn){btn.disabled=false;btn.textContent='파일 제거'}
+ }
+}
 async function loadAttendanceData(sid=storeId(),ym=$('monthSelect').value){
  attendanceActiveImport=null;attendanceRecords=[];attendanceReviews=[];attendanceSelected.clear();if(attendanceSchemaAvailable===false){renderAttendance();return}
  let iq=await sb.from('attendance_imports').select('*').eq('store_id',sid).eq('work_month',ym+'-01').eq('is_active',true).order('uploaded_at',{ascending:false}).limit(1).maybeSingle();
@@ -4315,7 +4348,7 @@ function renderAttendance(){
  if(attendanceSchemaAvailable===false){body.innerHTML='<tr><td colspan="7" class="attEmpty">근태 기능용 SQL을 먼저 실행해야 합니다.</td></tr>';$('attendanceImportLine').innerHTML='<span class="attStatusTag info">최초 1회 설정 필요</span>';return}
  let rows=buildAttendanceRows(),normal=rows.filter(x=>x.code==='normal').length,done=rows.filter(x=>x.code==='confirmed').length,need=rows.filter(x=>!['normal','confirmed'].includes(x.code)).length;
  if($('attNormalCount'))$('attNormalCount').textContent=normal;if($('attNeedCount'))$('attNeedCount').textContent=need;if($('attDoneCount'))$('attDoneCount').textContent=done;if($('attendanceNeedBadge')){$('attendanceNeedBadge').textContent=need;$('attendanceNeedBadge').style.display=need?'inline-flex':'none'}
- if($('attendanceImportLine'))$('attendanceImportLine').innerHTML=attendanceActiveImport?`<span class="attFileName">${esc(attendanceActiveImport.file_name||'텔레캅 Excel')}</span> <span class="help">${fmtDateTime(attendanceActiveImport.uploaded_at)} · ${attendanceActiveImport.row_count||attendanceRecords.length}건</span>`:'<span class="help">선택월 텔레캅 근태이력(.xls) 파일을 불러오세요.</span>';
+ if($('attendanceImportLine'))$('attendanceImportLine').innerHTML=attendanceActiveImport?`<span class="attFileName">${esc(attendanceActiveImport.file_name||'텔레캅 Excel')}</span> <span class="help">${fmtDateTime(attendanceActiveImport.uploaded_at)} · ${attendanceActiveImport.row_count||attendanceRecords.length}건</span> <button id="attendanceRemoveBtn" class="btn red small" style="margin-left:8px" onclick="removeAttendanceImport()">파일 제거</button>`:'<span class="help">선택월 텔레캅 근태이력(.xls) 파일을 불러오세요.</span>';
  let statusCodes=[...new Set(rows.filter(x=>!['normal','confirmed'].includes(x.code)).map(x=>x.code))],sel=$('attendanceStatusFilter');if(sel){let current=sel.value;sel.innerHTML='<option value="">전체 종류</option>'+statusCodes.map(c=>`<option value="${c}">${esc(attendanceStatusLabel(c))}</option>`).join('');if(statusCodes.includes(current))sel.value=current}
  $('attPendingBtn')?.classList.toggle('gray',attendanceListMode!=='pending');$('attDoneBtn')?.classList.toggle('gray',attendanceListMode!=='done');let filter=$('attendanceStatusFilter')?.value||'';
  let visible=rows.filter(x=>attendanceListMode==='done'?x.code==='confirmed':!['normal','confirmed'].includes(x.code)).filter(x=>!filter||x.code===filter);
