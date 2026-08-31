@@ -1753,15 +1753,22 @@ function leaveUseHoursDecision(e,date,row=null){
  if(s&&String(s.work_code||'')!=='0'&&saved>0)return {hours:saved,known:true,source:'schedule'};
  let c=workConditionForDate(e,date),r=conditionRuleForDate(c,date);
  if(Number(r?.daily_hours||0)>0)return {hours:Number(r.daily_hours),known:true,source:'day-rule'};
- let days=normalizedWorkDays(c.work_days),daily=Number(c.daily_hours||0),rules=conditionDayRules(c);
+ let days=normalizedWorkDays(c.work_days),daily=Number(c.daily_hours||0),rules=conditionDayRules(c),type=normalizeWorkTypeValue(c.work_type);
  if(days.length&&daily>0&&!rules.length)return {hours:daily,known:true,source:'fixed-daily'};
+ // V19: 주5일/주4일 스케줄근무는 '요일'만 유동적일 뿐 1일 소정시간은 계약으로 확정돼 있다.
+ // 사용자가 빈칸/휴무칸에 직접 '연'을 입력하면 그 날을 연차 사용 근무일로 확정한 것으로 보고
+ // 계약상 1일 소정시간을 사용한다. (예: 홍미나 주5일×8h, 요일 미정 → 연차 8h)
+ if(!rules.length&&!days.length&&daily>0&&(type==='40'||type==='36'))return {hours:daily,known:true,source:'flexible-week-fixed-daily'};
  if(conditionScheduleMode(c)==='auto'&&daily>0)return {hours:daily,known:true,source:'auto-fixed'};
  return {hours:Number(c.leave_day_hours||daily||0),known:false,source:'fallback'};
 }
 function leaveDayHoursAt(e,date){return Number(leaveUseHoursDecision(e,date).hours||0)}
 function leaveUseHoursDisplay(e,date=isoToday()){
- let c=workConditionForDate(e,date),rules=conditionDayRules(c),vals=[...new Set(rules.map(r=>Number(r.daily_hours||0)).filter(x=>x>0))];
- if(vals.length>1||(conditionScheduleMode(c)==='manual'&&!rules.length&&!normalizedWorkDays(c.work_days).length))return '일별';
+ let c=workConditionForDate(e,date),rules=conditionDayRules(c),vals=[...new Set(rules.map(r=>Number(r.daily_hours||0)).filter(x=>x>0))],type=normalizeWorkTypeValue(c.work_type),daily=Number(c.daily_hours||0),days=normalizedWorkDays(c.work_days);
+ if(vals.length>1)return '일별';
+ // V19: 요일만 유동적인 주5일/주4일 근무자는 계약상 1일 소정시간을 표시한다.
+ if(conditionScheduleMode(c)==='manual'&&!rules.length&&!days.length&&daily>0&&(type==='40'||type==='36'))return `${hour2(daily)}h`;
+ if(conditionScheduleMode(c)==='manual'&&!rules.length&&!days.length)return '일별';
  let h=leaveDayHoursAt(e,date);return h>0?`${h}h`:'확인';
 }
 function conditionWorkedDayHours(c,date=''){
@@ -3889,7 +3896,7 @@ async function scheduleInput(id,date,raw,input){
  if(rawCode==='연'){
    let d=leaveUseHoursDecision(emp0,date,existing0);
    if(!d.known||!Number(d.hours||0)){
-     alert('이 직원은 요일별 소정근로시간이 고정되지 않은 스케줄 근무입니다.\n\n연차를 정확히 차감하려면 먼저 해당 날짜의 예정 근로시간을 입력한 뒤 “연”으로 바꾸거나, 날짜를 더블클릭해 출퇴근·휴게시간을 입력하고 연차로 저장하세요.');
+     alert('이 직원은 날짜별 소정근로시간까지 달라지는 수기 스케줄 근무입니다.\n\n연차를 정확히 차감하려면 먼저 해당 날짜의 예정 근로시간을 입력한 뒤 “연”으로 바꾸거나, 날짜를 더블클릭해 출퇴근·휴게시간을 입력하고 연차로 저장하세요.');
      input.value=existing0?.work_code||'';input.className=`code code${existing0?.work_code||''}`;return;
    }
  }
