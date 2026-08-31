@@ -1121,6 +1121,7 @@ body.commerceStoreMode #renameStoreBtn{display:none!important}
 @media(max-width:1100px){.commerceSmartCards{grid-template-columns:repeat(3,minmax(140px,1fr))}}
 @media(max-width:720px){.commerceSmartCards{grid-template-columns:repeat(2,minmax(120px,1fr))}.commerceSheetToolbar{align-items:stretch}.commerceSheetToolbar select,.commerceSheetToolbar input{flex:1 1 42%}.commerceDataCardHeader{align-items:flex-start;flex-direction:column}}
 </style>
+<!-- V17: 메가존365약국 요일미정 주5일 포함 연장·추가근로 정확표시 -->
 </head>
 <body>
 <section id="login" class="login">
@@ -1305,9 +1306,9 @@ body.commerceStoreMode #renameStoreBtn{display:none!important}
  <div id="hoursSummaryView">
   <div class="card hoursSummaryCard" style="margin-top:13px">
    <div class="hoursSummaryGuide"><b>보는 방법</b> · 예: <b>10일 × 8h + 2일 × 5h = 90h</b>처럼 같은 근무시간끼리 자동으로 묶습니다. <b>월 주휴 예상</b>은 7일 단위로 개근을 판정한 뒤 <b>주휴일(일요일)이 선택월에 들어오는 주</b>만 월 합계에 넣습니다. 주 소정근로시간 15h 미만은 제외하고, 병가가 있는 주는 <b>확인</b>으로 표시합니다. 직원관리에서 <b>스케줄·근로 제외</b>를 체크한 직원은 월간스케줄·주간편성·근로시간에서 모두 표시하지 않습니다.</div>
-   <div class="tablewrap" style="margin-top:10px"><table class="hoursSummaryTable"><thead><tr><th class="name">직원</th><th>근무형태</th><th class="hoursKindHead weekdayHead">평일</th><th class="hoursKindHead weekendHead">주말</th><th class="hoursKindHead holidayHead">공휴일</th><th>실근로<br><small>출근간주 포함</small></th><th>월 주휴 예상<br><small>주휴일 기준</small></th><th>비교 합계</th><th>연장</th><th>연차</th><th>병가</th><th>급여대장 월근무</th><th>차이</th></tr></thead><tbody id="hoursBody"></tbody></table></div>
+   <div class="tablewrap" style="margin-top:10px"><table class="hoursSummaryTable"><thead><tr><th class="name">직원</th><th>근무형태</th><th class="hoursKindHead weekdayHead">평일</th><th class="hoursKindHead weekendHead">주말</th><th class="hoursKindHead holidayHead">공휴일</th><th>실근로<br><small>출근간주 포함</small></th><th>월 주휴 예상<br><small>주휴일 기준</small></th><th>비교 합계</th><th>연장·추가근로<br><small>일8h · 주40h</small></th><th>연차</th><th>병가</th><th>급여대장 월근무</th><th>차이</th></tr></thead><tbody id="hoursBody"></tbody></table></div>
   </div>
-  <div class="help" style="margin-top:7px">※ 평일·주말·공휴일 시간은 대시보드의 실제 worked_hours 기준입니다.</div>
+  <div class="help" style="margin-top:7px">※ 평일·주말·공휴일 시간은 대시보드의 worked_hours 기준입니다. · 연장·추가근로는 스케줄에 근무로 확정 입력된 시간만 계산합니다. · 요일 미정 주5일 직원은 특정 요일을 고정하지 않고 7일 단위로 1일 8h 초과 + 주40h 초과를 중복 없이 계산합니다. · 연차·병가·예비군 시간은 연장·추가근로에 넣지 않습니다.</div>
   <div class="card" style="margin-top:10px"><h3>직원별 출근 날짜</h3><div class="tablewrap" style="margin-top:10px"><table class="workDateTable"><thead><tr><th class="name">직원</th><th class="weekdayHead">평일 근무일</th><th class="weekendHead">주말 근무일</th><th class="holidayHead">공휴일 근무일</th></tr></thead><tbody id="workDateBody"></tbody></table></div></div>
  </div>
  <div id="attendanceView" class="hidden">
@@ -3301,7 +3302,94 @@ async function deleteHoliday(id){
 }
 
 function sched(emp,date){return schedules.find(x=>x.employee_id===emp.id&&x.work_date===date)}
-function calc(emp){let r=monthRange(),o={days:0,scheduled:0,worked:0,ot:0,leave:0,sick:0};for(let d=1;d<=r.days;d++){let date=r.m+'-'+String(d).padStart(2,'0'),s=sched(emp,date);if(!s)continue;let code=s.work_code||'',cond=workConditionForDate(emp,date),rule=conditionTimesForDate(cond,date),dayH=Number(rule.daily_hours||cond.daily_hours||8),leaveH=leaveDayHoursAt(emp,date);if(code==='연'){o.leave+=Number(s.scheduled_hours||leaveH);o.scheduled+=Number(s.scheduled_hours||leaveH)}else if(code==='병'){o.sick+=Number(s.scheduled_hours||dayH);o.scheduled+=Number(s.scheduled_hours||dayH)}else if(code==='결'||code==='법'){o.scheduled+=Number(s.scheduled_hours||dayH)}else if(code==='예'){let h=Number(s.worked_hours||s.scheduled_hours||dayH);o.days++;o.scheduled+=Number(s.scheduled_hours||dayH);o.worked+=h}else if(code!=='0'&&code!==''){o.days++;o.scheduled+=Number(s.scheduled_hours||0);o.worked+=Number(s.worked_hours||0);o.ot+=Number(s.overtime_hours||0)}}return o}
+// V15 연장시간: DB에 과거 저장된 overtime_hours를 그대로 합산하지 않고
+// 선택한 날짜의 현재 근무조건(요일별 상세규칙/주 소정시간/근무형태)과
+// 그 날짜에 저장된 소정시간 중 더 구체적인 값을 기준으로 재계산한다.
+function prescribedDayHoursV15(emp,date,row=null){
+ let c=workConditionForDate(emp,date),specificRule=conditionRuleForDate(c,date),rule=conditionTimesForDate(c,date),vals=[];
+ // 요일별 상세규칙이 있으면 해당 날짜 규칙이 최우선이다.
+ if(Number(specificRule?.daily_hours||0)>0)vals.push(Number(specificRule.daily_hours));
+ else if(Number(rule?.daily_hours||c?.daily_hours||0)>0)vals.push(Number(rule?.daily_hours||c?.daily_hours));
+ // 주5일/주4일형은 확인된 주 소정시간을 일수로 나눠 보조 검산한다.
+ // 예: 주4일·주32h인데 대표 1일값이 과거 9h로 남아 있어도 소정 8h로 본다.
+ let weekly=typeof weeklyHolidayBasePrescribedHours==='function'?Number(weeklyHolidayBasePrescribedHours(emp,date)||0):Number(c?.leave_weekly_hours||0);
+ let wt=normalizeWorkTypeValue(c?.work_type),dayCount=wt==='40'?5:wt==='36'?4:0;
+ if(!dayCount){let days=normalizedWorkDays(c?.work_days);if(days.length)dayCount=days.length}
+ if(!specificRule&&weekly>0&&dayCount>0)vals.push(weekly/dayCount);
+ // 해당 날짜에 이미 소정시간이 저장되어 있으면 더 짧은 날짜별 소정시간을 보존한다.
+ let saved=Number(row?.scheduled_hours||0);if(saved>0)vals.push(saved);
+ vals=vals.filter(x=>Number.isFinite(x)&&x>0);
+ return vals.length?Math.round(Math.min(...vals)*100)/100:0;
+}
+function overtimeHoursForRowV15(emp,date,row){
+ let code=String(row?.work_code||'');
+ if(!row||code===''||code==='0'||['연','병','결','법','예'].includes(code))return 0;
+ let worked=Number(row?.worked_hours||0);if(!(worked>0))return 0;
+ let base=prescribedDayHoursV15(emp,date,row);
+ if(!(base>0))return Math.max(0,Number(row?.overtime_hours||0));
+ return Math.round(Math.max(0,worked-base)*100)/100;
+}
+// V16 법정 연장·초과근로 월합계
+// 1) 하루의 법정/소정 기준을 넘는 시간
+// 2) 하루 초과분을 제외한 통상시간 중 1주 소정시간(최대 40h)을 넘는 시간
+// 을 중복 없이 합산하고, 실제 근무일이 선택월에 속하는 시간만 그 달에 귀속한다.
+function legalDailyBaseV16(emp,date,row=null){
+ let c=workConditionForDate(emp,date),specific=conditionRuleForDate(c,date),base=0;
+ if(Number(specific?.daily_hours||0)>0)base=Number(specific.daily_hours);
+ else base=prescribedDayHoursV15(emp,date,row)||Number(c?.daily_hours||0);
+ // 근로기준법상 일반적인 1일 법정근로 한도 8h. 별도 탄력/선택근로제 데이터는 현재 시스템에 없으므로 기본 8h를 상한으로 사용.
+ if(base>0)base=Math.min(8,base);
+ if(!(base>0)){
+   let saved=Number(row?.scheduled_hours||0);if(saved>0)base=Math.min(8,saved);
+ }
+ return Math.round(Math.max(0,base)*100)/100;
+}
+function legalWeeklyBaseV16(emp,date=isoToday()){
+ let c=workConditionForDate(emp,date),explicit=Number(weeklyHolidayBasePrescribedHours(emp,date)||c?.leave_weekly_hours||0),rules=conditionDayRules(c),byPattern=0;
+ if(rules.length){
+   let byDay=new Map();
+   rules.forEach(r=>(r.days||[]).forEach(d=>{let h=Number(r.daily_hours||0);if(h>0)byDay.set(Number(d),Math.min(8,h))}));
+   byPattern=[...byDay.values()].reduce((a,b)=>a+b,0);
+ }else{
+   let wt=normalizeWorkTypeValue(c?.work_type),days=normalizedWorkDays(c?.work_days),dayCount=wt==='40'?5:wt==='36'?4:days.length;
+   let dbase=legalDailyBaseV16(emp,date,null);
+   if(dayCount>0&&dbase>0)byPattern=dayCount*dbase;
+ }
+ let vals=[40];if(explicit>0)vals.push(explicit);if(byPattern>0)vals.push(byPattern);
+ return Math.round(Math.max(0,Math.min(...vals))*100)/100;
+}
+function legalOvertimeForMonthV16(emp){
+ let r=monthRange(),weekStarts=[...new Set(Array.from({length:r.days},(_,i)=>weekStartMonday(`${r.m}-${String(i+1).padStart(2,'0')}`)))].sort(),total=0,dailyTotal=0,weeklyTotal=0,details=[];
+ for(const ws of weekStarts){
+   let we=addDaysIso(ws,6),weekBase=legalWeeklyBaseV16(emp,we),runningRegular=0,weekDaily=0,weekExtra=0,monthPart=0;
+   for(let i=0;i<7;i++){
+     let date=addDaysIso(ws,i),row=sched(emp,date),code=String(row?.work_code||''),worked=0;
+     if(row&&code!==''&&code!=='0'&&!['연','병','결','법','예'].includes(code))worked=Number(row.worked_hours||0);
+     let dbase=worked>0?legalDailyBaseV16(emp,date,row):0,
+         dayExtra=worked>0?Math.max(0,worked-dbase):0,
+         regular=worked>0?Math.min(worked,dbase):0,
+         prev=runningRegular;
+     runningRegular+=regular;
+     let wkExtra=Math.max(0,runningRegular-weekBase)-Math.max(0,prev-weekBase);
+     dayExtra=Math.round(dayExtra*100)/100;wkExtra=Math.round(wkExtra*100)/100;
+     if(date.slice(0,7)===r.m){dailyTotal+=dayExtra;weeklyTotal+=wkExtra;monthPart+=dayExtra+wkExtra}
+     weekDaily+=dayExtra;weekExtra+=wkExtra;
+   }
+   if(monthPart>0){
+     let weekTotal=Math.round((weekDaily+weekExtra)*100)/100;
+     details.push({label:`${ws.slice(5).replace('-','/')}~${we.slice(5).replace('-','/')}`,daily:Math.round(weekDaily*100)/100,weekly:Math.round(weekExtra*100)/100,month:Math.round(monthPart*100)/100,weekBase,weekTotal,over12:weekTotal>12});
+   }
+ }
+ dailyTotal=Math.round(dailyTotal*100)/100;weeklyTotal=Math.round(weeklyTotal*100)/100;total=Math.round((dailyTotal+weeklyTotal)*100)/100;
+ return {total,daily:dailyTotal,weekly:weeklyTotal,details};
+}
+function legalOvertimeCellV16(ot){
+ let rows=ot?.details||[],title=rows.map(x=>`${x.label} · 일8h초과 ${hour2(x.daily)}h · 주기준초과 ${hour2(x.weekly)}h · 주합계 ${hour2(x.weekTotal||0)}h${x.over12?' · 주12h 초과 확인':''}`).join(' / ');
+ let sub=ot?.weekly>0?`<div style="margin-top:2px;color:#667085;font-size:10px">일 ${hour2(ot.daily)}h + 주 ${hour2(ot.weekly)}h</div>`:(ot?.daily>0?`<div style="margin-top:2px;color:#667085;font-size:10px">일 8h 초과 ${hour2(ot.daily)}h</div>`:'');
+ let over=rows.filter(x=>x.over12).length,warning=over?`<div style="margin-top:2px;color:#b54708;font-size:10px;font-weight:700">⚠ 주12h 초과 ${over}주 확인</div>`:'';
+ return `<div title="${esc(title)}"><b>${hour2(ot?.total||0)}h</b>${sub}${warning}</div>`;
+}
+function calc(emp){let r=monthRange(),o={days:0,scheduled:0,worked:0,ot:0,leave:0,sick:0,otDetail:null};for(let d=1;d<=r.days;d++){let date=r.m+'-'+String(d).padStart(2,'0'),s=sched(emp,date);if(!s)continue;let code=s.work_code||'',cond=workConditionForDate(emp,date),rule=conditionTimesForDate(cond,date),dayH=Number(rule.daily_hours||cond.daily_hours||8),leaveH=leaveDayHoursAt(emp,date);if(code==='연'){o.leave+=Number(s.scheduled_hours||leaveH);o.scheduled+=Number(s.scheduled_hours||leaveH)}else if(code==='병'){o.sick+=Number(s.scheduled_hours||dayH);o.scheduled+=Number(s.scheduled_hours||dayH)}else if(code==='결'||code==='법'){o.scheduled+=Number(s.scheduled_hours||dayH)}else if(code==='예'){let h=Number(s.worked_hours||s.scheduled_hours||dayH);o.days++;o.scheduled+=Number(s.scheduled_hours||dayH);o.worked+=h}else if(code!=='0'&&code!==''){o.days++;o.scheduled+=Number(s.scheduled_hours||0);o.worked+=Number(s.worked_hours||0)}}o.otDetail=legalOvertimeForMonthV16(emp);o.ot=o.otDetail.total;return o}
 function renderAll(){renderSchedule();renderEmployees();renderStores();}
 
 function leaveDueInfo(e){
@@ -3666,7 +3754,7 @@ function renderSchedule(){
 }
 
 function schedulePayload(id,date,raw){
- let emp=allEmployees().find(e=>e.id===id),cond=workConditionForDate(emp||{},date),rule=conditionTimesForDate(cond,date),code=String(raw??'').trim(),base=Number(rule.daily_hours||cond.daily_hours||8),leaveH=leaveDayHoursAt(emp,date),scheduled=0,worked=0,ot=0,status='';
+ let emp=allEmployees().find(e=>e.id===id),cond=workConditionForDate(emp||{},date),rule=conditionTimesForDate(cond,date),code=String(raw??'').trim(),base=prescribedDayHoursV15(emp||{},date)||Number(rule.daily_hours||cond.daily_hours||8),leaveH=leaveDayHoursAt(emp,date),scheduled=0,worked=0,ot=0,status='';
  if(code==='연'){scheduled=leaveH;status='leave'}
  else if(code==='병'){scheduled=base;status='sick'}
  else if(code==='결'){scheduled=base;status='absence'}
@@ -3849,10 +3937,10 @@ window.addEventListener('pagehide',()=>{keepalivePageLeft()});
 window.addEventListener('pageshow',()=>{if(currentSessionUser&&accessSessionTableAvailable===true)touchAccessSession(false)});
 window.addEventListener('beforeunload',()=>{if(scheduleSaveQueue.size)flushScheduleQueue()});
 function mins(t){if(!t)return null;let [h,m]=t.slice(0,5).split(':').map(Number);return h*60+m}function hoursBetween(a,b,br){let x=mins(a),y=mins(b);if(x==null||y==null)return 0;if(y<x)y+=1440;return Math.max(0,(y-x-Number(br||0))/60)}
-function openShift(id,date){if(!requireScheduleDateEdit(date))return;let e=employees.find(x=>x.id===id),cond=workConditionForDate(e||{},date),rule=conditionTimesForDate(cond,date),s=sched(e,date)||{},start=(s.start_time||rule.start||'').slice(0,5),end=(s.end_time||rule.end||'').slice(0,5),br=s.break_minutes??rule.break_minutes??60;modal(`<h2>${esc(e.name)} · ${date}</h2><div class="formgrid"><div class="field"><label>구분</label><select id="mCode"><option value="work">근무</option><option value="leave">연차</option><option value="sick">병가(확인필요)</option><option value="absence">결근</option><option value="deemed">법정 출근간주</option><option value="reserve">예비군(연차 차감 없음)</option><option value="off">휴무</option></select></div><div class="field"><label>출근</label><input id="mStart" type="time" value="${start}"></div><div class="field"><label>퇴근</label><input id="mEnd" type="time" value="${end}"></div><div class="field"><label>휴게(분)</label><input id="mBreak" type="number" value="${br}"></div></div><div class="help">이 날짜에 적용되는 근무조건(${esc(workTypeForDate(e,date))}) 기준입니다. 소정 ${rule.daily_hours||cond.daily_hours||8}h를 넘는 부분은 연장으로 표시합니다.</div><div class="modalActions"><button class="btn gray" onclick="closeModal()">취소</button><button class="btn" onclick="saveShiftDetail(${id},'${date}')">저장</button></div>`);$('mCode').value=s.status||((s.work_code==='연')?'leave':(s.work_code==='병')?'sick':(s.work_code==='결')?'absence':(s.work_code==='법')?'deemed':(s.work_code==='예')?'reserve':(s.work_code==='0')?'off':'work')}
+function openShift(id,date){if(!requireScheduleDateEdit(date))return;let e=employees.find(x=>x.id===id),cond=workConditionForDate(e||{},date),rule=conditionTimesForDate(cond,date),s=sched(e,date)||{},start=(s.start_time||rule.start||'').slice(0,5),end=(s.end_time||rule.end||'').slice(0,5),br=s.break_minutes??rule.break_minutes??60;modal(`<h2>${esc(e.name)} · ${date}</h2><div class="formgrid"><div class="field"><label>구분</label><select id="mCode"><option value="work">근무</option><option value="leave">연차</option><option value="sick">병가(확인필요)</option><option value="absence">결근</option><option value="deemed">법정 출근간주</option><option value="reserve">예비군(연차 차감 없음)</option><option value="off">휴무</option></select></div><div class="field"><label>출근</label><input id="mStart" type="time" value="${start}"></div><div class="field"><label>퇴근</label><input id="mEnd" type="time" value="${end}"></div><div class="field"><label>휴게(분)</label><input id="mBreak" type="number" value="${br}"></div></div><div class="help">이 날짜에 적용되는 근무조건(${esc(workTypeForDate(e,date))}) 기준입니다. 소정 ${prescribedDayHoursV15(e,date,s)||rule.daily_hours||cond.daily_hours||8}h를 넘는 부분은 연장으로 표시합니다.</div><div class="modalActions"><button class="btn gray" onclick="closeModal()">취소</button><button class="btn" onclick="saveShiftDetail(${id},'${date}')">저장</button></div>`);$('mCode').value=s.status||((s.work_code==='연')?'leave':(s.work_code==='병')?'sick':(s.work_code==='결')?'absence':(s.work_code==='법')?'deemed':(s.work_code==='예')?'reserve':(s.work_code==='0')?'off':'work')}
 async function saveShiftDetail(id,date){
  if(!requireScheduleDateEdit(date))return;
- let e=employees.find(x=>x.id===id),cond=workConditionForDate(e||{},date),rule=conditionTimesForDate(cond,date),st=$('mCode').value,start=$('mStart').value,end=$('mEnd').value,br=Number($('mBreak').value||0),base=Number(rule.daily_hours||cond.daily_hours||8),detailHours=Math.round(hoursBetween(start,end,br)*100)/100,decision=leaveUseHoursDecision(e,date),leaveH=detailHours>0?detailHours:Number(decision.hours||0),worked=0,scheduled=0,ot=0,code='0';
+ let e=employees.find(x=>x.id===id),cond=workConditionForDate(e||{},date),rule=conditionTimesForDate(cond,date),st=$('mCode').value,start=$('mStart').value,end=$('mEnd').value,br=Number($('mBreak').value||0),base=prescribedDayHoursV15(e||{},date,sched(e,date))||Number(rule.daily_hours||cond.daily_hours||8),detailHours=Math.round(hoursBetween(start,end,br)*100)/100,decision=leaveUseHoursDecision(e,date),leaveH=detailHours>0?detailHours:Number(decision.hours||0),worked=0,scheduled=0,ot=0,code='0';
  if(st==='leave'){
    if(!leaveH)return alert('연차 사용일의 소정근로시간을 확인할 수 없습니다. 출근·퇴근·휴게시간을 입력해 주세요.');
    let ok=await confirmLeaveUseAfterRefresh(e,date,null,leaveH);if(!ok)return;
@@ -3887,7 +3975,7 @@ async function fillDefaults(){
      autoNames.add(e.name);
      let wd=new Date(r.y,r.mo-1,d).getDay(),on=days.includes(wd),rule=conditionTimesForDate(cond,date),worked=on?hoursBetween(rule.start,rule.end,rule.break_minutes):0;
      if(on&&!worked)worked=conditionWorkedDayHours(cond,date);
-     let base=Number(rule.daily_hours||cond.daily_hours||8);
+     let base=prescribedDayHoursV15(e,date)||Number(rule.daily_hours||cond.daily_hours||8);
      rows.push({employee_id:e.id,work_date:date,work_code:on?String(worked):'0',scheduled_hours:on?Math.min(worked,base):0,worked_hours:on?worked:0,overtime_hours:on?Math.max(0,worked-base):0,start_time:on?rule.start:null,end_time:on?rule.end:null,break_minutes:on?Number(rule.break_minutes||0):0,status:on?'work':'off'});
    }
  });
@@ -4027,7 +4115,7 @@ function renderHours(){
   <td class="workKindCell">${formatWorkBucket(c.weekend,'weekend')}</td>
   <td class="workKindCell">${formatWorkBucket(c.holiday,'holiday')}</td>
   <td class="hoursStrong"><b>${hour2(x.worked)}h</b></td><td>${weeklyHolidayCell(wh)}</td><td class="hoursStrong"><b>${hour2(compare)}h</b></td>
-  <td>${hour2(x.ot)}h</td><td>${hour2(x.leave)}h</td><td>${hour2(x.sick)}h</td><td>${p?hour2(ph)+'h':'-'}</td>
+  <td>${legalOvertimeCellV16(x.otDetail)}</td><td>${hour2(x.leave)}h</td><td>${hour2(x.sick)}h</td><td>${p?hour2(ph)+'h':'-'}</td>
   <td class="${diff===0?'ok':diff==null?'':'warn'} hoursDiff">${diff==null?'-':(diff>0?'+':'')+hour2(diff)+'h'}</td></tr>`}).join('')||'<tr><td colspan="13" style="padding:24px;text-align:center;color:#7b8494">이 달에 근로시간 관리 대상 직원이 없습니다.</td></tr>';
  $('workDateBody').innerHTML=visible.map(e=>{
    let c=classifyWork(e),fmt=a=>a.length?a.map(x=>`${Number(x.date.slice(8))}일 <b>${hour2(x.hours)}h</b>${x.name?` <span class="holidayDetail">${esc(x.name)}</span>`:''}`).join('<span class="dateSep"> · </span>'):'-';
@@ -9717,7 +9805,7 @@ async function syncCurrentMonthScheduleFromRulesV82(employeeId,savedConditionId)
    if(['연','병','결','법','예'].includes(code)||['leave','sick','absence','deemed','reserve'].includes(status)){preserved++;continue}
    if(code==='0'||status==='off'){preserved++;continue}
    let worked=hoursBetween(rule.start,rule.end,Number(rule.break_minutes||0));if(!(worked>0))worked=Number(rule.daily_hours||0);
-   let base=Number(rule.daily_hours||cond.daily_hours||worked||0);if(!(worked>0)||!(base>0))continue;
+   let base=prescribedDayHoursV15(e,date,old)||Number(rule.daily_hours||cond.daily_hours||worked||0);if(!(worked>0)||!(base>0))continue;
    rows.push({employee_id:employeeId,work_date:date,work_code:String(Math.round(worked*100)/100).replace(/\.0+$/,''),scheduled_hours:Math.min(worked,base),worked_hours:worked,overtime_hours:Math.max(0,worked-base),start_time:rule.start||null,end_time:rule.end||null,break_minutes:Number(rule.break_minutes||0),status:'work'});
  }
  if(rows.length){let up=await sb.from('schedules').upsert(rows,{onConflict:'employee_id,work_date'});if(up.error)throw up.error;stampRecentAuditIp(storeId());for(const r of rows){let idx=schedules.findIndex(x=>Number(x.employee_id)===Number(r.employee_id)&&x.work_date===r.work_date);if(idx>=0)schedules[idx]={...schedules[idx],...r};else schedules.push({...r})}}
