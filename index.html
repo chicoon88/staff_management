@@ -1258,7 +1258,7 @@ body.commerceStoreMode #renameStoreBtn{display:none!important}
   <div id="adminTaskList" class="adminTaskList"><div class="adminTaskItem info"><b>확인 중</b><span class="meta">현재 업장과 월의 상태를 불러옵니다.</span></div></div>
  </div>
  <div class="grid2">
-  <div class="card"><h3>이번 달 연차 발생·예정 직원</h3><div class="sub">1년 미만 월 연차는 입사일 기준으로 1개월을 개근한 다음날 발생합니다. 선택한 달 안에서 이미 발생한 건은 <b>발생완료</b>, 아직 발생일이 오지 않은 건은 <b>발생예정(개근 시)</b>으로 함께 표시합니다. 예정분은 실제 발생일까지 잔여에 더하지 않습니다. 주5일 +8h, 주4일(주32h 소정) +7h가 현재 대시보드 기준입니다.</div><div class="tablewrap" style="margin-top:10px"><table><thead><tr><th class="name">직원</th><th>근무형태</th><th>입사일</th><th>이번 달 발생/예정</th><th>누적 발생</th><th>누적 사용</th><th>조정</th><th>잔여</th></tr></thead><tbody id="homeEmployees"></tbody></table></div></div>
+  <div class="card"><h3>이번 달 연차 발생·예정 직원</h3><div class="sub">1년 미만 월 연차는 <b>달력 월이 아니라 최초 입사일 기준</b>으로 계산합니다. 예: 7/20 입사 → 7/20~8/19 개근 확인 → 8/20 첫 발생, 8/20~9/19 → 9/20 두 번째 발생. 선택한 달 안에서는 발생완료와 발생예정(개근 시)을 함께 표시하며 예정분은 실제 발생일까지 잔여에 더하지 않습니다. 주5일은 +8h, 주4일·주32h는 비례산식 6.4h를 법정 단수처리하여 <b>+7h</b>로 발생하고, 하루 연차 사용은 소정 8h만 차감합니다.</div><div class="tablewrap" style="margin-top:10px"><table><thead><tr><th class="name">직원</th><th>근무형태</th><th>입사일</th><th>이번 달 발생/예정</th><th>누적 발생</th><th>누적 사용</th><th>조정</th><th>잔여</th></tr></thead><tbody id="homeEmployees"></tbody></table></div></div>
   <div class="card"><h3>운영 흐름</h3><p class="help">① 월간 스케줄 작성 → ② 실제 근무시간 필요 시 날짜 클릭해 수정 → ③ 월 근로시간 확인 → ④ 노무사 급여대장 Excel 업로드 → ⑤ 스케줄 시간과 급여대장 시간 차이 검수 → ⑥ 필요 시 스케줄/급여 Excel 출력.</p></div>
  </div>
 </section>
@@ -5771,7 +5771,7 @@ async function openEmployee(id,isRetired=false){
  <div class="field"><label>연차 하루 사용(h)</label><input id="eLeaveDay" type="number" step=".5" value="${leaveDayHours(e)}"></div>
  </div>
  <div style="margin-top:12px"><b style="font-size:12px">기본근무 채우기용 패턴 (선택사항)</b><div class="employeeWorkDayPattern">${checks}</div></div>
- <div class="help" style="margin-top:10px"><b>직책과 업무를 구분해서 입력하세요.</b> 예: 직책=과장 / 업무=매장관리·조제·전산 등<br><b>이 화면의 모든 항목은 수기로 수정 후 저장할 수 있습니다.</b><br><b>퇴사자의 퇴사일을 비워 저장하면 기존 입사일·연번을 유지한 채 재직자로 복귀합니다.</b> 실제 퇴사 후 다시 입사한 경우에는 퇴사자 목록의 “재입사”를 사용하세요.<br>실제 근무요일이 매주 바뀌는 스케줄근무라면 위 요일은 비워두셔도 됩니다. 이 항목은 “기본근무 채우기”를 빠르게 사용할 때만 참고합니다.<br>기본 기준: 주5일은 소정 8h×5일=40h. 주4일은 계약상 <b>소정 8h + 예정 연장 1h</b>를 4일 근무하여 <b>소정 32h + 예정연장 4h = 실근로 목표 36h</b>입니다. 연차·주휴는 소정시간 기준으로 계산하며, 주4일 월연차는 +7h / 1일 사용은 -8h입니다.</div>
+ <div class="help" style="margin-top:10px"><b>직책과 업무를 구분해서 입력하세요.</b> 예: 직책=과장 / 업무=매장관리·조제·전산 등<br><b>이 화면의 모든 항목은 수기로 수정 후 저장할 수 있습니다.</b><br><b>퇴사자의 퇴사일을 비워 저장하면 기존 입사일·연번을 유지한 채 재직자로 복귀합니다.</b> 실제 퇴사 후 다시 입사한 경우에는 퇴사자 목록의 “재입사”를 사용하세요.<br>실제 근무요일이 매주 바뀌는 스케줄근무라면 위 요일은 비워두셔도 됩니다. 이 항목은 “기본근무 채우기”를 빠르게 사용할 때만 참고합니다.<br>기본 기준: 주5일은 소정 8h×5일=40h. 주4일은 계약상 <b>소정 8h + 예정 연장 1h</b>를 4일 근무하여 <b>소정 32h + 예정연장 4h = 실근로 목표 36h</b>입니다. 주4일 월연차는 비례산식 <b>32÷40×8 = 6.4h</b>이지만 법정 기준상 1시간 미만 단수는 올려 <b>7h 발생</b>으로 관리합니다. 스케줄에 <b>연</b> 입력 시 소정근로 <b>8h만 차감</b>하며, 계약상 예정 연장 1h는 연차에서 자동 차감하지 않습니다.</div>
  <div class="modalActions"><button class="btn gray" onclick="closeModal()">취소</button><button class="btn" onclick="saveEmployee(${id||'null'})">저장</button></div>`);
  $('modalBox')?.classList.add('employeeEditModal');
  $('eType').value=workType(e);$('ePay').value=e.pay_type||'monthly';$('ePayDay').value=payDayRule(e);$('eIncentiveOn').value=incentiveEnabled(e)?'1':'0';
@@ -10993,5 +10993,136 @@ loadWorkConditionHistory=async function(employeeId){
  let host=$('workConditionList');if(!host)return;
  host.querySelectorAll('.historyRow').forEach(()=>{}); // 기존 렌더링 유지, conditionWorkedDayHours가 9h로 표시됨.
 };
+
+
+
+/* ===== V25 · 연차 법정 7h 유지 / 예정 연장 1h 별도 처리 명확화 =====
+   - 주32h 월연차 원산식: 32/40*8 = 6.4h
+   - 근로기준법 시행령 별표2 단수처리: 1시간 미만은 1시간으로 봄 -> 법정 7h
+   - '연' 입력: 그 날 소정근로 8h만 차감
+   - 계약상 예정연장 1h는 연차 사용으로 자동 차감하거나 급여에서 자동 공제하지 않음
+*/
+function v25RawMonthlyLeaveHours(weekly){
+ let w=Number(weekly||0);if(!(w>=LEGAL_MIN_WEEKLY_HOURS_FOR_LEAVE))return 0;
+ return Math.round((Math.min(w,LEGAL_FULLTIME_WEEKLY_HOURS)/LEGAL_FULLTIME_WEEKLY_HOURS*8)*100)/100;
+}
+function v25LeaveAccrualBasisText(weekly){
+ let raw=v25RawMonthlyLeaveHours(weekly),legal=legalRoundLeaveHours(raw);
+ if(!raw)return '';
+ if(Math.abs(raw-legal)<0.001)return `주 소정 ${hour2(weekly)}h · +${hour2(legal)}h`;
+ return `주 소정 ${hour2(weekly)}h · 산식 ${hour2(raw)}h → 법정 +${hour2(legal)}h`;
+}
+const v25OriginalDueCell=commerceV22DueCell;
+commerceV22DueCell=function(item){
+ let base=v25OriginalDueCell(item);if(!item)return base;
+ let weekly=Number(item.weekly||0),basis=v25LeaveAccrualBasisText(weekly);
+ if(!basis||item.annual)return base;
+ return base+`<div class="help" style="margin-top:3px">${esc(basis)}</div>`;
+};
+
+// 사용자 확정 정책: 연차 입력 시 예정 연장근로 1h를 자동으로 공제/차감하지 않는다.
+// schedulePayload의 '연' 행은 overtime_hours=0이며 scheduled_hours는 leaveDayHoursAt(소정시간)만 저장한다.
+const v25OriginalSchedulePayload=schedulePayload;
+schedulePayload=function(id,date,raw){
+ let p=v25OriginalSchedulePayload(id,date,raw);
+ if(p.work_code==='연'){
+   let e=allEmployees().find(x=>x.id===id),c=workConditionForDate(e||{},date),prescribed=v24PrescribedDailyHours(c,date)||leaveDayHoursAt(e,date)||8;
+   p.scheduled_hours=prescribed;
+   p.worked_hours=0;
+   p.overtime_hours=0;
+   p.status='leave';
+ }
+ return p;
+};
+
+// 근로시간 화면에 연차 사용과 예정 연장근로 처리의 분리를 안내한다.
+function v25InjectLeavePolicyHelp(){
+ let title=[...document.querySelectorAll('h3')].find(x=>String(x.textContent||'').trim()==='월간 근로시간');
+ if(!title)return;let card=title.closest('.card');if(!card||card.querySelector('.v25LeavePolicy'))return;
+ let d=document.createElement('div');d.className='help v25LeavePolicy';d.style.marginTop='6px';
+ d.innerHTML='연차 입력 기준: <b>연 = 소정근로시간 차감</b>. 주4일 표준근무자는 1일 -8h이며 계약상 예정 연장 1h는 연차에서 자동 차감하지 않습니다. 연장 1h의 급여 처리 여부는 별도로 판단합니다.';
+ title.insertAdjacentElement('afterend',d);
+}
+const v25OriginalRenderHours=renderHours;
+renderHours=function(...args){let r=v25OriginalRenderHours(...args);v25InjectLeavePolicyHelp();return r};
+
+
+
+/* ===== V26 · 직원별 최초 입사일 기준 월연차 날짜 단일화 =====
+   모든 1년 미만 월연차 기능은 아래 한 함수의 기간만 사용한다.
+   예) 2026-07-20 입사
+      1개월차: 07/20~08/19 -> 08/20 발생
+      2개월차: 08/20~09/19 -> 09/20 발생
+   달력월(7/1~7/31, 8/1~8/31)로 끊지 않는다.
+*/
+function v26HireMonthPeriod(e,monthNo){
+ let n=Number(monthNo||0);if(!e?.hire_date||n<1)return null;
+ let periodStart=addMonthsClamped(e.hire_date,n-1),eventDate=addMonthsClamped(e.hire_date,n),periodEnd=addDaysIso(eventDate,-1);
+ return {month:n,periodStart,periodEnd,eventDate,sourceKey:`accrual-month:${e.id}:${eventDate}`};
+}
+function v26HireMonthNumberForEvent(e,date){
+ if(!e?.hire_date||!date)return 0;
+ for(let m=1;m<=11;m++){let p=v26HireMonthPeriod(e,m);if(p?.eventDate===date)return m}
+ return 0;
+}
+
+// 1년 미만 월연차 자동원장 생성: 입사일 기준 공통기간만 사용.
+const v26OriginalExpectedAccruals=expectedAccruals;
+expectedAccruals=function(e,through=isoToday(),attendanceSchedules=[]){
+ through=employeeLeaveCutoffDate(e,through);let out=[];
+ if(!e?.hire_date||e.hire_date>through)return out;
+ for(let m=1;m<=11;m++){
+   let p=v26HireMonthPeriod(e,m);if(!p||p.eventDate>through)break;
+   let att=monthlyAttendanceStatus(e,p.periodStart,p.periodEnd,attendanceSchedules);if(att.status!=='pass')continue;
+   // 발생시간은 발생일에 유효한 최종 소정근로조건을 사용한다. 예정 연장근로는 제외.
+   let wh=legalWeeklyHoursForAccrual(e,p.eventDate,attendanceSchedules,p.periodEnd),weekly=Number(wh.hours||0);
+   if(wh.unknown?.length||weekly<LEGAL_MIN_WEEKLY_HOURS_FOR_LEAVE)continue;
+   let raw=Math.min(weekly,40)/40*8,hrs=legalRoundLeaveHours(raw);if(!hrs)continue;
+   out.push({employee_id:e.id,event_date:p.eventDate,event_type:'accrual',hours:hrs,source:'auto',source_key:p.sourceKey,
+     memo:`입사 ${m}개월차 개근 · ${p.periodStart}~${p.periodEnd} · 주 소정 ${hour2(weekly)}h · 산식 ${hour2(Math.round(raw*100)/100)}h → 발생 ${hour2(hrs)}h`});
+ }
+ // 1주년 이후 규칙은 기존 검증된 로직을 그대로 사용하되, 위 1년 미만 월연차와 중복되지 않게 annual 계열만 가져온다.
+ let legacy=v26OriginalExpectedAccruals(e,through,attendanceSchedules)||[];
+ out.push(...legacy.filter(x=>!String(x.source_key||'').startsWith(`accrual-month:${e.id}:`)));
+ return out;
+};
+
+// '다음 월연차 상태' 역시 같은 입사일 기간 사용.
+nextMonthlyAccrualStatus=function(e,through=isoToday(),attendanceSchedules=(leaveAttendanceSchedules.length?leaveAttendanceSchedules:schedules)){
+ if(!e?.hire_date)return null;through=employeeLeaveCutoffDate(e,through);
+ for(let m=1;m<=11;m++){
+   let p=v26HireMonthPeriod(e,m);if(!p||p.eventDate>through)break;
+   let already=leaveLedger.some(x=>x.source_key===p.sourceKey);if(already)continue;
+   let att=monthlyAttendanceStatus(e,p.periodStart,p.periodEnd,attendanceSchedules),wh=legalWeeklyHoursForAccrual(e,p.eventDate,attendanceSchedules,p.periodEnd),weekly=Number(wh.hours||0);
+   if(att.status==='pass'&&!wh.unknown?.length&&weekly<LEGAL_MIN_WEEKLY_HOURS_FOR_LEAVE)att={...att,status:'ineligible',memo:`주 소정 ${hour2(weekly)}h · 연차 적용 제외`};
+   return {month:m,eventDate:p.eventDate,periodStart:p.periodStart,periodEnd:p.periodEnd,weeklyHours:weekly,weeklySource:wh.source,...att};
+ }
+ return null;
+};
+
+// 선택월의 발생완료/발생예정 표도 동일한 입사일 기간을 사용.
+commerceV22MonthlyDueInSelectedMonth=function(e){
+ if(!e?.hire_date)return null;let r=monthRange(),today=isoToday(),oneYear=addYearsClamped(e.hire_date,1);if(r.first>=oneYear)return null;
+ for(let m=1;m<=11;m++){
+   let p=v26HireMonthPeriod(e,m);if(!p||p.eventDate<r.first||p.eventDate>r.last)continue;if(e.resign_date&&p.eventDate>e.resign_date)return null;
+   let actual=leaveLedger.find(x=>x.source_key===p.sourceKey&&x.event_type==='accrual'),wh=legalWeeklyHoursForAccrual(e,p.eventDate,leaveAttendanceSchedules.length?leaveAttendanceSchedules:schedules,p.periodEnd),weekly=Number(wh.hours||0),raw=Math.min(weekly,40)/40*8,expectedHours=weekly>=LEGAL_MIN_WEEKLY_HOURS_FOR_LEAVE?legalRoundLeaveHours(raw):0;
+   if(actual)return {kind:'actual',eventDate:p.eventDate,hours:Number(actual.hours||0),memo:actual.memo||'',periodStart:p.periodStart,periodEnd:p.periodEnd,weekly,month:m};
+   if(weekly<LEGAL_MIN_WEEKLY_HOURS_FOR_LEAVE)return {kind:'ineligible',eventDate:p.eventDate,hours:0,memo:`주 소정 ${hour2(weekly)}h · 주15h 미만`,periodStart:p.periodStart,periodEnd:p.periodEnd,weekly,month:m};
+   if(p.eventDate>today)return {kind:'future',eventDate:p.eventDate,hours:expectedHours,memo:`입사 ${m}개월차 · ${p.periodStart}~${p.periodEnd} 개근 시`,periodStart:p.periodStart,periodEnd:p.periodEnd,weekly,month:m};
+   let att=monthlyAttendanceStatus(e,p.periodStart,p.periodEnd,leaveAttendanceSchedules.length?leaveAttendanceSchedules:schedules);
+   if(att.status==='pending')return {kind:'pending',eventDate:p.eventDate,hours:expectedHours,memo:`입사 ${m}개월차 · 스케줄 미입력 ${(att.missing||[]).length}일`,periodStart:p.periodStart,periodEnd:p.periodEnd,weekly,month:m,att};
+   if(att.status==='review')return {kind:'review',eventDate:p.eventDate,hours:expectedHours,memo:`입사 ${m}개월차 · 병가/기타 확인 ${(att.sick||[]).length+(att.review||[]).length}일`,periodStart:p.periodStart,periodEnd:p.periodEnd,weekly,month:m,att};
+   if(att.status==='fail')return {kind:'fail',eventDate:p.eventDate,hours:0,memo:`입사 ${m}개월차 · 결근 ${(att.absent||[]).length}일 · 미발생`,periodStart:p.periodStart,periodEnd:p.periodEnd,weekly,month:m,att};
+   return {kind:'processing',eventDate:p.eventDate,hours:expectedHours,memo:`입사 ${m}개월차 개근 확인 · 원장 반영 대기`,periodStart:p.periodStart,periodEnd:p.periodEnd,weekly,month:m,att};
+ }
+ return null;
+};
+
+// 직원별 첫 발생일/다음 발생일 표시도 공통기간 사용.
+function v26NextHireAccrualDate(e,from=isoToday()){
+ if(!e?.hire_date)return null;
+ for(let m=1;m<=11;m++){let p=v26HireMonthPeriod(e,m);if(p.eventDate>=from)return p}
+ return null;
+}
 
 </script>\n</body></html>
