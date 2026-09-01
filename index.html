@@ -10641,7 +10641,7 @@ renderHome=function(){
  $('kAnnual').textContent=w4+'명';
  if($('kPay'))$('kPay').textContent=isAppAdmin()?money(pay):'';
  $('homeEmployees').innerHTML=monthItems.length?monthItems
-   .sort((a,b)=>String(a.item.eventDate||'').localeCompare(String(b.item.eventDate||''))||String(a.e.name||'').localeCompare(String(b.e.name||'')))
+   .sort((a,b)=>(Number(a.e.print_order??9999)-Number(b.e.print_order??9999))||String(a.e.name||'').localeCompare(String(b.e.name||''),'ko'))
    .map(({e,item})=>{
      // 누적/잔여는 '선택월 말'이 아니라 실제 원장에 존재하는 발생분만 계산한다.
      // 미래 예정분은 절대로 미리 더하지 않는다.
@@ -11124,5 +11124,13 @@ function v26NextHireAccrualDate(e,from=isoToday()){
  for(let m=1;m<=11;m++){let p=v26HireMonthPeriod(e,m);if(p.eventDate>=from)return p}
  return null;
 }
+
+
+
+/* ===== V27 · 홈 연차 발생·예정 표 = 직원관리 순서 통일 =====
+   직원관리의 기본 정렬(print_order)을 그대로 사용한다.
+   발생일은 행의 상태정보일 뿐, 행 순서를 바꾸지 않는다.
+*/
+function v27EmployeeManagementOrderValue(e){return Number(e?.print_order??9999)}
 
 </script>\n</body></html>
