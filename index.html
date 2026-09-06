@@ -5242,7 +5242,7 @@ function renderEmployees(){
    <td class="empInlineCell">${payTypeCell}</td>
 
    <!-- 연차기준: 원래 compact 표시 -->
-   <td>주 ${leaveWeeklyHoursAt(e,employeeRefDate)}h<br><span class="help">월 +${leaveMonthlyHoursAt(e,employeeRefDate)}h / 1일 -${leaveUseHoursDisplay(e,employeeRefDate)}</span>${monthlyAccrualEmployeeBadge(e,isoToday())}</td>
+   <td>${v31EmployeeLeaveBasisCell(e,employeeRefDate)}${monthlyAccrualEmployeeBadge(e,isoToday())}</td>
 
    <td>${employeeView==='active'?`<b data-leave-balance="${e.id}">${ls.balance}h</b><br><button class="btn gray small" onclick="adjustLeave(${e.id})">잔여확정</button>`:'-'}</td>
 
@@ -11448,5 +11448,175 @@ ${today} 현재 실제로 남아 있는 연차시간을 입력하세요.
  if(q.error)return alert(q.error.message);
  await refreshAll();
 };
+
+
+
+/* ===== V31 · 직원정보 / 근무조건 / 연차기준 단일화 =====
+   목적:
+   1) 직원관리 표의 연차기준과 실제 자동연차 계산이 같은 소스를 사용한다.
+   2) 날짜별 employee_work_conditions 이력이 있으면 그 이력이 최우선이다.
+   3) 이력이 없는 custom 직원의 낡은 기본값(특히 주40h/48h)을 무조건 믿지 않는다.
+      - DAY_RULES가 있으면 상세요일 합계
+      - 고정 work_days + daily_hours가 있고 기본값이 40h 또는 40h 초과로 충돌하면 등록패턴 합계
+      - 요일도 없는 custom + 기본 주40h는 실제 최근 4주 스케줄이 완전하면 그 소정시간을 임시 사용
+   4) 연차 산정용 주 소정시간은 법정 상한 40h를 넘지 않는다.
+   5) 직원관리 연차기준 셀에는 현재 계산에 사용한 출처/적용일을 표시한다.
+*/
+
+function v31ConditionIsHistory(c){
+ return !!c?._history_id || (!!c?.id && !!c?.employee_id && !!c?.effective_from);
+}
+function v31RuleWeeklyHours(c){
+ let rules=conditionDayRules(c),byDay=new Map();
+ rules.forEach(r=>(r.days||[]).forEach(d=>{
+   let h=Number(r.daily_hours||0);
+   if(h>0)byDay.set(Number(d),h);
+ }));
+ return Math.round([...byDay.values()].reduce((a,b)=>a+b,0)*100)/100;
+}
+function v31SimplePatternWeeklyHours(c){
+ let days=normalizedWorkDays(c?.work_days),daily=Number(c?.daily_hours||0);
+ return days.length&&daily>0?Math.round(days.length*daily*100)/100:0;
+}
+function v31ResolvedWeeklyFromCondition(c){
+ if(!c)return 0;
+ let type=normalizeWorkTypeValue(c.work_type),
+     explicit=Number(c.leave_weekly_hours||0),
+     rules=v31RuleWeeklyHours(c),
+     pattern=v31SimplePatternWeeklyHours(c),
+     history=v31ConditionIsHistory(c);
+
+ // 상세요일 규칙은 가장 구체적인 계약정보다.
+ if(rules>0)return Math.min(40,rules);
+
+ // 날짜별 근무조건 이력이 있으면 저장된 주 소정시간을 최종값으로 신뢰한다.
+ if(history&&explicit>0)return Math.min(40,Math.round(explicit*100)/100);
+
+ // 표준 근무형태는 명시 주 소정시간이 우선.
+ if((type==='40'||type==='36')&&explicit>0)return Math.min(40,Math.round(explicit*100)/100);
+
+ // 근무조건 이력이 없는 custom에서 40h 기본값/40h 초과값이
+ // 실제 등록요일×소정시간과 충돌하면 구조화된 등록패턴을 사용한다.
+ if(type==='custom'&&pattern>0){
+   if(explicit<=0)return Math.min(40,pattern);
+   if(explicit>40 || Math.abs(explicit-40)<0.01)return Math.min(40,pattern);
+   return Math.min(40,Math.round(explicit*100)/100);
+ }
+
+ if(explicit>0)return Math.min(40,Math.round(explicit*100)/100);
+ if(pattern>0)return Math.min(40,pattern);
+ return 0;
+}
+
+// V23 이후 모든 계산이 부르는 공통 주 소정시간 함수를 V31 기준으로 교체.
+v23ConditionWeeklyHours=function(c){return v31ResolvedWeeklyFromCondition(c)};
+conditionWeeklyPrescribedHours=function(c){return v31ResolvedWeeklyFromCondition(c)};
+
+// custom도 월 연차시간이 주 소정시간에서 항상 다시 파생되도록 현재조건 결과를 통일.
+const v31OriginalWorkConditionForDate=workConditionForDate;
+workConditionForDate=function(e,date=isoToday()){
+ let c=v31OriginalWorkConditionForDate(e,date),
+     weekly=v31ResolvedWeeklyFromCondition(c),
+     monthly=v23LegalMonthlyLeaveHours(weekly);
+ return {...c,leave_weekly_hours:weekly,leave_monthly_hours:monthly};
+};
+
+// 날짜 기준의 "원본" 조건을 표시용으로 별도 조회.
+// 계산용 workConditionForDate는 위에서 정규화되므로, 저장값과 산정값 차이 표시용이다.
+function v31RawConditionForDate(e,date=isoToday()){
+ let base=employeeFallbackCondition(e),rows=workConditionRowsForEmployee(e?.id),hit=null;
+ for(const r of rows){if(String(r.effective_from||'')<=String(date))hit=r;else break}
+ if(!hit)return {...base,_history_id:null};
+ return {...base,...hit,
+   daily_hours:Number(hit.daily_hours??base.daily_hours),
+   break_minutes:Number(hit.break_minutes??base.break_minutes),
+   work_days:normalizedWorkDays(hit.work_days),
+   leave_weekly_hours:Number(hit.leave_weekly_hours??base.leave_weekly_hours),
+   leave_monthly_hours:Number(hit.leave_monthly_hours??base.leave_monthly_hours),
+   leave_day_hours:Number(hit.leave_day_hours??base.leave_day_hours),
+   _history_id:hit.id||null
+ };
+}
+
+// 실제 월연차 발생 계산도 같은 원칙 사용.
+// 이력 없는 custom + 요일 미지정 + 기본40h는 최근 4주 스케줄이 완전할 때 실제 소정패턴을 임시 사용한다.
+legalWeeklyHoursForAccrual=function(e,eventDate,scheduleRows,periodEnd){
+ let c=workConditionForDate(e,eventDate),
+     raw=v31RawConditionForDate(e,eventDate),
+     type=normalizeWorkTypeValue(c?.work_type),
+     history=!!raw?._history_id,
+     rules=v31RuleWeeklyHours(raw),
+     pattern=v31SimplePatternWeeklyHours(raw),
+     explicitRaw=Number(raw?.leave_weekly_hours||0),
+     fixedDays=normalizedWorkDays(raw?.work_days),
+     end=periodEnd||addDaysIso(eventDate,-1);
+
+ if(history){
+   return {hours:v31ResolvedWeeklyFromCondition(raw),unknown:[],source:'condition-history'};
+ }
+ if(rules>0){
+   return {hours:Math.min(40,rules),unknown:[],source:'employee-day-rules'};
+ }
+ if(type==='custom'&&pattern>0&&(explicitRaw>40||Math.abs(explicitRaw-40)<0.01)){
+   return {hours:Math.min(40,pattern),unknown:[],source:'employee-pattern'};
+ }
+
+ // custom인데 고정요일도 없고 주40h가 기본값처럼 남아 있으면 최근 4주 스케줄을 우선 검증.
+ if(type==='custom'&&!fixedDays.length&&Math.abs(explicitRaw-40)<0.01){
+   let derived=scheduleDerivedWeeklyHours(e,end,scheduleRows||[]);
+   if(!derived.unknown?.length&&Number(derived.hours||0)>0){
+     return {hours:Math.min(40,Number(derived.hours||0)),unknown:[],source:'schedule-4week'};
+   }
+   return {hours:40,unknown:derived.unknown||[],source:'employee-fallback'};
+ }
+
+ let weekly=v31ResolvedWeeklyFromCondition(raw);
+ return {hours:weekly,unknown:[],source:history?'condition-history':'employee-master'};
+};
+
+function v31LeaveBasisSourceLabel(source,raw,resolved,date){
+ let effective=raw?._history_id?String(raw.effective_from||date):'';
+ if(source==='condition-history')return `${effective}부터 근무조건 이력`;
+ if(source==='employee-day-rules')return '직원 기본정보 · 상세요일 기준';
+ if(source==='employee-pattern')return '직원 기본정보 · 요일×소정시간 기준';
+ if(source==='schedule-4week')return '근무조건 이력 없음 · 최근 4주 스케줄 임시산정';
+ if(source==='employee-fallback')return '근무조건 이력 없음 · 기본정보 임시사용';
+ return raw?._history_id?`${effective}부터 근무조건 이력`:'직원 기본정보 기준';
+}
+function v31EmployeeLeaveBasisInfo(e,date=isoToday()){
+ let raw=v31RawConditionForDate(e,date),
+     c=workConditionForDate(e,date),
+     basis=legalWeeklyHoursForAccrual(e,date,leaveAttendanceSchedules||[],date),
+     weekly=Number(basis.hours||c.leave_weekly_hours||0),
+     monthly=weekly>=LEGAL_MIN_WEEKLY_HOURS_FOR_LEAVE?legalRoundLeaveHours(Math.min(weekly,40)/40*8):0,
+     rawWeekly=Number(raw?.leave_weekly_hours||0),
+     resolved=Number(c?.leave_weekly_hours||0),
+     use=leaveUseHoursDisplay(e,date),
+     source=v31LeaveBasisSourceLabel(basis.source,raw,resolved,date),
+     mismatch=false,warning='';
+
+ if(rawWeekly>40){
+   mismatch=true;warning=`저장된 주 소정 ${hour2(rawWeekly)}h 중 연차 산정은 40h 상한 적용`;
+ }else if(!raw?._history_id && normalizeWorkTypeValue(raw?.work_type)==='custom'){
+   let p=v31SimplePatternWeeklyHours(raw);
+   if(p>0&&Math.abs(rawWeekly-p)>0.01&&(Math.abs(rawWeekly-40)<0.01||rawWeekly>40)){
+     mismatch=true;warning=`기본 저장값 주 ${hour2(rawWeekly)}h ↔ 등록패턴 주 ${hour2(p)}h`;
+   }else if(basis.source==='schedule-4week'&&Math.abs(rawWeekly-weekly)>0.01){
+     mismatch=true;warning=`기본 저장값 주 ${hour2(rawWeekly)}h ↔ 최근4주 산정 주 ${hour2(weekly)}h`;
+   }else if(basis.source==='employee-fallback'){
+     mismatch=true;warning='근무조건 이력이 없어 현재 기본정보를 임시 사용';
+   }
+ }
+
+ return {weekly,monthly,use,source,mismatch,warning,historyId:raw?._history_id||null,effectiveFrom:raw?.effective_from||null,basisSource:basis.source};
+}
+function v31EmployeeLeaveBasisCell(e,date=isoToday()){
+ let b=v31EmployeeLeaveBasisInfo(e,date);
+ let top=b.weekly<LEGAL_MIN_WEEKLY_HOURS_FOR_LEAVE
+   ?`주 ${hour2(b.weekly)}h <span class="warn">· 법정연차 제외</span>`
+   :`주 ${hour2(b.weekly)}h`;
+ let warn=b.mismatch?`<br><span class="reviewWarn" title="${esc(b.warning)}">⚠ ${esc(b.warning)}</span>`:'';
+ return `${top}<br><span class="help">월 +${hour2(b.monthly)}h / 1일 -${b.use}</span><br><span class="help">${esc(b.source)}</span>${warn}`;
+}
 
 </script>\n</body></html>
