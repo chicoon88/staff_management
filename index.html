@@ -1355,7 +1355,7 @@ body.commerceStoreMode #renameStoreBtn{display:none!important}
   <div id="adminTaskList" class="adminTaskList"><div class="adminTaskItem info"><b>확인 중</b><span class="meta">현재 업장과 월의 상태를 불러옵니다.</span></div></div>
  </div>
  <div class="grid2">
-  <div class="card"><h3>이번 달 연차 발생·예정 직원</h3><div class="sub">1년 미만 월 연차는 <b>달력 월이 아니라 최초 입사일 기준</b>으로 계산합니다. 예: 7/20 입사 → 7/20~8/19 개근 확인 → 8/20 첫 발생, 8/20~9/19 → 9/20 두 번째 발생. 선택한 달 안에서는 발생완료와 발생예정(개근 시)을 함께 표시하며 예정분은 실제 발생일까지 잔여에 더하지 않습니다. 주5일은 +8h, 주4일·주32h는 비례산식 6.4h를 법정 단수처리하여 <b>+7h</b>로 발생하고, 하루 연차 사용은 소정 8h만 차감합니다.</div><div class="tablewrap" style="margin-top:10px"><table><thead><tr><th class="name">직원</th><th>근무형태</th><th>입사일</th><th>이번 달 발생/예정</th><th>누적 발생</th><th>누적 사용</th><th>조정</th><th>잔여</th></tr></thead><tbody id="homeEmployees"></tbody></table></div></div>
+  <div class="card"><h3>이번 달 연차 발생·예정 직원</h3><div class="sub">1년 미만 월 연차는 <b>달력 월이 아니라 최초 입사일 기준</b>으로 계산합니다. 예: 7/20 입사 → 7/20~8/19 개근 확인 → 8/20 첫 발생, 8/20~9/19 → 9/20 두 번째 발생. 선택한 달 안에서는 발생완료와 발생예정(개근 시)을 함께 표시하며 예정분은 실제 발생일까지 잔여에 더하지 않습니다. <b>연차 1개 시간은 주 근로시간 ÷ 5</b>로 계산하며 최대 8h입니다. 예: 주40h → 8h, 주32h → 6.4h, 주30h → 6h. 소수점은 그대로 사용하고 정수 올림을 하지 않습니다.</div><div class="tablewrap" style="margin-top:10px"><table><thead><tr><th class="name">직원</th><th>근무형태</th><th>입사일</th><th>이번 달 발생/예정</th><th>누적 발생</th><th>누적 사용</th><th>조정</th><th>잔여</th></tr></thead><tbody id="homeEmployees"></tbody></table></div></div>
   <div class="card"><h3>운영 흐름</h3><p class="help">① 월간 스케줄 작성 → ② 실제 근무시간 필요 시 날짜 클릭해 수정 → ③ 월 근로시간 확인 → ④ 노무사 급여대장 Excel 업로드 → ⑤ 스케줄 시간과 급여대장 시간 차이 검수 → ⑥ 필요 시 스케줄/급여 Excel 출력.</p></div>
  </div>
 </section>
@@ -1809,8 +1809,8 @@ function employeeFallbackCondition(e){
    default_start_time:e?.default_start_time||null, default_end_time:e?.default_end_time||null,
    break_minutes:Number(e?.break_minutes??60), work_days:normalizedWorkDays(e?.work_days),
    leave_weekly_hours:Number(e?.leave_weekly_hours ?? (e?.work_type==='36'?32:40)),
-   leave_monthly_hours:Number(e?.leave_monthly_hours ?? (e?.work_type==='36'?7:8)),
-   leave_day_hours:Number(e?.leave_day_hours ?? 8), _history_id:null
+   leave_monthly_hours:Number(e?.leave_monthly_hours ?? (e?.work_type==='36'?6.4:8)),
+   leave_day_hours:Number(e?.leave_day_hours ?? (e?.work_type==='36'?6.4:8)), _history_id:null
  };
 }
 function workConditionRowsForEmployee(employeeId){
@@ -3501,7 +3501,7 @@ function legalOvertimeCellV16(ot){
  let over=rows.filter(x=>x.over12).length,warning=over?`<div style="margin-top:2px;color:#b54708;font-size:10px;font-weight:700">⚠ 주12h 초과 ${over}주 확인</div>`:'';
  return `<div title="${esc(title)}"><b>${hour2(ot?.total||0)}h</b>${sub}${warning}</div>`;
 }
-function calc(emp){let r=monthRange(),o={days:0,scheduled:0,worked:0,ot:0,leave:0,sick:0,otDetail:null};for(let d=1;d<=r.days;d++){let date=r.m+'-'+String(d).padStart(2,'0'),s=sched(emp,date);if(!s)continue;let code=s.work_code||'',cond=workConditionForDate(emp,date),rule=conditionTimesForDate(cond,date),dayH=Number(rule.daily_hours||cond.daily_hours||8),leaveH=leaveDayHoursAt(emp,date);if(code==='연'){o.leave+=Number(s.scheduled_hours||leaveH);o.scheduled+=Number(s.scheduled_hours||leaveH)}else if(code==='병'){o.sick+=Number(s.scheduled_hours||dayH);o.scheduled+=Number(s.scheduled_hours||dayH)}else if(code==='결'||code==='법'){o.scheduled+=Number(s.scheduled_hours||dayH)}else if(code==='예'){let h=Number(s.worked_hours||s.scheduled_hours||dayH);o.days++;o.scheduled+=Number(s.scheduled_hours||dayH);o.worked+=h}else if(code!=='0'&&code!==''){o.days++;o.scheduled+=Number(s.scheduled_hours||0);o.worked+=Number(s.worked_hours||0)}}o.otDetail=legalOvertimeForMonthV16(emp);o.ot=o.otDetail.total;return o}
+function calc(emp){let r=monthRange(),o={days:0,scheduled:0,worked:0,ot:0,leave:0,sick:0,otDetail:null};for(let d=1;d<=r.days;d++){let date=r.m+'-'+String(d).padStart(2,'0'),s=sched(emp,date);if(!s)continue;let code=s.work_code||'',cond=workConditionForDate(emp,date),rule=conditionTimesForDate(cond,date),dayH=Number(rule.daily_hours||cond.daily_hours||8),leaveH=leaveDayHoursAt(emp,date);if(code==='연'){o.leave+=leaveH;o.scheduled+=leaveH}else if(code==='병'){o.sick+=Number(s.scheduled_hours||dayH);o.scheduled+=Number(s.scheduled_hours||dayH)}else if(code==='결'||code==='법'){o.scheduled+=Number(s.scheduled_hours||dayH)}else if(code==='예'){let h=Number(s.worked_hours||s.scheduled_hours||dayH);o.days++;o.scheduled+=Number(s.scheduled_hours||dayH);o.worked+=h}else if(code!=='0'&&code!==''){o.days++;o.scheduled+=Number(s.scheduled_hours||0);o.worked+=Number(s.worked_hours||0)}}o.otDetail=legalOvertimeForMonthV16(emp);o.ot=o.otDetail.total;return o}
 function renderAll(){renderSchedule();renderEmployees();renderStores();}
 
 function leaveDueInfo(e){
@@ -5872,11 +5872,11 @@ async function openEmployee(id,isRetired=false){
  <div class="field"><label>인센 1회 단가</label><input id="eIncentiveUnit" type="number" step="1000" value="${incentiveUnit(e)}"></div>
  <div class="field"><label>공휴일 인센 사용</label><select id="eIncentiveOn"><option value="1">사용</option><option value="0">사용 안함</option></select></div>
  <div class="field"><label>연차 산정 주 소정시간</label><input id="eLeaveWeekly" type="number" step="any" value="${leaveWeeklyHours(e)}"></div>
- <div class="field"><label>1년 미만 월 발생(h)</label><input id="eLeaveMonthly" type="number" step="1" value="${leaveMonthlyHours(e)}"></div>
- <div class="field"><label>연차 하루 사용(h)</label><input id="eLeaveDay" type="number" step=".5" value="${leaveDayHours(e)}"></div>
+ <div class="field"><label>연차 1개 발생(h) · 자동</label><input id="eLeaveMonthly" type="number" step="1" value="${leaveMonthlyHours(e)}"></div>
+ <div class="field"><label>연차 1개 사용(h) · 자동</label><input id="eLeaveDay" type="number" step=".5" value="${leaveDayHours(e)}"></div>
  </div>
  <div style="margin-top:12px"><b style="font-size:12px">기본근무 채우기용 패턴 (선택사항)</b><div class="employeeWorkDayPattern">${checks}</div></div>
- <div class="help" style="margin-top:10px"><b>직책과 업무를 구분해서 입력하세요.</b> 예: 직책=과장 / 업무=매장관리·조제·전산 등<br><b>이 화면의 모든 항목은 수기로 수정 후 저장할 수 있습니다.</b><br><b>퇴사자의 퇴사일을 비워 저장하면 기존 입사일·연번을 유지한 채 재직자로 복귀합니다.</b> 실제 퇴사 후 다시 입사한 경우에는 퇴사자 목록의 “재입사”를 사용하세요.<br>실제 근무요일이 매주 바뀌는 스케줄근무라면 위 요일은 비워두셔도 됩니다. 이 항목은 “기본근무 채우기”를 빠르게 사용할 때만 참고합니다.<br>기본 기준: 주5일은 소정 8h×5일=40h. 주4일은 계약상 <b>소정 8h + 예정 연장 1h</b>를 4일 근무하여 <b>소정 32h + 예정연장 4h = 실근로 목표 36h</b>입니다. 주4일 월연차는 비례산식 <b>32÷40×8 = 6.4h</b>이지만 법정 기준상 1시간 미만 단수는 올려 <b>7h 발생</b>으로 관리합니다. 스케줄에 <b>연</b> 입력 시 소정근로 <b>8h만 차감</b>하며, 계약상 예정 연장 1h는 연차에서 자동 차감하지 않습니다.</div>
+ <div class="help" style="margin-top:10px"><b>직책과 업무를 구분해서 입력하세요.</b> 예: 직책=과장 / 업무=매장관리·조제·전산 등<br><b>이 화면의 모든 항목은 수기로 수정 후 저장할 수 있습니다.</b><br><b>퇴사자의 퇴사일을 비워 저장하면 기존 입사일·연번을 유지한 채 재직자로 복귀합니다.</b> 실제 퇴사 후 다시 입사한 경우에는 퇴사자 목록의 “재입사”를 사용하세요.<br>실제 근무요일이 매주 바뀌는 스케줄근무라면 위 요일은 비워두셔도 됩니다. 이 항목은 “기본근무 채우기”를 빠르게 사용할 때만 참고합니다.<br>기본 기준: 주5일은 소정 8h×5일=40h. 주4일은 계약상 <b>소정 8h + 예정 연장 1h</b>를 4일 근무하여 <b>소정 32h + 예정연장 4h = 실근로 목표 36h</b>입니다. <b>연차 1개 시간은 주 근로시간 ÷ 5, 최대 8h</b>로 계산합니다. 따라서 주32h는 <b>6.4h 발생·6.4h 사용</b>, 주30h는 6h, 주40h는 8h입니다. 연차시간을 정수로 올림하지 않습니다. 계약상 예정 연장시간은 연차시간에 더하지 않습니다.</div>
  <div class="modalActions"><button class="btn gray" onclick="closeModal()">취소</button><button class="btn" onclick="saveEmployee(${id||'null'})">저장</button></div>`);
  $('modalBox')?.classList.add('employeeEditModal');
  $('eType').value=workType(e);$('ePay').value=e.pay_type||'monthly';$('ePayDay').value=payDayRule(e);$('eIncentiveOn').value=incentiveEnabled(e)?'1':'0';
@@ -5884,7 +5884,7 @@ async function openEmployee(id,isRetired=false){
 function applyLeavePreset(){
  let t=normalizeWorkTypeValue($('eType').value);
  if(t==='40'){$('eDaily').value=8;$('eLeaveWeekly').value=40;$('eLeaveMonthly').value=8;$('eLeaveDay').value=8}
- if(t==='36'){$('eDaily').value=8;$('eLeaveWeekly').value=32;$('eLeaveMonthly').value=7;$('eLeaveDay').value=8}
+ if(t==='36'){$('eDaily').value=8;$('eLeaveWeekly').value=32;$('eLeaveMonthly').value=6.4;$('eLeaveDay').value=6.4}
 }
 function applyPayPreset(){
  let p=paymentRulePreset($('ePay').value);
@@ -6104,8 +6104,8 @@ async function openWorkConditionHistory(employeeId,presetDate='',presetNote='',p
    <div class="field"><label>기본 출근</label><input id="wcStart" type="time" value="${String(c.default_start_time||'').slice(0,5)}"></div>
    <div class="field"><label>기본 퇴근</label><input id="wcEnd" type="time" value="${String(c.default_end_time||'').slice(0,5)}"></div>
    <div class="field"><label>연차 산정 주 소정시간</label><input id="wcLeaveWeekly" type="number" step="any" value="${Number(c.leave_weekly_hours||40)}"></div>
-   <div class="field"><label>1년 미만 월 발생(h)</label><input id="wcLeaveMonthly" type="number" step="1" value="${Number(c.leave_monthly_hours||8)}"></div>
-   <div class="field"><label>연차 하루 사용(h)</label><input id="wcLeaveDay" type="number" step=".5" value="${Number(c.leave_day_hours||8)}"></div>
+   <div class="field"><label>연차 1개 발생(h) · 자동</label><input id="wcLeaveMonthly" type="number" step="1" value="${Number(c.leave_monthly_hours||8)}"></div>
+   <div class="field"><label>연차 1개 사용(h) · 자동</label><input id="wcLeaveDay" type="number" step=".5" value="${Number(c.leave_day_hours||8)}"></div>
    <div class="field"><label>스케줄 편성 방식</label><select id="wcScheduleMode"><option value="manual" ${scheduleMode==='manual'?'selected':''}>직접 입력 (기본)</option><option value="auto" ${scheduleMode==='auto'?'selected':''}>고정요일 자동채우기</option></select></div>
    <div class="field" style="grid-column:span 3"><label>변경 메모</label><input id="wcNote" value="${esc(workConditionHumanNote(presetCondition?.note||presetNote||''))}" placeholder="예: 2026년 8월부터 주5일 → 주4일 변경"></div>
    <input id="wcDayRules" type="hidden" value="${esc(ruleEncoded)}">
@@ -6120,7 +6120,7 @@ async function openWorkConditionHistory(employeeId,presetDate='',presetNote='',p
 function applyWorkConditionPreset(){
  let t=normalizeWorkTypeValue($('wcType')?.value||'');
  if(t==='40'){$('wcDaily').value=8;$('wcLeaveWeekly').value=40;$('wcLeaveMonthly').value=8;$('wcLeaveDay').value=8}
- if(t==='36'){$('wcDaily').value=8;$('wcLeaveWeekly').value=32;$('wcLeaveMonthly').value=7;$('wcLeaveDay').value=8}
+ if(t==='36'){$('wcDaily').value=8;$('wcLeaveWeekly').value=32;$('wcLeaveMonthly').value=6.4;$('wcLeaveDay').value=6.4}
 }
 async function loadWorkConditionHistory(employeeId){
  let host=$('workConditionList');if(!host)return;
@@ -9992,8 +9992,8 @@ async function openWorkConditionHistory(employeeId,presetDate='',presetNote='',p
    <div class="field"><label>대표 출근</label><input id="wcStart" type="time" value="${String(c.default_start_time||'').slice(0,5)}"></div>
    <div class="field"><label>대표 퇴근</label><input id="wcEnd" type="time" value="${String(c.default_end_time||'').slice(0,5)}"></div>
    <div class="field"><label>연차 산정 주 소정시간</label><input id="wcLeaveWeekly" type="number" step="any" value="${Number(c.leave_weekly_hours||0)}"></div>
-   <div class="field"><label>1년 미만 월 발생(h)</label><input id="wcLeaveMonthly" type="number" step="1" value="${Number(c.leave_monthly_hours||0)}"></div>
-   <div class="field"><label>연차 하루 사용(h)</label><input id="wcLeaveDay" type="number" step=".5" value="${Number(c.leave_day_hours||0)}"></div>
+   <div class="field"><label>연차 1개 발생(h) · 자동</label><input id="wcLeaveMonthly" type="number" step="1" value="${Number(c.leave_monthly_hours||0)}"></div>
+   <div class="field"><label>연차 1개 사용(h) · 자동</label><input id="wcLeaveDay" type="number" step=".5" value="${Number(c.leave_day_hours||0)}"></div>
    <div class="field"><label>스케줄 편성 방식</label><select id="wcScheduleMode"><option value="manual" ${scheduleMode==='manual'?'selected':''}>직접 입력 (기본)</option><option value="auto" ${scheduleMode==='auto'?'selected':''}>고정요일 자동채우기</option></select></div>
    <div class="field" style="grid-column:span 3"><label>변경 메모</label><input id="wcNote" value="${esc(workConditionHumanNote(presetCondition?.note||presetNote||''))}" placeholder="예: 계약서 확인 후 수기 최종확정"></div>
   </div>
@@ -11086,7 +11086,7 @@ function v24NormalizeWorkConditionEditor(){
  let type=normalizeWorkTypeValue($('wcType')?.value||''),daily=Number($('wcDaily')?.value||0),weekly=Number($('wcLeaveWeekly')?.value||0),note=$('wcNote')?.value||'';
  let probe={work_type:type,daily_hours:daily,leave_weekly_hours:weekly,note};
  if(type==='36'&&v24LooksStandard36(probe)){
-   if($('wcDaily'))$('wcDaily').value='8';if($('wcLeaveWeekly'))$('wcLeaveWeekly').value='32';if($('wcLeaveMonthly'))$('wcLeaveMonthly').value='7';if($('wcLeaveDay'))$('wcLeaveDay').value='8';
+   if($('wcDaily'))$('wcDaily').value='8';if($('wcLeaveWeekly'))$('wcLeaveWeekly').value='32';if($('wcLeaveMonthly'))$('wcLeaveMonthly').value='6.4';if($('wcLeaveDay'))$('wcLeaveDay').value='6.4';
    if($('wcNote')&&!v24ContractNoteSaysOneHourOT(note))$('wcNote').value=(note?note+' · ':'')+'1일 기본 8시간 + 연장 1시간';
    document.querySelectorAll('#wcRuleEditorBody tr[data-day]').forEach(tr=>{if(!tr.querySelector('.wcRuleEnabled')?.checked)return;let d=tr.querySelector('.wcRuleDaily'),v=Number(d?.value||0);if(d&&v>=8.5&&v<=9.5)d.value='8'});
  }
@@ -11100,7 +11100,7 @@ const v24OriginalOpenWorkConditionHistory=openWorkConditionHistory;
 openWorkConditionHistory=async function(employeeId,presetDate='',presetNote='',presetCondition=null,editConditionId=null){
  let p=presetCondition?v24NormalizeContractTerms({...presetCondition,weekly_hours:presetCondition.leave_weekly_hours??presetCondition.weekly_hours}):null;
  if(p&&p.weekly_hours!=null){p.leave_weekly_hours=Number(p.weekly_hours||0);delete p.weekly_hours}
- if(p&&normalizeWorkTypeValue(p.work_type)==='36'&&v24LooksStandard36(p)){p.daily_hours=8;p.leave_weekly_hours=32;p.leave_monthly_hours=7;p.leave_day_hours=8}
+ if(p&&normalizeWorkTypeValue(p.work_type)==='36'&&v24LooksStandard36(p)){p.daily_hours=8;p.leave_weekly_hours=32;p.leave_monthly_hours=6.4;p.leave_day_hours=6.4}
  return v24OriginalOpenWorkConditionHistory(employeeId,presetDate,presetNote,p,editConditionId);
 };
 
@@ -11979,6 +11979,191 @@ if(typeof commerceV21RegisterOne==='function'){
  commerceV21RegisterOne=async function(file,index,total){let result=await commerceV32OldRegisterOne(file,index,total);if(result&&!result.skipped&&result.year){let reapplied=await commerceV32ReapplyKnownCancellations(result.year);result.reapplied_cancel_rows=reapplied.excluded;result.cancel_ambiguous_rows=reapplied.ambiguous}return result};
 }
 
+</script>
+
+<script id="annualLeaveV40ConfirmedPolicy">
+/* ===== V40 · 노무사 확정 연차시간 기준 · 대시보드 전체통일 =====
+   최종 기준:
+   - 연차 1개 시간 = 주 근로시간 / 5
+   - 최대 8h (주40h 이상은 8h)
+   - 예: 40h→8h, 35h→7h, 32h→6.4h, 30h→6h, 20h→4h, 16h→3.2h
+   - 1년 미만 자동발생 자격(주15h 이상) 등 기존 자격/개근 판정은 유지
+   - V25의 '32h→7h 정수 올림' 및 V24의 '주32h 연차 사용 8h'는 본 정책으로 폐기
+   - 직원정보/근무조건/자동발생/예정/스케줄 연차사용/연차원장/근로시간 표시를 모두 같은 단위시간으로 사용
+===== */
+window.ANNUAL_LEAVE_BUILD='V40_WEEKLY_DIV5_MAX8_20260911';
+
+function v40CanonicalNumber(n){
+ n=Number(n||0);if(!Number.isFinite(n))return 0;
+ // 부동소수점 오차(예: 6.659999999999999)만 정리한다. 정수 올림/내림 정책은 적용하지 않는다.
+ return Number(n.toFixed(10));
+}
+function v40AnnualLeaveUnitHoursFromWeekly(weekly){
+ let w=Number(weekly||0);if(!Number.isFinite(w)||w<=0)return 0;
+ return v40CanonicalNumber(Math.min(w,LEGAL_FULLTIME_WEEKLY_HOURS)/5);
+}
+function v40AnnualLeaveAccrualUnitHoursFromWeekly(weekly){
+ let w=Number(weekly||0);if(!Number.isFinite(w)||w<LEGAL_MIN_WEEKLY_HOURS_FOR_LEAVE)return 0;
+ return v40AnnualLeaveUnitHoursFromWeekly(w);
+}
+function v40AnnualLeaveUnitHoursForEmployee(e,date=isoToday()){
+ let c=workConditionForDate(e||{},date),w=Number(c?.leave_weekly_hours||0);
+ if(!(w>0))w=Number(conditionWeeklyPrescribedHours(c)||0);
+ return v40AnnualLeaveUnitHoursFromWeekly(w);
+}
+function v40LeaveHourText(v){let n=v40CanonicalNumber(v);return Number.isInteger(n)?String(n):String(n)}
+
+// 과거 '법정 단수 올림' 함수는 연차시간 계산에서는 더 이상 올림하지 않는다.
+legalRoundLeaveHours=function(hours){let n=v40CanonicalNumber(hours);return n>0?n:0};
+
+// 1년 미만 월 1개 발생시간 = 주 근로시간/5 (주15h 미만 자동발생 제외는 기존 유지)
+v23LegalMonthlyLeaveHours=function(weekly){return v40AnnualLeaveAccrualUnitHoursFromWeekly(weekly)};
+v25RawMonthlyLeaveHours=function(weekly){return v40AnnualLeaveAccrualUnitHoursFromWeekly(weekly)};
+v25LeaveAccrualBasisText=function(weekly){
+ let unit=v40AnnualLeaveAccrualUnitHoursFromWeekly(weekly);if(!unit)return '';
+ return `주 소정 ${v40LeaveHourText(weekly)}h ÷ 5 = 연차 1개 ${v40LeaveHourText(unit)}h`;
+};
+
+// 1년 이상 연차도 '일수 × 1개 시간'으로 동일 계산.
+annualLeaveHours=function(e,serviceYears,date=isoToday(),weeklyHours=null){
+ let w=Number(weeklyHours??leaveWeeklyHoursAt(e,date));
+ if(w<LEGAL_MIN_WEEKLY_HOURS_FOR_LEAVE)return 0;
+ return v40CanonicalNumber(annualLeaveDays(serviceYears)*v40AnnualLeaveUnitHoursFromWeekly(w));
+};
+
+// 날짜별 근무조건을 읽을 때 저장돼 있던 옛 7h/8h 값을 사용하지 않고 주 소정시간에서 다시 파생한다.
+const v40PreviousWorkConditionForDate=workConditionForDate;
+workConditionForDate=function(e,date=isoToday()){
+ let c=v40PreviousWorkConditionForDate(e,date),weekly=Number(c?.leave_weekly_hours||0);
+ if(!(weekly>0))weekly=Number(v31ResolvedWeeklyFromCondition(c)||0);
+ weekly=Math.min(LEGAL_FULLTIME_WEEKLY_HOURS,Math.max(0,weekly));
+ let unit=v40AnnualLeaveUnitHoursFromWeekly(weekly),monthly=weekly>=LEGAL_MIN_WEEKLY_HOURS_FOR_LEAVE?unit:0;
+ return {...c,leave_weekly_hours:weekly,leave_monthly_hours:monthly,leave_day_hours:unit};
+};
+leaveMonthlyHoursAt=function(e,date){let w=leaveWeeklyHoursAt(e,date);return v40AnnualLeaveAccrualUnitHoursFromWeekly(w)};
+leaveMonthlyHours=function(e){return leaveMonthlyHoursAt(e,isoToday())};
+leaveDayHours=function(e){return leaveDayHoursAt(e,isoToday())};
+
+// '연' 1회 사용도 실제 일 소정 8h가 아니라 확정된 연차 1개 시간(주/5)을 차감한다.
+leaveUseHoursDecision=function(e,date,row=null){
+ let h=v40AnnualLeaveUnitHoursForEmployee(e,date);
+ return {hours:h,known:h>0,source:'weekly-hours-divided-by-5'};
+};
+leaveUseHoursDisplay=function(e,date=isoToday()){
+ let h=v40AnnualLeaveUnitHoursForEmployee(e,date);return h>0?`${v40LeaveHourText(h)}h`:'확인';
+};
+
+// 직원/근무조건 편집창의 파생값은 수기 입력으로 다시 7h/8h가 되지 않게 자동고정한다.
+v23SyncDerivedLeaveFields=function(prefix){
+ let weeklyEl=$(prefix+'LeaveWeekly'),monthlyEl=$(prefix+'LeaveMonthly'),dayEl=$(prefix+'LeaveDay');
+ if(!weeklyEl||!monthlyEl||!dayEl)return;
+ let weekly=Number(weeklyEl.value||0),unit=v40AnnualLeaveUnitHoursFromWeekly(weekly),monthly=weekly>=LEGAL_MIN_WEEKLY_HOURS_FOR_LEAVE?unit:0;
+ monthlyEl.value=String(monthly);monthlyEl.readOnly=true;monthlyEl.title='확정 기준: 주 근로시간 ÷ 5. 주15h 미만은 자동발생 0h.';
+ dayEl.value=String(unit);dayEl.readOnly=true;dayEl.title='확정 기준: 연차 1개 사용시간 = 주 근로시간 ÷ 5 (최대 8h).';
+};
+applyLeavePreset=function(){
+ let t=normalizeWorkTypeValue($('eType')?.value||'');
+ if(t==='40'){$('eDaily').value=8;$('eLeaveWeekly').value=40}
+ if(t==='36'){$('eDaily').value=8;$('eLeaveWeekly').value=32}
+ v23SyncDerivedLeaveFields('e');
+};
+const v40PreviousApplyWorkConditionPreset=applyWorkConditionPreset;
+applyWorkConditionPreset=function(){let r=v40PreviousApplyWorkConditionPreset();v23SyncDerivedLeaveFields('wc');return r};
+const v40PreviousSaveEmployee=saveEmployee;
+saveEmployee=async function(id){v23SyncDerivedLeaveFields('e');return v40PreviousSaveEmployee(id)};
+const v40PreviousAddWorkCondition=addWorkCondition;
+addWorkCondition=async function(employeeId){v23SyncDerivedLeaveFields('wc');return v40PreviousAddWorkCondition(employeeId)};
+
+// 직원관리 '연차 기준' 셀도 같은 공식만 보여준다.
+const v40PreviousLeaveBasisInfo=v31EmployeeLeaveBasisInfo;
+v31EmployeeLeaveBasisInfo=function(e,date=isoToday()){
+ let b=v40PreviousLeaveBasisInfo(e,date),unit=v40AnnualLeaveUnitHoursFromWeekly(b.weekly),monthly=b.weekly>=LEGAL_MIN_WEEKLY_HOURS_FOR_LEAVE?unit:0;
+ return {...b,monthly,use:unit>0?`${v40LeaveHourText(unit)}h`:'확인'};
+};
+v31EmployeeLeaveBasisCell=function(e,date=isoToday()){
+ let b=v31EmployeeLeaveBasisInfo(e,date),unit=v40AnnualLeaveUnitHoursFromWeekly(b.weekly);
+ let top=b.weekly<LEGAL_MIN_WEEKLY_HOURS_FOR_LEAVE
+   ?`주 ${v40LeaveHourText(b.weekly)}h <span class="warn">· 법정연차 자동발생 제외</span>`
+   :`주 ${v40LeaveHourText(b.weekly)}h`;
+ let formula=unit>0?`1개 ${v40LeaveHourText(unit)}h <span class="help">(주 ${v40LeaveHourText(b.weekly)}h ÷ 5)</span>`:'1개 시간 확인';
+ let warn=b.mismatch?`<br><span class="reviewWarn" title="${esc(b.warning)}">⚠ ${esc(b.warning)}</span>`:'';
+ return `${top}<br><b>${formula}</b><br><span class="help">발생 +${v40LeaveHourText(b.monthly)}h / 사용 -${v40LeaveHourText(unit)}h</span><br><span class="help">${esc(b.source)}</span>${warn}`;
+};
+
+// 근로시간 화면 안내도 새 확정 기준으로 교체한다.
+v25InjectLeavePolicyHelp=function(){
+ let title=[...document.querySelectorAll('h3')].find(x=>String(x.textContent||'').trim()==='월간 근로시간');
+ if(!title)return;let card=title.closest('.card');if(!card)return;
+ let d=card.querySelector('.v25LeavePolicy');if(!d){d=document.createElement('div');d.className='help v25LeavePolicy';d.style.marginTop='6px';title.insertAdjacentElement('afterend',d)}
+ d.innerHTML='연차 확정 기준: <b>연차 1개 = 주 근로시간 ÷ 5, 최대 8h</b>. 주40h는 8h, 주32h는 6.4h입니다. 스케줄의 <b>연</b>도 같은 시간으로 발생·사용하며 예정 연장근로는 연차시간에 더하지 않습니다.';
+};
+
+// 새로 입력하는 '연' 스케줄의 scheduled_hours도 1개 시간으로 강제 통일.
+const v40PreviousSchedulePayload=schedulePayload;
+schedulePayload=function(id,date,raw){
+ let p=v40PreviousSchedulePayload(id,date,raw);
+ if(p.work_code==='연'){
+   let e=allEmployees().find(x=>Number(x.id)===Number(id)),h=v40AnnualLeaveUnitHoursForEmployee(e,date);
+   p.scheduled_hours=h;p.worked_hours=0;p.overtime_hours=0;p.status='leave';
+ }
+ return p;
+};
+
+// 상세근무 팝업에서 '연차'를 선택해도 출퇴근시간으로 8h를 다시 만들지 않는다.
+saveShiftDetail=async function(id,date){
+ if(!requireScheduleDateEdit(date))return;
+ let e=employees.find(x=>x.id===id),cond=workConditionForDate(e||{},date),rule=conditionTimesForDate(cond,date),st=$('mCode').value,start=$('mStart').value,end=$('mEnd').value,br=Number($('mBreak').value||0),base=prescribedDayHoursV15(e||{},date,sched(e,date))||Number(rule.daily_hours||cond.daily_hours||8),detailHours=Math.round(hoursBetween(start,end,br)*100)/100,leaveH=v40AnnualLeaveUnitHoursForEmployee(e,date),worked=0,scheduled=0,ot=0,code='0';
+ if(st==='leave'){
+   if(!leaveH)return alert('연차 산정 주 근로시간을 확인할 수 없습니다. 직원정보/근무조건의 주 소정시간을 먼저 확인하세요.');
+   let ok=await confirmLeaveUseAfterRefresh(e,date,null,leaveH);if(!ok)return;
+ }
+ if(st==='work'){worked=detailHours;scheduled=Math.min(worked,base);ot=Math.max(0,worked-base);code=String(worked).replace(/\.0$/,'')}
+ if(st==='leave'){scheduled=leaveH;worked=0;ot=0;code='연'}
+ if(st==='sick'){scheduled=detailHours>0?detailHours:base;code='병'}
+ if(st==='absence'){scheduled=detailHours>0?detailHours:base;code='결'}
+ if(st==='deemed'){scheduled=detailHours>0?detailHours:base;code='법'}
+ if(st==='reserve'){scheduled=base;worked=base;ot=0;code='예'}
+ let q=await sb.from('schedules').upsert({employee_id:id,work_date:date,work_code:code,scheduled_hours:scheduled,worked_hours:worked,overtime_hours:ot,start_time:start||null,end_time:end||null,break_minutes:br,status:st},{onConflict:'employee_id,work_date'});
+ if(q.error)return alert(q.error.message);
+ stampRecentAuditIp(storeId());closeModal();refreshAll();
+};
+
+// 과거 DB에 7h/8h로 남아 있는 '연' 스케줄도 날짜별 주 근로시간/5로 재동기화한다.
+const v40PreviousFetchAllLeaveSchedules=fetchAllLeaveSchedules;
+fetchAllLeaveSchedules=async function(ids){
+ let rows=await v40PreviousFetchAllLeaveSchedules(ids);
+ return (rows||[]).map(s=>{let e=allEmployees().find(x=>Number(x.id)===Number(s.employee_id)),h=v40AnnualLeaveUnitHoursForEmployee(e,s.work_date);return h>0?{...s,scheduled_hours:h}:s});
+};
+async function v40NormalizeStoredLeaveSchedules(){
+ if(!employees.length)return {updated:0};
+ let ids=employees.map(e=>e.id),raw=await v40PreviousFetchAllLeaveSchedules(ids),updated=0;
+ for(const s of raw||[]){
+   let e=employees.find(x=>Number(x.id)===Number(s.employee_id));if(!e)continue;
+   let h=v40AnnualLeaveUnitHoursForEmployee(e,s.work_date);if(!(h>0)||Math.abs(Number(s.scheduled_hours||0)-h)<1e-9)continue;
+   let q=await sb.from('schedules').update({scheduled_hours:h,worked_hours:0,overtime_hours:0,status:'leave'}).eq('id',s.id);
+   if(q.error){console.warn('V40 과거 연차시간 재동기화 실패',s.employee_id,s.work_date,q.error.message);continue}
+   let local=schedules.find(x=>Number(x.id)===Number(s.id));if(local){local.scheduled_hours=h;local.worked_hours=0;local.overtime_hours=0;local.status='leave'}
+   updated++;
+ }
+ return {updated};
+}
+const v40PreviousSyncLeaveLedger=syncLeaveLedger;
+syncLeaveLedger=async function(){
+ try{await v40NormalizeStoredLeaveSchedules()}catch(e){console.warn('V40 연차 스케줄 사전정규화 오류',e)}
+ return v40PreviousSyncLeaveLedger();
+};
+
+// 화면 로컬 보정도 과거 저장 scheduled_hours가 아니라 확정 단위시간을 사용한다.
+liveLeaveSummary=function(e,asOf=monthRange().last){
+ let base=leaveSummary(e,asOf),r=monthRange();if(r.first>asOf)return base;
+ let end=r.last<asOf?r.last:asOf;
+ let ledgerUsed=leaveLedger.filter(x=>x.employee_id===e.id&&x.source==='schedule'&&x.event_date>=r.first&&x.event_date<=end).reduce((sum,x)=>sum+Number(x.hours||0),0);
+ let localUsed=schedules.filter(s=>s.employee_id===e.id&&s.work_date>=r.first&&s.work_date<=end&&s.work_code==='연').reduce((sum,s)=>sum-v40AnnualLeaveUnitHoursForEmployee(e,s.work_date),0);
+ let delta=localUsed-ledgerUsed,usedDelta=Math.max(0,-delta),used=v40CanonicalNumber(base.used+usedDelta),balance=v40CanonicalNumber(base.balance+delta);
+ return {...base,used,balance};
+};
+
+console.info('[연차] V40_WEEKLY_DIV5_MAX8_20260911 · 노무사 확정: 1개=주근로시간/5, 최대8h · 32h=6.4h');
 </script>
 <script>window.COMMERCE_BUILD='V35_CUMULATIVE_WORKBOOK_SYNC_20260907';console.info('[88커머스] V35_CUMULATIVE_WORKBOOK_SYNC_20260907 · 현재 index.html 기준 누적수정');</script>
 <script>window.DOCUMENT_PRINT_BUILD='V36_RESIGNATION_SINGLE_PAGE_20260909';console.info('[문서출력] V36_RESIGNATION_SINGLE_PAGE_20260909 · 사직서 A4 1페이지 고정');</script>
