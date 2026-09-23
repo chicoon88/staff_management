@@ -1584,6 +1584,7 @@ const SUPABASE_URL="https://gxdimhvslurvniwughrs.supabase.co";
 const SUPABASE_KEY="sb_publishable_KQm77StbhQkIZv5UjZnoXQ_OWZ7HHzF";
 const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY),$=id=>document.getElementById(id);
 
+/* V41: 모달 바깥클릭 닫힘 방지 / 입력내용 보호 */
 function modal(content){
  // 바깥은 화면 전체 오버레이(.modalBack), 안쪽만 실제 팝업(.modal)
  let wrap=document.getElementById('modalOverlay');
@@ -1592,12 +1593,17 @@ function modal(content){
    wrap.id='modalOverlay';
    wrap.className='modalBack';
    wrap.style.display='none';
-   wrap.innerHTML='<div class="modal" id="modalBox" role="dialog" aria-modal="true"></div>';
+   wrap.innerHTML='<div class="modal" id="modalBox" role="dialog" aria-modal="true" tabindex="-1"></div>';
    document.body.appendChild(wrap);
 
-   // 팝업 바깥 어두운 영역 클릭 시 닫기
+   // V41: 입력 보호 — 팝업 바깥 영역을 실수로 눌러도 닫지 않는다.
+   // 닫기는 저장/취소/닫기/X 등 팝업 내부의 명시적 버튼에서만 수행한다.
    wrap.addEventListener('click',function(ev){
-     if(ev.target===wrap)closeModal();
+     if(ev.target===wrap){
+       ev.preventDefault();
+       ev.stopPropagation();
+       document.getElementById('modalBox')?.focus?.({preventScroll:true});
+     }
    });
  }
  let box=document.getElementById('modalBox');
