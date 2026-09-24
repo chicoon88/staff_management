@@ -8,6 +8,11 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
 <style>
+/* V43 · 직원 저장 시 현재 선택월 스케줄 확정 동기화
+   - 신규/기존 직원 모두 근무요일이 있으면 저장할 때마다 현재 선택월 스케줄 동기화
+   - 연/병/결/법/예 및 사용자가 직접 입력한 0은 보존
+   - 자동 생성한 휴무 0은 근무요일 변경 시 다시 계산 가능
+   - 수동으로 스케줄을 수정하면 자동생성 표식을 제거 */
 /* V42 · 일반 직원관리 권한 확대 + 급여관련 비공개 + 직원 수정이력 + 직원등록 스케줄 자동반영 */
 .schedulerMode .employeePrivateCol{display:none!important}
 .schedulerMode .salaryContractAdminOnly{display:none!important}
@@ -3896,7 +3901,7 @@ function schedulePayload(id,date,raw){
  else if(code==='0'||!code){code=code||'0';status='off'}
  else if(!isNaN(Number(code))){worked=Number(code);scheduled=Math.min(worked,base);ot=Math.max(0,worked-base);status='work'}
  else {status='other'}
- return {employee_id:id,work_date:date,work_code:code,scheduled_hours:scheduled,worked_hours:worked,overtime_hours:ot,status};
+ return {employee_id:id,work_date:date,work_code:code,scheduled_hours:scheduled,worked_hours:worked,overtime_hours:ot,status,memo:null};
 }
 function applyLocalSchedule(payload){
  let idx=schedules.findIndex(s=>s.employee_id===payload.employee_id&&s.work_date===payload.work_date);
@@ -4084,7 +4089,7 @@ async function saveShiftDetail(id,date){
  if(st==='absence'){scheduled=detailHours>0?detailHours:base;code='결'}
  if(st==='deemed'){scheduled=detailHours>0?detailHours:base;code='법'}
  if(st==='reserve'){scheduled=base;worked=base;ot=0;code='예'}
- let q=await sb.from('schedules').upsert({employee_id:id,work_date:date,work_code:code,scheduled_hours:scheduled,worked_hours:worked,overtime_hours:ot,start_time:start||null,end_time:end||null,break_minutes:br,status:st},{onConflict:'employee_id,work_date'});
+ let q=await sb.from('schedules').upsert({employee_id:id,work_date:date,work_code:code,scheduled_hours:scheduled,worked_hours:worked,overtime_hours:ot,start_time:start||null,end_time:end||null,break_minutes:br,status:st,memo:null},{onConflict:'employee_id,work_date'});
  if(q.error)return alert(q.error.message);
  stampRecentAuditIp(storeId());
  closeModal();refreshAll();
@@ -5897,8 +5902,8 @@ async function openEmployee(id,isRetired=false){
  <div class="field"><label>연차 1개 발생(h) · 자동</label><input id="eLeaveMonthly" type="number" step="1" value="${leaveMonthlyHours(e)}"></div>
  <div class="field"><label>연차 1개 사용(h) · 자동</label><input id="eLeaveDay" type="number" step=".5" value="${leaveDayHours(e)}"></div>
  </div>
- <div style="margin-top:12px"><b style="font-size:12px">기본 근무요일 (선택사항 · 저장 시 현재 선택월 스케줄 자동반영)</b><div class="employeeWorkDayPattern">${checks}</div></div>
- <div class="help" style="margin-top:10px"><b>직책과 업무를 구분해서 입력하세요.</b> 예: 직책=과장 / 업무=매장관리·조제·전산 등<br><b>이 화면의 모든 항목은 수기로 수정 후 저장할 수 있습니다.</b><br><b>퇴사자의 퇴사일을 비워 저장하면 기존 입사일·연번을 유지한 채 재직자로 복귀합니다.</b> 실제 퇴사 후 다시 입사한 경우에는 퇴사자 목록의 “재입사”를 사용하세요.<br>실제 근무요일이 고정이면 위 요일을 체크하세요. <b>저장하면 현재 선택월의 일반 숫자 근무칸·빈칸을 이 패턴과 기본시간으로 자동 맞춥니다.</b> 연차·병가·결근·법정휴가·예비군·명시적 휴무(0)는 그대로 유지합니다. 매주 요일이 바뀌는 직원은 비워두세요.<br>기본 기준: 주5일은 소정 8h×5일=40h. 주4일은 계약상 <b>소정 8h + 예정 연장 1h</b>를 4일 근무하여 <b>소정 32h + 예정연장 4h = 실근로 목표 36h</b>입니다. <b>연차 1개 시간은 주 근로시간 ÷ 5, 최대 8h</b>로 계산합니다. 따라서 주32h는 <b>6.4h 발생·6.4h 사용</b>, 주30h는 6h, 주40h는 8h입니다. 연차시간을 정수로 올림하지 않습니다. 계약상 예정 연장시간은 연차시간에 더하지 않습니다.</div>
+ <div style="margin-top:12px"><b style="font-size:12px">기본 근무요일 (선택사항 · 저장할 때마다 현재 선택월 스케줄 자동확인·반영)</b><div class="employeeWorkDayPattern">${checks}</div></div>
+ <div class="help" style="margin-top:10px"><b>직책과 업무를 구분해서 입력하세요.</b> 예: 직책=과장 / 업무=매장관리·조제·전산 등<br><b>이 화면의 모든 항목은 수기로 수정 후 저장할 수 있습니다.</b><br><b>퇴사자의 퇴사일을 비워 저장하면 기존 입사일·연번을 유지한 채 재직자로 복귀합니다.</b> 실제 퇴사 후 다시 입사한 경우에는 퇴사자 목록의 “재입사”를 사용하세요.<br>실제 근무요일이 고정이면 위 요일을 체크하세요. <b>저장할 때마다 현재 선택월의 일반 숫자 근무칸·빈칸을 이 패턴과 기본시간으로 다시 확인해 자동 맞춥니다.</b> 연차·병가·결근·법정휴가·예비군·명시적 휴무(0)는 그대로 유지합니다. 매주 요일이 바뀌는 직원은 비워두세요.<br>기본 기준: 주5일은 소정 8h×5일=40h. 주4일은 계약상 <b>소정 8h + 예정 연장 1h</b>를 4일 근무하여 <b>소정 32h + 예정연장 4h = 실근로 목표 36h</b>입니다. <b>연차 1개 시간은 주 근로시간 ÷ 5, 최대 8h</b>로 계산합니다. 따라서 주32h는 <b>6.4h 발생·6.4h 사용</b>, 주30h는 6h, 주40h는 8h입니다. 연차시간을 정수로 올림하지 않습니다. 계약상 예정 연장시간은 연차시간에 더하지 않습니다.</div>
  <div class="modalActions"><button class="btn gray" onclick="closeModal()">취소</button><button class="btn" onclick="saveEmployee(${id||'null'})">저장</button></div>`);
  $('modalBox')?.classList.add('employeeEditModal');
  $('eType').value=workType(e);if($('ePay'))$('ePay').value=e.pay_type||'monthly';if($('ePayDay'))$('ePayDay').value=payDayRule(e);if($('eIncentiveOn'))$('eIncentiveOn').value=incentiveEnabled(e)?'1':'0';
@@ -6009,12 +6014,19 @@ async function saveEmployee(id){
 
  let employeeScheduleSyncMsg='';
  let savedEmployeeId=Number(q.data?.id||id||0),selectedMonth=$('monthSelect')?.value||isoToday().slice(0,7);
- // 신규등록 또는 기본 근무요일/시간을 실제로 바꾼 경우에만 현재 선택월을 자동 동기화한다.
- // 상세 요일별 규칙이 있는 기존 직원은 근무조건 창의 전용 동기화가 우선이므로 여기서 덮어쓰지 않는다.
- if(savedEmployeeId&&obj.active!==false&&newDays.length&&patternChanged&&(!existing||!existingDetailedRules.length)){
+ // V43: 화면 안내문 그대로 '저장 시' 매번 현재 선택월을 확인한다.
+ // 이전 버전처럼 patternChanged일 때만 실행하면 이미 저장돼 있던 근무요일은 다시 저장해도 스케줄이 복구되지 않았다.
+ // 상세 요일별 규칙이 있는 직원은 근무조건 이력 창의 상세규칙 동기화를 최종 기준으로 두고 여기서 기본패턴으로 덮어쓰지 않는다.
+ if(savedEmployeeId&&obj.active!==false&&newDays.length&&(!existing||!existingDetailedRules.length)){
    let sq=await sb.rpc('app_sync_employee_basic_month_schedule',{p_employee_id:savedEmployeeId,p_month:selectedMonth+'-01'});
-   if(sq.error){console.warn('직원 기본근무 스케줄 자동반영 오류',sq.error);employeeScheduleSyncMsg=`\n\n직원정보는 저장됐지만 ${selectedMonth} 스케줄 자동반영 실패: ${sq.error.message}`}
-   else {let rs=sq.data||{};employeeScheduleSyncMsg=`\n\n${rs.month||selectedMonth} 스케줄 자동반영 ${Number(rs.updated||0)}칸 · 연차/병가/결근/법정휴가/예비군/명시적 휴무 ${Number(rs.preserved||0)}칸 유지`;stampRecentAuditIp(storeId())}
+   if(sq.error){
+     console.warn('직원 기본근무 스케줄 자동반영 오류',sq.error);
+     employeeScheduleSyncMsg=`\n\n직원정보는 저장됐지만 ${selectedMonth} 스케줄 자동반영 실패: ${sq.error.message}`;
+   }else{
+     let rs=sq.data||{};
+     employeeScheduleSyncMsg=`\n\n${rs.month||selectedMonth} 스케줄 자동반영 ${Number(rs.updated||0)}칸 · 연차/병가/결근/법정휴가/예비군/직접지정 휴무 ${Number(rs.preserved||0)}칸 유지`;
+     stampRecentAuditIp(storeId());
+   }
  }
 
  closeModal();
@@ -10017,7 +10029,7 @@ async function syncCurrentMonthScheduleFromRulesV82(employeeId,savedConditionId)
    if(code==='0'||status==='off'){preserved++;continue}
    let worked=hoursBetween(rule.start,rule.end,Number(rule.break_minutes||0));if(!(worked>0))worked=Number(rule.daily_hours||0);
    let base=prescribedDayHoursV15(e,date,old)||Number(rule.daily_hours||cond.daily_hours||worked||0);if(!(worked>0)||!(base>0))continue;
-   rows.push({employee_id:employeeId,work_date:date,work_code:String(Math.round(worked*100)/100).replace(/\.0+$/,''),scheduled_hours:Math.min(worked,base),worked_hours:worked,overtime_hours:Math.max(0,worked-base),start_time:rule.start||null,end_time:rule.end||null,break_minutes:Number(rule.break_minutes||0),status:'work'});
+   rows.push({employee_id:employeeId,work_date:date,work_code:String(Math.round(worked*100)/100).replace(/\.0+$/,''),scheduled_hours:Math.min(worked,base),worked_hours:worked,overtime_hours:Math.max(0,worked-base),start_time:rule.start||null,end_time:rule.end||null,break_minutes:Number(rule.break_minutes||0),status:'work',memo:'[[AUTO_EMP_PATTERN]]'});
  }
  if(rows.length){let up=await sb.from('schedules').upsert(rows,{onConflict:'employee_id,work_date'});if(up.error)throw up.error;stampRecentAuditIp(storeId());for(const r of rows){let idx=schedules.findIndex(x=>Number(x.employee_id)===Number(r.employee_id)&&x.work_date===r.work_date);if(idx>=0)schedules[idx]={...schedules[idx],...r};else schedules.push({...r})}}
  return {updated:rows.length,preserved,month:ym};
