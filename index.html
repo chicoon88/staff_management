@@ -6018,7 +6018,7 @@ async function saveEmployee(id){
  // 이전 버전처럼 patternChanged일 때만 실행하면 이미 저장돼 있던 근무요일은 다시 저장해도 스케줄이 복구되지 않았다.
  // 상세 요일별 규칙이 있는 직원은 근무조건 이력 창의 상세규칙 동기화를 최종 기준으로 두고 여기서 기본패턴으로 덮어쓰지 않는다.
  if(savedEmployeeId&&obj.active!==false&&newDays.length&&(!existing||!existingDetailedRules.length)){
-   let sq=await sb.rpc('app_sync_employee_basic_month_schedule',{p_employee_id:savedEmployeeId,p_month:selectedMonth+'-01'});
+   let sq=await sb.rpc('app_sync_employee_month_basic_schedule_v44',{p_employee_id:savedEmployeeId,p_month:selectedMonth+'-01'});
    if(sq.error){
      console.warn('직원 기본근무 스케줄 자동반영 오류',sq.error);
      employeeScheduleSyncMsg=`\n\n직원정보는 저장됐지만 ${selectedMonth} 스케줄 자동반영 실패: ${sq.error.message}`;
@@ -12229,4 +12229,63 @@ console.info('[연차] V40_WEEKLY_DIV5_MAX8_20260911 · 노무사 확정: 1개=�
 <script>window.COMMERCE_BUILD='V35_CUMULATIVE_WORKBOOK_SYNC_20260907';console.info('[88커머스] V35_CUMULATIVE_WORKBOOK_SYNC_20260907 · 현재 index.html 기준 누적수정');</script>
 <script>window.DOCUMENT_PRINT_BUILD='V36_RESIGNATION_SINGLE_PAGE_20260909';console.info('[문서출력] V36_RESIGNATION_SINGLE_PAGE_20260909 · 사직서 A4 1페이지 고정');</script>
 <script>window.WEEKLY_HOLIDAY_BUILD='V39_DECIMAL_NO_ROUND_20260909';console.info('[주휴] V39_DECIMAL_NO_ROUND_20260909 · 주휴 발생값 소수점 원값 유지 · 반올림/올림/내림 없음');</script>
+
+<script id="v44MonthScheduleAutofill">
+/* ===== V44 · 선택월 진입 시 기본 스케줄 자동생성 =====
+   - 직원 저장월만 생성하던 V43 문제 수정
+   - 월 변경 또는 스케줄 탭 진입 시 해당 월 자동생성
+   - [[AUTO_EMP_PATTERN]] 행만 자동 재계산하고 수기 수정행은 서버 함수에서 보존
+*/
+let v44MonthSyncBusy=false;
+let v44LastScheduleTabSyncKey='';
+async function v44AutoSyncSelectedMonth(reason='month'){
+  if(v44MonthSyncBusy||!currentSessionUser||!$('monthSelect')?.value||isCommerceStore())return null;
+  let ym=$('monthSelect').value,sid=storeId();
+  if(!(canEditModule('employees')||canEditModule('schedule')))return null;
+  if(!isAppAdmin()&&isScheduleMonthLocked(ym))return {month:ym,updated:0,preserved:0,locked:true};
+  v44MonthSyncBusy=true;
+  try{
+    if($('scheduleLoadState')&&reason==='month'){
+      $('scheduleLoadState').textContent=`${ym} 자동편성 확인중`;
+      $('scheduleLoadState').className='saveState saving';
+    }
+    let q=await sb.rpc('app_sync_store_month_basic_schedules_v44',{p_store_id:sid,p_month:ym+'-01'});
+    if(q.error)throw q.error;
+    let rs=q.data||{};
+    if(Number(rs.updated||0)>0)stampRecentAuditIp(sid);
+    return rs;
+  }catch(err){
+    console.warn('V44 선택월 스케줄 자동생성 오류',err);
+    if($('scheduleLoadState')){
+      $('scheduleLoadState').textContent='자동편성 오류';
+      $('scheduleLoadState').className='saveState error';
+    }
+    if(reason==='month')alert(`${$('monthSelect').value} 스케줄 자동반영 중 오류가 발생했습니다.\n${err?.message||err}`);
+    return {error:err};
+  }finally{v44MonthSyncBusy=false}
+}
+const v44PreviousSwitchMonth=switchMonth;
+switchMonth=async function(){
+  if(typeof scheduleSaveQueue!=='undefined'&&scheduleSaveQueue.size)await flushScheduleQueue();
+  let rs=await v44AutoSyncSelectedMonth('month');
+  await v44PreviousSwitchMonth();
+  if(rs&&!rs.error&&$('scheduleLoadState')){
+    let updated=Number(rs.updated||0),preserved=Number(rs.preserved||0),detail=Number(rs.detailed_skipped||0);
+    $('scheduleLoadState').textContent=updated?`자동편성 ${updated}칸 반영${preserved?` · 수기 ${preserved}칸 유지`:''}`:'불러오기 완료';
+    $('scheduleLoadState').className='saveState saved';
+    if(detail)console.info(`V44: 상세요일규칙 ${detail}일은 기존 상세규칙 동기화 대상으로 보존했습니다.`);
+  }
+};
+// 월을 이미 선택한 뒤 직원/다른 탭에서 스케줄 탭으로 들어오는 경우도 한 번 확인한다.
+document.querySelectorAll('.nav[data-page="schedule"]').forEach(btn=>{
+  btn.addEventListener('click',async()=>{
+    if(!currentSessionUser||isCommerceStore())return;
+    let key=`${storeId()}|${$('monthSelect')?.value||''}`;
+    if(!key||v44LastScheduleTabSyncKey===key)return;
+    v44LastScheduleTabSyncKey=key;
+    let rs=await v44AutoSyncSelectedMonth('schedule');
+    if(rs&&!rs.error&&Number(rs.updated||0)>0)await refreshAll();
+  });
+});
+</script>
 </body></html>
