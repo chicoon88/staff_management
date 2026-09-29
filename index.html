@@ -895,19 +895,17 @@ body.resizingEmployeeColumn *{
 #hoursPage .weekendHead{background:#eaf2ff!important;color:#2457a6!important}
 #hoursPage .holidayHead{background:#ffe7e7!important;color:#b42318!important}
 #hoursPage .workKindCell{min-width:155px;padding:5px!important}
-#hoursPage .workBucket{border-radius:10px;padding:8px 8px;line-height:1.22;min-height:58px;display:flex;flex-direction:column;justify-content:center;gap:6px;box-shadow:inset 0 1px 0 rgba(255,255,255,.72)}
+#hoursPage .workBucket{border-radius:9px;padding:8px 7px;line-height:1.25;min-height:47px;display:flex;flex-direction:column;justify-content:center;gap:4px}
 #hoursPage .workBucket.weekday{background:#fffdf0;border:1px solid #f3e6a0}
 #hoursPage .workBucket.weekend{background:#f4f8ff;border:1px solid #d7e5fb}
 #hoursPage .workBucket.holiday{background:#fff4f4;border:1px solid #f5d2d2}
-#hoursPage .workBucket.empty{background:#fafafa;border:1px dashed #e1e5eb;color:#9aa1ad;min-height:46px}
-#hoursPage .workMain{display:flex;flex-direction:column;gap:2px}
-#hoursPage .workLeave{border-top:1px dashed rgba(139,30,63,.25);padding-top:5px;display:flex;flex-direction:column;gap:2px}
-#hoursPage .workLeaveLabel{font-size:10px;font-weight:800;letter-spacing:.2px;color:#8b1e3f;line-height:1}
+#hoursPage .workBucket.empty{background:#fafafa;border:1px dashed #e1e5eb;color:#9aa1ad}
 #hoursPage .workFormula{font-size:12px;font-weight:700;white-space:normal;word-break:keep-all}
 #hoursPage .workTerm{white-space:nowrap}
+#hoursPage .workTerm.leaveTerm{color:#8b1e3f}
 #hoursPage .workPlus{color:#8c94a3;padding:0 2px}
 #hoursPage .workEquals{font-size:13px;color:#283447}
-#hoursPage .workLeave .workFormula,#hoursPage .workLeave .workEquals{color:#8b1e3f}
+#hoursPage .leaveEquals{color:#8b1e3f;font-weight:700}
 #hoursPage .hoursStrong{font-size:14px;background:#fbfcfe}
 #hoursPage .hoursDiff{font-weight:900}
 #hoursPage .workDateTable{min-width:980px}
@@ -4264,18 +4262,23 @@ function weeklyHolidayCell(wh){
 function formatWorkBucket(bucket,kind){
  let hasWork=!!bucket?.dates?.length,hasLeave=!!bucket?.leaveDates?.length;
  if(!hasWork&&!hasLeave)return `<div class="workBucket ${kind} empty">-</div>`;
- let groupHtml=(rows,prefix='')=>{
+ let groupsHtml=(rows,{leave=false}={})=>{
    let groups=new Map();
    rows.forEach(x=>{
      let h=round2(Number(x.hours||0)),key=String(h);
      if(!groups.has(key))groups.set(key,{hours:h,count:0});
      groups.get(key).count++;
    });
-   return [...groups.values()].map(g=>`<span class="workTerm"><b>${prefix}${g.count}일</b> × ${hour2(g.hours)}h</span>`).join('<span class="workPlus"> + </span>');
+   return [...groups.values()].map(g=>`<span class="workTerm${leave?' leaveTerm':''}"><b>${leave?'연 ':''}${g.count}일</b> × ${hour2(g.hours)}h</span>`).join('<span class="workPlus"> + </span>');
  };
- let workHtml=hasWork?`<div class="workMain"><div class="workFormula">${groupHtml(bucket.dates)}</div><div class="workEquals">= <b>${hour2(bucket.hours)}h</b></div></div>`:'';
- let leaveHtml=hasLeave?`<div class="workLeave"><div class="workLeaveLabel">연차</div><div class="workFormula">${groupHtml(bucket.leaveDates)}</div><div class="workEquals">= <b>${hour2(bucket.leaveHours)}h</b></div></div>`:'';
- return `<div class="workBucket ${kind}">${workHtml}${leaveHtml}</div>`;
+ let terms=[];
+ if(hasWork)terms.push(groupsHtml(bucket.dates));
+ if(hasLeave)terms.push(groupsHtml(bucket.leaveDates,{leave:true}));
+ let formula=terms.join('<span class="workPlus"> + </span>');
+ let sums=[];
+ if(hasWork)sums.push(`<b>${hour2(bucket.hours)}h</b>`);
+ if(hasLeave)sums.push(`<span class="leaveEquals">연 ${hour2(bucket.leaveHours)}h</span>`);
+ return `<div class="workBucket ${kind}"><div class="workFormula">${formula}</div><div class="workEquals">= ${sums.join('<span class="workPlus"> + </span>')}</div></div>`;
 }
 
 function renderHours(){
