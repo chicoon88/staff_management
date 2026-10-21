@@ -12002,4 +12002,154 @@ async function v33RunQuickContractAnalysis(employeeId){
  }
 }
 
+
+
+/* ===== V34 · 근로계약서 업로드 줄정렬 재수정 =====
+   V33 문제:
+   - 근로계약서 폼만 행 구조가 연봉계약서와 달라 보였음
+   - 표시명 / PDF 원본 / 업로드 버튼의 세로선이 위 행과 어긋나 보임
+   수정:
+   - 근로계약서 폼을 4열 고정 그리드로 명확히 정렬
+   - 1행: 작성일 / 시작일 / 종료일 / 무기계약
+   - 2행: 표시명(2칸) / PDF 원본(1칸) / 업로드영역(1칸)
+   - 3행: 근무조건 변경 체크박스(전체폭)
+*/
+(function(){
+  let st=document.createElement('style');
+  st.textContent=`
+  .contractUploadGrid.workContractGrid.v34Aligned{
+    grid-template-columns:repeat(4,minmax(0,1fr));
+    gap:10px;
+    align-items:end;
+  }
+  .contractUploadGrid.workContractGrid.v34Aligned .v34TitleField{grid-column:1 / span 2;min-width:0}
+  .contractUploadGrid.workContractGrid.v34Aligned .v34FileField{grid-column:3 / span 1;min-width:0}
+  .contractUploadGrid.workContractGrid.v34Aligned .v34ActionField{grid-column:4 / span 1;min-width:0}
+  .contractUploadGrid.workContractGrid.v34Aligned .v34CheckboxRow,
+  .contractUploadGrid.workContractGrid.v34Aligned .contractTermsReview{
+    grid-column:1 / -1;
+  }
+  .contractUploadGrid.workContractGrid.v34Aligned .v34ActionButtons{
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+    align-items:stretch;
+  }
+  .contractUploadGrid.workContractGrid.v34Aligned .v34ActionButtons .btn{
+    width:100%;
+    justify-content:center;
+  }
+  .contractUploadGrid.workContractGrid.v34Aligned .field input[type="file"]{
+    width:100%;
+    min-width:0;
+    box-sizing:border-box;
+    height:44px;
+    padding:6px 8px;
+  }
+  .contractUploadGrid.workContractGrid.v34Aligned .field input[type="text"]{
+    width:100%;
+    min-width:0;
+    box-sizing:border-box;
+  }
+  .contractUploadGrid.workContractGrid.v34Aligned .v34ActionHint{
+    font-size:11px;
+    color:#6b7280;
+    line-height:1.35;
+    text-align:center;
+  }
+  @media(max-width:900px){
+    .contractUploadGrid.workContractGrid.v34Aligned{
+      grid-template-columns:repeat(2,minmax(0,1fr));
+    }
+    .contractUploadGrid.workContractGrid.v34Aligned .v34TitleField,
+    .contractUploadGrid.workContractGrid.v34Aligned .v34FileField,
+    .contractUploadGrid.workContractGrid.v34Aligned .v34ActionField{
+      grid-column:span 1;
+    }
+    .contractUploadGrid.workContractGrid.v34Aligned .v34CheckboxRow,
+    .contractUploadGrid.workContractGrid.v34Aligned .contractTermsReview{
+      grid-column:1 / -1;
+    }
+  }
+  @media(max-width:620px){
+    .contractUploadGrid.workContractGrid.v34Aligned{
+      grid-template-columns:1fr;
+    }
+    .contractUploadGrid.workContractGrid.v34Aligned .field,
+    .contractUploadGrid.workContractGrid.v34Aligned .v34TitleField,
+    .contractUploadGrid.workContractGrid.v34Aligned .v34FileField,
+    .contractUploadGrid.workContractGrid.v34Aligned .v34ActionField,
+    .contractUploadGrid.workContractGrid.v34Aligned .v34CheckboxRow,
+    .contractUploadGrid.workContractGrid.v34Aligned .contractTermsReview{
+      grid-column:1;
+    }
+  }`;
+  document.head.appendChild(st);
+})();
+
+openEmployeeDocuments=async function(employeeId,type){
+ let e=findEmployeeAny(employeeId);if(!e)return alert('직원정보를 찾지 못했습니다.');
+ let label=employeeDocTypeLabel(type),
+     isResignation=type==='resignation',
+     isWorkContract=type==='work_contract',
+     isSalaryContract=type==='salary_contract';
+
+ let vaultHelp=isResignation
+   ?'작성 완료한 사직서 PDF 원본을 서버에 보관합니다. 삭제하지 않는 한 직원 기록과 함께 계속 남습니다.'
+   :isSalaryContract
+     ?'<b>연봉계약서는 원본 PDF 보관용</b>입니다. 파일 선택 후 바로 업로드하면 됩니다.'
+     :'<b>근로계약서도 PDF 선택 후 바로 업로드</b>할 수 있습니다. 필요한 경우에만 빠른 분석을 눌러 계약기간/근무조건을 자동으로 채우세요. 근무조건이 실제로 변경된 드문 경우에만 아래 체크박스를 선택하면 됩니다.';
+
+ if(isWorkContract){
+   modal(`<div class="contractVaultHead"><div><h2 style="margin:0">${esc(e.name)} · ${label}</h2>
+   <div class="help" style="margin-top:4px">${vaultHelp}</div></div>
+   <button class="btn gray" onclick="closeModal()">닫기</button></div>
+   <div class="contractUploadBox"><div style="font-weight:900;margin-bottom:8px">새 ${label} 업로드</div>
+   <div class="contractUploadGrid workContractGrid v34Aligned">
+     <div class="field" style="margin:0"><label>문서 작성일</label><input id="contractDocDate" type="text" inputmode="numeric" maxlength="8" placeholder="YYYYMMDD" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,8)"></div>
+     <div class="field" style="margin:0"><label>계약 시작일</label><input id="contractStartDate" type="text" inputmode="numeric" maxlength="8" placeholder="YYYYMMDD" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,8)"></div>
+     <div class="field" style="margin:0"><label>계약 종료일</label><input id="contractEndDate" type="text" inputmode="numeric" maxlength="8" placeholder="YYYYMMDD" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,8)"></div>
+     <label class="contractWorkChange" style="display:flex;align-items:center;gap:7px;padding:9px 10px;border:1px solid #d9e2f2;border-radius:10px;background:#f8fbff;font-size:12px;font-weight:800"><input id="contractIndefinite" type="checkbox" onchange="setContractIndefiniteUi(this.checked)">기간의 정함 없음 (무기계약)</label>
+
+     <div class="field v34TitleField" style="margin:0"><label>표시명</label><input id="contractDocTitle" placeholder="예: 2026년 ${label}"></div>
+
+     <div class="field v34FileField" style="margin:0"><label>PDF 원본</label><input id="contractDocFile" type="file" accept="application/pdf,.pdf" onchange="fillContractMetaFromFile(this.files[0],'${type}',${employeeId})"><div id="contractAutoReadStatus" class="contractAutoReadStatus"></div></div>
+
+     <div class="v34ActionField">
+       <label style="display:block;font-weight:800;font-size:12px;margin:0 0 6px 0;color:#4b5563">작업</label>
+       <div class="v34ActionButtons">
+         <button class="btn" onclick="uploadEmployeeDocument(${employeeId},'${type}')">업로드</button>
+         <button type="button" class="btn gray small" onclick="v33RunQuickContractAnalysis(${employeeId})">빠른 분석</button>
+         <div class="v34ActionHint">바로 업로드 가능<br>필요 시만 분석</div>
+       </div>
+     </div>
+
+     <label class="contractWorkChange v34CheckboxRow" style="display:flex;align-items:center;gap:7px;padding:9px 10px;border:1px solid #d9e2f2;border-radius:10px;background:#f8fbff;font-size:12px;font-weight:800">
+       <input id="contractWorkConditionChange" type="checkbox">
+       이 계약일부터 근무조건 변경 있음
+     </label>
+
+     <div id="contractTermsReview" class="contractTermsReview"></div>
+   </div></div>
+   <div id="contractDocList" class="contractVaultList"><div class="contractEmpty">불러오는 중...</div></div>`);
+ }else{
+   let periodFields=''; 
+   let actionRow=`<button class="btn" onclick="uploadEmployeeDocument(${employeeId},'${type}')">업로드</button>`;
+   modal(`<div class="contractVaultHead"><div><h2 style="margin:0">${esc(e.name)} · ${label}</h2>
+   <div class="help" style="margin-top:4px">${vaultHelp}</div></div>
+   <button class="btn gray" onclick="closeModal()">닫기</button></div>
+   <div class="contractUploadBox"><div style="font-weight:900;margin-bottom:8px">새 ${label} 업로드</div>
+   <div class="contractUploadGrid ${isSalaryContract?'salaryContractGrid':''}">
+   <div class="field" style="margin:0"><label>${isResignation?'작성일':isSalaryContract?'연봉계약서 작성일':'문서 작성일'}</label><input id="contractDocDate" type="text" inputmode="numeric" maxlength="8" placeholder="YYYYMMDD" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,8)"></div>
+   ${periodFields}
+   <div class="field" style="margin:0"><label>표시명</label><input id="contractDocTitle" placeholder="예: 2026년 ${label}"></div>
+   <div class="field" style="margin:0"><label>PDF 원본</label><input id="contractDocFile" type="file" accept="application/pdf,.pdf" onchange="fillContractMetaFromFile(this.files[0],'${type}',${employeeId})"><div id="contractAutoReadStatus" class="contractAutoReadStatus"></div></div>
+   ${actionRow}
+   </div></div>
+   <div id="contractDocList" class="contractVaultList"><div class="contractEmpty">불러오는 중...</div></div>`);
+ }
+
+ await loadEmployeeDocuments(employeeId,type);
+};
+
 </script>\n</body></html>
