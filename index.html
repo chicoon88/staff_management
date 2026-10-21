@@ -8,15 +8,6 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
 <style>
-/* V43 · 직원 저장 시 현재 선택월 스케줄 확정 동기화
-   - 신규/기존 직원 모두 근무요일이 있으면 저장할 때마다 현재 선택월 스케줄 동기화
-   - 연/병/결/법/예 및 사용자가 직접 입력한 0은 보존
-   - 자동 생성한 휴무 0은 근무요일 변경 시 다시 계산 가능
-   - 수동으로 스케줄을 수정하면 자동생성 표식을 제거 */
-/* V42 · 일반 직원관리 권한 확대 + 급여관련 비공개 + 직원 수정이력 + 직원등록 스케줄 자동반영 */
-.schedulerMode .employeePrivateCol{display:none!important}
-.schedulerMode .salaryContractAdminOnly{display:none!important}
-
 :root{--bg:#f3f5f8;--card:#fff;--line:#e3e7ee;--text:#172033;--muted:#70798c;--nav:#111827;--blue:#315efb;--soft:#eef3ff;--green:#087451;--red:#b42318;--amber:#a15c00}
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR",Arial,sans-serif;background:var(--bg);color:var(--text)}
 button,input,select{font:inherit}.hidden{display:none!important}.app{min-height:100vh}.top{height:66px;background:var(--nav);color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 18px;position:sticky;top:0;z-index:30}.brand{font-weight:900}.brand small{display:block;font-size:11px;font-weight:500;opacity:.65;margin-top:2px}.top button{background:#273244;color:#fff;border:1px solid #394558;border-radius:9px;padding:8px 11px}
@@ -902,10 +893,8 @@ body.resizingEmployeeColumn *{
 #hoursPage .workBucket.empty{background:#fafafa;border:1px dashed #e1e5eb;color:#9aa1ad}
 #hoursPage .workFormula{font-size:12px;font-weight:700;white-space:normal;word-break:keep-all}
 #hoursPage .workTerm{white-space:nowrap}
-#hoursPage .workTerm.leaveTerm{color:#8b1e3f}
 #hoursPage .workPlus{color:#8c94a3;padding:0 2px}
 #hoursPage .workEquals{font-size:13px;color:#283447}
-#hoursPage .leaveEquals{color:#8b1e3f;font-weight:700}
 #hoursPage .hoursStrong{font-size:14px;background:#fbfcfe}
 #hoursPage .hoursDiff{font-weight:900}
 #hoursPage .workDateTable{min-width:980px}
@@ -1133,103 +1122,6 @@ body.commerceStoreMode #renameStoreBtn{display:none!important}
 @media(max-width:720px){.commerceSmartCards{grid-template-columns:repeat(2,minmax(120px,1fr))}.commerceSheetToolbar{align-items:stretch}.commerceSheetToolbar select,.commerceSheetToolbar input{flex:1 1 42%}.commerceDataCardHeader{align-items:flex-start;flex-direction:column}}
 </style>
 <!-- V17: 메가존365약국 요일미정 주5일 포함 연장·추가근로 정확표시 -->
-
-<style id="v37DocumentPrintFix">
-/* ===== V37 · 사직서/재직증명서 A4 1페이지 인쇄 고정 =====
-   - 두 문서에만 적용하고 스케줄 등 다른 인쇄는 기존 규칙 유지
-   - body 기본 여백/익명 line box 제거
-   - A4 portrait 6mm page margin 안쪽에 안전 여유 확보
-*/
-@media print{
- body.printingResignation,
- body.printingEmployment{
-   margin:0!important;
-   padding:0!important;
-   height:auto!important;
-   min-height:0!important;
-   font-size:0!important;
-   line-height:0!important;
- }
- body.printingResignation #printArea,
- body.printingEmployment #printArea{
-   display:block!important;
-   margin:0!important;
-   padding:0!important;
-   width:100%!important;
-   height:auto!important;
-   min-height:0!important;
-   font-size:14px!important;
-   line-height:1.4!important;
- }
- body.printingResignation #printArea .docResignationPaper,
- body.printingEmployment #printArea .docEmploymentPaper{
-   box-sizing:border-box!important;
-   width:196mm!important;
-   height:282mm!important;
-   min-height:282mm!important;
-   max-height:282mm!important;
-   margin:0 auto!important;
-   overflow:hidden!important;
-   break-inside:avoid!important;
-   page-break-inside:avoid!important;
-   break-after:avoid-page!important;
-   page-break-after:avoid!important;
- }
- body.printingEmployment #printArea .docEmploymentPaper{
-   padding:11mm 11mm 9mm!important;
- }
- body.printingEmployment #printArea .docEmploymentPaper .docTitle{
-   margin:1mm 0 10mm!important;
- }
- body.printingEmployment #printArea .docEmploymentPaper .docSection{
-   margin-bottom:5mm!important;
- }
- body.printingEmployment #printArea .docEmploymentPaper .docSectionTitle{
-   height:11mm!important;
- }
- body.printingEmployment #printArea .docEmploymentPaper .docCellLabel,
- body.printingEmployment #printArea .docEmploymentPaper .docCellValue{
-   min-height:14mm!important;
-   padding:2.5mm 3.5mm!important;
- }
- body.printingEmployment #printArea .docEmploymentPaper .docCellValue{
-   overflow-wrap:anywhere!important;
-   word-break:break-word!important;
- }
- body.printingEmployment #printArea .docEmploymentPaper .docStatement{
-   margin-top:4mm!important;
- }
- body.printingEmployment #printArea .docEmploymentPaper .docSpacer{
-   min-height:12mm!important;
- }
- body.printingEmployment #printArea .docEmploymentPaper .docIssueDate{
-   margin-bottom:6mm!important;
- }
- body.printingEmployment #printArea .docEmploymentPaper .docCompanyName{
-   margin-top:4mm!important;
- }
- body.printingResignation #printArea .docResignationPaper{
-   padding:10mm 11mm 9mm!important;
- }
- body.printingResignation #printArea .docResignationPaper .docTitle{
-   margin:1mm 0 10mm!important;
- }
- body.printingResignation #printArea .docResignationPaper .docSection{
-   margin-bottom:5mm!important;
- }
- body.printingResignation #printArea .docResignationPaper .docResignBottom{
-   padding-top:8mm!important;
-   gap:10mm!important;
- }
- body.printingResignation #printArea .docResignationPaper .docResignBox{
-   padding:9mm 7mm!important;
- }
- body.printingResignation #printArea .docResignationPaper .docCompanyName{
-   margin-top:1mm!important;
- }
-}
-</style>
-<!-- V37 document print: resignation + employment certificate forced to one A4 page -->
 </head>
 <body>
 <section id="login" class="login">
@@ -1270,7 +1162,7 @@ body.commerceStoreMode #renameStoreBtn{display:none!important}
 </div>
 
 <section id="commercePage" class="page">
- <div class="commerceHero"><h1 class="title">88커머스 <span style="font-size:12px;opacity:.8">V33</span></h1><div class="sub">대시보드에서 직접 입력·수정하고 자동 계산하며, 카페24 반영과 원본 Excel 형식 다운로드까지 한곳에서 관리합니다.</div></div>
+ <div class="commerceHero"><h1 class="title">88커머스 <span style="font-size:12px;opacity:.8">V11</span></h1><div class="sub">대시보드에서 직접 입력·수정하고 자동 계산하며, 카페24 반영과 원본 Excel 형식 다운로드까지 한곳에서 관리합니다.</div></div>
 
  <div id="commerceGroupBar" class="commerceGroupBar hidden">
   <div><div id="commerceGroupTitle" class="groupTitle">-</div><div id="commerceGroupSub" class="help" style="margin-top:3px">-</div></div>
@@ -1326,7 +1218,7 @@ body.commerceStoreMode #renameStoreBtn{display:none!important}
 
  <div id="commerceImportView" class="commerceView hidden">
   <div class="card">
-   <div class="row"><div><h3 style="margin:0">카페24 주문 파일 검증</h3><div class="help">기준 Excel과 상품매핑을 먼저 확인한 뒤 신규행만 자동입력합니다. 명확한 취소주문은 기존 매출에서 자동 제외하고, 파일에 없는 기존 주문은 그대로 유지합니다. 변경행/수량불일치/파일충돌은 자동으로 덮어쓰지 않습니다.</div></div><span id="commerceImportState" class="saveState saved">대기</span></div>
+   <div class="row"><div><h3 style="margin:0">카페24 주문 파일 검증</h3><div class="help">기준 Excel과 상품매핑을 먼저 확인한 뒤 신규행만 자동입력합니다. 기존행/변경행/수량불일치는 자동으로 덮어쓰지 않습니다.</div></div><span id="commerceImportState" class="saveState saved">대기</span></div>
    <div class="commerceImportDrop" style="margin-top:12px">
     <input id="commerceCafe24File" type="file" accept=".csv,.xlsx,.xls" style="display:none" onchange="previewCommerceCafe24(this.files?.[0]);this.value=''">
     <button class="btn" onclick="$(`commerceCafe24File`).click()">카페24 파일 선택</button>
@@ -1366,7 +1258,7 @@ body.commerceStoreMode #renameStoreBtn{display:none!important}
   <div id="adminTaskList" class="adminTaskList"><div class="adminTaskItem info"><b>확인 중</b><span class="meta">현재 업장과 월의 상태를 불러옵니다.</span></div></div>
  </div>
  <div class="grid2">
-  <div class="card"><h3>이번 달 연차 발생·예정 직원</h3><div class="sub">1년 미만 월 연차는 <b>달력 월이 아니라 최초 입사일 기준</b>으로 계산합니다. 예: 7/20 입사 → 7/20~8/19 개근 확인 → 8/20 첫 발생, 8/20~9/19 → 9/20 두 번째 발생. 선택한 달 안에서는 발생완료와 발생예정(개근 시)을 함께 표시하며 예정분은 실제 발생일까지 잔여에 더하지 않습니다. <b>연차 1개 시간은 주 근로시간 ÷ 5</b>로 계산하며 최대 8h입니다. 예: 주40h → 8h, 주32h → 6.4h, 주30h → 6h. 소수점은 그대로 사용하고 정수 올림을 하지 않습니다.</div><div class="tablewrap" style="margin-top:10px"><table><thead><tr><th class="name">직원</th><th>근무형태</th><th>입사일</th><th>이번 달 발생/예정</th><th>누적 발생</th><th>누적 사용</th><th>조정</th><th>잔여</th></tr></thead><tbody id="homeEmployees"></tbody></table></div></div>
+  <div class="card"><h3>이번 달 연차 발생·예정 직원</h3><div class="sub">1년 미만 월 연차는 <b>달력 월이 아니라 최초 입사일 기준</b>으로 계산합니다. 예: 7/20 입사 → 7/20~8/19 개근 확인 → 8/20 첫 발생, 8/20~9/19 → 9/20 두 번째 발생. 선택한 달 안에서는 발생완료와 발생예정(개근 시)을 함께 표시하며 예정분은 실제 발생일까지 잔여에 더하지 않습니다. 주5일은 +8h, 주4일·주32h는 비례산식 6.4h를 법정 단수처리하여 <b>+7h</b>로 발생하고, 하루 연차 사용은 소정 8h만 차감합니다.</div><div class="tablewrap" style="margin-top:10px"><table><thead><tr><th class="name">직원</th><th>근무형태</th><th>입사일</th><th>이번 달 발생/예정</th><th>누적 발생</th><th>누적 사용</th><th>조정</th><th>잔여</th></tr></thead><tbody id="homeEmployees"></tbody></table></div></div>
   <div class="card"><h3>운영 흐름</h3><p class="help">① 월간 스케줄 작성 → ② 실제 근무시간 필요 시 날짜 클릭해 수정 → ③ 월 근로시간 확인 → ④ 노무사 급여대장 Excel 업로드 → ⑤ 스케줄 시간과 급여대장 시간 차이 검수 → ⑥ 필요 시 스케줄/급여 Excel 출력.</p></div>
  </div>
 </section>
@@ -1417,10 +1309,10 @@ body.commerceStoreMode #renameStoreBtn{display:none!important}
  </div>
  <div id="hoursSummaryView">
   <div class="card hoursSummaryCard" style="margin-top:13px">
-   <div class="hoursSummaryGuide"><b>보는 방법</b> · 예: <b>10일 × 8h + 2일 × 5h = 90h</b>처럼 같은 근무시간끼리 자동으로 묶습니다. <b>월 주휴 예상</b>은 7일 단위로 개근을 판정한 뒤 <b>주휴일(일요일)이 선택월에 들어오는 주</b>만 월 합계에 넣습니다. 주 소정근로시간 15h 미만은 제외하고, 병가가 있는 주는 <b>확인</b>으로 표시합니다. <b>주휴 발생시간은 소수점 계산값을 그대로 사용하며 반올림·올림·내림하지 않습니다.</b> 직원관리에서 <b>스케줄·근로 제외</b>를 체크한 직원은 월간스케줄·주간편성·근로시간에서 모두 표시하지 않습니다.</div>
+   <div class="hoursSummaryGuide"><b>보는 방법</b> · 예: <b>10일 × 8h + 2일 × 5h = 90h</b>처럼 같은 근무시간끼리 자동으로 묶습니다. <b>월 주휴 예상</b>은 7일 단위로 개근을 판정한 뒤 <b>주휴일(일요일)이 선택월에 들어오는 주</b>만 월 합계에 넣습니다. 주 소정근로시간 15h 미만은 제외하고, 병가가 있는 주는 <b>확인</b>으로 표시합니다. 직원관리에서 <b>스케줄·근로 제외</b>를 체크한 직원은 월간스케줄·주간편성·근로시간에서 모두 표시하지 않습니다.</div>
    <div class="tablewrap" style="margin-top:10px"><table class="hoursSummaryTable"><thead><tr><th class="name">직원</th><th>근무형태</th><th class="hoursKindHead weekdayHead">평일</th><th class="hoursKindHead weekendHead">주말</th><th class="hoursKindHead holidayHead">공휴일</th><th>실근로<br><small>출근간주 포함</small></th><th>월 주휴 예상<br><small>주휴일 기준</small></th><th>비교 합계</th><th>연장·추가근로<br><small>일8h · 주40h</small></th><th>연차</th><th>병가</th><th>급여대장 월근무</th><th>차이</th></tr></thead><tbody id="hoursBody"></tbody></table></div>
   </div>
-  <div class="help" style="margin-top:7px">※ 평일·주말·공휴일 시간은 대시보드의 worked_hours 기준입니다. · 각 요일 구분 칸에는 해당 날짜의 연차도 함께 표시합니다. · 연장·추가근로는 스케줄에 근무로 확정 입력된 시간만 계산합니다. · 요일 미정 주5일 직원은 특정 요일을 고정하지 않고 7일 단위로 1일 8h 초과 + 주40h 초과를 중복 없이 계산합니다. · 연차·병가·예비군 시간은 연장·추가근로에 넣지 않습니다.</div>
+  <div class="help" style="margin-top:7px">※ 평일·주말·공휴일 시간은 대시보드의 worked_hours 기준입니다. · 연장·추가근로는 스케줄에 근무로 확정 입력된 시간만 계산합니다. · 요일 미정 주5일 직원은 특정 요일을 고정하지 않고 7일 단위로 1일 8h 초과 + 주40h 초과를 중복 없이 계산합니다. · 연차·병가·예비군 시간은 연장·추가근로에 넣지 않습니다.</div>
   <div class="card" style="margin-top:10px"><h3>직원별 출근 날짜</h3><div class="tablewrap" style="margin-top:10px"><table class="workDateTable"><thead><tr><th class="name">직원</th><th class="weekdayHead">평일 근무일</th><th class="weekendHead">주말 근무일</th><th class="holidayHead">공휴일 근무일</th></tr></thead><tbody id="workDateBody"></tbody></table></div></div>
  </div>
  <div id="attendanceView" class="hidden">
@@ -1532,9 +1424,9 @@ body.commerceStoreMode #renameStoreBtn{display:none!important}
      <button class="btn gray small" onclick="resetEmployeeColumnWidths()">표 폭 초기화</button>
    </div>
   </div>
-  <div class="help" style="margin-bottom:8px">이름·주민등록번호·직책·업무·입사일·근무형태·휴게 등은 표에서 바로 수정할 수 있습니다. <b>일반 직원관리 사용자는 급여 관련 항목(계좌번호·급여형태·비고)과 연봉계약서를 볼 수 없습니다.</b> <b>재직자는 기본적으로 내가 정한 연번순</b>이며 필요할 때만 입사일 오름차순으로 볼 수 있습니다. <b>퇴사자는 퇴사일 오름차순으로 자동 정렬</b>됩니다. <b>“스케줄·근로 제외”를 체크하면 재직·급여자료는 그대로 두고 월간스케줄·주간편성·근로시간에서 숨깁니다.</b> 문서 칸에서는 근로계약서의 계약 종료일을 기준으로 재계약 D-day와 근로·연봉계약서 등록 여부를 바로 확인합니다. 연봉계약서는 별도 기간을 관리하지 않고 근로계약기간을 따르는 원본 보관 문서로 취급합니다. 사직서는 재직 중에도 서명본 PDF를 미리 업로드할 수 있고, 퇴사 후에도 같은 문서함에서 계속 확인·다운로드할 수 있습니다. 근무형태가 날짜별로 바뀌는 직원은 우측 “근무조건”에서 적용 시작일별 이력을 등록합니다. 표 머리글의 오른쪽 경계선을 좌우로 끌면 열 폭을 직접 조절할 수 있고 자동 저장됩니다. 비고는 여러 줄로 입력할 수 있습니다.</div>
+  <div class="help" style="margin-bottom:8px">이름·주민등록번호·계좌번호·직책·업무·입사일·근무형태·휴게·급여형태·비고는 표에서 바로 수정할 수 있습니다. <b>재직자는 기본적으로 내가 정한 연번순</b>이며 필요할 때만 입사일 오름차순으로 볼 수 있습니다. <b>퇴사자는 퇴사일 오름차순으로 자동 정렬</b>됩니다. <b>“스케줄·근로 제외”를 체크하면 재직·급여자료는 그대로 두고 월간스케줄·주간편성·근로시간에서 숨깁니다.</b> 문서 칸에서는 근로계약서의 계약 종료일을 기준으로 재계약 D-day와 근로·연봉계약서 등록 여부를 바로 확인합니다. 연봉계약서는 별도 기간을 관리하지 않고 근로계약기간을 따르는 원본 보관 문서로 취급합니다. 퇴사자 화면에서는 사직서 PDF 보관 여부도 확인할 수 있습니다. 근무형태가 날짜별로 바뀌는 직원은 우측 “근무조건”에서 적용 시작일별 이력을 등록합니다. 표 머리글의 오른쪽 경계선을 좌우로 끌면 열 폭을 직접 조절할 수 있고 자동 저장됩니다. 비고는 여러 줄로 입력할 수 있습니다.</div>
   <datalist id="employeeWorkTypeSuggestions"><option value="주5일 스케줄근무"></option><option value="주4일 스케줄근무"></option><option value="기타"></option></datalist>
-  <div class="tablewrap"><table><thead><tr><th style="width:44px">선택</th><th>연번</th><th class="name">이름</th><th>주민등록번호</th><th class="employeePrivateCol">계좌번호</th><th>직책</th><th>업무</th><th>입사일</th><th>퇴사일</th><th>근무형태</th><th>기본시간</th><th>휴게시간(분)</th><th>스케줄방식</th><th class="employeePrivateCol">급여형태</th><th>연차 기준</th><th>연차 잔여</th><th class="employeePrivateCol">비고</th><th>출력색</th><th>문서 / 재계약</th><th></th></tr></thead><tbody id="employeeBody"></tbody></table></div>
+  <div class="tablewrap"><table><thead><tr><th style="width:44px">선택</th><th>연번</th><th class="name">이름</th><th>주민등록번호</th><th>계좌번호</th><th>직책</th><th>업무</th><th>입사일</th><th>퇴사일</th><th>근무형태</th><th>기본시간</th><th>휴게시간(분)</th><th>스케줄방식</th><th>급여형태</th><th>연차 기준</th><th>연차 잔여</th><th>비고</th><th>출력색</th><th>문서 / 재계약</th><th></th></tr></thead><tbody id="employeeBody"></tbody></table></div>
  </div>
 </section>
 
@@ -1568,7 +1460,7 @@ body.commerceStoreMode #renameStoreBtn{display:none!important}
   <div class="toolbar"><button class="btn gray" onclick="openIpLabelManager()">IP 이름 관리</button><button class="btn" onclick="loadAuditPage()">새로고침</button></div>
  </div>
  <div class="card" style="margin-top:12px">
-   <div class="row"><div><h3 style="margin:0">전체 활동이력</h3><div class="help">스케줄과 직원관리 수정은 DB 트리거로 기록됩니다. 직원 등록·정보수정·근무조건·문서·재직이력 변경도 사용자와 시각이 남고, 로그인은 초록색·로그아웃은 주황색으로 구분합니다.</div></div>
+   <div class="row"><div><h3 style="margin:0">전체 활동이력</h3><div class="help">스케줄 수정은 파란색, 로그인은 초록색, 로그아웃은 주황색으로 구분합니다. 수정이력은 DB 트리거 기록이라 기본근무 채우기·개별수정·비우기도 남습니다.</div></div>
    <div class="toolbar"><select id="auditTypeFilter" onchange="renderAuditLogs()"><option value="">전체 활동</option><option value="edit">수정만</option><option value="access">접속만</option></select><select id="auditStoreFilter" onchange="renderAuditLogs();renderAccessSessions()"><option value="">전체 업장</option></select><select id="auditUserFilter" onchange="renderAuditLogs();renderAccessSessions()"><option value="">전체 사용자</option></select></div></div>
    <div class="tablewrap" style="margin-top:10px"><table><thead><tr><th>일시</th><th>사용자</th><th>업장</th><th>대상</th><th>날짜</th><th>구분</th><th>변경내용</th><th>IP / 위치이름</th><th>복구</th></tr></thead><tbody id="auditLogBody"></tbody></table></div>
  </div>
@@ -1595,7 +1487,6 @@ const SUPABASE_URL="https://gxdimhvslurvniwughrs.supabase.co";
 const SUPABASE_KEY="sb_publishable_KQm77StbhQkIZv5UjZnoXQ_OWZ7HHzF";
 const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY),$=id=>document.getElementById(id);
 
-/* V42: 모달 바깥클릭 닫힘 방지 / 입력내용 보호 */
 function modal(content){
  // 바깥은 화면 전체 오버레이(.modalBack), 안쪽만 실제 팝업(.modal)
  let wrap=document.getElementById('modalOverlay');
@@ -1604,17 +1495,12 @@ function modal(content){
    wrap.id='modalOverlay';
    wrap.className='modalBack';
    wrap.style.display='none';
-   wrap.innerHTML='<div class="modal" id="modalBox" role="dialog" aria-modal="true" tabindex="-1"></div>';
+   wrap.innerHTML='<div class="modal" id="modalBox" role="dialog" aria-modal="true"></div>';
    document.body.appendChild(wrap);
 
-   // V41: 입력 보호 — 팝업 바깥 영역을 실수로 눌러도 닫지 않는다.
-   // 닫기는 저장/취소/닫기/X 등 팝업 내부의 명시적 버튼에서만 수행한다.
+   // 팝업 바깥 어두운 영역 클릭 시 닫기
    wrap.addEventListener('click',function(ev){
-     if(ev.target===wrap){
-       ev.preventDefault();
-       ev.stopPropagation();
-       document.getElementById('modalBox')?.focus?.({preventScroll:true});
-     }
+     if(ev.target===wrap)closeModal();
    });
  }
  let box=document.getElementById('modalBox');
@@ -1826,8 +1712,8 @@ function employeeFallbackCondition(e){
    default_start_time:e?.default_start_time||null, default_end_time:e?.default_end_time||null,
    break_minutes:Number(e?.break_minutes??60), work_days:normalizedWorkDays(e?.work_days),
    leave_weekly_hours:Number(e?.leave_weekly_hours ?? (e?.work_type==='36'?32:40)),
-   leave_monthly_hours:Number(e?.leave_monthly_hours ?? (e?.work_type==='36'?6.4:8)),
-   leave_day_hours:Number(e?.leave_day_hours ?? (e?.work_type==='36'?6.4:8)), _history_id:null
+   leave_monthly_hours:Number(e?.leave_monthly_hours ?? (e?.work_type==='36'?7:8)),
+   leave_day_hours:Number(e?.leave_day_hours ?? 8), _history_id:null
  };
 }
 function workConditionRowsForEmployee(employeeId){
@@ -1858,10 +1744,10 @@ function legalRoundLeaveHours(hours){let n=Number(hours||0);return n>0?Math.ceil
 function conditionWeeklyPrescribedHours(c){
  let rules=conditionDayRules(c),byDay=new Map();
  rules.forEach(r=>(r.days||[]).forEach(d=>{let h=Number(r.daily_hours||0);if(h>0)byDay.set(Number(d),h)}));
- let byRules=[...byDay.values()].reduce((a,b)=>a+b,0);if(byRules>0)return byRules;
+ let byRules=[...byDay.values()].reduce((a,b)=>a+b,0);if(byRules>0)return Math.round(byRules*100)/100;
  let days=normalizedWorkDays(c?.work_days),daily=Number(c?.daily_hours||0);
- if(days.length&&daily>0)return days.length*daily;
- let explicit=Number(c?.leave_weekly_hours||0);if(explicit>0)return explicit;
+ if(days.length&&daily>0)return Math.round(days.length*daily*100)/100;
+ let explicit=Number(c?.leave_weekly_hours||0);if(explicit>0)return Math.round(explicit*100)/100;
  return 0;
 }
 function leaveWeeklyHoursAt(e,date){return conditionWeeklyPrescribedHours(workConditionForDate(e,date))}
@@ -2216,17 +2102,6 @@ async function saveUserPermissionEditor(uid){
 }
 function fmtDateTime(v){if(!v)return '-';let d=new Date(v);if(isNaN(d))return String(v);return d.toLocaleString('ko-KR',{year:'2-digit',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'})}
 function scheduleAuditSummary(x){let b=x.before_value||{},a=x.after_value||{},op=x.action_type;if(op==='DELETE')return `<span class="auditBefore">${esc(b.work_code||'-')}</span><span class="auditArrow">→</span><span class="auditAfter">삭제</span>`;if(op==='INSERT')return `<span class="auditBefore">빈칸</span><span class="auditArrow">→</span><span class="auditAfter">${esc(a.work_code||'-')}</span>`;let parts=[];[['work_code','코드'],['worked_hours','근무'],['start_time','출근'],['end_time','퇴근'],['break_minutes','휴게']].forEach(([k,l])=>{if(String(b[k]??'')!==String(a[k]??''))parts.push(`${l} ${esc(b[k]??'-')} → <b>${esc(a[k]??'-')}</b>`)});return parts.join(' · ')||'값 저장'}
-function employeeAuditSummary(x){
- let b=x.before_value||{},a=x.after_value||{},op=x.action_type,entity=a._entity||b._entity||'employees';
- let entityLabel=entity==='employee_work_conditions'?'근무조건':entity==='employee_documents'?'문서':entity==='employee_employment_history'?'재직이력':'직원정보';
- if(op==='INSERT')return `<b>${entityLabel} 추가</b>`;
- if(op==='DELETE')return `<b>${entityLabel} 삭제</b>`;
- let labels={name:'이름',role:'직책',department:'업무',hire_date:'입사일',resign_date:'퇴사일',work_type:'근무형태',daily_hours:'1일시간',default_start_time:'출근',default_end_time:'퇴근',break_minutes:'휴게',work_days:'근무요일',leave_weekly_hours:'연차 주시간',leave_monthly_hours:'연차 발생시간',leave_day_hours:'연차 사용시간',resident_number:'주민번호',bank_account:'계좌번호',pay_type:'급여형태',salary_delay_months:'급여 지급시차',salary_pay_day:'급여 지급일',incentive_delay_months:'인센 반영시차',holiday_incentive_unit:'인센 단가',holiday_incentive_enabled:'인센 사용',memo:'비고',effective_from:'적용일',document_type:'문서종류',title:'문서명',document_date:'문서일',contract_start_date:'계약시작',contract_end_date:'계약종료',start_date:'재직시작',end_date:'재직종료'};
- let sensitive=new Set(['resident_number','bank_account','memo']),parts=[];
- Object.keys(labels).forEach(k=>{if(JSON.stringify(b[k]??null)!==JSON.stringify(a[k]??null)){if(sensitive.has(k))parts.push(`${labels[k]} 변경`);else parts.push(`${labels[k]} ${esc(b[k]??'-')} → <b>${esc(a[k]??'-')}</b>`)}});
- return `<b>${entityLabel}</b> · `+(parts.slice(0,8).join(' · ')||'값 저장')+(parts.length>8?` · 외 ${parts.length-8}개`:'');
-}
-function auditChangeSummary(x){return x?.module_key==='schedule'?scheduleAuditSummary(x):x?.module_key==='employees'?employeeAuditSummary(x):scheduleAuditSummary(x)}
 function ipKey(v){return String(v||'').trim()}
 function ipLabelFor(v){return ipAddressLabels.get(ipKey(v))||''}
 function ipDisplayHtml(v){
@@ -2270,7 +2145,7 @@ function renderAuditLogs(){
  let access=accessLogs.filter(x=>(!sf||String(x.store_id)===sf)&&(!uf||String(x.user_id)===uf)&&(x.event_type==='login'||x.event_type==='logout'||x.event_type==='store_open')).map(x=>({kind:'access',ts:x.created_at,row:x}));
  let rows=(tf==='edit'?edits:tf==='access'?access:[...edits,...access]).sort((a,b)=>new Date(b.ts)-new Date(a.ts));
  $('auditLogBody').innerHTML=rows.map(item=>{
-   if(item.kind==='edit'){let x=item.row;return `<tr><td>${fmtDateTime(x.created_at)}</td><td>${esc(x.actor_name||x.actor_email||'-')}</td><td>${esc(x.store_name||stores.find(s=>s.id===Number(x.store_id))?.name||'-')}</td><td>${esc(x.employee_name||'-')}</td><td>${esc(x.target_date||'-')}</td><td><span class="activityBadge edit">${x.action_type==='INSERT'?'추가':x.action_type==='DELETE'?'삭제':'수정'}</span></td><td class="auditChange">${auditChangeSummary(x)}</td><td class="ipCell">${ipDisplayHtml(x.ip_address)}</td><td>${isAppAdmin()&&x.module_key==='schedule'?`<button class="btn gray small auditUndoBtn" onclick="undoScheduleAudit(${x.id})">되돌리기</button>`:'-'}</td></tr>`}
+   if(item.kind==='edit'){let x=item.row;return `<tr><td>${fmtDateTime(x.created_at)}</td><td>${esc(x.actor_name||x.actor_email||'-')}</td><td>${esc(x.store_name||stores.find(s=>s.id===Number(x.store_id))?.name||'-')}</td><td>${esc(x.employee_name||'-')}</td><td>${esc(x.target_date||'-')}</td><td><span class="activityBadge edit">${x.action_type==='INSERT'?'추가':x.action_type==='DELETE'?'삭제':'수정'}</span></td><td class="auditChange">${scheduleAuditSummary(x)}</td><td class="ipCell">${ipDisplayHtml(x.ip_address)}</td><td>${isAppAdmin()?`<button class="btn gray small auditUndoBtn" onclick="undoScheduleAudit(${x.id})">되돌리기</button>`:''}</td></tr>`}
    let x=item.row,cls=accessEventClass(x.event_type),rowCls=x.event_type==='login'?'activityRowLogin':x.event_type==='logout'?'activityRowLogout':'activityRowStore';
    return `<tr class="${rowCls}"><td>${fmtDateTime(x.created_at)}</td><td>${esc(x.actor_name||x.actor_email||'-')}</td><td>${esc(stores.find(s=>s.id===Number(x.store_id))?.name||'-')}</td><td>접속</td><td>-</td><td><span class="activityBadge ${cls}">${esc(accessEventLabel(x.event_type))}</span></td><td class="auditChange">${accessEventSummary(x)}</td><td class="ipCell">${ipDisplayHtml(x.ip_address)}</td><td>-</td></tr>`;
  }).join('')||'<tr><td colspan="9" style="padding:20px">조건에 맞는 활동이력이 없습니다.</td></tr>';
@@ -2530,11 +2405,7 @@ async function loadActiveCommerceWorkbook(){let q=await sb.from('commerce_workbo
 async function loadCommerceWorkbookInfo(){try{let w=await loadActiveCommerceWorkbook(),box=$('commerceWorkbookInfo');if(!w){box.innerHTML='<div><b>등록된 기준 Excel 없음</b><div class="help">현재 88커머스 통합관리 파일을 등록하세요.</div></div>';return}box.innerHTML=`<div><span class="help">파일명</span><br><b>${esc(w.file_name)}</b></div><div><span class="help">등록일</span><br><b>${esc(fmtDateTime(w.uploaded_at))}</b></div><div><span class="help">시트수</span><br><b>${(w.sheet_names||[]).length}개</b></div><div><span class="help">파일크기</span><br><b>${Math.round(Number(w.file_size||0)/1024)} KB</b></div>`;$('commerceWorkbookName').textContent=w.file_name}catch(e){console.warn(e)}}
 function commerceWorkbookIsEncryptedContainer(buf){let b=new Uint8Array(buf||new ArrayBuffer(0));return b.length>=8&&b[0]===0xD0&&b[1]===0xCF&&b[2]===0x11&&b[3]===0xE0&&b[4]===0xA1&&b[5]===0xB1&&b[6]===0x1A&&b[7]===0xE1}
 async function commerceWorkbookReadableBuffer(buf){if(!commerceWorkbookIsEncryptedContainer(buf))return buf;let pw=String($('commerceWorkbookPassword')?.value||'').trim();if(!pw)throw new Error('암호화된 Excel입니다. 기준 Excel 비밀번호를 입력한 뒤 다시 등록하세요.');let ses=await sb.auth.getSession(),token=ses.data?.session?.access_token;if(!token)throw new Error('로그인 세션을 확인할 수 없습니다. 다시 로그인해 주세요.');let res=await fetch(`${SUPABASE_URL}/functions/v1/commerce-workbook-decrypt`,{method:'POST',headers:{Authorization:`Bearer ${token}`,apikey:SUPABASE_KEY,'Content-Type':'application/octet-stream','x-office-password':pw},body:buf});if(!res.ok){let msg='';try{let j=await res.json();msg=j?.error||j?.message||''}catch(_){try{msg=await res.text()}catch(__){}}throw new Error(msg||`Excel 복호화 오류 (${res.status})`)}return await res.arrayBuffer()}
-async function registerCommerceWorkbook(file){
-  /* V35: 단일등록 진입점도 연도별 최신화 로직 하나만 사용한다. 옛 별도 업로드/비활성화 로직은 사용하지 않는다. */
-  return registerCommerceWorkbooks(file?[file]:[]);
-}
-
+async function registerCommerceWorkbook(file){if(!file||!isCommerceStore()||!requireModuleEdit('commerce'))return;let st=$('commerceWorkbookState');try{st.textContent='파일 분석 중';st.className='saveState saving';let buf=await file.arrayBuffer(),hash=await sha256Buffer(buf);if(commerceWorkbookIsEncryptedContainer(buf))st.textContent='암호화 Excel 복호화 중';let readableBuf=await commerceWorkbookReadableBuffer(buf);st.textContent='시트 분석 중';let xw=XLSX.read(readableBuf,{type:'array',cellDates:false,cellFormula:true});if(!xw.SheetNames?.length)throw new Error('Excel 시트를 찾지 못했습니다.');let ext=(String(file.name).toLowerCase().match(/\.(xlsx|xlsm|xls)$/)?.[1]||'bin');let path=`${storeId()}/workbook_${Date.now()}.${ext}`;let up=await sb.storage.from('commerce-workbooks').upload(path,new Blob([buf]),{contentType:file.type||'application/octet-stream',upsert:false});if(up.error)throw up.error;await sb.from('commerce_workbooks').update({active:false}).eq('store_id',storeId()).eq('active',true);let iq=await sb.from('commerce_workbooks').insert({store_id:storeId(),file_name:file.name,file_size:file.size||buf.byteLength,file_sha256:hash,storage_path:path,sheet_names:xw.SheetNames,uploaded_by:currentSessionUser?.id||null,active:true}).select('id').single();if(iq.error)throw iq.error;let wid=iq.data.id;await sb.from('commerce_excel_sales').delete().eq('store_id',storeId());let productNames=new Set();for(let si=0;si<xw.SheetNames.length;si++){let name=xw.SheetNames[si],ws=xw.Sheets[name],ref=ws['!ref']||'A1:A1',range=XLSX.utils.decode_range(ref),displayRows=XLSX.utils.sheet_to_json(ws,{header:1,raw:false,defval:''}),rawRows=XLSX.utils.sheet_to_json(ws,{header:1,raw:true,defval:null});let merges=(ws['!merges']||[]).map(m=>XLSX.utils.encode_range(m));let mq=await sb.from('commerce_sheet_meta').insert({workbook_id:wid,store_id:storeId(),sheet_name:name,sheet_index:si,range_ref:ref,row_count:displayRows.length,col_count:range.e.c-range.s.c+1,merges_json:merges});if(mq.error)throw mq.error;let dc=commerceSheetDateCol(name);for(let c=0;c<displayRows.length;c+=200){let rows=displayRows.slice(c,c+200),dates=rows.map((_,j)=>dc==null?null:excelSerialToIso(rawRows[c+j]?.[dc]));let cq=await sb.from('commerce_sheet_chunks').insert({workbook_id:wid,store_id:storeId(),sheet_name:name,chunk_index:Math.floor(c/200),start_row:c+1,rows_json:rows,row_dates_json:dates});if(cq.error)throw cq.error}if(name==='매입입력'){for(let r=13;r<rawRows.length;r++){[rawRows[r]?.[2],rawRows[r]?.[13]].forEach(v=>{if(typeof v==='string'&&v.trim()&&!/품목|항목|누적|평균|2026년/.test(v))productNames.add(v.trim())})}}if(name==='매출입력'){let payload=[];for(let r=13;r<rawRows.length;r++){let a=rawRows[r]||[],dt=excelSerialToIso(a[1]),product=String(a[2]??'').trim(),qty=Number(a[3]||0),amt=Number(a[4]||0),ch=String(a[20]??'').trim(),orderer=String(a[23]??'').trim(),recipient=String(a[24]??'').trim();if(!dt||!product||amt<=0||!['쿠팡','네이버','지마켓','옥션'].includes(ch))continue;payload.push({store_id:storeId(),workbook_id:wid,excel_row_no:r+1,order_date:dt,product_name:product,stock_qty:qty,sales_amount:amt,source_channel:ch,orderer,recipient});if(payload.length>=300){let sq=await sb.from('commerce_excel_sales').insert(payload);if(sq.error)throw sq.error;payload=[]}}if(payload.length){let sq=await sb.from('commerce_excel_sales').insert(payload);if(sq.error)throw sq.error}}}if(productNames.size){let p=[...productNames].map(product_name=>({store_id:storeId(),product_name,active:true}));for(let i=0;i<p.length;i+=300){let pq=await sb.from('commerce_products').upsert(p.slice(i,i+300),{onConflict:'store_id,product_name'});if(pq.error)throw pq.error}}st.textContent='기준 Excel 등록완료';st.className='saveState saved';await loadCommerceWorkbookInfo();await loadCommerceDashboard();alert(`기준 Excel 등록완료\n\n${file.name}\n시트 ${xw.SheetNames.length}개를 홈페이지 조회용으로 저장했습니다.\n원본 암호파일은 변경하지 않고 private Storage에 그대로 보관했습니다.`)}catch(err){console.error(err);st.textContent='등록 오류';st.className='saveState error';alert('기준 Excel 등록 오류\n\n'+(err?.message||err))}}
 async function loadCommerceSheet(name){let st=$('commerceSheetState');try{st.textContent='불러오는 중';let w=await loadActiveCommerceWorkbook();if(!w){commerceCurrentSheetRows=[];commerceCurrentSheetDates=[];$('commerceSheetGrid').innerHTML='<div class="help" style="padding:20px">기준 Excel을 먼저 등록하세요.</div>';return}let [m,c]=await Promise.all([sb.from('commerce_sheet_meta').select('*').eq('workbook_id',w.id).eq('sheet_name',name).maybeSingle(),sb.from('commerce_sheet_chunks').select('chunk_index,rows_json,row_dates_json').eq('workbook_id',w.id).eq('sheet_name',name).order('chunk_index')]);if(m.error)throw m.error;if(c.error)throw c.error;if(!m.data)throw new Error(`기준 Excel에 "${name}" 시트가 없습니다.`);commerceCurrentSheetRows=[];commerceCurrentSheetDates=[];(c.data||[]).forEach(x=>{commerceCurrentSheetRows.push(...(x.rows_json||[]));commerceCurrentSheetDates.push(...(x.row_dates_json||[]))});initCommerceYearFilter();commerceCurrentSheetPage=1;rerenderCommerceSheet();st.textContent=`${w.file_name} · ${m.data.range_ref||''} · ${m.data.row_count}행`;}catch(err){console.error(err);st.textContent='조회 오류';$('commerceSheetGrid').innerHTML=`<div class="warn" style="padding:20px">${esc(err?.message||err)}</div>`}}
 function initCommerceYearFilter(){let y=$('commerceYearFilter'),years=[...new Set(commerceCurrentSheetDates.filter(Boolean).map(x=>x.slice(0,4)))].sort();if(!years.length)years=['2026'];let old=y.value;y.innerHTML='<option value="">전체연도</option>'+years.map(x=>`<option value="${x}">${x}년</option>`).join('');y.value=years.includes(old)?old:(years.includes('2026')?'2026':'')}
 function filteredCommerceSheetRows(){let yr=$('commerceYearFilter')?.value||'',mo=$('commerceMonthFilter')?.value||'',q=String($('commerceSheetSearch')?.value||'').trim().toLowerCase(),out=[];for(let i=0;i<commerceCurrentSheetRows.length;i++){let row=commerceCurrentSheetRows[i]||[],dt=commerceCurrentSheetDates[i]||'';if(dt&&yr&&dt.slice(0,4)!==yr)continue;if(dt&&mo&&dt.slice(5,7)!==mo)continue;if(q&&!row.some(v=>String(v??'').toLowerCase().includes(q)))continue;out.push({row,rowNo:i+1})}return out}
@@ -2880,14 +2751,14 @@ function scheduleDerivedWeeklyHours(e,periodEnd,scheduleRows){
    cur=addDaysIso(cur,1);
  }
  if(!days||unknown.length)return {hours:0,unknown,source:'schedule-incomplete'};
- return {hours:total*7/days,unknown:[],source:'schedule-4week'};
+ return {hours:Math.round((total*7/days)*100)/100,unknown:[],source:'schedule-4week'};
 }
 function legalWeeklyHoursForAccrual(e,eventDate,scheduleRows,periodEnd){
  let c=workConditionForDate(e,eventDate),rules=conditionDayRules(c),days=normalizedWorkDays(c.work_days),explicit=Number(c.leave_weekly_hours||0),mode=conditionScheduleMode(c);
  if(rules.length||days.length)return {hours:conditionWeeklyPrescribedHours(c),unknown:[],source:'condition-pattern'};
- if(explicit>0&&!(mode==='manual'&&c.work_type==='custom'&&Math.abs(explicit-40)<0.01))return {hours:explicit,unknown:[],source:'condition-weekly'};
+ if(explicit>0&&!(mode==='manual'&&c.work_type==='custom'&&Math.abs(explicit-40)<0.01))return {hours:Math.round(explicit*100)/100,unknown:[],source:'condition-weekly'};
  let derived=scheduleDerivedWeeklyHours(e,periodEnd||addDaysIso(eventDate,-1),scheduleRows||[]);if(!derived.unknown.length&&derived.hours>0)return derived;
- if(explicit>0)return {hours:explicit,unknown:derived.unknown||[],source:'condition-fallback'};
+ if(explicit>0)return {hours:Math.round(explicit*100)/100,unknown:derived.unknown||[],source:'condition-fallback'};
  return derived;
 }
 function monthlyAttendanceStatus(e,periodStart,periodEnd,scheduleRows){
@@ -3338,19 +3209,12 @@ function classifyDate(date){
 }
 function classLabel(c){return c==='holiday'?'공휴일':c==='weekend'?'주말':'평일'}
 function classifyWork(emp){
- let r=monthRange(),blank=()=>({days:0,hours:0,dates:[],leaveDays:0,leaveHours:0,leaveDates:[]}),o={weekday:blank(),weekend:blank(),holiday:blank()};
+ let r=monthRange(),o={weekday:{days:0,hours:0,dates:[]},weekend:{days:0,hours:0,dates:[]},holiday:{days:0,hours:0,dates:[]}};
  for(let d=1;d<=r.days;d++){
-   let date=r.m+'-'+String(d).padStart(2,'0'),s=sched(emp,date),code=String(s?.work_code||'').trim(),c=classifyDate(date),h=holidayFor(date),bucket=o[c];
-   if(code==='연'){
-     let leaveH=Number(s?.scheduled_hours||leaveDayHoursAt(emp,date)||0);
-     if(leaveH>0){
-       bucket.leaveDays++;bucket.leaveHours+=leaveH;bucket.leaveDates.push({date,hours:leaveH,name:h?.name||'',kind:'leave'});
-     }
-     continue;
-   }
-   let worked=code==='예'?scheduleRowPrescribedHours(emp,date,s):Number(s?.worked_hours||0);
+   let date=r.m+'-'+String(d).padStart(2,'0'),s=sched(emp,date),worked=String(s?.work_code||'').trim()==='예'?scheduleRowPrescribedHours(emp,date,s):Number(s?.worked_hours||0);
    if(worked<=0)continue;
-   bucket.days++;bucket.hours+=worked;bucket.dates.push({date,hours:worked,name:h?.name||'',kind:code==='병'?'sick':code==='예'?'reserve':'work'});
+   let c=classifyDate(date),h=holidayFor(date);
+   o[c].days++;o[c].hours+=worked;o[c].dates.push({date,hours:worked,name:h?.name||''});
  }
  return o;
 }
@@ -3536,7 +3400,7 @@ function legalOvertimeCellV16(ot){
  let over=rows.filter(x=>x.over12).length,warning=over?`<div style="margin-top:2px;color:#b54708;font-size:10px;font-weight:700">⚠ 주12h 초과 ${over}주 확인</div>`:'';
  return `<div title="${esc(title)}"><b>${hour2(ot?.total||0)}h</b>${sub}${warning}</div>`;
 }
-function calc(emp){let r=monthRange(),o={days:0,scheduled:0,worked:0,ot:0,leave:0,sick:0,otDetail:null};for(let d=1;d<=r.days;d++){let date=r.m+'-'+String(d).padStart(2,'0'),s=sched(emp,date);if(!s)continue;let code=s.work_code||'',cond=workConditionForDate(emp,date),rule=conditionTimesForDate(cond,date),dayH=Number(rule.daily_hours||cond.daily_hours||8),leaveH=leaveDayHoursAt(emp,date);if(code==='연'){o.leave+=leaveH;o.scheduled+=leaveH}else if(code==='병'){o.sick+=Number(s.scheduled_hours||dayH);o.scheduled+=Number(s.scheduled_hours||dayH)}else if(code==='결'||code==='법'){o.scheduled+=Number(s.scheduled_hours||dayH)}else if(code==='예'){let h=Number(s.worked_hours||s.scheduled_hours||dayH);o.days++;o.scheduled+=Number(s.scheduled_hours||dayH);o.worked+=h}else if(code!=='0'&&code!==''){o.days++;o.scheduled+=Number(s.scheduled_hours||0);o.worked+=Number(s.worked_hours||0)}}o.otDetail=legalOvertimeForMonthV16(emp);o.ot=o.otDetail.total;return o}
+function calc(emp){let r=monthRange(),o={days:0,scheduled:0,worked:0,ot:0,leave:0,sick:0,otDetail:null};for(let d=1;d<=r.days;d++){let date=r.m+'-'+String(d).padStart(2,'0'),s=sched(emp,date);if(!s)continue;let code=s.work_code||'',cond=workConditionForDate(emp,date),rule=conditionTimesForDate(cond,date),dayH=Number(rule.daily_hours||cond.daily_hours||8),leaveH=leaveDayHoursAt(emp,date);if(code==='연'){o.leave+=Number(s.scheduled_hours||leaveH);o.scheduled+=Number(s.scheduled_hours||leaveH)}else if(code==='병'){o.sick+=Number(s.scheduled_hours||dayH);o.scheduled+=Number(s.scheduled_hours||dayH)}else if(code==='결'||code==='법'){o.scheduled+=Number(s.scheduled_hours||dayH)}else if(code==='예'){let h=Number(s.worked_hours||s.scheduled_hours||dayH);o.days++;o.scheduled+=Number(s.scheduled_hours||dayH);o.worked+=h}else if(code!=='0'&&code!==''){o.days++;o.scheduled+=Number(s.scheduled_hours||0);o.worked+=Number(s.worked_hours||0)}}o.otDetail=legalOvertimeForMonthV16(emp);o.ot=o.otDetail.total;return o}
 function renderAll(){renderSchedule();renderEmployees();renderStores();}
 
 function leaveDueInfo(e){
@@ -3910,7 +3774,7 @@ function schedulePayload(id,date,raw){
  else if(code==='0'||!code){code=code||'0';status='off'}
  else if(!isNaN(Number(code))){worked=Number(code);scheduled=Math.min(worked,base);ot=Math.max(0,worked-base);status='work'}
  else {status='other'}
- return {employee_id:id,work_date:date,work_code:code,scheduled_hours:scheduled,worked_hours:worked,overtime_hours:ot,status,memo:null};
+ return {employee_id:id,work_date:date,work_code:code,scheduled_hours:scheduled,worked_hours:worked,overtime_hours:ot,status};
 }
 function applyLocalSchedule(payload){
  let idx=schedules.findIndex(s=>s.employee_id===payload.employee_id&&s.work_date===payload.work_date);
@@ -4098,7 +3962,7 @@ async function saveShiftDetail(id,date){
  if(st==='absence'){scheduled=detailHours>0?detailHours:base;code='결'}
  if(st==='deemed'){scheduled=detailHours>0?detailHours:base;code='법'}
  if(st==='reserve'){scheduled=base;worked=base;ot=0;code='예'}
- let q=await sb.from('schedules').upsert({employee_id:id,work_date:date,work_code:code,scheduled_hours:scheduled,worked_hours:worked,overtime_hours:ot,start_time:start||null,end_time:end||null,break_minutes:br,status:st,memo:null},{onConflict:'employee_id,work_date'});
+ let q=await sb.from('schedules').upsert({employee_id:id,work_date:date,work_code:code,scheduled_hours:scheduled,worked_hours:worked,overtime_hours:ot,start_time:start||null,end_time:end||null,break_minutes:br,status:st},{onConflict:'employee_id,work_date'});
  if(q.error)return alert(q.error.message);
  stampRecentAuditIp(storeId());
  closeModal();refreshAll();
@@ -4163,29 +4027,17 @@ function weeklyHolidayBasePrescribedHours(e,date=isoToday()){
  // leave_weekly_hours는 계약/근무조건에서 확인한 '주 소정근로시간'이므로 최우선한다.
  // 단, custom + 수동 + 패턴없음 + 40h 기본값처럼 실제 계약값인지 불명확한 경우에만 최근 스케줄을 보조 사용한다.
  if(explicit>0 && !(normalizeWorkTypeValue(c?.work_type)==='custom'&&conditionScheduleMode(c)==='manual'&&!rules.length&&!days.length&&Math.abs(explicit-40)<0.01)){
-   return explicit;
+   return Math.round(explicit*100)/100;
  }
  if(rules.length){
    let byDay=new Map();rules.forEach(r=>(r.days||[]).forEach(d=>{let h=Number(r.daily_hours||0);if(h>0)byDay.set(Number(d),h)}));
-   let total=[...byDay.values()].reduce((a,b)=>a+b,0);if(total>0)return total;
+   let total=[...byDay.values()].reduce((a,b)=>a+b,0);if(total>0)return Math.round(total*100)/100;
  }
- if(days.length&&Number(c?.daily_hours||0)>0)return days.length*Number(c.daily_hours);
+ if(days.length&&Number(c?.daily_hours||0)>0)return Math.round(days.length*Number(c.daily_hours)*100)/100;
  if(typeof scheduleDerivedWeeklyHours==='function'){
-   let d=scheduleDerivedWeeklyHours(e,date,schedules);if(!d?.unknown?.length&&Number(d?.hours||0)>0)return Number(d.hours);
+   let d=scheduleDerivedWeeklyHours(e,date,schedules);if(!d?.unknown?.length&&Number(d?.hours||0)>0)return Math.round(Number(d.hours)*100)/100;
  }
- return Math.max(0,explicit);
-}
-// V47: 주휴 업무값 자체를 반올림하지 않는다. 다만 IEEE-754 부동소수점에서만 생기는
-// 19.200000000000003 같은 기계 오차는 '실제 값과 구별 가능한 범위'에서만 제거한다.
-function cleanWeeklyHolidayFloatNoise(v){
- let n=Number(v||0);
- if(!Number.isFinite(n)||Object.is(n,-0))return 0;
- let tol=Number.EPSILON*Math.max(1,Math.abs(n))*32;
- for(let d=0;d<=12;d++){
-   let p=10**d,c=Math.round(n*p)/p;
-   if(Math.abs(n-c)<=tol)return c;
- }
- return n;
+ return Math.round(Math.max(0,explicit)*100)/100;
 }
 function weeklyHolidayAveragePrescribedHours(e,weekEnd=isoToday()){
  // 법의 '4주 평균 1주 소정근로시간' 기준. 4주 미만 재직자는 실제 재직한 완전 주의 조건으로 평균한다.
@@ -4197,12 +4049,12 @@ function weeklyHolidayAveragePrescribedHours(e,weekEnd=isoToday()){
    let h=weeklyHolidayBasePrescribedHours(e,we);if(h>0)vals.push(h);
  }
  if(!vals.length)return 0;
- return cleanWeeklyHolidayFloatNoise(vals.reduce((a,b)=>a+b,0)/vals.length);
+ return Math.round((vals.reduce((a,b)=>a+b,0)/vals.length)*100)/100;
 }
 function weeklyHolidayOneTimeHours(e,date=isoToday()){
  let weekly=weeklyHolidayAveragePrescribedHours(e,date);
  if(weekly<LEGAL_MIN_WEEKLY_HOURS_FOR_LEAVE)return 0;
- return cleanWeeklyHolidayFloatNoise(Math.min(LEGAL_FULLTIME_WEEKLY_HOURS,weekly)/LEGAL_FULLTIME_WEEKLY_HOURS*8);
+ return Math.round((Math.min(LEGAL_FULLTIME_WEEKLY_HOURS,weekly)/LEGAL_FULLTIME_WEEKLY_HOURS*8)*100)/100;
 }
 function weeklyHolidayMonthWeekStarts(){
  let r=monthRange();
@@ -4216,7 +4068,7 @@ function expectedWeeklyHolidayHours(e){
    let fullEmployment=true;for(let d=0;d<7;d++){if(!employedOn(e,addDaysIso(ws,d))){fullEmployment=false;break}}
    let weekly=weeklyHolidayAveragePrescribedHours(e,we),one=weekly>=LEGAL_MIN_WEEKLY_HOURS_FOR_LEAVE?weeklyHolidayOneTimeHours(e,we):0;
    if(!fullEmployment){details.push({label,status:'재직기간 미충족',hours:0});continue}
-   if(weekly<LEGAL_MIN_WEEKLY_HOURS_FOR_LEAVE){details.push({label,status:`주 소정 ${weeklyHolidayRawText(weekly)}h · 15h 미만`,hours:0});continue}
+   if(weekly<LEGAL_MIN_WEEKLY_HOURS_FOR_LEAVE){details.push({label,status:`주 소정 ${hour2(weekly)}h · 15h 미만`,hours:0});continue}
 
    // 기존 근태/연차 판정 규칙을 그대로 재사용한다.
    // 연·법·예는 출근간주, 결은 미발생, 병은 기존 정책대로 자동확정하지 않고 확인 필요.
@@ -4234,15 +4086,8 @@ function expectedWeeklyHolidayHours(e){
      failedWeeks++;details.push({label,status:att.memo||'개근 미충족',hours:0});
    }
  }
- totalHours=cleanWeeklyHolidayFloatNoise(totalHours);
- reviewHours=cleanWeeklyHolidayFloatNoise(reviewHours);
- lastOne=cleanWeeklyHolidayFloatNoise(lastOne);
+ totalHours=Math.round(totalHours*100)/100;reviewHours=Math.round(reviewHours*100)/100;
  return {hours:totalHours,weeks:count,one:lastOne,reviewHours,reviewWeeks,pendingWeeks,failedWeeks,details};
-}
-function weeklyHolidayRawText(v){
- let n=cleanWeeklyHolidayFloatNoise(v);
- if(!Number.isFinite(n)||Object.is(n,-0))return '0';
- return String(n);
 }
 function weeklyHolidayCell(wh){
  let notes=[];
@@ -4253,54 +4098,39 @@ function weeklyHolidayCell(wh){
    let reasons=[...new Set((wh.details||[]).map(x=>x.status).filter(Boolean))];
    if(reasons.length)notes.push(reasons.join(' · '));
  }
- let title=(wh.details||[]).map(x=>`${x.label} ${x.status}${x.hours?` ${weeklyHolidayRawText(x.hours)}h`:''}`).join(' / ');
- let review=wh.reviewHours?`<div style="margin-top:2px;color:#b54708;font-size:11px;font-weight:700">+ 확인 ${weeklyHolidayRawText(wh.reviewHours)}h</div>`:'';
+ let title=(wh.details||[]).map(x=>`${x.label} ${x.status}${x.hours?` ${hour2(x.hours)}h`:''}`).join(' / ');
+ let review=wh.reviewHours?`<div style="margin-top:2px;color:#b54708;font-size:11px;font-weight:700">+ 확인 ${hour2(wh.reviewHours)}h</div>`:'';
  let sub=notes.length?`<div style="margin-top:2px;color:#667085;font-size:10px">${esc(notes.join(' · '))}</div>`:'';
- return `<div title="${esc(title)}"><b>${weeklyHolidayRawText(wh.hours)}h</b>${review}${sub}</div>`;
+ return `<div title="${esc(title)}"><b>${hour2(wh.hours)}h</b>${review}${sub}</div>`;
 }
 
 function formatWorkBucket(bucket,kind){
- let hasWork=!!bucket?.dates?.length,hasLeave=!!bucket?.leaveDates?.length;
- if(!hasWork&&!hasLeave)return `<div class="workBucket ${kind} empty">-</div>`;
- let groupsHtml=(rows,{leave=false}={})=>{
-   let groups=new Map();
-   rows.forEach(x=>{
-     let h=round2(Number(x.hours||0)),key=String(h);
-     if(!groups.has(key))groups.set(key,{hours:h,count:0});
-     groups.get(key).count++;
-   });
-   return [...groups.values()].map(g=>`<span class="workTerm${leave?' leaveTerm':''}"><b>${leave?'연 ':''}${g.count}일</b> × ${hour2(g.hours)}h</span>`).join('<span class="workPlus"> + </span>');
- };
- let terms=[];
- if(hasWork)terms.push(groupsHtml(bucket.dates));
- if(hasLeave)terms.push(groupsHtml(bucket.leaveDates,{leave:true}));
- let formula=terms.join('<span class="workPlus"> + </span>');
- let sums=[];
- if(hasWork)sums.push(`<b>${hour2(bucket.hours)}h</b>`);
- if(hasLeave)sums.push(`<span class="leaveEquals">연 ${hour2(bucket.leaveHours)}h</span>`);
- return `<div class="workBucket ${kind}"><div class="workFormula">${formula}</div><div class="workEquals">= ${sums.join('<span class="workPlus"> + </span>')}</div></div>`;
+ if(!bucket?.dates?.length)return `<div class="workBucket ${kind} empty">-</div>`;
+ let groups=new Map();
+ bucket.dates.forEach(x=>{
+   let h=round2(Number(x.hours||0)),key=String(h);
+   if(!groups.has(key))groups.set(key,{hours:h,count:0});
+   groups.get(key).count++;
+ });
+ let formula=[...groups.values()].map(g=>`<span class="workTerm"><b>${g.count}일</b> × ${hour2(g.hours)}h</span>`).join('<span class="workPlus"> + </span>');
+ return `<div class="workBucket ${kind}"><div class="workFormula">${formula}</div><div class="workEquals">= <b>${hour2(bucket.hours)}h</b></div></div>`;
 }
 
 function renderHours(){
  let visible=workTimeEmployees($('monthSelect').value);
  $('hoursBody').innerHTML=visible.map(e=>{
   let x=calc(e),c=classifyWork(e),wh=expectedWeeklyHolidayHours(e),p=payrollFor(e),ph=Number(p?.scheduled_hours||0),
-      compare=cleanWeeklyHolidayFloatNoise(x.worked+wh.hours),diff=p?cleanWeeklyHolidayFloatNoise(compare-ph):null;
+      compare=round2(x.worked+wh.hours),diff=p?round2(compare-ph):null;
   return `<tr><td class="name"><b>${esc(e.name)}</b></td><td>${workTypeForDate(e,monthRange().first)}</td>
   <td class="workKindCell">${formatWorkBucket(c.weekday,'weekday')}</td>
   <td class="workKindCell">${formatWorkBucket(c.weekend,'weekend')}</td>
   <td class="workKindCell">${formatWorkBucket(c.holiday,'holiday')}</td>
-  <td class="hoursStrong"><b>${hour2(x.worked)}h</b></td><td>${weeklyHolidayCell(wh)}</td><td class="hoursStrong"><b>${weeklyHolidayRawText(compare)}h</b></td>
+  <td class="hoursStrong"><b>${hour2(x.worked)}h</b></td><td>${weeklyHolidayCell(wh)}</td><td class="hoursStrong"><b>${hour2(compare)}h</b></td>
   <td>${legalOvertimeCellV16(x.otDetail)}</td><td>${hour2(x.leave)}h</td><td>${hour2(x.sick)}h</td><td>${p?hour2(ph)+'h':'-'}</td>
-  <td class="${diff===0?'ok':diff==null?'':'warn'} hoursDiff">${diff==null?'-':(diff>0?'+':'')+weeklyHolidayRawText(diff)+'h'}</td></tr>`}).join('')||'<tr><td colspan="13" style="padding:24px;text-align:center;color:#7b8494">이 달에 근로시간 관리 대상 직원이 없습니다.</td></tr>';
+  <td class="${diff===0?'ok':diff==null?'':'warn'} hoursDiff">${diff==null?'-':(diff>0?'+':'')+hour2(diff)+'h'}</td></tr>`}).join('')||'<tr><td colspan="13" style="padding:24px;text-align:center;color:#7b8494">이 달에 근로시간 관리 대상 직원이 없습니다.</td></tr>';
  $('workDateBody').innerHTML=visible.map(e=>{
-   let c=classifyWork(e),fmt=(bucket)=>{
-     let work=(bucket?.dates||[]).map(x=>`${Number(x.date.slice(8))}일 <b>${hour2(x.hours)}h</b>${x.name?` <span class="holidayDetail">${esc(x.name)}</span>`:''}`);
-     let leave=(bucket?.leaveDates||[]).map(x=>`${Number(x.date.slice(8))}일 <b>연차 ${hour2(x.hours)}h</b>${x.name?` <span class="holidayDetail">${esc(x.name)}</span>`:''}`);
-     let all=[...work,...leave];
-     return all.length?all.join('<span class="dateSep"> · </span>'):'-';
-   };
-   return `<tr><td class="name"><b>${esc(e.name)}</b></td><td class="dateDetailCell">${fmt(c.weekday)}</td><td class="dateDetailCell">${fmt(c.weekend)}</td><td class="dateDetailCell holidayDateCell">${fmt(c.holiday)}</td></tr>`;
+   let c=classifyWork(e),fmt=a=>a.length?a.map(x=>`${Number(x.date.slice(8))}일 <b>${hour2(x.hours)}h</b>${x.name?` <span class="holidayDetail">${esc(x.name)}</span>`:''}`).join('<span class="dateSep"> · </span>'):'-';
+   return `<tr><td class="name"><b>${esc(e.name)}</b></td><td class="dateDetailCell">${fmt(c.weekday.dates)}</td><td class="dateDetailCell">${fmt(c.weekend.dates)}</td><td class="dateDetailCell holidayDateCell">${fmt(c.holiday.dates)}</td></tr>`;
  }).join('')||'<tr><td colspan="4" style="padding:20px;text-align:center;color:#7b8494">표시할 근로시간 대상 직원이 없습니다.</td></tr>';
 }
 
@@ -5261,7 +5091,7 @@ function openDocumentWarningSettings(employeeId){
  let e=allEmployees().find(x=>Number(x.id)===Number(employeeId));if(!e)return;
  let ex=documentWarningExclusions(e);
  let row=(type,title,desc)=>`<label class="docWarnOption"><input class="docWarnChk" type="checkbox" value="${type}" ${ex.includes(type)?'checked':''}><div><b>${title} 경고 제외</b><span>${desc}</span></div></label>`;
- modal(`<h2>${esc(e.name)} · 문서 경고 설정</h2><div class="help">파일 업로드 기능은 그대로 두고, <b>파일이 없어도 괜찮은 문서만</b> 대시보드 경고에서 제외합니다.</div><div class="docWarnSettings">${row('work_contract','근로계약서','근로계약서 없음 경고와 재계약 D-day 경고에서 제외합니다.')}${isAppAdmin()?row('salary_contract','연봉계약서','연봉계약서 없음 경고에서 제외합니다.'):''}${row('resignation','사직서','퇴사 후 사직서 파일 없음 경고에서 제외합니다.')}</div><div class="docWarnSummary">체크를 해제하면 다시 일반 관리대상으로 돌아옵니다. 실제 PDF 파일은 삭제되거나 변경되지 않습니다.</div><div class="modalActions"><button class="btn gray" onclick="closeModal()">취소</button><button class="btn" onclick="saveDocumentWarningSettings(${employeeId})">저장</button></div>`);
+ modal(`<h2>${esc(e.name)} · 문서 경고 설정</h2><div class="help">파일 업로드 기능은 그대로 두고, <b>파일이 없어도 괜찮은 문서만</b> 대시보드 경고에서 제외합니다.</div><div class="docWarnSettings">${row('work_contract','근로계약서','근로계약서 없음 경고와 재계약 D-day 경고에서 제외합니다.')}${row('salary_contract','연봉계약서','연봉계약서 없음 경고에서 제외합니다.')}${row('resignation','사직서','퇴사 후 사직서 파일 없음 경고에서 제외합니다.')}</div><div class="docWarnSummary">체크를 해제하면 다시 일반 관리대상으로 돌아옵니다. 실제 PDF 파일은 삭제되거나 변경되지 않습니다.</div><div class="modalActions"><button class="btn gray" onclick="closeModal()">취소</button><button class="btn" onclick="saveDocumentWarningSettings(${employeeId})">저장</button></div>`);
 }
 async function saveDocumentWarningSettings(employeeId){
  let e=allEmployees().find(x=>Number(x.id)===Number(employeeId));if(!e)return;
@@ -5281,7 +5111,6 @@ function documentStatusForEmployee(employeeId){
  return employeeDocumentStatusMap.get(Number(employeeId))||{};
 }
 function employeeDocBadge(employeeId,type,isActive){
- if(type==='salary_contract'&&!isAppAdmin())return '';
  if(employeeDocumentStatusReadyStoreId!==storeId())return '<span class="docStatusBadge neutral">확인중</span>';
  let st=documentStatusForEmployee(employeeId)[type],count=Number(st?.count||0),label=type==='work_contract'?'근로':type==='salary_contract'?'연봉':'사직';
  if(count){
@@ -5395,7 +5224,7 @@ function renderEmployees(){
 
    <td class="name empInlineCell">${employeeView==='active'?employeeInlineText(e,'name','empInlineName'):`<b>${esc(e.name)}</b>`}</td>
    <td class="empInlineCell">${employeeView==='active'?employeeInlineSensitiveText(e,'resident_number','주민번호'):(esc(e.resident_number||'')||'-')}</td>
-   <td class="empInlineCell employeePrivateCol">${employeeView==='active'?employeeInlineSensitiveText(e,'bank_account','계좌번호'):(esc(e.bank_account||'')||'-')}</td>
+   <td class="empInlineCell">${employeeView==='active'?employeeInlineSensitiveText(e,'bank_account','계좌번호'):(esc(e.bank_account||'')||'-')}</td>
    <td class="empInlineCell">${employeeView==='active'?employeeInlineText(e,'role'):esc(e.role||'')}</td>
    <td class="empInlineCell">${employeeView==='active'?employeeInlineText(e,'department'):esc(e.department||'')}</td>
    <td class="empInlineCell">${employeeView==='active'?employeeInlineDate(e,'hire_date'):(e.hire_date||'')}</td>
@@ -5410,7 +5239,7 @@ function renderEmployees(){
 
    <td>${currentCond.work_type==='36'?'주4일':currentCond.work_type==='40'?'주5일':'기타'}<br><span class="help">${conditionScheduleMode(currentCond)==='auto'?'고정요일 자동채우기':'스케줄 직접입력'}</span>${employeeView==='active'?`<label class="scheduleHideToggle" title="직원관리·급여관리에는 그대로 두고 월간스케줄·주간편성·근로시간에서만 숨깁니다."><input type="checkbox" ${employeeMonthlyScheduleHidden(e)?'checked':''} onchange="saveMonthlyScheduleVisibility(${e.id},this.checked,this)">스케줄·근로 제외</label>`:''}</td>
 
-   <td class="empInlineCell employeePrivateCol">${payTypeCell}</td>
+   <td class="empInlineCell">${payTypeCell}</td>
 
    <!-- 연차기준: 원래 compact 표시 -->
    <td>${v31EmployeeLeaveBasisCell(e,employeeRefDate)}${monthlyAccrualEmployeeBadge(e,isoToday())}</td>
@@ -5418,7 +5247,7 @@ function renderEmployees(){
    <td>${employeeView==='active'?`<b data-leave-balance="${e.id}">${ls.balance}h</b><br><button class="btn gray small" onclick="adjustLeave(${e.id})">잔여확정</button>`:'-'}</td>
 
    <!-- 급여 지급규칙 대신 비고 -->
-   <td class="empInlineCell employeePrivateCol">${employeeView==='active'
+   <td class="empInlineCell">${employeeView==='active'
      ?`<textarea class="empInline empNoteInput" draggable="false" ondragstart="event.preventDefault()" ondrop="event.preventDefault()" placeholder="비고 입력" rows="2"
        oninput="autoGrowEmployeeNote(this)"
        onblur="saveEmployeeNote(${e.id},this.value)">${esc(e.memo||'')}</textarea>`
@@ -5426,12 +5255,12 @@ function renderEmployees(){
 
    <td>${employeeView==='active'?`<select onchange="setPrintColor(${e.id},this.value)" style="padding:5px 7px">${colors}</select><span style="display:inline-block;width:18px;height:18px;border-radius:5px;vertical-align:middle;margin-left:4px;background:${employeeColor(e)};border:1px solid #bbb"></span>`:'-'}</td>
 
-   <td>${employeeRenewalHtml(e)}<div class="docStatusLine">${employeeDocBadge(e.id,'work_contract',employeeView==='active')}${employeeDocBadge(e.id,'salary_contract',employeeView==='active')}${employeeDocBadge(e.id,'resignation',employeeView==='active')}</div><div class="docActions">
+   <td>${employeeRenewalHtml(e)}<div class="docStatusLine">${employeeDocBadge(e.id,'work_contract',employeeView==='active')}${employeeDocBadge(e.id,'salary_contract',employeeView==='active')}${employeeView==='retired'?employeeDocBadge(e.id,'resignation',false):''}</div><div class="docActions">
 <button class="btn green small" onclick="printEmploymentCertificate(${e.id})">재직증명서</button>
-<button class="btn gray small" onclick="printResignation(${e.id})" title="사직서 서식을 열어 인쇄하거나 PDF로 저장합니다.">사직서 서식/PDF</button>
-<button class="btn green small" onclick="openEmployeeDocuments(${e.id},'resignation')" title="서명받은 사직서 PDF를 직원 문서함에 보관합니다.">서명본 업로드</button>
-${isAppAdmin()?`<button class="btn small salaryContractAdminOnly" onclick="openEmployeeDocuments(${e.id},'salary_contract')">연봉계약서</button>`:''}
+<button class="btn gray small" onclick="printResignation(${e.id})" title="사직서 양식을 열어 인쇄하거나 PDF로 저장합니다.">사직서 출력/PDF</button>
+<button class="btn small" onclick="openEmployeeDocuments(${e.id},'salary_contract')">연봉계약서</button>
 <button class="btn small" onclick="openEmployeeDocuments(${e.id},'work_contract')">근로계약서</button>
+${employeeView==='retired'?`<button class="btn gray small" onclick="openEmployeeDocuments(${e.id},'resignation')">사직서 PDF</button>`:''}
 <button class="btn gray small docManageBtn ${employeeDocWarningExclusionCount(e)?'hasExclusions':''}" onclick="openDocumentWarningSettings(${e.id})" title="대시보드 문서 없음 경고를 직원별로 제외 설정합니다.">문서관리${employeeDocWarningExclusionCount(e)?` ${employeeDocWarningExclusionCount(e)}`:''}</button>
 </div></td>
    <td><div class="empManageActions">${action}</div></td></tr>`;
@@ -5917,7 +5746,7 @@ async function openEmployee(id,isRetired=false){
  modal(`<h2>${id?'직원 수정':'직원 추가'}</h2><div class="formgrid">
  <div class="field"><label>이름</label><input id="eName" value="${esc(e.name||'')}"></div>
  <div class="field"><label>주민등록번호</label><input id="eResident" value="${esc(e.resident_number||'')}" placeholder="예: 900101-1234567" autocomplete="off" oninput="syncEmployeeBirthFromResident()"></div>
- ${isAppAdmin()?`<div class="field employeePrivateCol"><label>계좌번호</label><input id="eBankAccount" value="${esc(e.bank_account||'')}" placeholder="직접 입력" autocomplete="off"></div>`:''}
+ <div class="field"><label>계좌번호</label><input id="eBankAccount" value="${esc(e.bank_account||'')}" placeholder="직접 입력" autocomplete="off"></div>
  <div class="field"><label>직책</label><input id="eRole" value="${esc(e.role||'')}"></div>
  <div class="field"><label>업무</label><input id="eDept" value="${esc(e.department||'')}"></div>
  <div class="field"><label>생년월일</label><input id="eBirth" type="text" inputmode="numeric" maxlength="8" placeholder="YYYYMMDD" value="${birthCompact}" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,8)"></div>
@@ -5931,26 +5760,26 @@ async function openEmployee(id,isRetired=false){
  <div class="field"><label>기본 출근</label><input id="eStart" type="time" value="${(currentCond.default_start_time||'').slice(0,5)}"></div>
  <div class="field"><label>기본 퇴근</label><input id="eEnd" type="time" value="${(currentCond.default_end_time||'').slice(0,5)}"></div>
  <div class="field"><label>휴게(분)</label><input id="eBreak" type="number" value="${currentCond.break_minutes||60}"></div>
- ${isAppAdmin()?`<div class="field employeePrivateCol"><label>급여형태</label><select id="ePay" onchange="applyPayPreset()"><option value="monthly">월급</option><option value="hourly">시급/파트타임</option><option value="daily">일당/파트타임</option><option value="business">사업소득</option></select></div>
- <div class="field employeePrivateCol"><label>기본급 지급시차(개월)</label><input id="eSalaryDelay" type="number" min="0" max="12" value="${salaryDelay(e)}"></div>
- <div class="field employeePrivateCol"><label>급여 지급일</label><select id="ePayDay"><option value="10">10일</option><option value="month_end">말일</option><option value="25">25일</option></select></div>
- <div class="field employeePrivateCol"><label>공휴일 인센 반영시차(개월)</label><input id="eIncentiveDelay" type="number" min="0" max="12" value="${incentiveDelay(e)}"></div>
- <div class="field employeePrivateCol"><label>인센 1회 단가</label><input id="eIncentiveUnit" type="number" step="1000" value="${incentiveUnit(e)}"></div>
- <div class="field employeePrivateCol"><label>공휴일 인센 사용</label><select id="eIncentiveOn"><option value="1">사용</option><option value="0">사용 안함</option></select></div>`:''}
- <div class="field"><label>연차 산정 주 소정시간</label><input id="eLeaveWeekly" type="number" step="any" value="${leaveWeeklyHours(e)}"></div>
- <div class="field"><label>연차 1개 발생(h) · 자동</label><input id="eLeaveMonthly" type="number" step="1" value="${leaveMonthlyHours(e)}"></div>
- <div class="field"><label>연차 1개 사용(h) · 자동</label><input id="eLeaveDay" type="number" step=".5" value="${leaveDayHours(e)}"></div>
+ <div class="field"><label>급여형태</label><select id="ePay" onchange="applyPayPreset()"><option value="monthly">월급</option><option value="hourly">시급/파트타임</option><option value="daily">일당/파트타임</option><option value="business">사업소득</option></select></div>
+ <div class="field"><label>기본급 지급시차(개월)</label><input id="eSalaryDelay" type="number" min="0" max="12" value="${salaryDelay(e)}"></div>
+ <div class="field"><label>급여 지급일</label><select id="ePayDay"><option value="10">10일</option><option value="month_end">말일</option><option value="25">25일</option></select></div>
+ <div class="field"><label>공휴일 인센 반영시차(개월)</label><input id="eIncentiveDelay" type="number" min="0" max="12" value="${incentiveDelay(e)}"></div>
+ <div class="field"><label>인센 1회 단가</label><input id="eIncentiveUnit" type="number" step="1000" value="${incentiveUnit(e)}"></div>
+ <div class="field"><label>공휴일 인센 사용</label><select id="eIncentiveOn"><option value="1">사용</option><option value="0">사용 안함</option></select></div>
+ <div class="field"><label>연차 산정 주 소정시간</label><input id="eLeaveWeekly" type="number" step=".5" value="${leaveWeeklyHours(e)}"></div>
+ <div class="field"><label>1년 미만 월 발생(h)</label><input id="eLeaveMonthly" type="number" step="1" value="${leaveMonthlyHours(e)}"></div>
+ <div class="field"><label>연차 하루 사용(h)</label><input id="eLeaveDay" type="number" step=".5" value="${leaveDayHours(e)}"></div>
  </div>
- <div style="margin-top:12px"><b style="font-size:12px">기본 근무요일 (선택사항 · 저장할 때마다 현재 선택월 스케줄 자동확인·반영)</b><div class="employeeWorkDayPattern">${checks}</div></div>
- <div class="help" style="margin-top:10px"><b>직책과 업무를 구분해서 입력하세요.</b> 예: 직책=과장 / 업무=매장관리·조제·전산 등<br><b>이 화면의 모든 항목은 수기로 수정 후 저장할 수 있습니다.</b><br><b>퇴사자의 퇴사일을 비워 저장하면 기존 입사일·연번을 유지한 채 재직자로 복귀합니다.</b> 실제 퇴사 후 다시 입사한 경우에는 퇴사자 목록의 “재입사”를 사용하세요.<br>실제 근무요일이 고정이면 위 요일을 체크하세요. <b>저장할 때마다 현재 선택월의 일반 숫자 근무칸·빈칸을 이 패턴과 기본시간으로 다시 확인해 자동 맞춥니다.</b> 연차·병가·결근·법정휴가·예비군·명시적 휴무(0)는 그대로 유지합니다. 매주 요일이 바뀌는 직원은 비워두세요.<br>기본 기준: 주5일은 소정 8h×5일=40h. 주4일은 계약상 <b>소정 8h + 예정 연장 1h</b>를 4일 근무하여 <b>소정 32h + 예정연장 4h = 실근로 목표 36h</b>입니다. <b>연차 1개 시간은 주 근로시간 ÷ 5, 최대 8h</b>로 계산합니다. 따라서 주32h는 <b>6.4h 발생·6.4h 사용</b>, 주30h는 6h, 주40h는 8h입니다. 연차시간을 정수로 올림하지 않습니다. 계약상 예정 연장시간은 연차시간에 더하지 않습니다.</div>
+ <div style="margin-top:12px"><b style="font-size:12px">기본근무 채우기용 패턴 (선택사항)</b><div class="employeeWorkDayPattern">${checks}</div></div>
+ <div class="help" style="margin-top:10px"><b>직책과 업무를 구분해서 입력하세요.</b> 예: 직책=과장 / 업무=매장관리·조제·전산 등<br><b>이 화면의 모든 항목은 수기로 수정 후 저장할 수 있습니다.</b><br><b>퇴사자의 퇴사일을 비워 저장하면 기존 입사일·연번을 유지한 채 재직자로 복귀합니다.</b> 실제 퇴사 후 다시 입사한 경우에는 퇴사자 목록의 “재입사”를 사용하세요.<br>실제 근무요일이 매주 바뀌는 스케줄근무라면 위 요일은 비워두셔도 됩니다. 이 항목은 “기본근무 채우기”를 빠르게 사용할 때만 참고합니다.<br>기본 기준: 주5일은 소정 8h×5일=40h. 주4일은 계약상 <b>소정 8h + 예정 연장 1h</b>를 4일 근무하여 <b>소정 32h + 예정연장 4h = 실근로 목표 36h</b>입니다. 주4일 월연차는 비례산식 <b>32÷40×8 = 6.4h</b>이지만 법정 기준상 1시간 미만 단수는 올려 <b>7h 발생</b>으로 관리합니다. 스케줄에 <b>연</b> 입력 시 소정근로 <b>8h만 차감</b>하며, 계약상 예정 연장 1h는 연차에서 자동 차감하지 않습니다.</div>
  <div class="modalActions"><button class="btn gray" onclick="closeModal()">취소</button><button class="btn" onclick="saveEmployee(${id||'null'})">저장</button></div>`);
  $('modalBox')?.classList.add('employeeEditModal');
- $('eType').value=workType(e);if($('ePay'))$('ePay').value=e.pay_type||'monthly';if($('ePayDay'))$('ePayDay').value=payDayRule(e);if($('eIncentiveOn'))$('eIncentiveOn').value=incentiveEnabled(e)?'1':'0';
+ $('eType').value=workType(e);$('ePay').value=e.pay_type||'monthly';$('ePayDay').value=payDayRule(e);$('eIncentiveOn').value=incentiveEnabled(e)?'1':'0';
 }
 function applyLeavePreset(){
  let t=normalizeWorkTypeValue($('eType').value);
  if(t==='40'){$('eDaily').value=8;$('eLeaveWeekly').value=40;$('eLeaveMonthly').value=8;$('eLeaveDay').value=8}
- if(t==='36'){$('eDaily').value=8;$('eLeaveWeekly').value=32;$('eLeaveMonthly').value=6.4;$('eLeaveDay').value=6.4}
+ if(t==='36'){$('eDaily').value=8;$('eLeaveWeekly').value=32;$('eLeaveMonthly').value=7;$('eLeaveDay').value=8}
 }
 function applyPayPreset(){
  let p=paymentRulePreset($('ePay').value);
@@ -5958,7 +5787,6 @@ function applyPayPreset(){
 }
 async function saveEmployee(id){
  let existing=id?[...employees,...retiredEmployees].find(x=>x.id===id):null;
- let existingCond=existing?workConditionForDate(existing,isoToday()):null,existingDetailedRules=existingCond?conditionDayRules(existingCond):[];
  let returnEmployeeView=employeeView;
  let resign=$('eResign')?.value||null;
  let birthRaw=String($('eBirth')?.value||'').trim();
@@ -5969,6 +5797,7 @@ async function saveEmployee(id){
    store_id:storeId(),
    name:$('eName').value.trim(),
    resident_number:$('eResident')?.value.trim()||null,
+   bank_account:$('eBankAccount')?.value.trim()||null,
    role:$('eRole').value.trim(),
    department:$('eDept').value.trim(),
    birth_date:birthNormalized||null,
@@ -5983,28 +5812,16 @@ async function saveEmployee(id){
    default_end_time:$('eEnd').value||null,
    break_minutes:Number($('eBreak').value||0),
    work_days:[...document.querySelectorAll('.wd:checked')].map(x=>Number(x.value)),
+   pay_type:$('ePay').value,
+   salary_delay_months:Number($('eSalaryDelay').value||0),
+   salary_pay_day:$('ePayDay').value,
+   incentive_delay_months:Number($('eIncentiveDelay').value||0),
+   holiday_incentive_unit:Number($('eIncentiveUnit').value||0),
+   holiday_incentive_enabled:$('eIncentiveOn').value==='1',
    leave_weekly_hours:Number($('eLeaveWeekly').value||40),
    leave_monthly_hours:Number($('eLeaveMonthly').value||8),
    leave_day_hours:Number($('eLeaveDay').value||8)
  };
- if(isAppAdmin()){
-   obj.bank_account=$('eBankAccount')?.value.trim()||null;
-   obj.pay_type=$('ePay')?.value||'monthly';
-   obj.salary_delay_months=Number($('eSalaryDelay')?.value||0);
-   obj.salary_pay_day=$('ePayDay')?.value||'10';
-   obj.incentive_delay_months=Number($('eIncentiveDelay')?.value||0);
-   obj.holiday_incentive_unit=Number($('eIncentiveUnit')?.value||0);
-   obj.holiday_incentive_enabled=$('eIncentiveOn')?.value==='1';
- }else if(!existing){
-   // 일반 직원관리 사용자는 급여 관련 값을 보거나 입력하지 않는다. 서버에서도 같은 필드를 보호한다.
-   obj.pay_type='monthly';obj.salary_delay_months=1;obj.salary_pay_day='10';obj.incentive_delay_months=2;obj.holiday_incentive_unit=30000;obj.holiday_incentive_enabled=true;
- }
- let oldDays=normalizedWorkDays(existingCond?.work_days||existing?.work_days),newDays=normalizedWorkDays(obj.work_days);
- let patternChanged=!existing || JSON.stringify(oldDays)!==JSON.stringify(newDays)
-   || String(existingCond?.default_start_time||existing?.default_start_time||'').slice(0,5)!==String(obj.default_start_time||'').slice(0,5)
-   || String(existingCond?.default_end_time||existing?.default_end_time||'').slice(0,5)!==String(obj.default_end_time||'').slice(0,5)
-   || Number(existingCond?.break_minutes??existing?.break_minutes??0)!==Number(obj.break_minutes||0)
-   || Number(existingCond?.daily_hours??existing?.daily_hours??0)!==Number(obj.daily_hours||0);
 
  if(!obj.name||!obj.hire_date)return alert('이름과 입사일은 필수입니다.');
 
@@ -6024,8 +5841,8 @@ async function saveEmployee(id){
  }
 
  let q=id
-   ?await sb.from('employees').update(obj).eq('id',id).select('*').single()
-   :await sb.from('employees').insert(obj).select('*').single();
+   ?await sb.from('employees').update(obj).eq('id',id)
+   :await sb.from('employees').insert(obj);
 
  if(q.error)return alert('직원정보 저장 오류:\n'+q.error.message);
 
@@ -6051,23 +5868,6 @@ async function saveEmployee(id){
    if(h.error)console.warn('복귀 시 퇴사처리 이력 정리 오류',h.error.message);
  }
 
- let employeeScheduleSyncMsg='';
- let savedEmployeeId=Number(q.data?.id||id||0),selectedMonth=$('monthSelect')?.value||isoToday().slice(0,7);
- // V43: 화면 안내문 그대로 '저장 시' 매번 현재 선택월을 확인한다.
- // 이전 버전처럼 patternChanged일 때만 실행하면 이미 저장돼 있던 근무요일은 다시 저장해도 스케줄이 복구되지 않았다.
- // 상세 요일별 규칙이 있는 직원은 근무조건 이력 창의 상세규칙 동기화를 최종 기준으로 두고 여기서 기본패턴으로 덮어쓰지 않는다.
- if(savedEmployeeId&&obj.active!==false&&newDays.length&&(!existing||!existingDetailedRules.length)){
-   let sq=await sb.rpc('app_sync_employee_month_basic_schedule_v44',{p_employee_id:savedEmployeeId,p_month:selectedMonth+'-01'});
-   if(sq.error){
-     console.warn('직원 기본근무 스케줄 자동반영 오류',sq.error);
-     employeeScheduleSyncMsg=`\n\n직원정보는 저장됐지만 ${selectedMonth} 스케줄 자동반영 실패: ${sq.error.message}`;
-   }else{
-     let rs=sq.data||{};
-     employeeScheduleSyncMsg=`\n\n${rs.month||selectedMonth} 스케줄 자동반영 ${Number(rs.updated||0)}칸 · 연차/병가/결근/법정휴가/예비군/직접지정 휴무 ${Number(rs.preserved||0)}칸 유지`;
-     stampRecentAuditIp(storeId());
-   }
- }
-
  closeModal();
  await refreshAll();
 
@@ -6078,8 +5878,8 @@ async function saveEmployee(id){
  else setEmployeeView(obj.active===false?'retired':'active');
 
  alert(restoredFromRetired
-   ?`${obj.name} 직원을 재직자로 복귀했습니다.\n퇴사일은 삭제되고 기존 입사일·연번은 유지됩니다.${employeeScheduleSyncMsg}`
-   :`${obj.name} 직원정보를 저장했습니다.${employeeScheduleSyncMsg}`);
+   ?`${obj.name} 직원을 재직자로 복귀했습니다.\n퇴사일은 삭제되고 기존 입사일·연번은 유지됩니다.`
+   :`${obj.name} 직원정보를 저장했습니다.`);
 }
 
 function toggleEmployee(id,checked){
@@ -6198,9 +5998,9 @@ async function openWorkConditionHistory(employeeId,presetDate='',presetNote='',p
    <div class="field"><label>휴게(분)</label><input id="wcBreak" type="number" value="${Number(c.break_minutes||60)}"></div>
    <div class="field"><label>기본 출근</label><input id="wcStart" type="time" value="${String(c.default_start_time||'').slice(0,5)}"></div>
    <div class="field"><label>기본 퇴근</label><input id="wcEnd" type="time" value="${String(c.default_end_time||'').slice(0,5)}"></div>
-   <div class="field"><label>연차 산정 주 소정시간</label><input id="wcLeaveWeekly" type="number" step="any" value="${Number(c.leave_weekly_hours||40)}"></div>
-   <div class="field"><label>연차 1개 발생(h) · 자동</label><input id="wcLeaveMonthly" type="number" step="1" value="${Number(c.leave_monthly_hours||8)}"></div>
-   <div class="field"><label>연차 1개 사용(h) · 자동</label><input id="wcLeaveDay" type="number" step=".5" value="${Number(c.leave_day_hours||8)}"></div>
+   <div class="field"><label>연차 산정 주 소정시간</label><input id="wcLeaveWeekly" type="number" step=".5" value="${Number(c.leave_weekly_hours||40)}"></div>
+   <div class="field"><label>1년 미만 월 발생(h)</label><input id="wcLeaveMonthly" type="number" step="1" value="${Number(c.leave_monthly_hours||8)}"></div>
+   <div class="field"><label>연차 하루 사용(h)</label><input id="wcLeaveDay" type="number" step=".5" value="${Number(c.leave_day_hours||8)}"></div>
    <div class="field"><label>스케줄 편성 방식</label><select id="wcScheduleMode"><option value="manual" ${scheduleMode==='manual'?'selected':''}>직접 입력 (기본)</option><option value="auto" ${scheduleMode==='auto'?'selected':''}>고정요일 자동채우기</option></select></div>
    <div class="field" style="grid-column:span 3"><label>변경 메모</label><input id="wcNote" value="${esc(workConditionHumanNote(presetCondition?.note||presetNote||''))}" placeholder="예: 2026년 8월부터 주5일 → 주4일 변경"></div>
    <input id="wcDayRules" type="hidden" value="${esc(ruleEncoded)}">
@@ -6215,7 +6015,7 @@ async function openWorkConditionHistory(employeeId,presetDate='',presetNote='',p
 function applyWorkConditionPreset(){
  let t=normalizeWorkTypeValue($('wcType')?.value||'');
  if(t==='40'){$('wcDaily').value=8;$('wcLeaveWeekly').value=40;$('wcLeaveMonthly').value=8;$('wcLeaveDay').value=8}
- if(t==='36'){$('wcDaily').value=8;$('wcLeaveWeekly').value=32;$('wcLeaveMonthly').value=6.4;$('wcLeaveDay').value=6.4}
+ if(t==='36'){$('wcDaily').value=8;$('wcLeaveWeekly').value=32;$('wcLeaveMonthly').value=7;$('wcLeaveDay').value=8}
 }
 async function loadWorkConditionHistory(employeeId){
  let host=$('workConditionList');if(!host)return;
@@ -6590,13 +6390,9 @@ function askPayrollTargetStore(fileStoreName){
 function formatWeeklyHours(v){
  let n=Number(v||0);
  if(!Number.isFinite(n))n=0;
- return String(n)+'h';
+ return n.toFixed(1)+'h';
 }
 
-function payrollRawWeeklyDecimal(v){
- let n=Number(v||0);
- return Number.isFinite(n)?String(n):'0';
-}
 function payrollWeeklyHoursFromMemo(memo){
  let m=String(memo||'').match(/weekly_hours=([0-9.]+)/);
  return m?Number(m[1]):0;
@@ -7091,7 +6887,7 @@ function makePayrollDbRow(x,payrollMonthId,file,parsed,sourceStoragePath=''){
 
    source_file:file.name,
    // Excel 원본 총지급/실지급 값을 memo에도 남겨 DB 저장 후 검증할 수 있게 한다.
-   memo:`weekly_hours=${payrollRawWeeklyDecimal(x._weekly_hours||0)};weekly_text=${encodeURIComponent(x._weekly_hours_text||'')};pay_date=${parsed.payDate||''};period=${parsed.periodStart||''}~${parsed.periodEnd||''};gross_col=${parsed.grossCol||''};net_col=${parsed.netCol||''};source_gross=${payrollDbSafeNumber(x.gross_pay,'money')};source_net=${payrollDbSafeNumber(x.net_pay,'money')};source_storage_path=${encodeURIComponent(sourceStoragePath||'')};source_original_name=${encodeURIComponent(file?.name||'')};source_meta=${encodeURIComponent(JSON.stringify(sourceMeta))}`
+   memo:`weekly_hours=${payrollDbSafeNumber(x._weekly_hours||0,'hours')};weekly_text=${encodeURIComponent(x._weekly_hours_text||'')};pay_date=${parsed.payDate||''};period=${parsed.periodStart||''}~${parsed.periodEnd||''};gross_col=${parsed.grossCol||''};net_col=${parsed.netCol||''};source_gross=${payrollDbSafeNumber(x.gross_pay,'money')};source_net=${payrollDbSafeNumber(x.net_pay,'money')};source_storage_path=${encodeURIComponent(sourceStoragePath||'')};source_original_name=${encodeURIComponent(file?.name||'')};source_meta=${encodeURIComponent(JSON.stringify(sourceMeta))}`
  };
 }
 
@@ -8680,27 +8476,24 @@ function employeeBirthDate(e){
 function currentStore(){return stores.find(s=>s.id===storeId())||{}}
 function findEmployeeAny(id){return [...employees,...retiredEmployees].find(e=>e.id===id)}
 
-function setPrintPageOrientation(mode,margin='8mm'){
+function setPrintPageOrientation(mode){
  let old=document.getElementById('dynamicPrintPage');
  if(old)old.remove();
  let st=document.createElement('style');
  st.id='dynamicPrintPage';
- let safeMargin=['0','4mm','5mm','6mm','7mm','8mm','10mm','12mm'].includes(String(margin))?String(margin):'8mm';
  st.textContent=mode==='portrait'
-   ?`@page{size:A4 portrait;margin:${safeMargin}}`
-   :`@page{size:A4 landscape;margin:${safeMargin}}`;
+   ?'@page{size:A4 portrait;margin:8mm}'
+   :'@page{size:A4 landscape;margin:8mm}';
  document.head.appendChild(st);
 }
 window.addEventListener('afterprint',()=>{
  let st=document.getElementById('dynamicPrintPage');
  if(st)st.remove();
- document.body?.classList.remove('printingResignation','printingEmployment');
 });
 
 
-/* V38 · 직원관리 사직서 서명본 업로드: 재직/퇴사 공통 문서함 */
 const EMPLOYEE_DOC_BUCKET='employee-contracts';
-const EMPLOYEE_DOC_TYPES={work_contract:'근로계약서',salary_contract:'연봉계약서',resignation:'사직서'};
+const EMPLOYEE_DOC_TYPES={work_contract:'근로계약서',salary_contract:'연봉계약서',resignation:'사직서 PDF'};
 function employeeDocTypeLabel(t){return EMPLOYEE_DOC_TYPES[t]||t}
 function safeStoragePart(s){
  return String(s||'file').normalize('NFKD')
@@ -9526,14 +9319,13 @@ function setContractIndefiniteUi(checked){
  let c=$('contractIndefinite'),end=$('contractEndDate');if(c)c.checked=!!checked;if(end){end.disabled=!!checked;if(checked)end.value='';end.placeholder=checked?'기간의 정함 없음':'YYYYMMDD'}
 }
 async function openEmployeeDocuments(employeeId,type){
- if(type==='salary_contract'&&!isAppAdmin())return alert('연봉계약서는 관리자만 등록·조회·다운로드할 수 있습니다.');
  let e=findEmployeeAny(employeeId);if(!e)return alert('직원정보를 찾지 못했습니다.');
  let label=employeeDocTypeLabel(type),isResignation=type==='resignation',isWorkContract=type==='work_contract',isSalaryContract=type==='salary_contract';
  let vaultHelp=isResignation
-   ?'서명 완료한 사직서 PDF 원본을 서버에 보관합니다. 재직 중에도 미리 올릴 수 있고, 퇴사 처리 후에도 같은 직원 기록에 계속 남습니다.'
+   ?'작성 완료한 사직서 PDF 원본을 서버에 보관합니다. 삭제하지 않는 한 직원 기록과 함께 계속 남습니다.'
    :isSalaryContract
      ?'<b>연봉계약서는 원본 PDF 보관용</b>입니다. 연봉계약서의 적용기간은 별도로 읽거나 입력하지 않고 <b>근로계약서에 명시된 계약기간을 따릅니다.</b> 근로시간·근무요일·급여내용 OCR도 하지 않으며, 선택한 직원의 문서함에 원본만 누적 보관합니다.'
-     :'PDF 원본은 서버에 누적 보관합니다. <b>기존 표 형식 근로계약서는 지금 방식 그대로 정밀인식</b>하고, 표가 없는 문장형 계약서는 기존 표 탐지가 실패한 경우에만 별도 보조인식을 사용합니다. <b>기간의 정함이 없는 계약은 종료일 없이 정상 저장</b>하며 재계약 D-day 대상에서 제외합니다. PDF를 선택하면 계약기간뿐 아니라 <b>근무요일·출퇴근시간·휴게시간·1일/주 소정시간·비고</b>를 자동으로 읽어 확인창에 채웁니다. <b>요일별 근로시간이 다른 표도 행별로 따로 읽습니다.</b> 직원 확인은 손글씨를 읽지 않고 <b>PDF 파일명과 선택 직원명</b>을 대조합니다. 인식값은 사용자가 확인한 뒤에만 근무조건으로 적용되며, 계약서에 구체 근무요일이 없으면 임의로 월~금 등을 만들지 않습니다. <b>근무조건이 함께 바뀌면 “이 계약일부터 근무조건 변경 있음”을 체크</b>하세요.';
+     :'PDF 원본은 서버에 누적 보관합니다. <b>업로드 속도를 우선해 PDF 내장 텍스트를 먼저 즉시 읽고</b>, 스캔본일 때만 1~2회의 빠른 OCR을 사용합니다. 계약기간·근무요일·출퇴근시간·휴게시간·1일/주 소정시간을 확인창에 채우며, 부족한 값은 직접 수정할 수 있습니다. <b>정밀 OCR은 자동으로 반복 실행하지 않습니다.</b> 정말 필요한 계약서만 결과창의 “정밀 재분석”을 누르세요. 일반 재계약은 문서만 저장하며, 실제 근무조건이 바뀐 드문 경우에는 업로드 후 직원관리의 근무조건 이력에서 변경 내용을 등록하면 됩니다.';
  let periodFields=isWorkContract?`<div class="field" style="margin:0"><label>계약 시작일</label><input id="contractStartDate" type="text" inputmode="numeric" maxlength="8" placeholder="YYYYMMDD" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,8)"></div>
  <div class="field" style="margin:0"><label>계약 종료일</label><input id="contractEndDate" type="text" inputmode="numeric" maxlength="8" placeholder="YYYYMMDD" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,8)"></div>
  <label class="contractWorkChange" style="display:flex;align-items:center;gap:7px;padding:9px 10px;border:1px solid #d9e2f2;border-radius:10px;background:#f8fbff;font-size:12px;font-weight:800"><input id="contractIndefinite" type="checkbox" onchange="setContractIndefiniteUi(this.checked)">기간의 정함 없음 (무기계약)</label>`:'';
@@ -9545,9 +9337,9 @@ async function openEmployeeDocuments(employeeId,type){
  <div class="field" style="margin:0"><label>${isResignation?'작성일':isSalaryContract?'연봉계약서 작성일':'문서 작성일'}</label><input id="contractDocDate" type="text" inputmode="numeric" maxlength="8" placeholder="YYYYMMDD" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,8)"></div>
  ${periodFields}
  <div class="field" style="margin:0"><label>표시명</label><input id="contractDocTitle" placeholder="예: 2026년 ${label}"></div>
- ${type==='work_contract'?`<label class="contractWorkChange" style="display:flex;align-items:center;gap:7px;padding:9px 10px;border:1px solid #d9e2f2;border-radius:10px;background:#f8fbff;font-size:12px;font-weight:800"><input id="contractWorkConditionChange" type="checkbox">이 계약일부터 근무조건 변경 있음</label>`:''}
- <div class="field" style="margin:0"><label>${isResignation?'서명 완료 PDF':'PDF 원본'}</label><input id="contractDocFile" type="file" accept="application/pdf,.pdf" onchange="fillContractMetaFromFile(this.files[0],'${type}',${employeeId})"><div id="contractAutoReadStatus" class="contractAutoReadStatus"></div></div>
- <button class="btn" onclick="uploadEmployeeDocument(${employeeId},'${type}')">${isResignation?'서명본 저장':'업로드'}</button>
+ 
+ <div class="field" style="margin:0"><label>PDF 원본</label><input id="contractDocFile" type="file" accept="application/pdf,.pdf" onchange="fillContractMetaFromFile(this.files[0],'${type}',${employeeId})"><div id="contractAutoReadStatus" class="contractAutoReadStatus"></div></div>
+ <button class="btn" onclick="uploadEmployeeDocument(${employeeId},'${type}')">업로드</button>
  ${type==='work_contract'?'<div id="contractTermsReview" class="contractTermsReview"></div>':''}</div></div>
  <div id="contractDocList" class="contractVaultList"><div class="contractEmpty">불러오는 중...</div></div>`);
  await loadEmployeeDocuments(employeeId,type);
@@ -9577,7 +9369,7 @@ async function fillContractMetaFromFile(file,type,employeeId=null){
    }else if($('contractStartDate')&&!$('contractStartDate').value&&d)$('contractStartDate').value=d.replace(/-/g,'');
    if(type==='work_contract'){
      showContractTermsReview(terms||{},nameCheck);
-     if($('contractWorkConditionChange')&&terms)$('contractWorkConditionChange').checked=true;
+     /* V32: 일반 계약 업로드는 근무조건 변경으로 자동 처리하지 않음 */
    }
    let parts=[];
    if(nameCheck?.status==='matched')parts.push(`파일명 일치 ${nameCheck.expected}`);
@@ -9596,7 +9388,6 @@ async function fillContractMetaFromFile(file,type,employeeId=null){
  }
 }
 async function loadEmployeeDocuments(employeeId,type){
- if(type==='salary_contract'&&!isAppAdmin())return;
  let host=$('contractDocList');if(!host)return;
  let q=await sb.from('employee_documents').select('*').eq('employee_id',employeeId).eq('document_type',type)
  .order('document_date',{ascending:false,nullsFirst:false}).order('created_at',{ascending:false});
@@ -9611,8 +9402,7 @@ async function loadEmployeeDocuments(employeeId,type){
  }).join(''):`<div class="contractEmpty">저장된 ${employeeDocTypeLabel(type)}가 없습니다.</div>`;
 }
 async function uploadEmployeeDocument(employeeId,type){
- if(type==='salary_contract'&&!isAppAdmin())return alert('연봉계약서는 관리자만 등록할 수 있습니다.');
- let file=$('contractDocFile')?.files?.[0];if(!file)return alert(type==='resignation'?'서명받은 사직서 PDF를 선택하세요.':'업로드할 PDF를 선택하세요.');
+ let file=$('contractDocFile')?.files?.[0];if(!file)return alert('업로드할 PDF를 선택하세요.');
  if(type==='work_contract'){
    let chk=pendingContractExtraction?.nameCheck;
    if(pendingContractExtraction?.employee_id&&Number(pendingContractExtraction.employee_id)!==Number(employeeId))return alert('현재 선택한 직원과 계약서 자동확인 대상이 다릅니다. PDF를 다시 선택해 주세요.');
@@ -9622,7 +9412,7 @@ async function uploadEmployeeDocument(employeeId,type){
  }
  let registerWorkCondition=type==='work_contract'&&$('contractWorkConditionChange')?.checked===true;
  let extractedTerms=type==='work_contract'?collectContractTermsReview():null;
- if(!/\.pdf$/i.test(file.name))return alert(type==='resignation'?'서명본은 PDF 파일로 올려주세요.':'PDF 파일만 업로드할 수 있습니다.');
+ if(!/\.pdf$/i.test(file.name))return alert('PDF 파일만 업로드할 수 있습니다.');
  let dateRaw=$('contractDocDate')?.value||'';
  let date=dateRaw?normalizeCompactDateInput(dateRaw):(guessContractDateFromFilename(file.name)||isoToday());
  if(dateRaw&&!date)return alert('문서 작성일은 8자리로 입력하세요.\n예: 20260815');
@@ -9643,7 +9433,7 @@ async function uploadEmployeeDocument(employeeId,type){
  let title=$('contractDocTitle')?.value?.trim()||`${date.slice(0,4)}년 ${employeeDocTypeLabel(type)}`;
  let path=contractStoragePath(employeeId,type,file);
  let up=await sb.storage.from(EMPLOYEE_DOC_BUCKET).upload(path,file,{contentType:'application/pdf',upsert:false});
- if(up.error)return alert((type==='resignation'?'사직서':'계약서')+' 파일 업로드 오류:\n'+up.error.message);
+ if(up.error)return alert('계약서 파일 업로드 오류:\n'+up.error.message);
  let obj={store_id:storeId(),employee_id:employeeId,document_type:type,title,document_date:date||null,file_name:file.name,storage_path:path};
  if(type==='work_contract'){obj.contract_start_date=contractStart;obj.contract_end_date=contractIndefinite?null:contractEnd;if(contractIndefinite)obj.contract_is_indefinite=true}
  let ins=await sb.from('employee_documents').insert(obj);
@@ -9702,7 +9492,6 @@ async function downloadEmployeeDocument(documentId){
  let q=await sb.from('employee_documents').select('*').eq('id',documentId).single();
  if(q.error)return alert(q.error.message);
  let d=q.data||{};
- if(d.document_type==='salary_contract'&&!isAppAdmin())return alert('연봉계약서는 관리자만 다운로드할 수 있습니다.');
  const originalName=String(d.file_name||'계약서.pdf');
  try{
    // Content-Disposition의 한글 파일명 인코딩에 맡기지 않고,
@@ -9736,7 +9525,6 @@ async function downloadEmployeeDocument(documentId){
  }
 }
 async function deleteEmployeeDocument(documentId,employeeId,type){
- if(type==='salary_contract'&&!isAppAdmin())return alert('연봉계약서는 관리자만 삭제할 수 있습니다.');
  let q=await sb.from('employee_documents').select('*').eq('id',documentId).single();if(q.error)return alert(q.error.message);
  let d=q.data;if(!confirm(`${d.title||d.file_name}\n\n삭제할까요?`))return;
  let rm=await sb.storage.from(EMPLOYEE_DOC_BUCKET).remove([d.storage_path]);if(rm.error)return alert(rm.error.message);
@@ -9747,15 +9535,13 @@ async function deleteEmployeeDocument(documentId,employeeId,type){
 }
 
 function printEmploymentCertificate(id){
+ setPrintPageOrientation('portrait');
  let e=findEmployeeAny(id),s=currentStore();if(!e)return;
  let purpose=prompt('발급용도를 입력하세요. 비워두면 출력 후 수기로 작성할 수 있습니다.','');
  if(purpose===null)return;
- setPrintPageOrientation('portrait','6mm');
- document.body.classList.remove('printingResignation');
- document.body.classList.add('printingEmployment');
  let today=isoToday();
  const v=x=>esc(x||'');
- $('printArea').innerHTML=`<div class="docPaper docEmploymentPaper">
+ $('printArea').innerHTML=`<div class="docPaper">
    <div class="docTitle">재 직 증 명 서</div>
 
    <div class="docSection">
@@ -9795,19 +9581,17 @@ function printEmploymentCertificate(id){
    <div class="docRepresentative">대표자&nbsp;&nbsp;&nbsp; ${v(s.representative_name)} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (인)</div>
    <div class="docCompanyName">${v(s.name)}</div>
  </div>`;
- requestAnimationFrame(()=>requestAnimationFrame(()=>window.print()));
+ window.print();
 }
 function printResignation(id){
+ setPrintPageOrientation('portrait');
  let e=findEmployeeAny(id),s=currentStore();if(!e)return;
- setPrintPageOrientation('portrait','6mm');
- document.body.classList.remove('printingEmployment');
- document.body.classList.add('printingResignation');
  const v=x=>esc(x||'');
  let last=e.resign_date||'';
  let lastText=last
    ?`<span class="docResignLastDate">${fmtDateKo(last)}</span>`
    :`<span class="docResignLastDate"><span class="docUnderline"></span>년 <span class="docUnderline" style="min-width:10mm"></span>월 <span class="docUnderline" style="min-width:10mm"></span>일</span>`;
- $('printArea').innerHTML=`<div class="docPaper docResignationPaper">
+ $('printArea').innerHTML=`<div class="docPaper">
    <div class="docTitle">사 직 서</div>
 
    <div class="docSection">
@@ -9834,11 +9618,9 @@ function printResignation(id){
      <div class="docCompanyName">${v(s.name)}</div>
    </div>
  </div>`;
- // 레이아웃이 확정된 뒤 인쇄를 열어 Chrome의 빈 2페이지 생성을 방지한다.
- requestAnimationFrame(()=>requestAnimationFrame(()=>window.print()));
+ window.print();
 }
 function printScheduleNow(employeeIds=null){
- document.body.classList.remove('printingResignation','printingEmployment');
  setPrintPageOrientation('landscape');
  let r=monthRange(),st=stores.find(s=>s.id===storeId()),allowed=employeeIds?new Set(employeeIds.map(Number)):null,list=monthlyScheduleEmployees(r.m).filter(e=>!allowed||allowed.has(Number(e.id)));
  let h=`<div class="printHead"><div><h1>${esc(st?.name||'')} 월간 근무표</h1><div class="meta">${r.y}년 ${r.mo}월</div></div><div class="meta">출력일 ${new Date().toLocaleDateString('ko-KR')}</div></div>
@@ -10068,7 +9850,7 @@ async function syncCurrentMonthScheduleFromRulesV82(employeeId,savedConditionId)
    if(code==='0'||status==='off'){preserved++;continue}
    let worked=hoursBetween(rule.start,rule.end,Number(rule.break_minutes||0));if(!(worked>0))worked=Number(rule.daily_hours||0);
    let base=prescribedDayHoursV15(e,date,old)||Number(rule.daily_hours||cond.daily_hours||worked||0);if(!(worked>0)||!(base>0))continue;
-   rows.push({employee_id:employeeId,work_date:date,work_code:String(Math.round(worked*100)/100).replace(/\.0+$/,''),scheduled_hours:Math.min(worked,base),worked_hours:worked,overtime_hours:Math.max(0,worked-base),start_time:rule.start||null,end_time:rule.end||null,break_minutes:Number(rule.break_minutes||0),status:'work',memo:'[[AUTO_EMP_PATTERN]]'});
+   rows.push({employee_id:employeeId,work_date:date,work_code:String(Math.round(worked*100)/100).replace(/\.0+$/,''),scheduled_hours:Math.min(worked,base),worked_hours:worked,overtime_hours:Math.max(0,worked-base),start_time:rule.start||null,end_time:rule.end||null,break_minutes:Number(rule.break_minutes||0),status:'work'});
  }
  if(rows.length){let up=await sb.from('schedules').upsert(rows,{onConflict:'employee_id,work_date'});if(up.error)throw up.error;stampRecentAuditIp(storeId());for(const r of rows){let idx=schedules.findIndex(x=>Number(x.employee_id)===Number(r.employee_id)&&x.work_date===r.work_date);if(idx>=0)schedules[idx]={...schedules[idx],...r};else schedules.push({...r})}}
  return {updated:rows.length,preserved,month:ym};
@@ -10091,9 +9873,9 @@ async function openWorkConditionHistory(employeeId,presetDate='',presetNote='',p
    <div class="field"><label>대표 휴게(분)</label><input id="wcBreak" type="number" value="${Number(c.break_minutes||0)}"></div>
    <div class="field"><label>대표 출근</label><input id="wcStart" type="time" value="${String(c.default_start_time||'').slice(0,5)}"></div>
    <div class="field"><label>대표 퇴근</label><input id="wcEnd" type="time" value="${String(c.default_end_time||'').slice(0,5)}"></div>
-   <div class="field"><label>연차 산정 주 소정시간</label><input id="wcLeaveWeekly" type="number" step="any" value="${Number(c.leave_weekly_hours||0)}"></div>
-   <div class="field"><label>연차 1개 발생(h) · 자동</label><input id="wcLeaveMonthly" type="number" step="1" value="${Number(c.leave_monthly_hours||0)}"></div>
-   <div class="field"><label>연차 1개 사용(h) · 자동</label><input id="wcLeaveDay" type="number" step=".5" value="${Number(c.leave_day_hours||0)}"></div>
+   <div class="field"><label>연차 산정 주 소정시간</label><input id="wcLeaveWeekly" type="number" step=".5" value="${Number(c.leave_weekly_hours||0)}"></div>
+   <div class="field"><label>1년 미만 월 발생(h)</label><input id="wcLeaveMonthly" type="number" step="1" value="${Number(c.leave_monthly_hours||0)}"></div>
+   <div class="field"><label>연차 하루 사용(h)</label><input id="wcLeaveDay" type="number" step=".5" value="${Number(c.leave_day_hours||0)}"></div>
    <div class="field"><label>스케줄 편성 방식</label><select id="wcScheduleMode"><option value="manual" ${scheduleMode==='manual'?'selected':''}>직접 입력 (기본)</option><option value="auto" ${scheduleMode==='auto'?'selected':''}>고정요일 자동채우기</option></select></div>
    <div class="field" style="grid-column:span 3"><label>변경 메모</label><input id="wcNote" value="${esc(workConditionHumanNote(presetCondition?.note||presetNote||''))}" placeholder="예: 계약서 확인 후 수기 최종확정"></div>
   </div>
@@ -10767,9 +10549,9 @@ async function commerceV21StoreStructure(wid,prep){let sid=storeId();for(let si=
  if(prep.products.length){let pp=prep.products.map(product_name=>({store_id:sid,product_name,active:true}));for(let i=0;i<pp.length;i+=300){let q=await sb.from('commerce_products').upsert(pp.slice(i,i+300),{onConflict:'store_id,product_name'});if(q.error)throw q.error}}
  if(prep.excelSales.length){for(let i=0;i<prep.excelSales.length;i+=300){let q=await sb.from('commerce_excel_sales').insert(prep.excelSales.slice(i,i+300).map(x=>({store_id:sid,workbook_id:wid,...x})));if(q.error)throw q.error}}
 }
-function commerceWorkbookStoragePath(sid,year,file){/* V35: 원본 파일명은 DB file_name에만 보존하고 Storage key에는 절대 넣지 않는다. */let ext=String(file?.name||'').split('.').pop().toLowerCase().replace(/[^a-z0-9]/g,'');if(!['xlsx','xlsm','xls'].includes(ext))ext='xlsm';let safeSid=String(Number(sid)||sid).replace(/[^0-9]/g,'')||'3',safeYear=String(Number(year)||year).replace(/[^0-9]/g,'')||'2026',token=Math.random().toString(36).slice(2,9).replace(/[^a-z0-9]/g,'');return `${safeSid}/year_${safeYear}/workbook_${Date.now()}_${token}.${ext}`}
-async function commerceV21RegisterOne(file,index,total){let st=$('commerceWorkbookState'),prep=await commerceV21Prepare(file),sid=storeId(),year=prep.sourceYear;st.textContent=`V35 · ${index}/${total} · ${year}년 분석완료`;let same=await sb.from('commerce_workbooks').select('id,file_name,version_no').eq('store_id',sid).eq('source_year',year).eq('active',true).eq('file_sha256',prep.hash).limit(1).maybeSingle();if(same.error)throw same.error;if(same.data)return {year,skipped:true,file:file.name,version:same.data.version_no,reason:'동일 파일'};let path=commerceWorkbookStoragePath(sid,year,file),wid=null,committed=false;if(!/^[0-9]+\/year_[0-9]+\/workbook_[0-9]+_[a-z0-9]+\.(xlsx|xlsm|xls)$/.test(path))throw new Error('V35 Storage 경로 생성 오류: '+path);if(/[^\x00-\x7F]/.test(path))throw new Error('V35 Storage 경로에 비ASCII 문자가 포함되었습니다: '+path);try{st.textContent=`V35 · ${index}/${total} · ${year}년 원본 저장 중`;let up=await sb.storage.from('commerce-workbooks').upload(path,new Blob([prep.buf]),{contentType:file.type||'application/octet-stream',upsert:false});if(up.error)throw up.error;let iq=await sb.from('commerce_workbooks').insert({store_id:sid,file_name:file.name,file_size:file.size||prep.buf.byteLength,file_sha256:prep.hash,storage_path:path,sheet_names:prep.xw.SheetNames,uploaded_by:currentSessionUser?.id||null,active:false,source_year:year,coverage_start:prep.coverageStart,coverage_end:prep.coverageEnd,imported_row_count:prep.rows.length}).select('id').single();if(iq.error)throw iq.error;wid=iq.data.id;st.textContent=`${index}/${total} · ${year}년 시트 저장 중`;await commerceV21StoreStructure(wid,prep);st.textContent=`${index}/${total} · ${year}년 최신자료 동기화 중`;let rq=await sb.rpc('commerce_sync_workbook_snapshot',{p_workbook_id:wid,p_store_id:sid,p_source_year:year,p_rows:prep.rows,p_coverage_start:prep.coverageStart,p_coverage_end:prep.coverageEnd});if(rq.error)throw rq.error;committed=true;return {year,file:file.name,...(rq.data||{}),skipped:false}}catch(e){if(!committed){try{if(wid)await sb.from('commerce_workbooks').delete().eq('id',wid).eq('store_id',sid)}catch(_){ }try{await sb.storage.from('commerce-workbooks').remove([path])}catch(_){ }}throw e}}
-async function registerCommerceWorkbooks(files){files=(files||[]).filter(Boolean);if(!files.length||!isCommerceStore()||!requireModuleEdit('commerce'))return;if(!confirm(`${files.length}개 Excel을 등록/최신화합니다.\n\n• 연도가 다르면 모두 함께 유지\n• 같은 연도면 최신 업로드가 이전 Excel 원본자료를 대체\n• 동일 파일은 자동 건너뜀\n• 홈페이지 직접입력·카페24 자료는 유지\n\n계속할까요?`))return;let st=$('commerceWorkbookState');st.className='saveState saving';let results=[],errors=[];files=[...files].sort((a,b)=>(a.lastModified||0)-(b.lastModified||0));for(let i=0;i<files.length;i++){try{results.push(await commerceV21RegisterOne(files[i],i+1,files.length))}catch(e){console.error(e);errors.push({file:files[i].name,msg:e?.message||String(e)})}}await loadCommerceWorkbookInfo();try{await loadCommerceDashboard()}catch(_){ }if(commerceCurrentSheet){try{await commerceV10LoadSheet(commerceCurrentSheet)}catch(_){ }}let ok=results.filter(x=>!x.skipped),skip=results.filter(x=>x.skipped);st.className=errors.length?'saveState error':'saveState saved';st.textContent=errors.length?`V35 · 완료 ${ok.length} · 오류 ${errors.length}`:`V35 · 등록완료 ${ok.length} · 동일파일 ${skip.length}`;let lines=[];ok.forEach(x=>lines.push(`${x.year}년 v${x.version_no||x.version||'?'} · ${x.new_source_rows||0}건 · ${x.coverage_start||''}~${x.coverage_end||''}${Number(x.absorbed_duplicate_rows||0)?` · 중복흡수 ${x.absorbed_duplicate_rows}건`:''}`));skip.forEach(x=>lines.push(`${x.year}년 · 동일 파일 건너뜀`));errors.forEach(x=>lines.push(`오류 · ${x.file}: ${x.msg}`));alert(`V35 Excel 등록/최신화 결과\n\n${lines.join('\n')}`)}
+async function commerceV21RegisterOne(file,index,total){let st=$('commerceWorkbookState'),prep=await commerceV21Prepare(file),sid=storeId(),year=prep.sourceYear;st.textContent=`${index}/${total} · ${year}년 분석완료`;let same=await sb.from('commerce_workbooks').select('id,file_name,version_no').eq('store_id',sid).eq('source_year',year).eq('active',true).eq('file_sha256',prep.hash).limit(1).maybeSingle();if(same.error)throw same.error;if(same.data)return {year,skipped:true,file:file.name,version:same.data.version_no,reason:'동일 파일'};let safe=String(file.name).replace(/[^0-9A-Za-z가-힣._-]+/g,'_'),path=`${sid}/year_${year}/workbook_${Date.now()}_${Math.random().toString(36).slice(2,7)}_${safe}`,wid=null,committed=false;try{st.textContent=`${index}/${total} · ${year}년 원본 저장 중`;let up=await sb.storage.from('commerce-workbooks').upload(path,new Blob([prep.buf]),{contentType:file.type||'application/octet-stream',upsert:false});if(up.error)throw up.error;let iq=await sb.from('commerce_workbooks').insert({store_id:sid,file_name:file.name,file_size:file.size||prep.buf.byteLength,file_sha256:prep.hash,storage_path:path,sheet_names:prep.xw.SheetNames,uploaded_by:currentSessionUser?.id||null,active:false,source_year:year,coverage_start:prep.coverageStart,coverage_end:prep.coverageEnd,imported_row_count:prep.rows.length}).select('id').single();if(iq.error)throw iq.error;wid=iq.data.id;st.textContent=`${index}/${total} · ${year}년 시트 저장 중`;await commerceV21StoreStructure(wid,prep);st.textContent=`${index}/${total} · ${year}년 최신자료 동기화 중`;let rq=await sb.rpc('commerce_sync_workbook_snapshot',{p_workbook_id:wid,p_store_id:sid,p_source_year:year,p_rows:prep.rows,p_coverage_start:prep.coverageStart,p_coverage_end:prep.coverageEnd});if(rq.error)throw rq.error;committed=true;return {year,file:file.name,...(rq.data||{}),skipped:false}}catch(e){if(!committed){try{if(wid)await sb.from('commerce_workbooks').delete().eq('id',wid).eq('store_id',sid)}catch(_){ }try{await sb.storage.from('commerce-workbooks').remove([path])}catch(_){ }}throw e}}
+async function registerCommerceWorkbooks(files){files=(files||[]).filter(Boolean);if(!files.length||!isCommerceStore()||!requireModuleEdit('commerce'))return;if(!confirm(`${files.length}개 Excel을 등록/최신화합니다.\n\n• 연도가 다르면 모두 함께 유지\n• 같은 연도면 최신 업로드가 이전 Excel 원본자료를 대체\n• 동일 파일은 자동 건너뜀\n• 홈페이지 직접입력·카페24 자료는 유지\n\n계속할까요?`))return;let st=$('commerceWorkbookState');st.className='saveState saving';let results=[],errors=[];files=[...files].sort((a,b)=>(a.lastModified||0)-(b.lastModified||0));for(let i=0;i<files.length;i++){try{results.push(await commerceV21RegisterOne(files[i],i+1,files.length))}catch(e){console.error(e);errors.push({file:files[i].name,msg:e?.message||String(e)})}}await loadCommerceWorkbookInfo();try{await loadCommerceDashboard()}catch(_){ }if(commerceCurrentSheet){try{await commerceV10LoadSheet(commerceCurrentSheet)}catch(_){ }}let ok=results.filter(x=>!x.skipped),skip=results.filter(x=>x.skipped);st.className=errors.length?'saveState error':'saveState saved';st.textContent=errors.length?`완료 ${ok.length} · 오류 ${errors.length}`:`등록완료 ${ok.length} · 동일파일 ${skip.length}`;let lines=[];ok.forEach(x=>lines.push(`${x.year}년 v${x.version_no||x.version||'?'} · ${x.new_source_rows||0}건 · ${x.coverage_start||''}~${x.coverage_end||''}${Number(x.absorbed_duplicate_rows||0)?` · 중복흡수 ${x.absorbed_duplicate_rows}건`:''}`));skip.forEach(x=>lines.push(`${x.year}년 · 동일 파일 건너뜀`));errors.forEach(x=>lines.push(`오류 · ${x.file}: ${x.msg}`));alert(`Excel 등록/최신화 결과\n\n${lines.join('\n')}`)}
+registerCommerceWorkbook=async function(file){return registerCommerceWorkbooks(file?[file]:[])};
 loadActiveCommerceWorkbook=async function(year=null){let y=Number(year||$('commerceYearFilter')?.value||0),q=sb.from('commerce_workbooks').select('*').eq('store_id',storeId()).eq('active',true);if(y>=2000)q=q.eq('source_year',y);q=q.order('source_year',{ascending:false}).order('uploaded_at',{ascending:false}).limit(1);let r=await q;if(r.error)throw r.error;return r.data?.[0]||null};
 loadCommerceWorkbookInfo=async function(){try{let q=await sb.from('commerce_workbooks').select('id,file_name,file_size,file_sha256,sheet_names,uploaded_at,active,source_year,version_no,coverage_start,coverage_end,imported_row_count,supersedes_workbook_id').eq('store_id',storeId()).order('source_year',{ascending:false}).order('version_no',{ascending:false}).order('uploaded_at',{ascending:false});if(q.error)throw q.error;let all=q.data||[],current=all.filter(x=>x.active&&x.source_year),box=$('commerceWorkbookInfo');if(!current.length){box.innerHTML='<div><b>등록된 연도별 Excel 없음</b><div class="help">2025·2026·2027 파일을 여러 개 선택해 등록하세요.</div></div>';$('commerceWorkbookName').textContent='미등록';return}let hist=all.length-current.length;box.innerHTML=current.map(w=>`<div><span class="help">${w.source_year}년 현재 원본 · v${w.version_no||1}</span><br><b>${esc(w.file_name)}</b><div class="help" style="margin-top:5px">${esc(w.coverage_start||'-')} ~ ${esc(w.coverage_end||'-')} · ${Number(w.imported_row_count||0).toLocaleString()}건<br>${fmtDateTime(w.uploaded_at)} · ${Math.round(Number(w.file_size||0)/1024)} KB</div></div>`).join('')+(hist?`<div><span class="help">과거 버전 보관</span><br><b>${hist}개</b><div class="help" style="margin-top:5px">같은 연도 재업로드 전 원본은 기록으로 보관됩니다.</div></div>`:'');$('commerceWorkbookName').textContent=current.map(x=>x.source_year).sort((a,b)=>a-b).join(' · ')+'년'}catch(e){console.warn(e)}};
 
@@ -10890,16 +10672,16 @@ function v23LegalMonthlyLeaveHours(weekly){
 function v23ConditionWeeklyHours(c){
  let explicit=Number(c?.leave_weekly_hours||0);
  // 마지막으로 저장한 주 소정시간이 있으면 이것이 최종 기준이다.
- if(explicit>0)return explicit;
+ if(explicit>0)return Math.round(explicit*100)/100;
  let rules=conditionDayRules(c),byDay=new Map();
  rules.forEach(r=>(r.days||[]).forEach(d=>{let h=Number(r.daily_hours||0);if(h>0)byDay.set(Number(d),h)}));
  let byRules=[...byDay.values()].reduce((a,b)=>a+b,0);
- if(byRules>0)return byRules;
+ if(byRules>0)return Math.round(byRules*100)/100;
  let days=normalizedWorkDays(c?.work_days),daily=Number(c?.daily_hours||0);
- if(days.length&&daily>0)return days.length*daily;
+ if(days.length&&daily>0)return Math.round(days.length*daily*100)/100;
  let type=normalizeWorkTypeValue(c?.work_type);
- if(type==='40'&&daily>0)return Math.min(5*daily,40);
- if(type==='36'&&daily>0)return 4*daily;
+ if(type==='40'&&daily>0)return Math.round(Math.min(5*daily,40)*100)/100;
+ if(type==='36'&&daily>0)return Math.round(4*daily*100)/100;
  return 0;
 }
 // 기존 함수가 work_days/DAY_RULES를 leave_weekly_hours보다 먼저 보던 부분 제거.
@@ -11186,7 +10968,7 @@ function v24NormalizeWorkConditionEditor(){
  let type=normalizeWorkTypeValue($('wcType')?.value||''),daily=Number($('wcDaily')?.value||0),weekly=Number($('wcLeaveWeekly')?.value||0),note=$('wcNote')?.value||'';
  let probe={work_type:type,daily_hours:daily,leave_weekly_hours:weekly,note};
  if(type==='36'&&v24LooksStandard36(probe)){
-   if($('wcDaily'))$('wcDaily').value='8';if($('wcLeaveWeekly'))$('wcLeaveWeekly').value='32';if($('wcLeaveMonthly'))$('wcLeaveMonthly').value='6.4';if($('wcLeaveDay'))$('wcLeaveDay').value='6.4';
+   if($('wcDaily'))$('wcDaily').value='8';if($('wcLeaveWeekly'))$('wcLeaveWeekly').value='32';if($('wcLeaveMonthly'))$('wcLeaveMonthly').value='7';if($('wcLeaveDay'))$('wcLeaveDay').value='8';
    if($('wcNote')&&!v24ContractNoteSaysOneHourOT(note))$('wcNote').value=(note?note+' · ':'')+'1일 기본 8시간 + 연장 1시간';
    document.querySelectorAll('#wcRuleEditorBody tr[data-day]').forEach(tr=>{if(!tr.querySelector('.wcRuleEnabled')?.checked)return;let d=tr.querySelector('.wcRuleDaily'),v=Number(d?.value||0);if(d&&v>=8.5&&v<=9.5)d.value='8'});
  }
@@ -11200,7 +10982,7 @@ const v24OriginalOpenWorkConditionHistory=openWorkConditionHistory;
 openWorkConditionHistory=async function(employeeId,presetDate='',presetNote='',presetCondition=null,editConditionId=null){
  let p=presetCondition?v24NormalizeContractTerms({...presetCondition,weekly_hours:presetCondition.leave_weekly_hours??presetCondition.weekly_hours}):null;
  if(p&&p.weekly_hours!=null){p.leave_weekly_hours=Number(p.weekly_hours||0);delete p.weekly_hours}
- if(p&&normalizeWorkTypeValue(p.work_type)==='36'&&v24LooksStandard36(p)){p.daily_hours=8;p.leave_weekly_hours=32;p.leave_monthly_hours=6.4;p.leave_day_hours=6.4}
+ if(p&&normalizeWorkTypeValue(p.work_type)==='36'&&v24LooksStandard36(p)){p.daily_hours=8;p.leave_weekly_hours=32;p.leave_monthly_hours=7;p.leave_day_hours=8}
  return v24OriginalOpenWorkConditionHistory(employeeId,presetDate,presetNote,p,editConditionId);
 };
 
@@ -11690,11 +11472,11 @@ function v31RuleWeeklyHours(c){
    let h=Number(r.daily_hours||0);
    if(h>0)byDay.set(Number(d),h);
  }));
- return [...byDay.values()].reduce((a,b)=>a+b,0);
+ return Math.round([...byDay.values()].reduce((a,b)=>a+b,0)*100)/100;
 }
 function v31SimplePatternWeeklyHours(c){
  let days=normalizedWorkDays(c?.work_days),daily=Number(c?.daily_hours||0);
- return days.length&&daily>0?days.length*daily:0;
+ return days.length&&daily>0?Math.round(days.length*daily*100)/100:0;
 }
 function v31ResolvedWeeklyFromCondition(c){
  if(!c)return 0;
@@ -11708,20 +11490,20 @@ function v31ResolvedWeeklyFromCondition(c){
  if(rules>0)return Math.min(40,rules);
 
  // 날짜별 근무조건 이력이 있으면 저장된 주 소정시간을 최종값으로 신뢰한다.
- if(history&&explicit>0)return Math.min(40,explicit);
+ if(history&&explicit>0)return Math.min(40,Math.round(explicit*100)/100);
 
  // 표준 근무형태는 명시 주 소정시간이 우선.
- if((type==='40'||type==='36')&&explicit>0)return Math.min(40,explicit);
+ if((type==='40'||type==='36')&&explicit>0)return Math.min(40,Math.round(explicit*100)/100);
 
  // 근무조건 이력이 없는 custom에서 40h 기본값/40h 초과값이
  // 실제 등록요일×소정시간과 충돌하면 구조화된 등록패턴을 사용한다.
  if(type==='custom'&&pattern>0){
    if(explicit<=0)return Math.min(40,pattern);
    if(explicit>40 || Math.abs(explicit-40)<0.01)return Math.min(40,pattern);
-   return Math.min(40,explicit);
+   return Math.min(40,Math.round(explicit*100)/100);
  }
 
- if(explicit>0)return Math.min(40,explicit);
+ if(explicit>0)return Math.min(40,Math.round(explicit*100)/100);
  if(pattern>0)return Math.min(40,pattern);
  return 0;
 }
@@ -11837,647 +11619,161 @@ function v31EmployeeLeaveBasisCell(e,date=isoToday()){
  return `${top}<br><span class="help">월 +${hour2(b.monthly)}h / 1일 -${b.use}</span><br><span class="help">${esc(b.source)}</span>${warn}`;
 }
 
-</script>\n
-<script id="commerceV33WorkbookUploadFix">
-/* ===== V33 · 기준 Excel 업로드 Storage 경로 수정 =====
-   Supabase Storage object key에는 사용자 한글 파일명을 넣지 않는다.
-   원래 파일명은 commerce_workbooks.file_name에 그대로 보존하고, Storage path는 ASCII 전용으로 생성한다.
-   같은 연도 재업로드의 DB snapshot 교체/카페24 보존 규칙은 V21/V32 로직을 그대로 사용한다.
-===== */
-window.COMMERCE_WORKBOOK_UPLOAD_FIX_VERSION='V33-ascii-storage-key';
-</script>
-<script id="commerceV32Cafe24Safety">
-/* ===== V32 · 88커머스 카페24 1~2파일 안전비교 + 명확한 취소주문 자동제외 =====
-   핵심 원칙
-   1) 업로드 파일에 없는 기존 주문은 절대 취소/삭제하지 않는다.
-   2) 파일 안에서 명확히 취소된 주문만 기존 매출을 soft delete 한다.
-   3) 두 파일 값이 충돌하면 자동수정하지 않고 review 처리한다.
-   4) 사용자가 수동수정한 매출행은 자동취소하지 않고 review 처리한다.
-   5) 원본 Excel 재등록 뒤에도 commerce_sales의 cancelled 이력을 이용해 취소행을 다시 제외한다.
+
+
+/* ===== V32 · 근로계약서 빠른 업로드 =====
+   기본 원칙
+   1) 텍스트 PDF: PDF 내장 텍스트만 읽고 즉시 결과 표시. OCR 실행 안 함.
+   2) 스캔 PDF: 첫 페이지를 중간 해상도로 렌더링해 kor+eng 워커로 최대 2회만 OCR.
+   3) 기존 수십 회의 셀/행별 정밀 OCR은 자동으로 실행하지 않음.
+   4) 인식이 부족한 특수 계약서만 사용자가 '정밀 재분석'을 눌러 기존 정밀 로직 실행.
+   5) 일반 계약 업로드는 근무조건 변경으로 자동 등록하지 않음.
 */
-(function(){
- const input=$('commerceCafe24File');
- if(input){
-  input.multiple=true;
-  input.setAttribute('multiple','');
-  input.onchange=function(){previewCommerceCafe24Files(this.files);this.value=''};
- }
- const chooseBtn=input?.parentElement?.querySelector('button.btn');
- if(chooseBtn)chooseBtn.textContent='카페24 파일 1~2개 선택';
- const drop=input?.closest('.commerceImportDrop');
- if(drop&&!$('commerceFileCompareNotice')){
-  const note=document.createElement('div');
-  note.id='commerceFileCompareNotice';note.className='help';note.style.marginTop='8px';
-  note.innerHTML='<b>안전 비교:</b> 파일 2개를 고르면 두 파일끼리 먼저 대조합니다. <b>파일에 없는 기존 주문은 절대 삭제하지 않으며</b>, 파일 안에서 명확한 취소가 확인된 기존 주문만 적용 시 자동 제외합니다.';
-  input.parentElement?.appendChild(note);
- }
- const head=$('commercePreviewWrap')?.querySelector('thead tr');
- if(head)head.innerHTML='<th>상태</th><th>파일</th><th>주문일</th><th>주문번호</th><th>채널</th><th>원본수량</th><th>환산</th><th>Excel수량</th><th>매출액</th><th style="min-width:300px">우리 품목</th><th style="min-width:380px">카페24 상품/옵션</th><th>수령인</th><th>판정이유</th>';
-})();
+const v32DeepReadContractDataFromPdf = readContractDataFromPdf;
+let v32LastContractFile = null;
+let v32LastExpectedEmployeeName = '';
 
-function commerceV32StatusEntries(raw){
- const out=[];
- for(const [k,v] of Object.entries(raw||{})){
-  const key=String(k||'').trim(),val=String(v??'').trim();
-  if(!val)continue;
-  if(/취소|주문\s*상태|상품\s*주문\s*상태|처리\s*상태|클레임|환불/i.test(key))out.push([key,val]);
+function v32TermsEnough(t){
+ if(!t)return false;
+ let rules=normalizeContractDayRules(t.day_rules),
+     days=normalizedWorkDays(t.work_days),
+     weekly=Number(t.weekly_hours||0),
+     daily=Number(t.daily_hours||0),
+     hasTime=!!t.default_start_time&&!!t.default_end_time;
+ return rules.length>0 || weekly>0 || (days.length>0&&(daily>0||hasTime));
+}
+function v32AddFastWarnings(terms,period,source){
+ let t={...(terms||{})},w=Array.isArray(t._warnings)?[...t._warnings]:[];
+ if(!period?.start)w.push('계약 시작일을 자동확인하지 못했습니다. 날짜만 직접 확인해 주세요.');
+ if(!period?.indefinite&&!period?.end)w.push('계약 종료일을 자동확인하지 못했습니다. 날짜만 직접 확인해 주세요.');
+ if(!v32TermsEnough(t))w.push(source==='text'?'PDF 텍스트에서 근무조건을 충분히 읽지 못했습니다. 필요한 값만 직접 수정하거나 정밀 재분석을 사용하세요.':'스캔본 빠른인식에서 근무조건을 충분히 읽지 못했습니다. 필요한 값만 직접 수정하거나 정밀 재분석을 사용하세요.');
+ t._warnings=[...new Set(w)];
+ return t;
+}
+async function v32FastReadContractDataFromPdf(file,expectedEmployeeName=''){
+ v32LastContractFile=file;
+ v32LastExpectedEmployeeName=expectedEmployeeName||'';
+ const pdfjs=await loadContractPdfJs(),
+       data=await file.arrayBuffer(),
+       pdf=await pdfjs.getDocument({data}).promise;
+ let pageCount=Math.min(pdf.numPages,3),text='';
+ for(let i=1;i<=pageCount;i++){
+   let p=await pdf.getPage(i),tc=await p.getTextContent();
+   text+=' '+tc.items.map(x=>x.str||'').join(' ');
  }
- return out;
-}
-function commerceV32CancelInfo(raw,orderAmount,paymentAmount){
- const entries=commerceV32StatusEntries(raw),text=entries.map(([k,v])=>`${k}:${v}`).join(' | '),vals=entries.map(x=>x[1]).join(' ');
- const withdrawn=/취소\s*(철회|요청\s*철회)|철회\s*완료/i.test(vals);
- const pending=!withdrawn&&/취소\s*(요청|접수|처리중|진행중|신청)/i.test(vals)&&!/취소\s*(완료|처리완료|확정)/i.test(vals);
- const explicit=!withdrawn&&/(취소\s*(완료|처리완료|확정|됨)|주문\s*취소|결제\s*취소|환불\s*완료|^\s*취소\s*$)/i.test(vals);
- const bothZero=Number(orderAmount||0)===0&&Number(paymentAmount||0)===0;
- const confirmed=explicit||(!entries.length&&bothZero);
- const suspect=!confirmed&&(pending||(entries.length>0&&bothZero));
- let reason=explicit?`취소상태 확인${text?' · '+text:''}`:(!entries.length&&bothZero?'주문금액·결제금액 모두 0원':pending?`취소 진행상태 · ${text}`:(bothZero?`상태와 0원 값 불일치 · ${text}`:''));
- return {entries,text,explicit,pending,bothZero,confirmed,suspect,reason};
-}
+ let clean=normalizeContractText(text),
+     nameCheck=contractEmployeeFromFilenameV5(file?.name||'',expectedEmployeeName),
+     period=extractContractPeriodFromText(text),
+     terms=sanitizeContractTermsConsistency(extractContractTermsFromText(text));
 
-async function commerceV32ReadCafe24File(file,fileIndex){
- let arr=[];
- if(/\.csv$/i.test(file.name)){
-  let txt=await file.text(),xw=XLSX.read(txt,{type:'string',raw:true});
-  arr=XLSX.utils.sheet_to_json(xw.Sheets[xw.SheetNames[0]],{defval:'',raw:true});
- }else{
-  let buf=await file.arrayBuffer(),xw=XLSX.read(buf,{type:'array',cellDates:false});
-  arr=XLSX.utils.sheet_to_json(xw.Sheets[xw.SheetNames[0]],{defval:'',raw:true});
- }
- let required=['주문번호','수량','총 주문금액','총 결제금액','주문상품명(옵션포함)'],keys=Object.keys(arr[0]||{}),missing=required.filter(k=>!keys.includes(k));
- if(missing.length)throw new Error(`${file.name}: 필수 컬럼 없음 - ${missing.join(', ')}`);
- let rows=arr.map((x,i)=>({...normalizeCafe24Row(x),source_file_name:file.name,source_file_index:fileIndex,source_file_row:i+2,raw_json:{...x,_source_file:file.name,_source_file_row:i+2}}));
- let lineOcc=new Map(),compareOcc=new Map();
- for(const r of rows){
-  let identity=[r.source_channel,r.source_order_no,r.product_option_name,r.recipient].join('|'),n=(lineOcc.get(identity)||0)+1;lineOcc.set(identity,n);
-  let compareIdentity=[r.source_channel,r.source_order_no,r.product_option_name].join('|'),cn=(compareOcc.get(compareIdentity)||0)+1;compareOcc.set(compareIdentity,cn);
-  r.source_compare_key=await sha256Text(compareIdentity+'|'+cn);
-  r.source_line_key=await sha256Text(identity+'|'+n);
-  r.cancel_info=commerceV32CancelInfo(r.raw_json,r.total_order_amount,r.total_payment_amount);
-  r.cancel_confirmed=!!r.cancel_info.confirmed;r.cancel_suspect=!!r.cancel_info.suspect;
-  r.source_hash=await sha256Text(JSON.stringify([r.source_channel,r.order_datetime,r.source_order_no,r.source_qty,r.total_order_amount,r.total_payment_amount,r.product_option_name,r.recipient,r.recipient_phone,r.recipient_address,r.cancel_confirmed,r.cancel_info.text]));
-  r.sales_amount=commerceSalesAmount(r);r.excel_channel=commerceExcelChannel(r.source_channel);
- }
- return rows;
-}
-async function commerceV32AttachMappings(rows){
- let mq=await sb.from('commerce_product_mappings').select('source_channel,source_product_option,stock_multiplier,product_id,active,commerce_products(product_name)').eq('store_id',storeId()).eq('active',true);if(mq.error)throw mq.error;
- let mm=new Map();(mq.data||[]).forEach(x=>{mm.set(`${x.source_channel}|${x.source_product_option}`,x);if(x.source_channel==='*')mm.set(`*|${x.source_product_option}`,x)});
- for(const r of rows){r.mapping=mm.get(`${r.source_channel}|${r.product_option_name}`)||mm.get(`*|${r.product_option_name}`)||null;r.stock_multiplier=Number(r.mapping?.stock_multiplier||1);r.stock_qty=r.source_qty*r.stock_multiplier;r.product_id=r.mapping?.product_id||null;r.product_name=r.mapping?.commerce_products?.product_name||''}
-}
-async function commerceV32ActiveSalesLedger(){
- return await commerceV10FetchAll('commerce_ledger_rows',q=>q.eq('store_id',storeId()).eq('sheet_name','매출입력').is('deleted_at',null).order('id',{ascending:true}));
-}
-function commerceV32LedgerIndexes(rows){
- const byLine=new Map(),byExcel=new Map();
- for(const x of rows||[]){
-  const meta=x.input_json?._meta||{},lk=String(meta.source_line_key||'');
-  if(lk)byLine.set(lk,x);
-  if(x.source_workbook_id&&x.source_excel_row_no)byExcel.set(`${x.source_workbook_id}|${x.source_excel_row_no}`,x);
- }
- return {byLine,byExcel};
-}
-async function commerceV32CompareAgainstDashboard(rows){
- let keysToCheck=[...new Set(rows.map(x=>x.source_line_key).filter(Boolean))],orderNos=[...new Set(rows.map(x=>x.source_order_no).filter(Boolean))],existing=[],linked=[],orderExisting=[],orderLinked=[];
- for(let i=0;i<keysToCheck.length;i+=300){let q=await sb.from('commerce_sales').select('id,source_line_key,last_source_hash,record_status,source_order_no,source_channel,source_product_option,recipient,stock_qty,product_name_snapshot').eq('store_id',storeId()).in('source_line_key',keysToCheck.slice(i,i+300));if(q.error)throw q.error;existing.push(...(q.data||[]))}
- for(let i=0;i<keysToCheck.length;i+=300){let q=await sb.from('commerce_excel_sales').select('id,workbook_id,source_line_key,last_source_hash,source_order_no,product_name,stock_qty,sales_amount,source_channel,recipient,order_date,excel_row_no').eq('store_id',storeId()).in('source_line_key',keysToCheck.slice(i,i+300));if(q.error)throw q.error;linked.push(...(q.data||[]))}
- for(let i=0;i<orderNos.length;i+=250){let part=orderNos.slice(i,i+250);let q=await sb.from('commerce_sales').select('id,source_line_key,last_source_hash,record_status,source_order_no,source_channel,source_product_option,recipient,stock_qty,product_name_snapshot').eq('store_id',storeId()).in('source_order_no',part);if(q.error)throw q.error;orderExisting.push(...(q.data||[]));let z=await sb.from('commerce_excel_sales').select('id,workbook_id,source_line_key,last_source_hash,source_order_no,product_name,stock_qty,sales_amount,source_channel,recipient,order_date,excel_row_no').eq('store_id',storeId()).in('source_order_no',part);if(z.error)throw z.error;orderLinked.push(...(z.data||[]))}
- let em=new Map(existing.map(x=>[x.source_line_key,x])),lm=new Map(linked.map(x=>[x.source_line_key,x]));
- let dates=rows.map(x=>commerceIsoDate(x.order_datetime)).filter(Boolean).sort(),base=[];
- if(dates.length){let q=await sb.from('commerce_excel_sales').select('id,workbook_id,product_name,stock_qty,sales_amount,source_channel,recipient,order_date,excel_row_no,source_line_key,last_source_hash,source_order_no').eq('store_id',storeId()).gte('order_date',dates[0]).lte('order_date',dates[dates.length-1]);if(q.error)throw q.error;base=q.data||[]}
- const ledger=await commerceV32ActiveSalesLedger(),idx=commerceV32LedgerIndexes(ledger),used=new Set();
- for(const r of rows){
-  if(r.file_conflict){r.compare_status='review';r.compare_reason=`두 파일 간 동일 주문행 값이 다름 · ${r.file_conflict}`;continue}
-  if(!r.source_order_no||!r.order_datetime||!r.source_channel||!r.product_option_name){r.compare_status='review';r.compare_reason='주문번호/주문일/채널/상품옵션 중 필수값 누락';continue}
-  if(r.cancel_suspect){r.compare_status='review';r.compare_reason=`취소 여부 확인필요 · ${r.cancel_info?.reason||'상태 불명확'}`;continue}
-  let old=em.get(r.source_line_key)||lm.get(r.source_line_key),oldType=em.has(r.source_line_key)?'sale':(lm.has(r.source_line_key)?'excel':'');
-  if(!old){
-   let oc=orderExisting.filter(x=>String(x.source_order_no)===r.source_order_no&&String(x.source_channel||'')===r.source_channel&&String(x.source_product_option||'')===r.product_option_name);
-   if(oc.length===1){old=oc[0];oldType='sale'}
-   else if(oc.length>1&&!r.cancel_confirmed){r.compare_status='review';r.compare_reason='같은 주문번호/상품의 기존 주문행이 여러 건 · 자동판정 금지';continue}
-   if(!old){let lc=orderLinked.filter(x=>String(x.source_order_no||'')===r.source_order_no&&String(x.source_channel||'')===r.excel_channel&&(!r.product_name||String(x.product_name||'')===r.product_name));if(lc.length===1){old=lc[0];oldType='excel'}else if(lc.length>1&&!r.cancel_confirmed){r.compare_status='review';r.compare_reason='같은 주문번호의 Excel 연결행이 여러 건 · 자동판정 금지';continue}}
-  }
-  if(old){
-   if(oldType==='sale'&&old.record_status==='cancelled'){
-    if(r.cancel_confirmed){r.compare_status='duplicate';r.compare_reason='이미 자동취소 처리된 동일 주문';continue}
-    r.compare_status='changed';r.compare_reason='기존 취소 주문이 다시 활성값으로 변경 · 자동복원 금지';continue
+ // 텍스트가 실제로 들어있는 PDF는 여기서 끝낸다. 렌더링/OCR을 전혀 하지 않는다.
+ if(clean.replace(/\s/g,'').length>=80){
+   // 문장형 계약서도 텍스트만으로 보완
+   if(!v32TermsEnough(terms)){
+     try{
+       let narrative=extractNarrativeContractTermsV6(text);
+       if(narrative&&v32TermsEnough(narrative))terms=narrative;
+     }catch(_){}
    }
-   if(r.cancel_confirmed){
-    let ledgerRow=oldType==='sale'?idx.byLine.get(old.source_line_key):idx.byExcel.get(`${old.workbook_id}|${old.excel_row_no}`);
-    if(ledgerRow?.input_json?._meta?.manual_edited===true){r.compare_status='review';r.compare_reason='취소 주문이지만 해당 매출행을 사용자가 수동수정함 · 자동삭제 금지';continue}
-    r.compare_status='cancel_changed';r.compare_reason=`기존 입력 주문의 취소 확인 → 적용 시 자동제외 · ${r.cancel_info?.reason||''}`;r.cancel_target_type=oldType;r.cancel_target_id=old.id;r.cancel_target_ledger_id=ledgerRow?.id||null;r.cancel_target_workbook_id=old.workbook_id||null;r.cancel_target_excel_row_no=old.excel_row_no||null;continue
+   return {
+     period,
+     terms:v32AddFastWarnings(terms,period,'text'),
+     nameCheck,
+     method:'text-fast',
+     text
+   };
+ }
+
+ // 스캔본만 OCR. 첫 페이지 2.0배 + 같은 kor+eng 워커를 재사용하며 최대 2회.
+ setContractAutoReadStatus('스캔본 빠른인식 중…','reading');
+ let page=await pdf.getPage(1),
+     vp=page.getViewport({scale:2.0}),
+     canvas=document.createElement('canvas'),
+     ctx=canvas.getContext('2d');
+ canvas.width=Math.ceil(vp.width);canvas.height=Math.ceil(vp.height);
+ await page.render({canvasContext:ctx,viewport:vp}).promise;
+
+ const Tesseract=await loadContractTesseract();
+ let fullText='';
+ try{
+   fullText=await recognizeContractCrop(Tesseract,canvas,'kor+eng','11');
+ }catch(e){console.warn('V32 전체페이지 빠른 OCR 실패',e)}
+
+ let combined=[text,fullText].join(' '),
+     ocrPeriod=extractContractPeriodFromText(combined),
+     ocrTerms=sanitizeContractTermsConsistency(extractContractTermsFromText(combined));
+ if(ocrPeriod)period=ocrPeriod;
+ if(v32TermsEnough(ocrTerms))terms=ocrTerms;
+
+ // 첫 OCR에서 근무조건이 부족할 때만 근로시간 표 영역을 딱 한 번 더 읽는다.
+ if(!v32TermsEnough(terms)){
+   try{
+     let scheduleCrop=cropContractCanvas(canvas,.07,.34,.86,.50),
+         scheduleText=await recognizeContractCrop(Tesseract,scheduleCrop,'kor+eng','6'),
+         combined2=combined+' '+scheduleText,
+         t2=sanitizeContractTermsConsistency(extractContractTermsFromText(combined2));
+     if(!v32TermsEnough(t2)){
+       let n2=extractNarrativeContractTermsV6(combined2);
+       if(n2)t2=n2;
+     }
+     if(v32TermsEnough(t2))terms=t2;
+     combined=combined2;
+     let p2=extractContractPeriodFromText(combined2);if(p2)period=p2;
+   }catch(e){console.warn('V32 근로시간영역 빠른 OCR 실패',e)}
+ }
+
+ return {
+   period,
+   terms:v32AddFastWarnings(terms,period,'ocr'),
+   nameCheck,
+   method:'ocr-fast',
+   text:combined
+ };
+}
+readContractDataFromPdf=v32FastReadContractDataFromPdf;
+
+// 빠른 분석 결과가 부족한 예외 계약서에만 기존 정밀 분석을 수동 실행.
+async function v32DeepAnalyzeSelectedContract(){
+ let file=$('contractDocFile')?.files?.[0]||v32LastContractFile;
+ if(!file)return alert('먼저 근로계약서 PDF를 선택하세요.');
+ let expected=v32LastExpectedEmployeeName||'';
+ setContractAutoReadStatus('정밀 재분석 중… 특수 계약서에만 사용합니다.','reading');
+ try{
+   let data=await v32DeepReadContractDataFromPdf(file,expected),
+       period=data?.period||null,
+       terms=data?.terms||{},
+       nameCheck=data?.nameCheck||contractEmployeeFromFilenameV5(file?.name||'',expected);
+   pendingContractExtraction={period,terms,nameCheck,method:data?.method||'deep',employee_id:pendingContractExtraction?.employee_id||null};
+   if(period){
+     if($('contractStartDate')&&period.start)$('contractStartDate').value=period.start.replace(/-/g,'');
+     if(period.indefinite)setContractIndefiniteUi(true);
+     else{
+       setContractIndefiniteUi(false);
+       if($('contractEndDate')&&period.end)$('contractEndDate').value=period.end.replace(/-/g,'');
+     }
    }
-   if(old.last_source_hash===r.source_hash){r.compare_status='duplicate';r.compare_reason='이미 연결된 동일 주문행'}
-   else{r.compare_status='changed';r.compare_reason='기존 주문의 수량/금액/상품/수령정보 변경 · 자동 덮어쓰기 금지'}
-   continue
-  }
-  if(r.cancel_confirmed){
-   let dt=commerceIsoDate(r.order_datetime),cands=base.filter(x=>!x.source_line_key&&!used.has(x.id)&&x.order_date===dt&&x.source_channel===r.excel_channel&&String(x.recipient||'')===r.recipient&&String(x.product_name||'')===r.product_name&&Math.abs(Number(x.stock_qty||0)-Number(r.stock_qty||0))<0.0001);
-   if(cands.length===1){let x=cands[0],ledgerRow=idx.byExcel.get(`${x.workbook_id}|${x.excel_row_no}`);if(ledgerRow?.input_json?._meta?.manual_edited===true){r.compare_status='review';r.compare_reason='취소 주문과 일치하는 Excel 행이 있으나 사용자가 수동수정함 · 자동삭제 금지'}else{r.compare_status='cancel_changed';r.compare_reason=`기존 Excel ${x.excel_row_no}행과 취소 주문 일치 → 적용 시 자동제외 · ${r.cancel_info?.reason||''}`;r.cancel_target_type='excel';r.cancel_target_id=x.id;r.cancel_target_ledger_id=ledgerRow?.id||null;r.cancel_target_workbook_id=x.workbook_id;r.cancel_target_excel_row_no=x.excel_row_no;used.add(x.id)}}
-   else if(cands.length>1){r.compare_status='review';r.compare_reason='취소 주문과 일치하는 기존 Excel 후보가 여러 건 · 자동삭제 금지'}
-   else{r.compare_status='excluded';r.compare_reason=`취소 주문이지만 기존 입력행을 찾지 못함 → 신규입력 안 함 · ${r.cancel_info?.reason||''}`}
-   continue
-  }
-  if(!(Number(r.source_qty)>0)){r.compare_status='review';r.compare_reason='원본 수량이 0 이하 · 자동입력 금지';continue}
-  if(!r.mapping?.product_id){r.compare_status='review';r.compare_reason='상품/옵션 매핑 없음 · 자동입력 금지';continue}
-  if(!(Number(r.stock_multiplier)>0)){r.compare_status='review';r.compare_reason='환산계수가 0 이하 · 자동입력 금지';continue}
-  let dt=commerceIsoDate(r.order_datetime),cands=base.filter(x=>!x.source_line_key&&!used.has(x.id)&&x.order_date===dt&&x.source_channel===r.excel_channel&&String(x.recipient||'')===r.recipient&&Number(x.sales_amount||0)===Number(r.sales_amount||0));
-  let exact=cands.filter(x=>String(x.product_name||'')===r.product_name&&Math.abs(Number(x.stock_qty||0)-Number(r.stock_qty||0))<0.0001);
-  if(exact.length===1){r.compare_status='duplicate';r.compare_reason=`기준 Excel ${exact[0].excel_row_no}행과 일치`;r.baseline_id=exact[0].id;used.add(exact[0].id)}
-  else if(cands.length===1&&String(cands[0].product_name||'')===r.product_name){r.compare_status='review';r.compare_reason=`기준 Excel ${cands[0].excel_row_no}행 수량 불일치 · CSV ${r.source_qty}×${r.stock_multiplier}=${r.stock_qty}, Excel ${cands[0].stock_qty}`;r.baseline_id=cands[0].id;used.add(cands[0].id)}
-  else if(cands.length>0){r.compare_status='review';r.compare_reason='기준 Excel 후보가 여러 건 · 자동연결 금지'}
-  else{r.compare_status='new';r.compare_reason=(r.file_duplicate?'두 파일에서 동일 확인 · ':'')+'기준 Excel/DB에 없는 새 주문행'}
+   showContractTermsReview(terms,nameCheck);
+   setContractAutoReadStatus(`정밀 재분석 완료${period?` · ${period.start||'?'} ~ ${period.indefinite?'기간의 정함 없음':period.end||'?'}`:''}${terms?` · ${contractTermsSummary(terms)}`:''}`,'ok');
+ }catch(err){
+   console.error('V32 정밀 재분석 오류',err);
+   setContractAutoReadStatus('정밀 재분석에 실패했습니다. 빠른 분석값을 직접 확인해 주세요.','warn');
  }
 }
 
-window.previewCommerceCafe24Files=async function(fileList){
- if(!isCommerceStore())return;let files=[...(fileList||[])].filter(Boolean);
- if(!files.length)return;if(files.length>2)return alert('한 번에 최대 2개 파일까지만 비교할 수 있습니다.');
- setCommerceImportState(files.length===2?'두 파일 읽는 중':'파일 읽는 중','saving');
- try{
-  let per=[];for(let i=0;i<files.length;i++)per.push(await commerceV32ReadCafe24File(files[i],i));
-  let merged=[];
-  if(per.length===1)merged=per[0];
-  else{
-   let first=new Map(per[0].map(r=>[r.source_compare_key,r])),second=new Map(per[1].map(r=>[r.source_compare_key,r])),allKeys=new Set([...first.keys(),...second.keys()]);
-   for(const k of allKeys){let a=first.get(k),b=second.get(k);if(a&&b){if(a.source_hash===b.source_hash){b.file_duplicate=true;b.file_compare_note=`${a.source_file_name} = ${b.source_file_name}`;merged.push(b)}else{b.file_conflict=`${a.source_file_name} ↔ ${b.source_file_name}`;b.raw_json={...(b.raw_json||{}),_compare_previous:{file:a.source_file_name,row:a.source_file_row,hash:a.source_hash,qty:a.source_qty,order_amount:a.total_order_amount,payment_amount:a.total_payment_amount,recipient:a.recipient,cancel:a.cancel_confirmed}};merged.push(b)}}else merged.push(b||a)}
-  }
-  merged.forEach((r,i)=>r.row_no=i+1);
-  commercePreviewFileMeta={name:files.map(x=>x.name).join(' + '),size:files.reduce((a,x)=>a+(x.size||0),0),files:files.map(x=>x.name)};
-  await commerceV32AttachMappings(merged);await commerceV32CompareAgainstDashboard(merged);commercePreviewRows=merged;renderCommercePreview(files.length===2?{name:`2개 파일 비교 · ${files[0].name} / ${files[1].name}`}:{name:files[0].name});
- }catch(err){console.error(err);setCommerceImportState('검증 오류','error');alert('카페24 파일 확인 오류\n\n'+(err?.message||err))}
-};
-window.previewCommerceCafe24=function(file){return previewCommerceCafe24Files(file?[file]:[])};
-window.renderCommercePreview=function(file){
- let count=s=>commercePreviewRows.filter(x=>x.compare_status===s).length,conflicts=commercePreviewRows.filter(x=>x.file_conflict).length,autoCancel=commercePreviewRows.filter(x=>x.compare_status==='cancel_changed'&&x.cancel_confirmed).length;
- let stats=[['전체',commercePreviewRows.length],['신규',count('new')],['기존 건너뜀',count('duplicate')],['자동취소',autoCancel],['변경 확인',count('changed')],['파일간 충돌',conflicts],['제외',count('excluded')],['확인필요',count('review')]];
- $('commercePreviewStats').innerHTML=stats.map(([a,b])=>`<div class="commerceStat"><span class="help">${a}</span><b>${b}건</b></div>`).join('');$('commercePreviewStats').classList.remove('hidden');$('commercePreviewWrap').classList.remove('hidden');$('commerceImportActions').classList.remove('hidden');
- $('commercePreviewBody').innerHTML=commercePreviewRows.map(r=>`<tr><td class="${commerceStatusClass(r.compare_status)}">${r.compare_status==='cancel_changed'?'자동취소':commerceStatusLabel(r.compare_status)}</td><td style="white-space:normal;min-width:130px">${esc(r.source_file_name||'')}</td><td>${esc(String(r.order_datetime).slice(0,16))}</td><td>${esc(r.source_order_no)}</td><td>${esc(r.source_channel)}</td><td><b>${r.source_qty}</b></td><td>${r.stock_multiplier}</td><td><b>${r.stock_qty}</b></td><td class="money">${money(r.sales_amount)}</td><td style="text-align:left;white-space:normal">${esc(r.product_name||'미매핑')}</td><td style="text-align:left;white-space:normal">${esc(r.product_option_name)}</td><td>${esc(r.recipient)}</td><td style="text-align:left;white-space:normal">${esc(r.compare_reason)}</td></tr>`).join('');setCommerceImportState(`${file?.name||''} · 검증완료`,'saved')
-};
-
-async function commerceV32ApplyPreflight(fresh,cancels){
- let problems=[],seen=new Set();
- for(const r of fresh){if(seen.has(r.source_line_key))problems.push(`미리보기 내부 중복키: ${r.source_order_no}`);seen.add(r.source_line_key);if(!r.mapping?.product_id)problems.push(`상품매핑 없음: ${r.source_order_no}`);if(!(Number(r.source_qty)>0))problems.push(`수량 이상: ${r.source_order_no}`);if(!(Number(r.sales_amount)>0))problems.push(`매출액 이상: ${r.source_order_no}`)}
- let keys=[...seen],now=[];for(let i=0;i<keys.length;i+=300){let q=await sb.from('commerce_sales').select('source_line_key,last_source_hash').eq('store_id',storeId()).in('source_line_key',keys.slice(i,i+300));if(q.error)throw q.error;now.push(...(q.data||[]))}if(now.length)problems.push(`미리보기 후 이미 등록된 주문행 ${now.length}건 발견`);
- const ledger=await commerceV32ActiveSalesLedger(),idx=commerceV32LedgerIndexes(ledger);
- for(const r of cancels){
-  let lr=r.cancel_target_ledger_id?ledger.find(x=>Number(x.id)===Number(r.cancel_target_ledger_id)):null;
-  if(!lr&&r.cancel_target_type==='sale'){let q=await sb.from('commerce_sales').select('id,source_line_key,record_status').eq('id',r.cancel_target_id).eq('store_id',storeId()).maybeSingle();if(q.error)throw q.error;if(!q.data)problems.push(`취소 대상 주문을 다시 찾지 못함: ${r.source_order_no}`);else lr=idx.byLine.get(q.data.source_line_key)}
-  if(!lr&&r.cancel_target_type==='excel'&&r.cancel_target_workbook_id&&r.cancel_target_excel_row_no)lr=idx.byExcel.get(`${r.cancel_target_workbook_id}|${r.cancel_target_excel_row_no}`);
-  if(lr?.input_json?._meta?.manual_edited===true)problems.push(`수동수정된 행 자동취소 금지: ${r.source_order_no}`);
+// 결과창 맨 아래에 정밀 재분석 버튼만 추가.
+// 기본 업로드 흐름에는 근무조건 변경 체크박스를 두지 않는다.
+const v32OriginalShowContractTermsReview=showContractTermsReview;
+showContractTermsReview=function(terms,nameCheck=null){
+ v32OriginalShowContractTermsReview(terms,nameCheck);
+ let host=$('contractTermsReview');if(!host?.classList.contains('show'))return;
+ if(!host.querySelector('.v32DeepAnalyzeBtn')){
+   let bar=document.createElement('div');
+   bar.className='full v32DeepAnalyzeBtn';
+   bar.style.cssText='margin-top:8px;display:flex;align-items:center;gap:8px;justify-content:flex-end';
+   bar.innerHTML='<span class="help" style="margin-right:auto">일반 계약서는 빠른 분석값만 확인하면 됩니다.</span><button type="button" class="btn gray small" onclick="v32DeepAnalyzeSelectedContract()">정밀 재분석</button>';
+   let grid=host.querySelector('.contractTermsGrid');
+   if(grid)grid.appendChild(bar);else host.appendChild(bar);
  }
- return problems;
-}
-async function commerceV32SoftDeleteLedger(rowId,r){
- if(!rowId)return false;let q=await sb.from('commerce_ledger_rows').select('id,input_json,deleted_at').eq('id',rowId).eq('store_id',storeId()).maybeSingle();if(q.error)throw q.error;if(!q.data||q.data.deleted_at)return false;
- let j={...(q.data.input_json||{}),_meta:{...(q.data.input_json?._meta||{}),auto_cancelled_from_cafe24:true,cancelled_at:new Date().toISOString(),cancel_source_order_no:r.source_order_no,cancel_source_line_key:r.source_line_key,cancel_source_hash:r.source_hash,cancel_source_files:commercePreviewFileMeta?.files||[r.source_file_name].filter(Boolean),cancel_reason:r.cancel_info?.reason||r.compare_reason||''}};
- let u=await sb.from('commerce_ledger_rows').update({deleted_at:new Date().toISOString(),input_json:j,updated_by:currentSessionUser?.id||null,updated_at:new Date().toISOString()}).eq('id',rowId).eq('store_id',storeId());if(u.error)throw u.error;return true;
-}
-async function commerceV32ApplyCancellation(r,batchId){
- const now=new Date().toISOString();
- if(r.cancel_target_type==='sale'){
-  let u=await sb.from('commerce_sales').update({record_status:'cancelled',last_source_hash:r.source_hash,source_batch_id:batchId,updated_at:now}).eq('id',r.cancel_target_id).eq('store_id',storeId());if(u.error)throw u.error;
-  let rowId=r.cancel_target_ledger_id;if(!rowId){let all=await commerceV32ActiveSalesLedger(),lr=all.find(x=>String(x.input_json?._meta?.source_line_key||'')===String(r.source_line_key||''));rowId=lr?.id||null}await commerceV32SoftDeleteLedger(rowId,r);return;
- }
- if(r.cancel_target_type==='excel'){
-  let eu=await sb.from('commerce_excel_sales').update({source_order_no:r.source_order_no,source_line_key:r.source_line_key,last_source_hash:r.source_hash,linked_at:now}).eq('id',r.cancel_target_id).eq('store_id',storeId());if(eu.error)throw eu.error;
-  let tomb={store_id:storeId(),order_datetime:r.order_datetime||new Date().toISOString(),source_channel:r.source_channel,source_order_no:r.source_order_no,source_line_key:r.source_line_key,source_product_option:r.product_option_name,source_qty:r.source_qty||0,stock_multiplier:r.stock_multiplier||1,product_id:r.product_id||null,product_name_snapshot:r.product_name||'',total_order_amount:r.total_order_amount||0,total_payment_amount:r.total_payment_amount||0,sales_amount:r.sales_amount||0,recipient:r.recipient||'',recipient_phone:r.recipient_phone||'',recipient_zip:r.recipient_zip||'',recipient_address:r.recipient_address||'',delivery_message:r.delivery_message||'',record_status:'cancelled',last_source_hash:r.source_hash,source_batch_id:batchId,updated_at:now};
-  let tq=await sb.from('commerce_sales').upsert(tomb,{onConflict:'store_id,source_line_key'});if(tq.error)throw tq.error;
-  let rowId=r.cancel_target_ledger_id;if(!rowId&&r.cancel_target_workbook_id&&r.cancel_target_excel_row_no){let all=await commerceV32ActiveSalesLedger(),lr=all.find(x=>Number(x.source_workbook_id)===Number(r.cancel_target_workbook_id)&&Number(x.source_excel_row_no)===Number(r.cancel_target_excel_row_no));rowId=lr?.id||null}await commerceV32SoftDeleteLedger(rowId,r);
- }
-}
-window.applyCommerceImportPreview=async function(){
- if(!requireModuleEdit('commerce')||!commercePreviewRows.length)return;
- let fresh=commercePreviewRows.filter(x=>x.compare_status==='new'),links=commercePreviewRows.filter(x=>x.compare_status==='duplicate'&&x.baseline_id),cancels=commercePreviewRows.filter(x=>x.compare_status==='cancel_changed'&&x.cancel_confirmed&&x.cancel_target_type),anomaly=commercePreviewRows.filter(x=>['review','changed'].includes(x.compare_status));
- setCommerceImportState('적용 직전 재검증','saving');
- try{
-  let probs=await commerceV32ApplyPreflight(fresh,cancels);if(probs.length){setCommerceImportState('재검증 필요','error');return alert('적용을 중단했습니다.\n\n'+probs.slice(0,12).join('\n')+'\n\n파일을 다시 검증해 주세요.')}
-  let detail=`신규 ${fresh.length}건 / 자동취소 ${cancels.length}건 / 기존 ${commercePreviewRows.filter(x=>x.compare_status==='duplicate').length}건 / 확인필요·변경 ${anomaly.length}건`;
-  if(!confirm(`${detail}\n\n• 신규 주문은 추가\n• 명확한 취소 주문은 기존 매출에서 자동 제외\n• 파일에 없는 기존 주문은 그대로 유지\n• 확인필요/변경/파일충돌은 자동수정하지 않음\n\n적용할까요?`)){setCommerceImportState('검증완료','saved');return}
-  let stats={new_rows:fresh.length,duplicate_rows:commercePreviewRows.filter(x=>x.compare_status==='duplicate').length,changed_rows:commercePreviewRows.filter(x=>['changed','cancel_changed'].includes(x.compare_status)).length,excluded_rows:commercePreviewRows.filter(x=>x.compare_status==='excluded').length,review_rows:commercePreviewRows.filter(x=>x.compare_status==='review').length};
-  let bq=await sb.from('commerce_import_batches').insert({store_id:storeId(),source_type:(commercePreviewFileMeta?.files?.length===2?'cafe24_compare2':'cafe24'),source_file_name:commercePreviewFileMeta?.name||'업로드파일',source_file_size:commercePreviewFileMeta?.size||null,uploaded_by:currentSessionUser?.id||null,total_rows:commercePreviewRows.length,...stats,note:`V32 안전반영 · 신규 ${fresh.length} · 자동취소 ${cancels.length} · 파일누락은 유지`}).select('id').single();if(bq.error)throw bq.error;
-  let batchId=bq.data.id,raw=commercePreviewRows.map(r=>({batch_id:batchId,store_id:storeId(),row_no:r.row_no,source_channel:r.source_channel,order_datetime:r.order_datetime||null,source_order_no:r.source_order_no,source_qty:r.source_qty,total_order_amount:r.total_order_amount,total_payment_amount:r.total_payment_amount,product_option_name:r.product_option_name,recipient:r.recipient,recipient_phone:r.recipient_phone,recipient_zip:r.recipient_zip,recipient_address:r.recipient_address,delivery_message:r.delivery_message,source_line_key:r.source_line_key,source_hash:r.source_hash,compare_status:r.compare_status,compare_reason:r.compare_reason,raw_json:r.raw_json||{}}));
-  for(let i=0;i<raw.length;i+=300){let q=await sb.from('commerce_import_rows').insert(raw.slice(i,i+300));if(q.error)throw q.error}
-  for(const r of links){let uq=await sb.from('commerce_excel_sales').update({source_order_no:r.source_order_no,source_line_key:r.source_line_key,last_source_hash:r.source_hash,linked_at:new Date().toISOString()}).eq('id',r.baseline_id);if(uq.error)throw uq.error;let base=await sb.from('commerce_excel_sales').select('workbook_id,excel_row_no').eq('id',r.baseline_id).maybeSingle();if(base.error)throw base.error;if(base.data?.excel_row_no){let lr=await sb.from('commerce_ledger_rows').select('id,input_json').eq('store_id',storeId()).eq('sheet_name','매출입력').eq('source_workbook_id',base.data.workbook_id).eq('source_excel_row_no',base.data.excel_row_no).is('deleted_at',null).maybeSingle();if(lr.error)throw lr.error;if(lr.data){let jj={...(lr.data.input_json||{}),_meta:{...(lr.data.input_json?._meta||{}),origin:'excel',source_order_no:r.source_order_no,source_line_key:r.source_line_key,last_source_hash:r.source_hash,source_qty:r.source_qty,source_product_option:r.product_option_name}};let lu=await sb.from('commerce_ledger_rows').update({input_json:jj,updated_by:currentSessionUser?.id||null,updated_at:new Date().toISOString()}).eq('id',lr.data.id);if(lu.error)throw lu.error}}}
-  for(const r of cancels)await commerceV32ApplyCancellation(r,batchId);
-  if(fresh.length){let salesPayload=fresh.map(r=>({store_id:storeId(),order_datetime:r.order_datetime||new Date().toISOString(),source_channel:r.source_channel,source_order_no:r.source_order_no,source_line_key:r.source_line_key,source_product_option:r.product_option_name,source_qty:r.source_qty,stock_multiplier:r.stock_multiplier,product_id:r.product_id,product_name_snapshot:r.product_name,total_order_amount:r.total_order_amount,total_payment_amount:r.total_payment_amount,sales_amount:r.sales_amount,recipient:r.recipient,recipient_phone:r.recipient_phone,recipient_zip:r.recipient_zip,recipient_address:r.recipient_address,delivery_message:r.delivery_message,record_status:'active',last_source_hash:r.source_hash,source_batch_id:batchId}));let sq=await sb.from('commerce_sales').insert(salesPayload);if(sq.error)throw sq.error;let existingRows=await commerceV10FetchAll('commerce_ledger_rows',q=>q.eq('store_id',storeId()).eq('sheet_name','매출입력').is('deleted_at',null).order('sort_order',{ascending:false})),max=existingRows.reduce((a,x)=>Math.max(a,Number(x.sort_order||0)),0),led=fresh.map((r,i)=>({store_id:storeId(),sheet_name:'매출입력',record_date:commerceIsoDate(r.order_datetime),sort_order:max+(i+1)*10,input_json:{date:commerceV10ShortDate(commerceIsoDate(r.order_datetime)),product:r.product_name||'',qty:r.stock_qty||0,gross:r.sales_amount||0,fake_purchase:0,refund:0,discount:0,actual_settlement:0,extra_spend:0,labor:0,marketing:0,expense:0,channel:r.excel_channel||commerceExcelChannel(r.source_channel),purchase_type:'',orderer:'',recipient:r.recipient||'',invoice:'',impressions:0,clicks:0,purchase_count:0,ad_sales:0,ad_spend:0,recipient_address:r.recipient_address||'',_meta:{origin:'cafe24',manual_edited:false,source_qty:r.source_qty,stock_multiplier:r.stock_multiplier,source_order_no:r.source_order_no,source_line_key:r.source_line_key,last_source_hash:r.source_hash,source_product_option:r.product_option_name,batch_id:batchId,source_files:commercePreviewFileMeta?.files||[]}},created_by:currentSessionUser?.id||null,updated_by:currentSessionUser?.id||null}));for(let i=0;i<led.length;i+=300){let lq=await sb.from('commerce_ledger_rows').insert(led.slice(i,i+300));if(lq.error)throw lq.error}}
-  await sb.from('commerce_import_batches').update({applied_at:new Date().toISOString()}).eq('id',batchId);setCommerceImportState(`신규 ${fresh.length} · 자동취소 ${cancels.length} 안전반영 완료`,'saved');alert(`처리완료\n신규 ${fresh.length}건 반영\n취소 ${cancels.length}건 자동제외\n파일에 없던 기존 주문은 변경하지 않았습니다.\n확인필요/변경 ${anomaly.length}건은 자동수정하지 않았습니다.`);if(commerceCurrentSheet==='매출입력')await commerceV10LoadSheet('매출입력');await loadCommerceDashboard()
- }catch(e){console.error(e);setCommerceImportState('저장 오류','error');alert('카페24 적용 오류\n\n'+(e?.message||e))}
 };
 
-async function commerceV32ReapplyKnownCancellations(sourceYear){
- const year=Number(sourceYear||0);if(!(year>=2000))return {checked:0,excluded:0,ambiguous:0};
- let from=`${year}-01-01`,to=`${year+1}-01-01`,cq=await sb.from('commerce_sales').select('id,source_order_no,source_line_key,source_hash:last_source_hash,order_datetime,source_channel,source_product_option,source_qty,stock_qty,product_name_snapshot,recipient').eq('store_id',storeId()).eq('record_status','cancelled').gte('order_datetime',from).lt('order_datetime',to);if(cq.error)throw cq.error;
- let cancelled=cq.data||[];if(!cancelled.length)return {checked:0,excluded:0,ambiguous:0};
- let ledger=await commerceV10FetchAll('commerce_ledger_rows',q=>q.eq('store_id',storeId()).eq('sheet_name','매출입력').eq('source_year',year).not('source_workbook_id','is',null).is('deleted_at',null).order('id',{ascending:true})),used=new Set(),excluded=0,ambiguous=0;
- for(const c of cancelled){let dt=commerceIsoDate(c.order_datetime),ch=commerceExcelChannel(c.source_channel),cands=ledger.filter(x=>!used.has(x.id)&&String(x.record_date||'')===dt&&String(x.input_json?.channel||'')===ch&&String(x.input_json?.recipient||'')===String(c.recipient||'')&&String(x.input_json?.product||'')===String(c.product_name_snapshot||'')&&Math.abs(Number(x.input_json?.qty||0)-Number(c.stock_qty||0))<0.0001);if(cands.length===1){let x=cands[0],j={...(x.input_json||{}),_meta:{...(x.input_json?._meta||{}),auto_cancelled_from_cafe24:true,reapplied_cancel_after_workbook_sync:true,cancelled_at:new Date().toISOString(),cancel_source_order_no:c.source_order_no,cancel_source_line_key:c.source_line_key}};let u=await sb.from('commerce_ledger_rows').update({deleted_at:new Date().toISOString(),input_json:j,updated_by:currentSessionUser?.id||null,updated_at:new Date().toISOString()}).eq('id',x.id).eq('store_id',storeId());if(u.error)throw u.error;used.add(x.id);excluded++}else if(cands.length>1)ambiguous++}
- return {checked:cancelled.length,excluded,ambiguous};
-}
-if(typeof commerceV21RegisterOne==='function'){
- const commerceV32OldRegisterOne=commerceV21RegisterOne;
- commerceV21RegisterOne=async function(file,index,total){let result=await commerceV32OldRegisterOne(file,index,total);if(result&&!result.skipped&&result.year){let reapplied=await commerceV32ReapplyKnownCancellations(result.year);result.reapplied_cancel_rows=reapplied.excluded;result.cancel_ambiguous_rows=reapplied.ambiguous}return result};
-}
-
-</script>
-
-<script id="annualLeaveV40ConfirmedPolicy">
-/* ===== V40 · 노무사 확정 연차시간 기준 · 대시보드 전체통일 =====
-   최종 기준:
-   - 연차 1개 시간 = 주 근로시간 / 5
-   - 최대 8h (주40h 이상은 8h)
-   - 예: 40h→8h, 35h→7h, 32h→6.4h, 30h→6h, 20h→4h, 16h→3.2h
-   - 1년 미만 자동발생 자격(주15h 이상) 등 기존 자격/개근 판정은 유지
-   - V25의 '32h→7h 정수 올림' 및 V24의 '주32h 연차 사용 8h'는 본 정책으로 폐기
-   - 직원정보/근무조건/자동발생/예정/스케줄 연차사용/연차원장/근로시간 표시를 모두 같은 단위시간으로 사용
-===== */
-window.ANNUAL_LEAVE_BUILD='V40_WEEKLY_DIV5_MAX8_20260911';
-
-function v40CanonicalNumber(n){
- n=Number(n||0);if(!Number.isFinite(n))return 0;
- // 부동소수점 오차(예: 6.659999999999999)만 정리한다. 정수 올림/내림 정책은 적용하지 않는다.
- return Number(n.toFixed(10));
-}
-function v40AnnualLeaveUnitHoursFromWeekly(weekly){
- let w=Number(weekly||0);if(!Number.isFinite(w)||w<=0)return 0;
- return v40CanonicalNumber(Math.min(w,LEGAL_FULLTIME_WEEKLY_HOURS)/5);
-}
-function v40AnnualLeaveAccrualUnitHoursFromWeekly(weekly){
- let w=Number(weekly||0);if(!Number.isFinite(w)||w<LEGAL_MIN_WEEKLY_HOURS_FOR_LEAVE)return 0;
- return v40AnnualLeaveUnitHoursFromWeekly(w);
-}
-function v40AnnualLeaveUnitHoursForEmployee(e,date=isoToday()){
- let c=workConditionForDate(e||{},date),w=Number(c?.leave_weekly_hours||0);
- if(!(w>0))w=Number(conditionWeeklyPrescribedHours(c)||0);
- return v40AnnualLeaveUnitHoursFromWeekly(w);
-}
-function v40LeaveHourText(v){let n=v40CanonicalNumber(v);return Number.isInteger(n)?String(n):String(n)}
-
-// 과거 '법정 단수 올림' 함수는 연차시간 계산에서는 더 이상 올림하지 않는다.
-legalRoundLeaveHours=function(hours){let n=v40CanonicalNumber(hours);return n>0?n:0};
-
-// 1년 미만 월 1개 발생시간 = 주 근로시간/5 (주15h 미만 자동발생 제외는 기존 유지)
-v23LegalMonthlyLeaveHours=function(weekly){return v40AnnualLeaveAccrualUnitHoursFromWeekly(weekly)};
-v25RawMonthlyLeaveHours=function(weekly){return v40AnnualLeaveAccrualUnitHoursFromWeekly(weekly)};
-v25LeaveAccrualBasisText=function(weekly){
- let unit=v40AnnualLeaveAccrualUnitHoursFromWeekly(weekly);if(!unit)return '';
- return `주 소정 ${v40LeaveHourText(weekly)}h ÷ 5 = 연차 1개 ${v40LeaveHourText(unit)}h`;
-};
-
-// 1년 이상 연차도 '일수 × 1개 시간'으로 동일 계산.
-annualLeaveHours=function(e,serviceYears,date=isoToday(),weeklyHours=null){
- let w=Number(weeklyHours??leaveWeeklyHoursAt(e,date));
- if(w<LEGAL_MIN_WEEKLY_HOURS_FOR_LEAVE)return 0;
- return v40CanonicalNumber(annualLeaveDays(serviceYears)*v40AnnualLeaveUnitHoursFromWeekly(w));
-};
-
-// 날짜별 근무조건을 읽을 때 저장돼 있던 옛 7h/8h 값을 사용하지 않고 주 소정시간에서 다시 파생한다.
-const v40PreviousWorkConditionForDate=workConditionForDate;
-workConditionForDate=function(e,date=isoToday()){
- let c=v40PreviousWorkConditionForDate(e,date),weekly=Number(c?.leave_weekly_hours||0);
- if(!(weekly>0))weekly=Number(v31ResolvedWeeklyFromCondition(c)||0);
- weekly=Math.min(LEGAL_FULLTIME_WEEKLY_HOURS,Math.max(0,weekly));
- let unit=v40AnnualLeaveUnitHoursFromWeekly(weekly),monthly=weekly>=LEGAL_MIN_WEEKLY_HOURS_FOR_LEAVE?unit:0;
- return {...c,leave_weekly_hours:weekly,leave_monthly_hours:monthly,leave_day_hours:unit};
-};
-leaveMonthlyHoursAt=function(e,date){let w=leaveWeeklyHoursAt(e,date);return v40AnnualLeaveAccrualUnitHoursFromWeekly(w)};
-leaveMonthlyHours=function(e){return leaveMonthlyHoursAt(e,isoToday())};
-leaveDayHours=function(e){return leaveDayHoursAt(e,isoToday())};
-
-// '연' 1회 사용도 실제 일 소정 8h가 아니라 확정된 연차 1개 시간(주/5)을 차감한다.
-leaveUseHoursDecision=function(e,date,row=null){
- let h=v40AnnualLeaveUnitHoursForEmployee(e,date);
- return {hours:h,known:h>0,source:'weekly-hours-divided-by-5'};
-};
-leaveUseHoursDisplay=function(e,date=isoToday()){
- let h=v40AnnualLeaveUnitHoursForEmployee(e,date);return h>0?`${v40LeaveHourText(h)}h`:'확인';
-};
-
-// 직원/근무조건 편집창의 파생값은 수기 입력으로 다시 7h/8h가 되지 않게 자동고정한다.
-v23SyncDerivedLeaveFields=function(prefix){
- let weeklyEl=$(prefix+'LeaveWeekly'),monthlyEl=$(prefix+'LeaveMonthly'),dayEl=$(prefix+'LeaveDay');
- if(!weeklyEl||!monthlyEl||!dayEl)return;
- let weekly=Number(weeklyEl.value||0),unit=v40AnnualLeaveUnitHoursFromWeekly(weekly),monthly=weekly>=LEGAL_MIN_WEEKLY_HOURS_FOR_LEAVE?unit:0;
- monthlyEl.value=String(monthly);monthlyEl.readOnly=true;monthlyEl.title='확정 기준: 주 근로시간 ÷ 5. 주15h 미만은 자동발생 0h.';
- dayEl.value=String(unit);dayEl.readOnly=true;dayEl.title='확정 기준: 연차 1개 사용시간 = 주 근로시간 ÷ 5 (최대 8h).';
-};
-applyLeavePreset=function(){
- let t=normalizeWorkTypeValue($('eType')?.value||'');
- if(t==='40'){$('eDaily').value=8;$('eLeaveWeekly').value=40}
- if(t==='36'){$('eDaily').value=8;$('eLeaveWeekly').value=32}
- v23SyncDerivedLeaveFields('e');
-};
-const v40PreviousApplyWorkConditionPreset=applyWorkConditionPreset;
-applyWorkConditionPreset=function(){let r=v40PreviousApplyWorkConditionPreset();v23SyncDerivedLeaveFields('wc');return r};
-const v40PreviousSaveEmployee=saveEmployee;
-saveEmployee=async function(id){v23SyncDerivedLeaveFields('e');return v40PreviousSaveEmployee(id)};
-const v40PreviousAddWorkCondition=addWorkCondition;
-addWorkCondition=async function(employeeId){v23SyncDerivedLeaveFields('wc');return v40PreviousAddWorkCondition(employeeId)};
-
-// 직원관리 '연차 기준' 셀도 같은 공식만 보여준다.
-const v40PreviousLeaveBasisInfo=v31EmployeeLeaveBasisInfo;
-v31EmployeeLeaveBasisInfo=function(e,date=isoToday()){
- let b=v40PreviousLeaveBasisInfo(e,date),unit=v40AnnualLeaveUnitHoursFromWeekly(b.weekly),monthly=b.weekly>=LEGAL_MIN_WEEKLY_HOURS_FOR_LEAVE?unit:0;
- return {...b,monthly,use:unit>0?`${v40LeaveHourText(unit)}h`:'확인'};
-};
-v31EmployeeLeaveBasisCell=function(e,date=isoToday()){
- let b=v31EmployeeLeaveBasisInfo(e,date),unit=v40AnnualLeaveUnitHoursFromWeekly(b.weekly);
- let top=b.weekly<LEGAL_MIN_WEEKLY_HOURS_FOR_LEAVE
-   ?`주 ${v40LeaveHourText(b.weekly)}h <span class="warn">· 법정연차 자동발생 제외</span>`
-   :`주 ${v40LeaveHourText(b.weekly)}h`;
- let formula=unit>0?`1개 ${v40LeaveHourText(unit)}h <span class="help">(주 ${v40LeaveHourText(b.weekly)}h ÷ 5)</span>`:'1개 시간 확인';
- let warn=b.mismatch?`<br><span class="reviewWarn" title="${esc(b.warning)}">⚠ ${esc(b.warning)}</span>`:'';
- return `${top}<br><b>${formula}</b><br><span class="help">발생 +${v40LeaveHourText(b.monthly)}h / 사용 -${v40LeaveHourText(unit)}h</span><br><span class="help">${esc(b.source)}</span>${warn}`;
-};
-
-// 근로시간 화면 안내도 새 확정 기준으로 교체한다.
-v25InjectLeavePolicyHelp=function(){
- let title=[...document.querySelectorAll('h3')].find(x=>String(x.textContent||'').trim()==='월간 근로시간');
- if(!title)return;let card=title.closest('.card');if(!card)return;
- let d=card.querySelector('.v25LeavePolicy');if(!d){d=document.createElement('div');d.className='help v25LeavePolicy';d.style.marginTop='6px';title.insertAdjacentElement('afterend',d)}
- d.innerHTML='연차 확정 기준: <b>연차 1개 = 주 근로시간 ÷ 5, 최대 8h</b>. 주40h는 8h, 주32h는 6.4h입니다. 스케줄의 <b>연</b>도 같은 시간으로 발생·사용하며 예정 연장근로는 연차시간에 더하지 않습니다.';
-};
-
-// 새로 입력하는 '연' 스케줄의 scheduled_hours도 1개 시간으로 강제 통일.
-const v40PreviousSchedulePayload=schedulePayload;
-schedulePayload=function(id,date,raw){
- let p=v40PreviousSchedulePayload(id,date,raw);
- if(p.work_code==='연'){
-   let e=allEmployees().find(x=>Number(x.id)===Number(id)),h=v40AnnualLeaveUnitHoursForEmployee(e,date);
-   p.scheduled_hours=h;p.worked_hours=0;p.overtime_hours=0;p.status='leave';
- }
- return p;
-};
-
-// 상세근무 팝업에서 '연차'를 선택해도 출퇴근시간으로 8h를 다시 만들지 않는다.
-saveShiftDetail=async function(id,date){
- if(!requireScheduleDateEdit(date))return;
- let e=employees.find(x=>x.id===id),cond=workConditionForDate(e||{},date),rule=conditionTimesForDate(cond,date),st=$('mCode').value,start=$('mStart').value,end=$('mEnd').value,br=Number($('mBreak').value||0),base=prescribedDayHoursV15(e||{},date,sched(e,date))||Number(rule.daily_hours||cond.daily_hours||8),detailHours=Math.round(hoursBetween(start,end,br)*100)/100,leaveH=v40AnnualLeaveUnitHoursForEmployee(e,date),worked=0,scheduled=0,ot=0,code='0';
- if(st==='leave'){
-   if(!leaveH)return alert('연차 산정 주 근로시간을 확인할 수 없습니다. 직원정보/근무조건의 주 소정시간을 먼저 확인하세요.');
-   let ok=await confirmLeaveUseAfterRefresh(e,date,null,leaveH);if(!ok)return;
- }
- if(st==='work'){worked=detailHours;scheduled=Math.min(worked,base);ot=Math.max(0,worked-base);code=String(worked).replace(/\.0$/,'')}
- if(st==='leave'){scheduled=leaveH;worked=0;ot=0;code='연'}
- if(st==='sick'){scheduled=detailHours>0?detailHours:base;code='병'}
- if(st==='absence'){scheduled=detailHours>0?detailHours:base;code='결'}
- if(st==='deemed'){scheduled=detailHours>0?detailHours:base;code='법'}
- if(st==='reserve'){scheduled=base;worked=base;ot=0;code='예'}
- let q=await sb.from('schedules').upsert({employee_id:id,work_date:date,work_code:code,scheduled_hours:scheduled,worked_hours:worked,overtime_hours:ot,start_time:start||null,end_time:end||null,break_minutes:br,status:st},{onConflict:'employee_id,work_date'});
- if(q.error)return alert(q.error.message);
- stampRecentAuditIp(storeId());closeModal();refreshAll();
-};
-
-// 과거 DB에 7h/8h로 남아 있는 '연' 스케줄도 날짜별 주 근로시간/5로 재동기화한다.
-const v40PreviousFetchAllLeaveSchedules=fetchAllLeaveSchedules;
-fetchAllLeaveSchedules=async function(ids){
- let rows=await v40PreviousFetchAllLeaveSchedules(ids);
- return (rows||[]).map(s=>{let e=allEmployees().find(x=>Number(x.id)===Number(s.employee_id)),h=v40AnnualLeaveUnitHoursForEmployee(e,s.work_date);return h>0?{...s,scheduled_hours:h}:s});
-};
-async function v40NormalizeStoredLeaveSchedules(){
- if(!employees.length)return {updated:0};
- let ids=employees.map(e=>e.id),raw=await v40PreviousFetchAllLeaveSchedules(ids),updated=0;
- for(const s of raw||[]){
-   let e=employees.find(x=>Number(x.id)===Number(s.employee_id));if(!e)continue;
-   let h=v40AnnualLeaveUnitHoursForEmployee(e,s.work_date);if(!(h>0)||Math.abs(Number(s.scheduled_hours||0)-h)<1e-9)continue;
-   let q=await sb.from('schedules').update({scheduled_hours:h,worked_hours:0,overtime_hours:0,status:'leave'}).eq('id',s.id);
-   if(q.error){console.warn('V40 과거 연차시간 재동기화 실패',s.employee_id,s.work_date,q.error.message);continue}
-   let local=schedules.find(x=>Number(x.id)===Number(s.id));if(local){local.scheduled_hours=h;local.worked_hours=0;local.overtime_hours=0;local.status='leave'}
-   updated++;
- }
- return {updated};
-}
-const v40PreviousSyncLeaveLedger=syncLeaveLedger;
-syncLeaveLedger=async function(){
- try{await v40NormalizeStoredLeaveSchedules()}catch(e){console.warn('V40 연차 스케줄 사전정규화 오류',e)}
- return v40PreviousSyncLeaveLedger();
-};
-
-// 화면 로컬 보정도 과거 저장 scheduled_hours가 아니라 확정 단위시간을 사용한다.
-liveLeaveSummary=function(e,asOf=monthRange().last){
- let base=leaveSummary(e,asOf),r=monthRange();if(r.first>asOf)return base;
- let end=r.last<asOf?r.last:asOf;
- let ledgerUsed=leaveLedger.filter(x=>x.employee_id===e.id&&x.source==='schedule'&&x.event_date>=r.first&&x.event_date<=end).reduce((sum,x)=>sum+Number(x.hours||0),0);
- let localUsed=schedules.filter(s=>s.employee_id===e.id&&s.work_date>=r.first&&s.work_date<=end&&s.work_code==='연').reduce((sum,s)=>sum-v40AnnualLeaveUnitHoursForEmployee(e,s.work_date),0);
- let delta=localUsed-ledgerUsed,usedDelta=Math.max(0,-delta),used=v40CanonicalNumber(base.used+usedDelta),balance=v40CanonicalNumber(base.balance+delta);
- return {...base,used,balance};
-};
-
-console.info('[연차] V40_WEEKLY_DIV5_MAX8_20260911 · 노무사 확정: 1개=주근로시간/5, 최대8h · 32h=6.4h');
-</script>
-<script>window.COMMERCE_BUILD='V35_CUMULATIVE_WORKBOOK_SYNC_20260907';console.info('[88커머스] V35_CUMULATIVE_WORKBOOK_SYNC_20260907 · 현재 index.html 기준 누적수정');</script>
-<script>window.DOCUMENT_PRINT_BUILD='V36_RESIGNATION_SINGLE_PAGE_20260909';console.info('[문서출력] V36_RESIGNATION_SINGLE_PAGE_20260909 · 사직서 A4 1페이지 고정');</script>
-<script>window.WEEKLY_HOLIDAY_BUILD='V39_DECIMAL_NO_ROUND_20260909';console.info('[주휴] V39_DECIMAL_NO_ROUND_20260909 · 주휴 발생값 소수점 원값 유지 · 반올림/올림/내림 없음');</script>
-
-<script id="v44MonthScheduleAutofill">
-/* ===== V44 · 선택월 진입 시 기본 스케줄 자동생성 =====
-   - 직원 저장월만 생성하던 V43 문제 수정
-   - 월 변경 또는 스케줄 탭 진입 시 해당 월 자동생성
-   - [[AUTO_EMP_PATTERN]] 행만 자동 재계산하고 수기 수정행은 서버 함수에서 보존
-*/
-let v44MonthSyncBusy=false;
-let v44LastScheduleTabSyncKey='';
-async function v44AutoSyncSelectedMonth(reason='month'){
-  if(v44MonthSyncBusy||!currentSessionUser||!$('monthSelect')?.value||isCommerceStore())return null;
-  let ym=$('monthSelect').value,sid=storeId();
-  if(!(canEditModule('employees')||canEditModule('schedule')))return null;
-  if(!isAppAdmin()&&isScheduleMonthLocked(ym))return {month:ym,updated:0,preserved:0,locked:true};
-  v44MonthSyncBusy=true;
-  try{
-    if($('scheduleLoadState')&&reason==='month'){
-      $('scheduleLoadState').textContent=`${ym} 자동편성 확인중`;
-      $('scheduleLoadState').className='saveState saving';
-    }
-    let q=await sb.rpc('app_sync_store_month_basic_schedules_v44',{p_store_id:sid,p_month:ym+'-01'});
-    if(q.error)throw q.error;
-    let rs=q.data||{};
-    if(Number(rs.updated||0)>0)stampRecentAuditIp(sid);
-    return rs;
-  }catch(err){
-    console.warn('V44 선택월 스케줄 자동생성 오류',err);
-    if($('scheduleLoadState')){
-      $('scheduleLoadState').textContent='자동편성 오류';
-      $('scheduleLoadState').className='saveState error';
-    }
-    if(reason==='month')alert(`${$('monthSelect').value} 스케줄 자동반영 중 오류가 발생했습니다.\n${err?.message||err}`);
-    return {error:err};
-  }finally{v44MonthSyncBusy=false}
-}
-const v44PreviousSwitchMonth=switchMonth;
-switchMonth=async function(){
-  if(typeof scheduleSaveQueue!=='undefined'&&scheduleSaveQueue.size)await flushScheduleQueue();
-  let rs=await v44AutoSyncSelectedMonth('month');
-  await v44PreviousSwitchMonth();
-  if(rs&&!rs.error&&$('scheduleLoadState')){
-    let updated=Number(rs.updated||0),preserved=Number(rs.preserved||0),detail=Number(rs.detailed_skipped||0);
-    $('scheduleLoadState').textContent=updated?`자동편성 ${updated}칸 반영${preserved?` · 수기 ${preserved}칸 유지`:''}`:'불러오기 완료';
-    $('scheduleLoadState').className='saveState saved';
-    if(detail)console.info(`V44: 상세요일규칙 ${detail}일은 기존 상세규칙 동기화 대상으로 보존했습니다.`);
-  }
-};
-// 월을 이미 선택한 뒤 직원/다른 탭에서 스케줄 탭으로 들어오는 경우도 한 번 확인한다.
-document.querySelectorAll('.nav[data-page="schedule"]').forEach(btn=>{
-  btn.addEventListener('click',async()=>{
-    if(!currentSessionUser||isCommerceStore())return;
-    let key=`${storeId()}|${$('monthSelect')?.value||''}`;
-    if(!key||v44LastScheduleTabSyncKey===key)return;
-    v44LastScheduleTabSyncKey=key;
-    let rs=await v44AutoSyncSelectedMonth('schedule');
-    if(rs&&!rs.error&&Number(rs.updated||0)>0)await refreshAll();
-  });
-});
-</script>
-
-<script id="v45LeaveDashboardCommittedUse">
-/* ===== V45 · 연차 전체현황 = 발생은 실제일 기준 / 입력된 사용은 선택월 즉시 차감 =====
-   문제:
-   - 기존 홈 전체현황은 actualAsOf=min(선택월말, 오늘)을 leaveSummary에 공통 적용했다.
-   - 그래서 오늘 이후 날짜라도 스케줄에 이미 '연'으로 입력/저장된 사용분이 전체현황에서 숨겨졌다.
-   원칙:
-   1) 자동 발생/조정은 실제 발생한 날짜까지만 잔여에 더한다. 미래 발생예정은 미리 더하지 않는다.
-   2) 사용은 선택월 스케줄에 '연'으로 확정 입력된 순간 예약/차감으로 본다.
-      오늘 이후 날짜라도 선택월 안의 입력된 연차면 전체현황 사용/잔여에 즉시 반영한다.
-   3) 스케줄 저장 후 원장 동기화 전이라도 로컬 schedules 기준으로 즉시 표시한다.
-*/
-function v45LeaveUseHoursFromSchedule(e,s){
-  let saved=Number(s?.scheduled_hours||0);
-  if(saved>0)return saved;
-  try{
-    if(typeof v40AnnualLeaveUnitHoursForEmployee==='function'){
-      let h=Number(v40AnnualLeaveUnitHoursForEmployee(e,s?.work_date)||0);
-      if(h>0)return h;
-    }
-  }catch(_){ }
-  return Number(leaveDayHoursAt(e,s?.work_date)||0);
-}
-function v45HomeLeaveSummary(e){
-  let r=monthRange(),today=isoToday(),actualCutoff=(r.last<today?r.last:today);
-  // 실제 발생/실제 과거 사용/잔여확정은 오늘(또는 과거 선택월 말)까지만 계산한다.
-  let base=liveLeaveSummary(e,actualCutoff);
-  if(r.last<=actualCutoff)return {...base,committedFutureUse:0};
-
-  // 선택월 안에서 오늘 이후에 이미 입력된 '연' 스케줄은 즉시 사용예약/차감 처리한다.
-  let futureStart=addDaysIso(actualCutoff,1);
-  if(futureStart<r.first)futureStart=r.first;
-  let futureUse=schedules
-    .filter(s=>Number(s.employee_id)===Number(e.id) &&
-               s.work_date>=futureStart && s.work_date<=r.last &&
-               String(s.work_code||'').trim()==='연')
-    .reduce((sum,s)=>sum+v45LeaveUseHoursFromSchedule(e,s),0);
-
-  futureUse=Math.round(futureUse*1000000)/1000000;
-  if(!(futureUse>0))return {...base,committedFutureUse:0};
-  let used=Math.round((Number(base.used||0)+futureUse)*1000000)/1000000;
-  let balance=Math.round((Number(base.balance||0)-futureUse)*1000000)/1000000;
-  return {...base,used,balance,committedFutureUse:futureUse};
-}
-
-// V22/V28/V40 누적 홈 표 구조는 그대로 두고, 사용/잔여 계산만 V45 기준으로 교체한다.
-renderHome=function(){
- let monthEmps=employeesForMonth($('monthSelect').value),
-     monthItems=monthEmps.map(e=>({e,item:commerceV22SelectedMonthLeaveItem(e)})).filter(x=>x.item),
-     eligible=monthItems.filter(x=>!['ineligible','fail'].includes(x.item.kind)),
-     w5=eligible.filter(x=>normalizeWorkTypeValue(workConditionForDate(x.e,x.item.eventDate).work_type)==='40').length,
-     w4=eligible.filter(x=>normalizeWorkTypeValue(workConditionForDate(x.e,x.item.eventDate).work_type)==='36').length,
-     pay=0;
- payroll.forEach(p=>pay+=Number(p.net_pay||0));
- let st=stores.find(s=>s.id===storeId());
- $('homeTitle').textContent=(st?.name||'')+' · '+$('monthSelect').value;
- $('kEmp').textContent=monthEmps.length+'명';
- $('kLeaveDue').textContent=monthItems.length+'명';
- $('kUnder1').textContent=w5+'명';
- $('kAnnual').textContent=w4+'명';
- if($('kPay'))$('kPay').textContent=isAppAdmin()?money(pay):'';
- $('homeEmployees').innerHTML=monthItems.length?monthItems
-   .sort((a,b)=>(Number(a.e.print_order??9999)-Number(b.e.print_order??9999))||String(a.e.name||'').localeCompare(String(b.e.name||''),'ko'))
-   .map(({e,item})=>{
-     let s=v45HomeLeaveSummary(e),planned=Number(s.committedFutureUse||0),
-         usedHelp=planned>0?`<br><span class="help" title="선택월에 이미 입력된 미래 연차도 즉시 차감합니다.">입력예정 ${hour2(planned)}h 포함</span>`:'';
-     return `<tr><td class="name"><b>${esc(e.name)}</b></td><td>${workType(e)}</td><td>${e.hire_date||''}</td>
-       <td>${commerceV22DueCell(item)}</td>
-       <td>${s.accrued}h</td><td>${s.used}h${usedHelp}</td><td>${v28AdjustmentDisplay(s)}</td><td><b>${s.balance}h</b></td></tr>`;
-   }).join(''):'<tr><td colspan="8">이번 달 연차 발생·예정 직원이 없습니다.</td></tr>';
- renderAdminTodo();
-};
-
-window.LEAVE_DASHBOARD_BUILD='V45_COMMITTED_USE_IMMEDIATE_20260927';
-console.info('[연차] V45_COMMITTED_USE_IMMEDIATE_20260927 · 발생은 실제일 기준 · 선택월에 입력된 연차사용은 미래일도 전체현황 즉시 차감');
-</script>
-
-
-<script id="v46LeaveCommittedBalanceUnified">
-/* ===== V46 · 연차 표시 통일: 스케줄에 확정 입력된 '연'은 즉시 예약차감 =====
-   - 법정 발생: 실제 발생일까지만 잔여에 더함 (미래 발생예정 선반영 금지)
-   - 사용: 선택월 스케줄에 '연'으로 저장되면 날짜가 오늘 이후여도 사용예약으로 즉시 차감
-   - 전체현황 / 직원관리 연차잔여 / data-leave-balance 즉시표시를 동일 기준으로 통일
-   - leaveSummary/liveLeaveSummary의 법정·잔여확정 내부 계산 의미는 유지한다.
-*/
-const v46CoreLiveLeaveSummary=liveLeaveSummary;
-function v46CommittedLeaveDisplaySummary(e,actualAsOf=isoToday()){
-  let today=String(actualAsOf||isoToday()), r=monthRange();
-  // 실제 발생, 과거 사용, balance_set은 실제 기준일까지만 계산
-  let cutoff=today;
-  if(r.last<cutoff)cutoff=r.last;
-  let base=v46CoreLiveLeaveSummary(e,cutoff);
-
-  // 선택월이 기준일보다 뒤에 걸쳐 있으면, 기준일 다음날~선택월 말의 확정 '연'을 예약 차감
-  let futureStart=addDaysIso(cutoff,1);
-  if(futureStart<r.first)futureStart=r.first;
-  if(futureStart>r.last)return {...base,committedFutureUse:0};
-
-  let futureUse=schedules
-    .filter(s=>Number(s.employee_id)===Number(e.id) &&
-               String(s.work_date||'')>=futureStart && String(s.work_date||'')<=r.last &&
-               String(s.work_code||'').trim()==='연')
-    .reduce((sum,s)=>sum+v45LeaveUseHoursFromSchedule(e,s),0);
-  futureUse=Math.round(futureUse*1000000)/1000000;
-  if(!(futureUse>0))return {...base,committedFutureUse:0};
-  return {
-    ...base,
-    used:Math.round((Number(base.used||0)+futureUse)*1000000)/1000000,
-    balance:Math.round((Number(base.balance||0)-futureUse)*1000000)/1000000,
-    committedFutureUse:futureUse
-  };
-}
-
-// 홈도 동일 함수 사용
-v45HomeLeaveSummary=function(e){return v46CommittedLeaveDisplaySummary(e,isoToday())};
-
-// 직원관리 본표는 기존 실제잔여가 아니라 확정입력 연차까지 예약차감한 잔여를 표시한다.
-const v46OriginalRenderEmployees=renderEmployees;
-renderEmployees=function(){
-  // 기존 renderEmployees 내부에서 liveLeaveSummary(e,isoToday())를 호출하므로,
-  // 렌더링 동안에만 UI용 요약을 사용한다. 계산/저장 로직에는 영향을 주지 않는다.
-  const originalLive=liveLeaveSummary;
-  liveLeaveSummary=function(e,asOf=monthRange().last){
-    if(String(asOf||'')===String(isoToday())) return v46CommittedLeaveDisplaySummary(e,isoToday());
-    return originalLive(e,asOf);
-  };
-  try{return v46OriginalRenderEmployees();}
-  finally{liveLeaveSummary=originalLive;}
-};
-
-// 스케줄에서 '연' 입력 직후 표시되는 직원관리 잔여도 같은 기준.
-refreshLiveLeaveUI=function(employeeId){
-  if($('employeesPage')?.classList.contains('active'))renderEmployees();
-  if($('homePage')?.classList.contains('active'))renderHome();
-  document.querySelectorAll(`[data-leave-balance="${employeeId}"]`).forEach(el=>{
-    let e=allEmployees().find(x=>Number(x.id)===Number(employeeId));
-    if(!e)return;
-    let s=v46CommittedLeaveDisplaySummary(e,isoToday());
-    el.textContent=hour2(s.balance)+'h';
-    el.title=s.committedFutureUse>0
-      ?`선택월에 입력된 예정 연차 ${hour2(s.committedFutureUse)}h를 이미 차감한 사용가능 잔여`
-      :'현재 입력된 연차를 반영한 사용가능 잔여';
-  });
-};
-
-// 직원관리 렌더 후 툴팁도 예약차감 여부가 보이게 한다.
-const v46OriginalV28Refresh=typeof v28OriginalRefreshLiveLeaveUI==='function'?v28OriginalRefreshLiveLeaveUI:null;
-
-window.LEAVE_DISPLAY_BUILD='V46_COMMITTED_LEAVE_BALANCE_UNIFIED_20260927';
-console.info('[연차] V46_COMMITTED_LEAVE_BALANCE_UNIFIED_20260927 · 홈/직원관리/즉시표시를 확정 연차 예약차감 기준으로 통일');
-</script>
-
-<!-- BUILD: V47_WEEKLY_HOLIDAY_FLOAT_NOISE_FIX -->
-</body></html>
+</script>\n</body></html>
