@@ -9423,9 +9423,7 @@ async function uploadEmployeeDocument(employeeId,type){
  if(type==='work_contract'&&startRaw&&!contractStart)return alert('계약 시작일을 8자리로 입력하세요. 예: 20260801');
  if(type==='work_contract'&&!contractIndefinite&&endRaw&&!contractEnd)return alert('계약 종료일을 8자리로 입력하세요. 예: 20270731');
  if(type==='work_contract'&&contractStart&&contractEnd&&contractEnd<contractStart)return alert('계약 종료일이 시작일보다 빠릅니다.');
- if(type==='work_contract'&&!contractIndefinite&&!contractEnd){
-   return alert('계약 종료일을 확인하지 못했습니다.\nPDF를 다시 선택해 자동읽기를 시도하거나, 계약서에 적힌 종료일을 8자리로 입력해 주세요.\n기간의 정함이 없는 계약이면 “기간의 정함 없음 (무기계약)”을 체크하세요.');
- }
+
  if(type==='work_contract'&&contractIndefinite&&!employeeDocumentIndefiniteColumnAvailable){
    await loadEmployeeDocumentStatus(storeId());
    if(!employeeDocumentIndefiniteColumnAvailable)return alert('기간의 정함이 없는 근로계약을 저장하려면 Supabase employee_documents에 contract_is_indefinite 컬럼을 최초 1회 추가해야 합니다.\n\nSQL 적용 후 다시 업로드해 주세요.');
@@ -9452,16 +9450,19 @@ async function uploadEmployeeDocument(employeeId,type){
  if(registerWorkCondition){
    await loadEmployeeWorkConditions(storeId());
    let preset=null;
-   if(extractedTerms){
-     let noteParts=['근로계약서 자동읽기 확인값'];
-     if(extractedTerms.note)noteParts.push('비고: '+extractedTerms.note);
+   if(extractedTerms&&(
+     Number(extractedTerms.daily_hours||0)>0 ||
+     Number(extractedTerms.weekly_hours||0)>0 ||
+     (extractedTerms.work_days||[]).length ||
+     normalizeContractDayRules(extractedTerms.day_rules).length
+   )){
      preset={
        work_type:extractedTerms.work_type||'custom',daily_hours:Number(extractedTerms.daily_hours||0)||8,
        default_start_time:extractedTerms.default_start_time||null,default_end_time:extractedTerms.default_end_time||null,
        break_minutes:Number(extractedTerms.break_minutes||0),work_days:extractedTerms.work_days||[],day_rules:normalizeContractDayRules(extractedTerms.day_rules),
        leave_weekly_hours:Number(extractedTerms.weekly_hours||0)||Number(extractedTerms.daily_hours||0)*(extractedTerms.work_days?.length||0),
        leave_monthly_hours:Number(extractedTerms.daily_hours||0)||8,leave_day_hours:Number(extractedTerms.daily_hours||0)||8,
-       note:noteParts.join(' · ')
+       note:(extractedTerms.note||'').trim()
      };
    }
    return openWorkConditionHistory(employeeId,contractStart||date,'근로계약 갱신에 따른 근무조건 변경',preset);
@@ -11775,5 +11776,230 @@ showContractTermsReview=function(terms,nameCheck=null){
    if(grid)grid.appendChild(bar);else host.appendChild(bar);
  }
 };
+
+
+
+/* ===== V33 · 근로계약서 즉시업로드 / UI / 비고 / 모달 드래그 수정 =====
+   - 근로조건 변경 체크박스는 유지하되 기본 미체크
+   - PDF 선택만으로 업로드 가능. 자동 OCR/분석을 기다리지 않음
+   - 필요할 때만 '빠른 분석' 실행
+   - 표시명 / PDF 원본 동일 가로폭
+   - OCR에서 읽은 비고는 자동입력하지 않음
+   - 비고/입력칸 드래그 선택 중 모달이 닫히지 않음
+*/
+
+/* 근로계약서 업로드 UI */
+(function(){
+ let st=document.createElement('style');
+ st.textContent=`
+ .contractUploadGrid.workContractGrid{
+   grid-template-columns:repeat(4,minmax(0,1fr));
+   gap:10px;
+   align-items:end;
+ }
+ .contractUploadGrid.workContractGrid .contractTitleField,
+ .contractUploadGrid.workContractGrid .contractFileField{
+   grid-column:span 2;
+   min-width:0;
+ }
+ .contractUploadGrid.workContractGrid .contractTitleField input,
+ .contractUploadGrid.workContractGrid .contractFileField input{
+   width:100%;
+   min-width:0;
+   box-sizing:border-box;
+   height:44px;
+ }
+ .contractUploadGrid.workContractGrid .contractFileField input[type="file"]{
+   padding:6px 8px;
+ }
+ .contractUploadGrid.workContractGrid .contractChangeRow,
+ .contractUploadGrid.workContractGrid .contractUploadActions{
+   grid-column:1/-1;
+ }
+ .contractUploadGrid.workContractGrid .contractUploadActions{
+   display:flex;
+   justify-content:flex-end;
+   align-items:center;
+   gap:8px;
+   flex-wrap:wrap;
+ }
+ .contractUploadGrid.workContractGrid .contractTermsReview{
+   grid-column:1/-1;
+ }
+ @media(max-width:900px){
+   .contractUploadGrid.workContractGrid{grid-template-columns:repeat(2,minmax(0,1fr))}
+   .contractUploadGrid.workContractGrid .contractTitleField,
+   .contractUploadGrid.workContractGrid .contractFileField{grid-column:span 1}
+   .contractUploadGrid.workContractGrid .contractChangeRow,
+   .contractUploadGrid.workContractGrid .contractUploadActions,
+   .contractUploadGrid.workContractGrid .contractTermsReview{grid-column:1/-1}
+ }
+ @media(max-width:620px){
+   .contractUploadGrid.workContractGrid{grid-template-columns:1fr}
+   .contractUploadGrid.workContractGrid .contractTitleField,
+   .contractUploadGrid.workContractGrid .contractFileField,
+   .contractUploadGrid.workContractGrid .contractChangeRow,
+   .contractUploadGrid.workContractGrid .contractUploadActions,
+   .contractUploadGrid.workContractGrid .contractTermsReview{grid-column:1}
+ }
+ `;
+ document.head.appendChild(st);
+})();
+
+/* 모달: 입력칸에서 드래그 시작했다가 바깥에서 마우스를 놓아도 닫히지 않게 */
+const v33OriginalModal=modal;
+modal=function(content){
+ v33OriginalModal(content);
+ let wrap=$('modalOverlay');
+ if(!wrap||wrap.dataset.v33SafeDrag==='1')return;
+ wrap.dataset.v33SafeDrag='1';
+ let downOnBackdrop=false;
+ wrap.addEventListener('pointerdown',function(ev){
+   downOnBackdrop=(ev.target===wrap);
+ },true);
+ wrap.addEventListener('click',function(ev){
+   if(ev.target===wrap&&!downOnBackdrop){
+     ev.preventDefault();
+     ev.stopImmediatePropagation();
+   }
+   downOnBackdrop=false;
+ },true);
+};
+
+/* 자동 인식 비고는 비워두고 사용자가 직접 쓴 값만 보존 */
+const v33OriginalShowContractTermsReview=showContractTermsReview;
+showContractTermsReview=function(terms,nameCheck=null){
+ let manualNote=$('contractTermNote')?.value||'';
+ let clean=terms?{...terms,note:''}:terms;
+ v33OriginalShowContractTermsReview(clean,nameCheck);
+ if(manualNote&&$('contractTermNote'))$('contractTermNote').value=manualNote;
+};
+
+/* 근로계약서 문서함: 체크박스 복원 + 기본 미체크 + 표시명/PDF 동일폭 */
+openEmployeeDocuments=async function(employeeId,type){
+ let e=findEmployeeAny(employeeId);if(!e)return alert('직원정보를 찾지 못했습니다.');
+ let label=employeeDocTypeLabel(type),
+     isResignation=type==='resignation',
+     isWorkContract=type==='work_contract',
+     isSalaryContract=type==='salary_contract';
+
+ let vaultHelp=isResignation
+   ?'작성 완료한 사직서 PDF 원본을 서버에 보관합니다. 삭제하지 않는 한 직원 기록과 함께 계속 남습니다.'
+   :isSalaryContract
+     ?'<b>연봉계약서는 원본 PDF 보관용</b>입니다. 파일 선택 후 바로 업로드하면 됩니다.'
+     :'<b>근로계약서도 연봉계약서처럼 PDF 선택 후 바로 업로드할 수 있습니다.</b> 계약내용 자동분석은 업로드를 막지 않으며, 필요한 경우에만 아래 <b>빠른 분석</b>을 누르세요. 근무조건이 실제로 변경된 드문 경우만 “이 계약일부터 근무조건 변경 있음”을 체크하면 됩니다.';
+
+ let periodFields=isWorkContract?`
+ <div class="field" style="margin:0"><label>계약 시작일</label><input id="contractStartDate" type="text" inputmode="numeric" maxlength="8" placeholder="YYYYMMDD" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,8)"></div>
+ <div class="field" style="margin:0"><label>계약 종료일</label><input id="contractEndDate" type="text" inputmode="numeric" maxlength="8" placeholder="YYYYMMDD" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,8)"></div>
+ <label class="contractWorkChange" style="display:flex;align-items:center;gap:7px;padding:9px 10px;border:1px solid #d9e2f2;border-radius:10px;background:#f8fbff;font-size:12px;font-weight:800"><input id="contractIndefinite" type="checkbox" onchange="setContractIndefiniteUi(this.checked)">기간의 정함 없음 (무기계약)</label>`:'';
+
+ let changeRow=isWorkContract?`
+ <label class="contractWorkChange contractChangeRow" style="display:flex;align-items:center;gap:7px;padding:9px 10px;border:1px solid #d9e2f2;border-radius:10px;background:#f8fbff;font-size:12px;font-weight:800">
+   <input id="contractWorkConditionChange" type="checkbox">
+   이 계약일부터 근무조건 변경 있음
+ </label>`:'';
+
+ let actionRow=isWorkContract?`
+ <div class="contractUploadActions">
+   <span class="help" style="margin-right:auto">기본은 바로 업로드 · 계약내용을 자동채우고 싶을 때만 빠른 분석</span>
+   <button type="button" class="btn gray" onclick="v33RunQuickContractAnalysis(${employeeId})">빠른 분석</button>
+   <button class="btn" onclick="uploadEmployeeDocument(${employeeId},'${type}')">업로드</button>
+ </div>`:
+ `<button class="btn" onclick="uploadEmployeeDocument(${employeeId},'${type}')">업로드</button>`;
+
+ modal(`<div class="contractVaultHead"><div><h2 style="margin:0">${esc(e.name)} · ${label}</h2>
+ <div class="help" style="margin-top:4px">${vaultHelp}</div></div>
+ <button class="btn gray" onclick="closeModal()">닫기</button></div>
+ <div class="contractUploadBox"><div style="font-weight:900;margin-bottom:8px">새 ${label} 업로드</div>
+ <div class="contractUploadGrid ${isSalaryContract?'salaryContractGrid':isWorkContract?'workContractGrid':''}">
+ <div class="field" style="margin:0"><label>${isResignation?'작성일':isSalaryContract?'연봉계약서 작성일':'문서 작성일'}</label><input id="contractDocDate" type="text" inputmode="numeric" maxlength="8" placeholder="YYYYMMDD" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,8)"></div>
+ ${periodFields}
+ <div class="field ${isWorkContract?'contractTitleField':''}" style="margin:0"><label>표시명</label><input id="contractDocTitle" placeholder="예: 2026년 ${label}"></div>
+ <div class="field ${isWorkContract?'contractFileField':''}" style="margin:0"><label>PDF 원본</label><input id="contractDocFile" type="file" accept="application/pdf,.pdf" onchange="fillContractMetaFromFile(this.files[0],'${type}',${employeeId})"><div id="contractAutoReadStatus" class="contractAutoReadStatus"></div></div>
+ ${changeRow}
+ ${actionRow}
+ ${isWorkContract?'<div id="contractTermsReview" class="contractTermsReview"></div>':''}
+ </div></div>
+ <div id="contractDocList" class="contractVaultList"><div class="contractEmpty">불러오는 중...</div></div>`);
+
+ await loadEmployeeDocuments(employeeId,type);
+};
+
+/* PDF 선택 단계는 파일명 확인만 즉시 수행. PDF 본문 분석은 하지 않음. */
+fillContractMetaFromFile=async function(file,type,employeeId=null){
+ if(!file)return;
+ pendingContractExtraction=null;
+ showContractTermsReview(null,null);
+
+ let d=guessContractDateFromFilename(file.name),
+     expectedEmployee=employeeId?findEmployeeAny(employeeId):null,
+     expectedName=expectedEmployee?.name||'';
+
+ if(d&&$('contractDocDate')&&!$('contractDocDate').value)$('contractDocDate').value=d.replace(/-/g,'');
+ if($('contractDocTitle')&&!$('contractDocTitle').value)$('contractDocTitle').value=(d?d.slice(0,4)+'년 ':'')+employeeDocTypeLabel(type);
+
+ if(type==='resignation')return;
+
+ if(type==='salary_contract'){
+   pendingContractExtraction={period:null,terms:null,nameCheck:null,method:'storage-only',employee_id:employeeId||null};
+   setContractAutoReadStatus('PDF 선택 완료 · 바로 업로드할 수 있습니다.','ok');
+   return;
+ }
+
+ let nameCheck=contractEmployeeFromFilenameV5(file.name,expectedName);
+ pendingContractExtraction={period:null,terms:null,nameCheck,method:'filename-only',employee_id:employeeId||null};
+
+ // 날짜가 파일명에 있으면 시작일 후보만 즉시 넣되, PDF 본문은 읽지 않는다.
+ if(d&&$('contractStartDate')&&!$('contractStartDate').value)$('contractStartDate').value=d.replace(/-/g,'');
+
+ // 근무조건 칸은 그대로 보여주되 자동 OCR 값/비고는 넣지 않는다.
+ showContractTermsReview({},nameCheck);
+
+ if(nameCheck?.status==='matched'){
+   setContractAutoReadStatus(`PDF 선택 완료 · ${nameCheck.expected} 파일명 확인 · 바로 업로드 가능`,'ok');
+ }else if(nameCheck?.status==='mismatch'){
+   setContractAutoReadStatus(`파일명 직원 불일치 · 선택 ${nameCheck.expected||'-'} / 파일 ${nameCheck.candidate||'확인 필요'}`,'warn');
+ }else{
+   setContractAutoReadStatus('PDF 선택 완료 · 바로 업로드 가능 · 직원명은 확인 후 업로드하세요.','ok');
+ }
+};
+
+/* 사용자가 원할 때만 V32 빠른 분석 실행 */
+async function v33RunQuickContractAnalysis(employeeId){
+ let file=$('contractDocFile')?.files?.[0];
+ if(!file)return alert('먼저 근로계약서 PDF를 선택하세요.');
+ let e=findEmployeeAny(employeeId),expected=e?.name||'';
+ setContractAutoReadStatus('빠른 분석 중… 업로드는 분석 없이도 가능합니다.','reading');
+ try{
+   let data=await v32FastReadContractDataFromPdf(file,expected),
+       period=data?.period||null,
+       terms=data?.terms||{},
+       nameCheck=data?.nameCheck||contractEmployeeFromFilenameV5(file.name,expected);
+
+   pendingContractExtraction={period,terms,nameCheck,method:data?.method||'fast',employee_id:employeeId||null};
+
+   if(period){
+     if($('contractStartDate')&&period.start)$('contractStartDate').value=period.start.replace(/-/g,'');
+     if(period.indefinite)setContractIndefiniteUi(true);
+     else{
+       setContractIndefiniteUi(false);
+       if($('contractEndDate')&&period.end)$('contractEndDate').value=period.end.replace(/-/g,'');
+     }
+     if($('contractDocDate')&&!$('contractDocDate').value&&period.start)$('contractDocDate').value=period.start.replace(/-/g,'');
+   }
+
+   // OCR/텍스트에서 읽힌 비고는 버리고 근무조건 숫자/요일만 표시
+   showContractTermsReview({...terms,note:''},nameCheck);
+
+   let parts=[];
+   if(period)parts.push(`${period.start||'?'} ~ ${period.indefinite?'기간의 정함 없음':period.end||'종료일 미확인'}`);
+   if(v32TermsEnough(terms))parts.push(contractTermsSummary(terms));
+   setContractAutoReadStatus(`빠른 분석 완료${parts.length?' · '+parts.join(' · '):''}`,'ok');
+ }catch(err){
+   console.error('V33 빠른 분석 오류',err);
+   setContractAutoReadStatus('빠른 분석 실패 · PDF 원본 업로드는 그대로 가능합니다.','warn');
+ }
+}
 
 </script>\n</body></html>
