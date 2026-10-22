@@ -12113,7 +12113,7 @@ openEmployeeDocuments=async function(employeeId,type){
 
      <div class="field v34TitleField" style="margin:0"><label>표시명</label><input id="contractDocTitle" placeholder="예: 2026년 ${label}"></div>
 
-     <div class="field v34FileField" style="margin:0"><label>PDF 원본</label><input id="contractDocFile" type="file" accept="application/pdf,.pdf" onchange="fillContractMetaFromFile(this.files[0],'${type}',${employeeId})"><div id="contractAutoReadStatus" class="contractAutoReadStatus"></div></div>
+     <div class="field v34FileField" style="margin:0"><label>PDF 원본</label><input id="contractDocFile" type="file" accept="application/pdf,.pdf" onchange="fillContractMetaFromFile(this.files[0],'${type}',${employeeId})"></div>
 
      <div class="v34ActionField">
        <label style="display:block;font-weight:800;font-size:12px;margin:0 0 6px 0;color:#4b5563">작업</label>
@@ -12123,6 +12123,8 @@ openEmployeeDocuments=async function(employeeId,type){
          <div class="v34ActionHint">바로 업로드 가능<br>필요 시만 분석</div>
        </div>
      </div>
+
+     <div id="contractAutoReadStatus" class="contractAutoReadStatus v35StatusRow"></div>
 
      <label class="contractWorkChange v34CheckboxRow" style="display:flex;align-items:center;gap:7px;padding:9px 10px;border:1px solid #d9e2f2;border-radius:10px;background:#f8fbff;font-size:12px;font-weight:800">
        <input id="contractWorkConditionChange" type="checkbox">
@@ -12151,5 +12153,44 @@ openEmployeeDocuments=async function(employeeId,type){
 
  await loadEmployeeDocuments(employeeId,type);
 };
+
+
+
+/* ===== V35 · PDF 원본 입력칸 수평정렬 확정 =====
+   원인: contractAutoReadStatus가 PDF field 내부 높이를 늘려 PDF input만 위로 밀림.
+   해결: 상태영역을 입력 field 밖의 별도 grid row로 분리.
+*/
+(function(){
+ let st=document.createElement('style');
+ st.textContent=`
+ .contractUploadGrid.workContractGrid.v34Aligned .v35StatusRow{
+   grid-column:3 / -1;
+   margin-top:-4px;
+   min-height:0;
+ }
+ .contractUploadGrid.workContractGrid.v34Aligned .v34TitleField,
+ .contractUploadGrid.workContractGrid.v34Aligned .v34FileField{
+   align-self:end;
+ }
+ .contractUploadGrid.workContractGrid.v34Aligned .v34TitleField label,
+ .contractUploadGrid.workContractGrid.v34Aligned .v34FileField label{
+   display:block;
+   margin-bottom:6px;
+   line-height:1.2;
+ }
+ .contractUploadGrid.workContractGrid.v34Aligned .v34TitleField input,
+ .contractUploadGrid.workContractGrid.v34Aligned .v34FileField input[type="file"]{
+   height:44px !important;
+   margin:0 !important;
+   box-sizing:border-box;
+ }
+ @media(max-width:900px){
+   .contractUploadGrid.workContractGrid.v34Aligned .v35StatusRow{
+     grid-column:1 / -1;
+   }
+ }
+ `;
+ document.head.appendChild(st);
+})();
 
 </script>\n</body></html>
