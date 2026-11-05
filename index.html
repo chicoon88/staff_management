@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>직원관리 대시보드</title>
+<title>직원관리 대시보드 · V9.1.11</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
@@ -2389,17 +2389,18 @@ async function switchStore(){
 }
 
 // A single Supabase select has a default max-row cap (usually 1,000).
-// An employee can have at most one schedule per date; 12 employees x <=42 days
-// stays well below that cap, even in a month with many employees.
+// An employee can have at most one schedule per date; 18 employees x <=42 days
+// stays safely below Supabase's default 1,000-row limit (max 756).
+// Fewer parallel batches improve initial load without omitting rows.
 async function fetchScheduleRowsComplete(employeeIds,fromDate,toDate){
  const uniq=[...new Set((employeeIds||[]).map(Number).filter(Boolean))];
  if(!uniq.length)return [];
  const chunks=[];
- for(let i=0;i<uniq.length;i+=12)chunks.push(uniq.slice(i,i+12));
+ for(let i=0;i<uniq.length;i+=18)chunks.push(uniq.slice(i,i+18));
  const all=[];
  // Limit concurrent reads so a large store does not overload the Data API.
- for(let i=0;i<chunks.length;i+=3){
-  const responses=await Promise.all(chunks.slice(i,i+3).map(group=>
+ for(let i=0;i<chunks.length;i+=4){
+  const responses=await Promise.all(chunks.slice(i,i+4).map(group=>
    sb.from('schedules').select('*').in('employee_id',group)
     .gte('work_date',fromDate).lte('work_date',toDate).order('id',{ascending:true})
   ));
@@ -2425,12 +2426,18 @@ async function refreshAll(){
  let all=(q.data||[]).sort((a,b)=>(Number(a.print_order??9999)-Number(b.print_order??9999))||a.name.localeCompare(b.name,'ko'));
  employees=all.filter(x=>x.active!==false);
  retiredEmployees=all.filter(x=>x.active===false);
- if(canViewModule('schedule'))await loadScheduleEmployeeOrders(sid);else {scheduleEmployeeOrderMap=new Map();scheduleEmployeeOrderTableAvailable=null}
-
- // 날짜별 근무조건 이력과 스케줄은 실제로 필요한 권한에서만 불러온다.
+ // These 3 reads are independent; avoid 3 sequential network round trips.
+ // Wait for all before rendering or building schedule payloads so conditions
+ // and permissions stay consistent with the selected store.
  let needScheduleData=canViewModule('schedule')||canViewModule('hours')||canViewModule('home')||canViewModule('employees');
- if(needScheduleData)await loadEmployeeWorkConditions(sid);else employeeWorkConditions=[];
- if(needScheduleData)await loadScheduleMonthLocks(sid);
+ const loadMeta=[];
+ if(canViewModule('schedule'))loadMeta.push(loadScheduleEmployeeOrders(sid));
+ else {scheduleEmployeeOrderMap=new Map();scheduleEmployeeOrderTableAvailable=null;}
+ if(needScheduleData){
+   loadMeta.push(loadEmployeeWorkConditions(sid));
+   loadMeta.push(loadScheduleMonthLocks(sid));
+ }else employeeWorkConditions=[];
+ await Promise.all(loadMeta);
  if(token!==refreshToken || sid!==storeId())return;
  if(canViewModule('employees'))renderEmployees();
  if(canViewModule('stores'))renderStores();
@@ -3644,7 +3651,12 @@ function renderSchedule(){
 }
 function schedulePayload(id,date,raw){
  let emp=allEmployees().find(e=>e.id===id),cond=workConditionForDate(emp||{},date),rule=conditionTimesForDate(cond,date),code=String(raw??'').trim(),base=Number(rule.daily_hours||cond.daily_hours||emp?.daily_hours||8),leaveH=Number(leaveDayHoursAt(emp,date)||base||emp?.leave_day_hours||emp?.daily_hours||8),scheduled=0,worked=0,ot=0,status='';
- if(code==='연'){scheduled=leaveH;status='leave'}
+ if(code==='연'){
+   // For a fixed 40h/week contract without date-specific rules, annual leave
+   // uses the contracted leave-day hours, not a prior 9h overtime shift.
+   const fullTimeFixed=Number(cond.leave_weekly_hours||0)>=40 && Number(cond.leave_day_hours||0)>0 && !conditionRuleForDate(cond,date);
+   scheduled=fullTimeFixed?Number(cond.leave_day_hours):leaveH;status='leave'
+ }
  else if(code==='병'){scheduled=base;status='sick'}
  else if(code==='결'){scheduled=base;status='absence'}
  else if(code==='법'){scheduled=base;status='deemed'}
