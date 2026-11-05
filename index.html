@@ -893,23 +893,17 @@ body.resizingEmployeeColumn *{
 #hoursPage .weekendHead{background:#eaf2ff!important;color:#2457a6!important}
 #hoursPage .holidayHead{background:#ffe7e7!important;color:#b42318!important}
 #hoursPage .workKindCell{min-width:155px;padding:5px!important}
-#hoursPage .workBucket{border-radius:9px;padding:8px 7px;line-height:1.3;min-height:47px;display:flex;flex-direction:column;justify-content:center;gap:5px}
+#hoursPage .workBucket{border-radius:9px;padding:8px 7px;line-height:1.25;min-height:47px;display:flex;flex-direction:column;justify-content:center;gap:4px}
 #hoursPage .workBucket.weekday{background:#fffdf0;border:1px solid #f3e6a0}
 #hoursPage .workBucket.weekend{background:#f4f8ff;border:1px solid #d7e5fb}
 #hoursPage .workBucket.holiday{background:#fff4f4;border:1px solid #f5d2d2}
 #hoursPage .workBucket.empty{background:#fafafa;border:1px dashed #e1e5eb;color:#9aa1ad}
-#hoursPage .workFormula{font-size:12px;font-weight:700;white-space:normal;word-break:keep-all;display:flex;flex-wrap:wrap;align-items:center;gap:4px 5px}
-#hoursPage .workTerm{white-space:nowrap;display:inline-flex;align-items:center;padding:1px 0}
-#hoursPage .workTerm .termInner{display:inline-block;padding:2px 6px;border-radius:999px;background:rgba(255,255,255,.55);border:1px solid rgba(71,85,105,.12)}
+#hoursPage .workFormula{font-size:12px;font-weight:700;white-space:normal;word-break:keep-all}
+#hoursPage .workTerm{white-space:nowrap}
 #hoursPage .workLeaveTerm{color:#18794e;font-weight:800;white-space:nowrap}
-#hoursPage .workLeaveTerm .termInner{background:#ecfdf3;border-color:#b7e4c7}
-#hoursPage .workPlus{display:inline-flex;align-items:center;justify-content:center;font-weight:900;padding:0 2px}
-#hoursPage .workPlus.workPlusNormal{color:#697386}
-#hoursPage .workPlus.workPlusLeave{color:#0f8a55}
+#hoursPage .workPlus{color:#2563eb;font-weight:900;padding:0 2px}
+#hoursPage .workPlus.workPlusLeave{color:#14834a}
 #hoursPage .workEquals{font-size:13px;color:#283447}
-#hoursPage .workEquals .sumMain{font-weight:800}
-#hoursPage .workEquals .sumPlus{font-weight:900;color:#0f8a55;padding:0 2px}
-#hoursPage .workEquals .sumLeave{font-weight:800;color:#18794e}
 #hoursPage .hoursStrong{font-size:14px;background:#fbfcfe}
 #hoursPage .hoursDiff{font-weight:900}
 #hoursPage .workDateTable{min-width:980px}
@@ -3967,25 +3961,17 @@ function expectedWeeklyHolidayHours(e){
 }
 
 function formatWorkBucket(bucket,kind){
- // 가독성 개선: 곱셈 묶음은 괄호로 감싸고, + 는 일반근무/연차를 색으로 구분한다.
+ // V50 기존 셀 디자인 유지: 곱셈 묶음에 괄호만 붙이고 + 기호 색상만 구분한다.
  if(!bucket?.dates?.length&&!bucket?.leaveDates?.length)return `<div class="workBucket ${kind} empty">-</div>`;
  const groupDates=dates=>{
    let groups=new Map();
    (dates||[]).forEach(x=>{let h=round2(Number(x.hours||0)),key=String(h);if(!groups.has(key))groups.set(key,{hours:h,count:0});groups.get(key).count++});
    return [...groups.values()];
  };
- const normalGroups=groupDates(bucket.dates);
- const leaveGroups=groupDates(bucket.leaveDates);
- const normalTerms=normalGroups.map(g=>`<span class="workTerm"><span class="termInner">(<b>${g.count}일</b> × ${hour2(g.hours)}h)</span></span>`);
- const leaveTerms=leaveGroups.map(g=>`<span class="workTerm workLeaveTerm"><span class="termInner">(연 <b>${g.count}일</b> × ${hour2(g.hours)}h)</span></span>`);
- let parts=[];
- if(normalTerms.length)parts.push(normalTerms.join('<span class="workPlus workPlusNormal"> + </span>'));
- if(leaveTerms.length){
-   if(parts.length)parts.push('<span class="workPlus workPlusLeave"> + </span>');
-   parts.push(leaveTerms.join('<span class="workPlus workPlusLeave"> + </span>'));
- }
- let formula=parts.join('');
- let total=`<span class="sumMain">${hour2(bucket.hours)}h</span>`+(bucket.leaveDates?.length?`<span class="sumPlus"> + </span><span class="sumLeave">연 ${hour2(bucket.leaveHours)}h</span>`:'');
+ let terms=[...groupDates(bucket.dates).map(g=>({html:`<span class="workTerm">(<b>${g.count}일</b> × ${hour2(g.hours)}h)</span>`,leave:false})),
+   ...groupDates(bucket.leaveDates).map(g=>({html:`<span class="workTerm workLeaveTerm">(연 <b>${g.count}일</b> × ${hour2(g.hours)}h)</span>`,leave:true}))];
+ let formula=terms.map((term,i)=>(i?`<span class="workPlus${term.leave?' workPlusLeave':''}"> + </span>`:'')+term.html).join('');
+ let total=`<b>${hour2(bucket.hours)}h</b>`+(bucket.leaveDates?.length?`<span class="workPlus workPlusLeave"> + </span><span class="workLeaveTerm">연 ${hour2(bucket.leaveHours)}h</span>`:'');
  return `<div class="workBucket ${kind}"><div class="workFormula">${formula}</div><div class="workEquals">= ${total}</div></div>`;
 }
 
