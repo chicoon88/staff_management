@@ -1455,7 +1455,7 @@ function closeModal(){
  document.body.style.overflow='';
 }
 $('monthSelect').value=new Date().toISOString().slice(0,7);
-let employees=[],schedules=[],payroll=[],stores=[],holidays=[],manualHolidays=[],autoHolidays=[],selectedEmployees=new Set(),leaveLedger=[],leaveAttendanceSchedules=[],scheduleSaveQueue=new Map(),scheduleSaveTimer=null,employeeImportRows=[],paymentRegister=[],incentiveRegister=[],retiredEmployees=[],employeeView='active',employeeActiveSort='manual',refreshToken=0,payrollReloadToken=0,employeeDeleteSelection=new Set(),scheduleView='monthly',employeeResidentBackfillDoneStores=new Set(),employeeSensitiveColumnsMissingDetected=false,employeeDocumentStatusMap=new Map(),employeeDocumentStatusReadyStoreId=null,employeeDocumentPeriodColumnsAvailable=true,employeeDocumentIndefiniteColumnAvailable=true,employeeWorkConditions=[],employeeWorkConditionTableAvailable=null,currentSessionUser=null,currentAppUser=null,currentPermissions=new Map(),currentStoreAccess=new Set(),permissionSystemAvailable=null,adminUsers=[],adminUserStoreAccess=[],adminUserPermissions=[],auditLogs=[],accessLogs=[],accessSessions=[],accessSessionTableAvailable=null,accessHeartbeatTimer=null,accessSessionRefreshTimer=null,currentAccessToken='',ipAddressLabels=new Map(),scheduleMonthLocks=[],scheduleLockTableAvailable=null,adminTaskRefreshToken=0,hoursView='summary',attendanceSchemaAvailable=null,attendanceActiveImport=null,attendanceRecords=[],attendanceReviews=[],attendanceReviewHistory=[],attendanceListMode='pending',attendanceSelected=new Set(),attendancePendingManualParse=null,attendanceSettings={late_minutes:10,early_leave_minutes:10,late_out_minutes:60},scheduleOutputMode='all',scheduleOutputSelected=new Set(),pendingContractExtraction=null,scheduleEmployeeOrderMap=new Map(),scheduleEmployeeOrderTableAvailable=null,scheduleDragEmployeeId=null,scheduleDragPosition='before';
+let employees=[],schedules=[],payroll=[],stores=[],holidays=[],manualHolidays=[],autoHolidays=[],selectedEmployees=new Set(),leaveLedger=[],leaveAttendanceSchedules=[],scheduleSaveQueue=new Map(),scheduleSaveTimer=null,scheduleSaveInFlight=null,scheduleLeaveSyncTimer=null,employeeImportRows=[],paymentRegister=[],incentiveRegister=[],retiredEmployees=[],employeeView='active',employeeActiveSort='manual',refreshToken=0,payrollReloadToken=0,employeeDeleteSelection=new Set(),scheduleView='monthly',employeeResidentBackfillDoneStores=new Set(),employeeSensitiveColumnsMissingDetected=false,employeeDocumentStatusMap=new Map(),employeeDocumentStatusReadyStoreId=null,employeeDocumentPeriodColumnsAvailable=true,employeeDocumentIndefiniteColumnAvailable=true,employeeWorkConditions=[],employeeWorkConditionTableAvailable=null,currentSessionUser=null,currentAppUser=null,currentPermissions=new Map(),currentStoreAccess=new Set(),permissionSystemAvailable=null,adminUsers=[],adminUserStoreAccess=[],adminUserPermissions=[],auditLogs=[],accessLogs=[],accessSessions=[],accessSessionTableAvailable=null,accessHeartbeatTimer=null,accessSessionRefreshTimer=null,currentAccessToken='',ipAddressLabels=new Map(),scheduleMonthLocks=[],scheduleLockTableAvailable=null,adminTaskRefreshToken=0,hoursView='summary',attendanceSchemaAvailable=null,attendanceActiveImport=null,attendanceRecords=[],attendanceReviews=[],attendanceReviewHistory=[],attendanceListMode='pending',attendanceSelected=new Set(),attendancePendingManualParse=null,attendanceSettings={late_minutes:10,early_leave_minutes:10,late_out_minutes:60},scheduleOutputMode='all',scheduleOutputSelected=new Set(),pendingContractExtraction=null,scheduleEmployeeOrderMap=new Map(),scheduleEmployeeOrderTableAvailable=null,scheduleDragEmployeeId=null,scheduleDragPosition='before';
 const money=n=>Math.round(Number(n||0)).toLocaleString('ko-KR')+'원',esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 function normalizeName(v){return String(v??'').normalize('NFKC').trim().replace(/\s+/g,'').replace(/[·ㆍ._-]/g,'').toLowerCase()}
 function monthRange(){let m=$('monthSelect').value,[y,mo]=m.split('-').map(Number),days=new Date(y,mo,0).getDate();return {m,y,mo,days,first:m+'-01',last:m+'-'+String(days).padStart(2,'0')}}
@@ -2263,8 +2263,13 @@ async function openApp(){
  }catch(err){console.error(err);$('loginMsg').textContent=err?.message||String(err)}
 }
 [$('loginEmail'),$('loginPassword')].forEach(el=>el&&el.addEventListener('keydown',e=>{if(e.key==='Enter')signIn()}));
-document.querySelectorAll('.nav').forEach(b=>b.onclick=()=>{
+document.querySelectorAll('.nav').forEach(b=>b.onclick=async()=>{
  if(!canViewModule(b.dataset.page))return alert('이 계정에는 해당 화면 보기 권한이 없습니다.');
+ // 스케줄 입력 직후 다른 화면을 눌러도 서버 저장이 끝난 뒤 이동한다.
+ if(scheduleSaveQueue.size||scheduleSaveInFlight){
+   let ok=await ensureScheduleSavedBeforeLeave();
+   if(!ok){alert('스케줄 저장이 완료되지 않았습니다. 네트워크 상태를 확인한 뒤 다시 이동해 주세요. 입력값은 저장 대기 상태로 유지됩니다.');return;}
+ }
  if($('globalContextToolbar'))$('globalContextToolbar').style.display=b.dataset.page==='homeshop'?'none':'';
  document.querySelectorAll('.nav').forEach(x=>x.classList.remove('active'));
  document.querySelectorAll(`[data-page="${b.dataset.page}"]`).forEach(x=>x.classList.add('active'));
@@ -2301,11 +2306,13 @@ function clearStoreScopedUI(){
 }
 
 async function switchMonth(){
+ if(scheduleSaveQueue.size||scheduleSaveInFlight){let ok=await ensureScheduleSavedBeforeLeave();if(!ok)return alert('저장 대기 중인 스케줄이 있어 월을 바꾸지 않았습니다. 저장오류를 확인해 주세요.')}
  ++payrollReloadToken;
  clearStoreScopedUI();
  await refreshAll();
 }
 async function switchStore(){
+ if(scheduleSaveQueue.size||scheduleSaveInFlight){let ok=await ensureScheduleSavedBeforeLeave();if(!ok)return alert('저장 대기 중인 스케줄이 있어 업장을 바꾸지 않았습니다. 저장오류를 확인해 주세요.')}
  const sid=storeId();if(!isAppAdmin()&&permissionSystemAvailable===true&&!currentStoreAccess.has(Number(sid)))return alert('이 업장에 접근 권한이 없습니다.');
  localStorage.setItem('staff_dashboard_store_id',String(sid));++payrollReloadToken;clearStoreScopedUI();await refreshAll();await logAccessEvent('store_open',{store_id:sid});await touchAccessSession(false);
 }
@@ -3477,6 +3484,7 @@ async function weeklyScheduleInput(id,date,raw,input){
  // V9.1.1: 한글 IME 조합 중간값(예: "연" 입력 중 "여")은 스케줄로 저장하지 않는다.
  if(input?.dataset?.imeComposing==='1')return;
  if(!requireScheduleDateEdit(date)){let e=allEmployees().find(x=>x.id===id),old=sched(e,date);input.value=normalizeScheduleCode(old?.work_code||'');return;}
+ let emp0=allEmployees().find(x=>x.id===id),existing0=sched(emp0,date);
  let rawCode=normalizeScheduleCode(raw);if(input&&input.value!==rawCode)input.value=rawCode;
  let payload=schedulePayload(id,date,rawCode),snapshot=String(rawCode??'');
  if(payload.work_code==='연'){
@@ -3492,6 +3500,7 @@ async function weeklyScheduleInput(id,date,raw,input){
  input.className=`weekCode code${payload.work_code}`;
  applyLocalSchedule(payload);
  queueScheduleSave(payload);
+ if(!existing0)await flushScheduleQueue();
  refreshWeeklyRow(id,date);
 }
 function weeklyScheduleKey(ev,input){
@@ -3583,45 +3592,94 @@ function setSaveState(type,text){
  let el=$('scheduleSaveState');if(!el)return;
  el.className='saveState '+type;el.textContent=text;
 }
+/* V9.1.3 FIX: 스케줄 저장을 DB 확정 → 화면이동 순으로 직렬화한다. 빈칸 신규입력도 서버 응답을 확인한다. */
 function queueScheduleSave(payload){
  if(!canEditScheduleDate(payload?.work_date||$('monthSelect')?.value))return;
  scheduleSaveQueue.set(`${payload.employee_id}|${payload.work_date}`,payload);
  setSaveState('saving',`저장대기 ${scheduleSaveQueue.size}`);
  clearTimeout(scheduleSaveTimer);
- scheduleSaveTimer=setTimeout(flushScheduleQueue,220);
+ scheduleSaveTimer=setTimeout(()=>flushScheduleQueue(),120);
+}
+function scheduleBackgroundLeaveSync(){
+ clearTimeout(scheduleLeaveSyncTimer);
+ scheduleLeaveSyncTimer=setTimeout(async()=>{
+   try{
+     await syncLeaveLedger();
+     await loadLeaveLedger();
+     renderHome();renderEmployees();
+     // 스케줄 화면은 다시 그리지 않는다. 입력 중인 셀을 건드리지 않기 위함.
+   }catch(err){console.warn('연차 원장 백그라운드 동기화 오류',err)}
+ },350);
+}
+function mergeConfirmedScheduleRows(rows){
+ (rows||[]).forEach(row=>{
+   let idx=schedules.findIndex(s=>Number(s.employee_id)===Number(row.employee_id)&&String(s.work_date)===String(row.work_date));
+   if(idx>=0)schedules[idx]={...schedules[idx],...row};else schedules.push(row);
+ });
 }
 async function flushScheduleQueue(){
- if(!canEditModule('schedule')){scheduleSaveQueue.clear();setSaveState('error','보기전용');return}
- if(!scheduleSaveQueue.size){setSaveState('saved','저장완료');return}
+ clearTimeout(scheduleSaveTimer);scheduleSaveTimer=null;
+ if(!canEditModule('schedule')){scheduleSaveQueue.clear();setSaveState('error','보기전용');return false}
+ // 먼저 진행 중인 저장을 끝낸다. 그 사이 새 입력은 queue에 남아 다음 차례에 저장한다.
+ if(scheduleSaveInFlight){
+   try{await scheduleSaveInFlight}catch(_){ }
+   if(scheduleSaveQueue.size)return flushScheduleQueue();
+   return true;
+ }
+ if(!scheduleSaveQueue.size){setSaveState('saved','저장완료');return true}
  let rows=[...scheduleSaveQueue.values()];
- if(!isAppAdmin()){let blocked=rows.filter(r=>isScheduleMonthLocked(scheduleMonthKey(r.work_date)));if(blocked.length){blocked.forEach(r=>scheduleSaveQueue.delete(`${r.employee_id}|${r.work_date}`));setSaveState('error','마감월 수정차단');alert(`${scheduleMonthKey(blocked[0].work_date)} 스케줄은 마감되어 저장하지 않았습니다.`);rows=rows.filter(r=>!blocked.includes(r));}}
- scheduleSaveQueue.clear();
- if(!rows.length)return;
+ if(!isAppAdmin()){
+   let blocked=rows.filter(r=>isScheduleMonthLocked(scheduleMonthKey(r.work_date)));
+   if(blocked.length){
+     blocked.forEach(r=>scheduleSaveQueue.delete(`${r.employee_id}|${r.work_date}`));
+     setSaveState('error','마감월 수정차단');
+     alert(`${scheduleMonthKey(blocked[0].work_date)} 스케줄은 마감되어 저장하지 않았습니다.`);
+     rows=rows.filter(r=>!blocked.includes(r));
+   }
+ }
+ rows.forEach(r=>scheduleSaveQueue.delete(`${r.employee_id}|${r.work_date}`));
+ if(!rows.length)return false;
  setSaveState('saving',`저장중 ${rows.length}`);
- let q=await sb.from('schedules').upsert(rows,{onConflict:'employee_id,work_date'});
- if(q.error){
-   let msg=String(q.error.message||q.error.details||q.error||'');
+ scheduleSaveInFlight=(async()=>{
+   // select()까지 받아 신규행 INSERT가 실제 서버에 생성됐는지 확인한다.
+   let q=await sb.from('schedules').upsert(rows,{onConflict:'employee_id,work_date'}).select('*');
+   if(q.error)throw q.error;
+   mergeConfirmedScheduleRows(q.data||[]);
+   stampRecentAuditIp(storeId());
+   return q.data||[];
+ })();
+ try{
+   await scheduleSaveInFlight;
+   setSaveState('saved','저장완료');
+   scheduleBackgroundLeaveSync();
+ }catch(err){
+   let msg=String(err?.message||err?.details||err||'');
    if(/SCHEDULE_MONTH_LOCKED/i.test(msg)){
      scheduleSaveQueue.clear();setSaveState('error','마감월 수정차단');
      try{await loadScheduleMonthLocks()}catch(_){ }
      renderSchedule();if(scheduleView==='weekly')renderWeeklyPlanner();applyScheduleEditState();
      alert('관리자가 이 달 스케줄을 마감하여 방금 변경내용은 저장하지 않았습니다. 화면을 최신 상태로 다시 불러왔습니다.');
-     return;
+     return false;
    }
+   // 네트워크 오류면 입력값을 버리지 않고 다시 큐에 보존한다.
    rows.forEach(r=>scheduleSaveQueue.set(`${r.employee_id}|${r.work_date}`,r));
    setSaveState('error','저장오류 · 재시도');
-   console.error(q.error);
-   clearTimeout(scheduleSaveTimer);scheduleSaveTimer=setTimeout(flushScheduleQueue,1800);
-   return;
+   console.error(err);
+   clearTimeout(scheduleSaveTimer);scheduleSaveTimer=setTimeout(()=>flushScheduleQueue(),1200);
+   return false;
+ }finally{
+   scheduleSaveInFlight=null;
  }
- stampRecentAuditIp(storeId());
- // 연차 원장만 백그라운드 동기화. 스케줄 화면은 다시 그리지 않음.
- try{
-   await syncLeaveLedger();
-   await loadLeaveLedger();
-   renderHome();renderEmployees();
- }catch(err){console.warn(err)}
- setSaveState('saved','저장완료');
+ // 저장 도중 추가 입력이 생겼으면 순서대로 바로 이어 저장한다.
+ if(scheduleSaveQueue.size)return flushScheduleQueue();
+ return true;
+}
+async function ensureScheduleSavedBeforeLeave(){
+ clearTimeout(scheduleSaveTimer);scheduleSaveTimer=null;
+ let ok=await flushScheduleQueue();
+ if(scheduleSaveInFlight){try{await scheduleSaveInFlight}catch(_){ok=false}}
+ if(scheduleSaveQueue.size)ok=await flushScheduleQueue();
+ return ok!==false && scheduleSaveQueue.size===0;
 }
 function leaveAccrualDiagnosticText(emp,syncResult){
  let st=nextMonthlyAccrualStatus(emp,isoToday(),syncResult?.attendanceSchedules||leaveAttendanceSchedules);
@@ -3710,6 +3768,8 @@ async function scheduleInput(id,date,raw,input){
  input.className=`code code${payload.work_code}`;
  applyLocalSchedule(payload);
  queueScheduleSave(payload);
+ // 기존 DB 행이 없던 빈칸 입력은 120ms 대기를 하지 않고 즉시 INSERT 확정한다.
+ if(!existing0)await flushScheduleQueue();
 }
 
 async function quickSave(id,date,raw){
@@ -3735,8 +3795,9 @@ function scheduleKey(ev,input){
  let target=$(`sc-${list[nr]?.id}-${nc}`);
  if(target){target.focus();target.select()}
 }
-window.addEventListener('pagehide',()=>{keepalivePageLeft()});
+window.addEventListener('pagehide',()=>{if(scheduleSaveQueue.size)flushScheduleQueue();keepalivePageLeft()});
 window.addEventListener('pageshow',()=>{if(currentSessionUser&&accessSessionTableAvailable===true)touchAccessSession(false)});
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'&&scheduleSaveQueue.size)flushScheduleQueue()});
 window.addEventListener('beforeunload',()=>{if(scheduleSaveQueue.size)flushScheduleQueue()});
 function mins(t){if(!t)return null;let [h,m]=t.slice(0,5).split(':').map(Number);return h*60+m}function hoursBetween(a,b,br){let x=mins(a),y=mins(b);if(x==null||y==null)return 0;if(y<x)y+=1440;return Math.max(0,(y-x-Number(br||0))/60)}
 function openShift(id,date){if(!requireScheduleDateEdit(date))return;let e=employees.find(x=>x.id===id),cond=workConditionForDate(e||{},date),rule=conditionTimesForDate(cond,date),s=sched(e,date)||{},start=(s.start_time||rule.start||'').slice(0,5),end=(s.end_time||rule.end||'').slice(0,5),br=s.break_minutes??rule.break_minutes??60;modal(`<h2>${esc(e.name)} · ${date}</h2><div class="formgrid"><div class="field"><label>구분</label><select id="mCode"><option value="work">근무</option><option value="leave">연차</option><option value="sick">병가(확인필요)</option><option value="absence">결근</option><option value="deemed">법정 출근간주</option><option value="reserve">예비군(연차 차감 없음)</option><option value="off">휴무</option></select></div><div class="field"><label>출근</label><input id="mStart" type="time" value="${start}"></div><div class="field"><label>퇴근</label><input id="mEnd" type="time" value="${end}"></div><div class="field"><label>휴게(분)</label><input id="mBreak" type="number" value="${br}"></div></div><div class="help">이 날짜에 적용되는 근무조건(${esc(workTypeForDate(e,date))}) 기준입니다. 소정 ${rule.daily_hours||cond.daily_hours||8}h를 넘는 부분은 연장으로 표시합니다.</div><div class="modalActions"><button class="btn gray" onclick="closeModal()">취소</button><button class="btn" onclick="saveShiftDetail(${id},'${date}')">저장</button></div>`);$('mCode').value=s.status||((s.work_code==='연')?'leave':(s.work_code==='병')?'sick':(s.work_code==='결')?'absence':(s.work_code==='법')?'deemed':(s.work_code==='예')?'reserve':(s.work_code==='0')?'off':'work')}
