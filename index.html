@@ -1696,7 +1696,7 @@ function leaveUseHoursDecision(e,date,row=null){
  let days=normalizedWorkDays(c.work_days),daily=Number(c.daily_hours||0),rules=conditionDayRules(c);
  if(days.length&&daily>0&&!rules.length)return {hours:daily,known:true,source:'fixed-daily'};
  if(conditionScheduleMode(c)==='auto'&&daily>0)return {hours:daily,known:true,source:'auto-fixed'};
- return {hours:Number(c.leave_day_hours||daily||0),known:false,source:'fallback'};
+ let fallback=Number(c.leave_day_hours||daily||e?.leave_day_hours||e?.daily_hours||0); return {hours:fallback,known:fallback>0,source:'fallback'};
 }
 function leaveDayHoursAt(e,date){return Number(leaveUseHoursDecision(e,date).hours||0)}
 function leaveUseHoursDisplay(e,date=isoToday()){
@@ -2263,8 +2263,9 @@ async function openApp(){
  }catch(err){console.error(err);$('loginMsg').textContent=err?.message||String(err)}
 }
 [$('loginEmail'),$('loginPassword')].forEach(el=>el&&el.addEventListener('keydown',e=>{if(e.key==='Enter')signIn()}));
-document.querySelectorAll('.nav').forEach(b=>b.onclick=()=>{
+document.querySelectorAll('.nav').forEach(b=>b.onclick=async()=>{
  if(!canViewModule(b.dataset.page))return alert('이 계정에는 해당 화면 보기 권한이 없습니다.');
+ if(scheduleSaveQueue.size)await flushScheduleQueue();
  if($('globalContextToolbar'))$('globalContextToolbar').style.display=b.dataset.page==='homeshop'?'none':'';
  document.querySelectorAll('.nav').forEach(x=>x.classList.remove('active'));
  document.querySelectorAll(`[data-page="${b.dataset.page}"]`).forEach(x=>x.classList.add('active'));
@@ -2302,10 +2303,12 @@ function clearStoreScopedUI(){
 
 async function switchMonth(){
  ++payrollReloadToken;
+ if(scheduleSaveQueue.size)await flushScheduleQueue();
  clearStoreScopedUI();
  await refreshAll();
 }
 async function switchStore(){
+ if(scheduleSaveQueue.size)await flushScheduleQueue();
  const sid=storeId();if(!isAppAdmin()&&permissionSystemAvailable===true&&!currentStoreAccess.has(Number(sid)))return alert('이 업장에 접근 권한이 없습니다.');
  localStorage.setItem('staff_dashboard_store_id',String(sid));++payrollReloadToken;clearStoreScopedUI();await refreshAll();await logAccessEvent('store_open',{store_id:sid});await touchAccessSession(false);
 }
@@ -3449,7 +3452,7 @@ function renderWeeklyPlanner(){
        }else{
          row+=`<td class="${cl} ${out?'weekOutsideMonth':''}" ondblclick="openShift(${e.id},'${date}')" title="${hol?esc(hol.name):date}">
            <input class="weekCode code${esc(v)}" data-weekstart="${ws}" data-emp="${e.id}" data-date="${date}" value="${esc(v)}" maxlength="4"
-             oninput="weeklyScheduleInput(${e.id},'${date}',this.value,this)" onkeydown="weeklyScheduleKey(event,this)" onfocus="highlightScheduleContext(this)">
+             oninput="weeklyScheduleInput(${e.id},'${date}',this.value,this,event)" onblur="flushScheduleQueue()" onkeydown="weeklyScheduleKey(event,this)" onfocus="highlightScheduleContext(this)">
          </td>`;
        }
      }
@@ -3472,10 +3475,12 @@ function refreshWeeklyRow(employeeId,date){
    diffEl.innerHTML=`<span class="weekDiff ${cls}">${txt}</span>`;
  }
 }
-async function weeklyScheduleInput(id,date,raw,input){
+async function weeklyScheduleInput(id,date,raw,input,evt=null){
+ if(evt&&evt.isComposing)return;
  if(!requireScheduleDateEdit(date)){let e=allEmployees().find(x=>x.id===id),old=sched(e,date);input.value=old?.work_code||'';return;}
  let payload=schedulePayload(id,date,raw),snapshot=String(raw??'');
  if(payload.work_code==='연'){
+   input.className='code code연';
    if(input.dataset.leaveChecking==='1')return;
    input.dataset.leaveChecking='1';
    let emp=allEmployees().find(e=>e.id===id),existing=sched(emp,date),ok=await confirmLeaveUseAfterRefresh(emp,date,input);
@@ -3527,7 +3532,7 @@ function renderSchedule(){
    }else{
     row+=`<td class="${cl}" ondblclick="openShift(${e.id},'${date}')" title="${hol?esc(hol.name):''}">
      <input id="sc-${e.id}-${d}" data-row="${ri}" data-col="${d}" data-emp="${e.id}" data-date="${date}" class="code code${esc(v)}" value="${esc(v)}" maxlength="4"
-       oninput="scheduleInput(${e.id},'${date}',this.value,this,event)" onkeydown="scheduleKey(event,this)" onfocus="highlightScheduleContext(this)" title="Enter/Tab/방향키 이동 · 더블클릭 상세시간">
+       oninput="scheduleInput(${e.id},'${date}',this.value,this,event)" onblur="flushScheduleQueue()" onkeydown="scheduleKey(event,this)" onfocus="highlightScheduleContext(this)" title="Enter/Tab/방향키 이동 · 더블클릭 상세시간">
     </td>`;
    }
   }
@@ -3543,16 +3548,15 @@ function schedulePayload(id,date,raw){
  else if(code==='결'){scheduled=base;status='absence'}
  else if(code==='법'){scheduled=base;status='deemed'}
  else if(code==='예'){scheduled=base;worked=base;ot=0;status='reserve'}
- else if(code==='0'||!code){code=code||'0';status='off'}
+ else if(!code){return {employee_id:id,work_date:date,work_code:'',scheduled_hours:0,worked_hours:0,overtime_hours:0,status:'',_delete:true}}
+ else if(code==='0'){status='off'}
  else if(!isNaN(Number(code))){worked=Number(code);scheduled=Math.min(worked,base);ot=Math.max(0,worked-base);status='work'}
  else {status='other'}
  return {employee_id:id,work_date:date,work_code:code,scheduled_hours:scheduled,worked_hours:worked,overtime_hours:ot,status};
 }
 function applyLocalSchedule(payload){
  let idx=schedules.findIndex(s=>s.employee_id===payload.employee_id&&s.work_date===payload.work_date);
- let previous=idx>=0?schedules[idx]:{};
- let merged={...previous,...payload};
- if(idx>=0)schedules[idx]=merged;else schedules.push(merged);
+ if(payload?._delete){if(idx>=0)schedules.splice(idx,1)}else{let previous=idx>=0?schedules[idx]:{};let merged={...previous,...payload};if(idx>=0)schedules[idx]=merged;else schedules.push(merged)}
  let e=allEmployees().find(x=>x.id===payload.employee_id);
  if(e){
    let x=calc(e);
@@ -3582,9 +3586,11 @@ async function flushScheduleQueue(){
  scheduleSaveQueue.clear();
  if(!rows.length)return;
  setSaveState('saving',`저장중 ${rows.length}`);
- let q=await sb.from('schedules').upsert(rows,{onConflict:'employee_id,work_date'});
- if(q.error){
-   let msg=String(q.error.message||q.error.details||q.error||'');
+ let deleteRows=rows.filter(r=>r?._delete),upsertRows=rows.filter(r=>!r?._delete).map(r=>{let x={...r};delete x._delete;return x}),saveError=null;
+ for(const r of deleteRows){let dq=await sb.from('schedules').delete().eq('employee_id',r.employee_id).eq('work_date',r.work_date);if(dq.error){saveError=dq.error;break}}
+ if(!saveError&&upsertRows.length){let uq=await sb.from('schedules').upsert(upsertRows,{onConflict:'employee_id,work_date'});if(uq.error)saveError=uq.error}
+ if(saveError){
+   let msg=String(saveError.message||saveError.details||saveError||'');
    if(/SCHEDULE_MONTH_LOCKED/i.test(msg)){
      scheduleSaveQueue.clear();setSaveState('error','마감월 수정차단');
      try{await loadScheduleMonthLocks()}catch(_){ }
@@ -3594,7 +3600,7 @@ async function flushScheduleQueue(){
    }
    rows.forEach(r=>scheduleSaveQueue.set(`${r.employee_id}|${r.work_date}`,r));
    setSaveState('error','저장오류 · 재시도');
-   console.error(q.error);
+   console.error(saveError);
    clearTimeout(scheduleSaveTimer);scheduleSaveTimer=setTimeout(flushScheduleQueue,1800);
    return;
  }
@@ -3671,15 +3677,10 @@ async function scheduleInput(id,date,raw,input,evt=null){
  if(evt&&evt.isComposing)return;
  if(!requireScheduleDateEdit(date)){let e=allEmployees().find(x=>x.id===id),old=sched(e,date);input.value=old?.work_code||'';return;}
  let emp0=allEmployees().find(x=>x.id===id),existing0=sched(emp0,date),rawCode=String(raw??'').trim();
- if(rawCode==='연'){
-   let d=leaveUseHoursDecision(emp0,date,existing0);
-   if(!d.known||!Number(d.hours||0)){
-     alert('이 직원은 요일별 소정근로시간이 고정되지 않은 스케줄 근무입니다.\n\n연차를 정확히 차감하려면 먼저 해당 날짜의 예정 근로시간을 입력한 뒤 “연”으로 바꾸거나, 날짜를 더블클릭해 출퇴근·휴게시간을 입력하고 연차로 저장하세요.');
-     input.value=existing0?.work_code||'';input.className=`code code${existing0?.work_code||''}`;return;
-   }
- }
+ if(rawCode==='연'){leaveUseHoursDecision(emp0,date,existing0);}
  let payload=schedulePayload(id,date,raw),snapshot=String(raw??'');
  if(payload.work_code==='연'){
+   input.className='weekCode code연';
    if(input.dataset.leaveChecking==='1')return;
    input.dataset.leaveChecking='1';
    let emp=allEmployees().find(e=>e.id===id),existing=sched(emp,date),ok=await confirmLeaveUseAfterRefresh(emp,date,input);
