@@ -1084,6 +1084,10 @@ body.resizingEmployeeColumn *{
 .hsServerBadge{display:inline-flex;align-items:center;gap:5px;padding:5px 8px;border-radius:999px;background:#e8f8f0;color:#087451;font-size:11px;font-weight:900}.hsServerBadge.error{background:#fdecec;color:#b42318}.hsServerBadge.loading{background:#eef3ff;color:#315efb}
 @media(max-width:900px){.hsAlertGrid{grid-template-columns:1fr}}
 
+
+/* Employment-date guard: a grey cell outside hire/resignation dates cannot be edited. */
+#schedulePage input.outsideEmploymentInput:disabled,
+#schedulePage input.weekCode.outsideEmploymentInput:disabled{background:#e9edf2!important;color:#a3acb9!important;border:1px solid #dde3eb!important;cursor:not-allowed;opacity:.78}
 </style>
 </head>
 <body>
@@ -1425,6 +1429,7 @@ body.resizingEmployeeColumn *{
 <div id="printArea"></div>
 
 <script>
+/* V9.1.7: respect employee hire/resign date; leave balance warning removed; V9.1.6 full-data retrieval preserved */
 /* V8.6.2: 실시간 접속 생존신호 / 창닫음·PC종료 추정 */
 const SUPABASE_URL="https://gxdimhvslurvniwughrs.supabase.co";
 const SUPABASE_KEY="sb_publishable_KQm77StbhQkIZv5UjZnoXQ_OWZ7HHzF";
@@ -1532,6 +1537,22 @@ function allEmployees(){return [...employees,...retiredEmployees]}
 function employedOn(e,date){
  if(!e?.hire_date)return false;
  return date>=e.hire_date && (!e.resign_date || date<=e.resign_date);
+}
+// Only the employee-management hire/resignation interval may be edited.
+// This is distinct from the store/month lock: both checks must pass.
+function canEditEmployeeScheduleDay(employeeId,date){
+ let e=allEmployees().find(x=>Number(x.id)===Number(employeeId));
+ return !!e && Number(e.store_id)===Number(storeId()) && employedOn(e,date) && canEditScheduleDate(date);
+}
+function requireEmployeeScheduleDay(employeeId,date){
+ if(!requireScheduleDateEdit(date))return false;
+ let e=allEmployees().find(x=>Number(x.id)===Number(employeeId));
+ if(!e)return false;
+ if(!employedOn(e,date)){
+  setSaveState('error','재직기간 밖 입력불가');
+  return false;
+ }
+ return Number(e.store_id)===Number(storeId());
 }
 function employedInMonth(e,ym){
  let [y,m]=ym.split('-').map(Number),last=String(new Date(y,m,0).getDate()).padStart(2,'0'),
@@ -1812,7 +1833,7 @@ function applyScheduleLockUI(){
 }
 function applyScheduleEditState(){
  let page=$('schedulePage');if(!page)return;let editable=canEditSelectedScheduleMonth();page.classList.toggle('scheduleReadOnly',!editable);
- page.querySelectorAll('input.code,input.weekCode').forEach(x=>{if(!x.dataset.date)return;let date=x.dataset.date,ok=editable&&canEditScheduleDate(date);x.readOnly=!ok;x.disabled=!ok;x.tabIndex=ok?0:-1});
+ page.querySelectorAll('input.code,input.weekCode').forEach(x=>{if(!x.dataset.date)return;let date=x.dataset.date,ok=editable&&canEditEmployeeScheduleDay(Number(x.dataset.emp||0),date);x.readOnly=!ok;x.disabled=!ok;x.tabIndex=ok?0:-1});
  ['button[onclick="fillDefaults()"]','button[onclick="clearSelectedSchedules()"]'].forEach(sel=>page.querySelectorAll(sel).forEach(b=>{b.disabled=!editable;b.style.opacity=editable?'':'0.45'}));
  applyScheduleLockUI();
 }
@@ -2298,7 +2319,9 @@ async function loadStores(){
  if(target)$('storeSelect').value=target;if(!stores.length&&permissionSystemAvailable===true&&!isAppAdmin())alert('이 계정에 허용된 업장이 없습니다. 관리자에게 업장 권한을 요청하세요.');
 }
 
+let lastLoadedScheduleStoreId=null,lastLoadedScheduleMonth=null;
 function clearStoreScopedUI(){
+ lastLoadedScheduleStoreId=null;lastLoadedScheduleMonth=null;
  employees=[];retiredEmployees=[];schedules=[];payroll=[];leaveLedger=[];paymentRegister=[];incentiveRegister=[];employeeDocumentStatusMap=new Map();employeeDocumentStatusReadyStoreId=null;scheduleMonthLocks=[];scheduleEmployeeOrderMap=new Map();scheduleEmployeeOrderTableAvailable=null;scheduleDragEmployeeId=null;
  selectedEmployees.clear();
  if($('schBody'))$('schBody').innerHTML='<tr><td colspan="40" style="padding:20px;text-align:center">직원·스케줄 불러오는 중...</td></tr>';
@@ -2337,15 +2360,30 @@ async function persistScheduleEdits(){
  return true;
 }
 async function switchMonth(){
- if(!await persistScheduleEdits())return;
+ const requestedMonth=$('monthSelect').value,oldMonth=lastLoadedScheduleMonth;
+ // onchange has already changed the selection; flush the old grid in its old context.
+ if(oldMonth&&oldMonth!==requestedMonth)$('monthSelect').value=oldMonth;
+ const saved=await persistScheduleEdits();
+ if(!saved)return;
+ $('monthSelect').value=requestedMonth;
  ++payrollReloadToken;
  clearStoreScopedUI();
  await refreshAll();
 }
 async function switchStore(){
- if(!await persistScheduleEdits())return;
- const sid=storeId();if(!isAppAdmin()&&permissionSystemAvailable===true&&!currentStoreAccess.has(Number(sid)))return alert('이 업장에 접근 권한이 없습니다.');
- localStorage.setItem('staff_dashboard_store_id',String(sid));++payrollReloadToken;clearStoreScopedUI();await refreshAll();await logAccessEvent('store_open',{store_id:sid});await touchAccessSession(false);
+ const requestedStoreId=storeId(),oldStoreId=lastLoadedScheduleStoreId;
+ if(oldStoreId&&Number(oldStoreId)!==Number(requestedStoreId))$('storeSelect').value=String(oldStoreId);
+ // Finish writes against the *old* store's permission and employee context.
+ const saved=await persistScheduleEdits();
+ if(!saved)return;
+ $('storeSelect').value=String(requestedStoreId);
+ if(!isAppAdmin()&&permissionSystemAvailable===true&&!currentStoreAccess.has(Number(requestedStoreId))){
+   if(oldStoreId)$('storeSelect').value=String(oldStoreId);
+   return alert('이 업장에 접근 권한이 없습니다.');
+ }
+ localStorage.setItem('staff_dashboard_store_id',String(requestedStoreId));
+ ++payrollReloadToken;clearStoreScopedUI();await refreshAll();
+ await logAccessEvent('store_open',{store_id:requestedStoreId});await touchAccessSession(false);
 }
 
 // A single Supabase select has a default max-row cap (usually 1,000).
@@ -2416,6 +2454,7 @@ async function refreshAll(){
      if(scheduleView==='weekly')renderWeeklyPlanner();
    }
  }
+ lastLoadedScheduleStoreId=sid;lastLoadedScheduleMonth=r.m;
  if($('scheduleLoadState')){$('scheduleLoadState').textContent=`완료 ${Math.round(performance.now()-started)}ms`;$('scheduleLoadState').className='saveState saved'}
 
  // 공휴일은 스케줄/근로/현황/공휴일 화면에서만 백그라운드 조회
@@ -3504,9 +3543,9 @@ function renderWeeklyPlanner(){
        let date=addDaysIso(ws,d),valid=employedOn(e,date),s=sched(e,date),v=s?.work_code||'';
        let [yy,mm,dd]=date.split('-').map(Number),wd=new Date(yy,mm-1,dd).getDay(),hol=holidayFor(date);
        let out=!date.startsWith(selectedMonth),cl=hol?'weekHolidayCell':(wd===0||wd===6?'weekWeekendCell':''),outside=!valid;
-       let outsideTitle=outside?(date<e.hire_date?'입사일 이전 · 수동입력 가능':'퇴사일 이후 · 수동입력 가능'):(hol?hol.name:date);
-       row+=`<td class="${cl} ${out?'weekOutsideMonth':''} ${outside?'outsideEmploymentCell':''}" ondblclick="openShift(${e.id},'${date}')" title="${esc(outsideTitle)}">
-         <input class="weekCode code${esc(v)} ${outside?'outsideEmploymentInput':''}" data-weekstart="${ws}" data-emp="${e.id}" data-date="${date}" value="${esc(v)}" maxlength="4"
+       let outsideTitle=outside?(date<e.hire_date?'입사일 이전 · 입력 불가':'퇴사일 이후 · 입력 불가'):(hol?hol.name:date);
+       row+=`<td class="${cl} ${out?'weekOutsideMonth':''} ${outside?'outsideEmploymentCell':''}" ondblclick="${valid?`openShift(${e.id},'${date}')`:''}" title="${esc(outsideTitle)}">
+         <input class="weekCode code${esc(v)} ${outside?'outsideEmploymentInput':''}" data-weekstart="${ws}" data-emp="${e.id}" data-date="${date}" value="${esc(v)}" maxlength="4" ${outside?'disabled tabindex="-1"':''}
            oncompositionstart="this.dataset.composing='1'" oninput="weeklyScheduleInput(${e.id},'${date}',this.value,this,event)" oncompositionend="weeklyScheduleCompositionEnd(${e.id},'${date}',this)" onchange="weeklyScheduleChange(${e.id},'${date}',this)" onblur="weeklyScheduleBlur(${e.id},'${date}',this)" onkeydown="weeklyScheduleKey(event,this)" onfocus="highlightScheduleContext(this);this.select()" onclick="this.select()">
        </td>`;
      }
@@ -3584,10 +3623,10 @@ function renderSchedule(){
   let row=`<tr data-schedule-emp="${e.id}" ondragover="scheduleDragOver(event,${e.id})" ondrop="scheduleDrop(event,${e.id})" class="${checked?'selectedRow':''}"><td class="name scheduleNameCell"><div style="display:flex;gap:6px;align-items:center"><input class="selectEmp" type="checkbox" ${checked?'checked':''} onchange="toggleEmployee(${e.id},this.checked)"><span>${scheduleDragHandleHtml(e)}<br><span class="pill">${workTypeForDate(e,r.first)}</span></span></div></td>`;
   for(let d=1;d<=r.days;d++){
    let date=r.m+'-'+String(d).padStart(2,'0'),valid=employedOn(e,date),s=sched(e,date),v=s?.work_code||'',wd=new Date(r.y,r.mo-1,d).getDay(),hol=holidayFor(date),cl=hol?' holidayHead':(wd===0||wd===6?' weekendHead':''),outside=!valid;
-   let title=outside?(date<e.hire_date?'입사일 이전 · 수동입력 가능':'퇴사일 이후 · 수동입력 가능'):(hol?hol.name:'');
-   row+=`<td class="${cl} ${outside?'outsideEmploymentCell':''}" ondblclick="openShift(${e.id},'${date}')" title="${esc(title)}">
-     <input id="sc-${e.id}-${d}" data-row="${ri}" data-col="${d}" data-emp="${e.id}" data-date="${date}" class="code code${esc(v)} ${outside?'outsideEmploymentInput':''}" value="${esc(v)}" maxlength="4"
-       oncompositionstart="this.dataset.composing='1'" oninput="scheduleInput(${e.id},'${date}',this.value,this,event)" oncompositionend="scheduleCompositionEnd(${e.id},'${date}',this)" onchange="scheduleChange(${e.id},'${date}',this)" onblur="scheduleBlur(${e.id},'${date}',this)" onkeydown="scheduleKey(event,this)" onfocus="highlightScheduleContext(this);this.select()" onclick="this.select()" title="Enter/Tab/방향키 이동 · 더블클릭 상세시간${outside?' · 재직기간 밖 수동입력':''}">
+   let title=outside?(date<e.hire_date?'입사일 이전 · 입력 불가':'퇴사일 이후 · 입력 불가'):(hol?hol.name:'');
+   row+=`<td class="${cl} ${outside?'outsideEmploymentCell':''}" ondblclick="${valid?`openShift(${e.id},'${date}')`:''}" title="${esc(title)}">
+     <input id="sc-${e.id}-${d}" data-row="${ri}" data-col="${d}" data-emp="${e.id}" data-date="${date}" class="code code${esc(v)} ${outside?'outsideEmploymentInput':''}" value="${esc(v)}" maxlength="4" ${outside?'disabled tabindex="-1"':''}
+       oncompositionstart="this.dataset.composing='1'" oninput="scheduleInput(${e.id},'${date}',this.value,this,event)" oncompositionend="scheduleCompositionEnd(${e.id},'${date}',this)" onchange="scheduleChange(${e.id},'${date}',this)" onblur="scheduleBlur(${e.id},'${date}',this)" onkeydown="scheduleKey(event,this)" onfocus="highlightScheduleContext(this);this.select()" onclick="this.select()" title="Enter/Tab/방향키 이동 · 더블클릭 상세시간${outside?' · 재직기간 밖 입력불가':''}">
     </td>`;
   }
   return row+`<td id="workTotal-${e.id}"><b>${x.worked}h</b></td><td id="otTotal-${e.id}">${x.ot}h</td></tr>`;
@@ -3627,7 +3666,7 @@ function setSaveState(type,text){
  el.className='saveState '+type;el.textContent=text;
 }
 function queueScheduleSave(payload){
- if(!canEditScheduleDate(payload?.work_date||$('monthSelect')?.value))return;
+ if(!canEditEmployeeScheduleDay(payload?.employee_id,payload?.work_date||$('monthSelect')?.value))return;
  scheduleSaveQueue.set(`${payload.employee_id}|${payload.work_date}`,payload);
  setSaveState('saving',`저장대기 ${scheduleSaveQueue.size}`);
  clearTimeout(scheduleSaveTimer);
@@ -3715,36 +3754,11 @@ ${why}`;
 법정 연차 적용 제외: 4주 평균 주 소정근로시간 ${st.weeklyHours}h (15시간 미만)`;
  return '';
 }
+// A schedule entry always wins. Leave-balance deficits belong to the leave ledger
+// and validation screens; they must not block the user's schedule entry.
 async function confirmLeaveUseAfterRefresh(emp,date,input,overrideHours=null){
- if(!emp)return false;
- if(input?.dataset.leaveConfirmed==='1')return true;
- setSaveState('saving','연차 자동계산 확인중');
- // 직전에 입력한 과거 스케줄이 저장대기 중이면 먼저 서버에 반영한다.
- if(scheduleSaveQueue.size)await flushScheduleQueue();
- if(scheduleSaveQueue.size){
-   setSaveState('error','스케줄 저장오류');
-   alert('저장 대기 중인 스케줄을 서버에 반영하지 못해 연차를 다시 계산할 수 없습니다.\n스케줄 저장 오류를 먼저 확인하세요.');
-   return false;
- }
- let syncResult;
- try{
-   syncResult=await syncLeaveLedger();
-   await loadLeaveLedger();
- }catch(err){
-   console.warn(err);setSaveState('error','연차 계산오류');
-   alert('연차 자동계산 중 오류가 발생했습니다.\n'+(err?.message||err));return false;
- }
- let leaveH=Number(overrideHours||leaveDayHoursAt(emp,date)||0),existing=sched(emp,date),current=leaveSummary(emp,date).balance;
- // 이미 이 날짜가 연차로 저장돼 있으면 이번 수정 전에 차감된 시간을 한 번 되돌려 비교한다.
- if(existing?.work_code==='연')current+=leaveH;
- current=Math.round(current*100)/100;
- refreshLiveLeaveUI(emp.id);
- setSaveState('saved','연차 확인완료');
- if(current>=leaveH){if(input)input.dataset.leaveConfirmed='1';return true}
- let reason=leaveAccrualDiagnosticText(emp,syncResult);
- let ok=confirm(`${emp.name}의 과거 스케줄을 서버에서 다시 확인해 연차를 자동 재계산했습니다.\n\n현재 사용가능 연차: ${current}h\n이번 연차 사용: ${leaveH}h${reason}\n\n그래도 연차로 입력할까요?`);
- if(ok&&input)input.dataset.leaveConfirmed='1';
- return ok;
+ if(input)input.dataset.leaveConfirmed='1';
+ return true;
 }
 function normalizeScheduleInput(raw){
  let code=String(raw??'').trim().normalize('NFC');
@@ -3765,17 +3779,11 @@ function restoreScheduleInput(id,date,input,isWeekly=false){
  input.dataset.lastCommittedValue=v;
 }
 function confirmLeaveUseCached(emp,date,existing,input){
- let leaveH=Number(leaveDayHoursAt(emp,date)||workConditionForDate(emp||{},date)?.daily_hours||emp?.daily_hours||8),current=Number(liveLeaveSummary(emp,date).balance||0);
- if(existing?.work_code==='연')current+=Number(existing.scheduled_hours||leaveH||0);
- current=Math.round(current*100)/100;
- if(current>=leaveH)return true;
- if(input?.dataset.leaveConfirmed==='1')return true;
- let ok=confirm(`${emp?.name||'직원'} 현재 사용가능 연차는 ${current}h이고 이번 연차는 ${leaveH}h입니다.\n\n그래도 연차로 입력할까요?`);
- if(ok&&input)input.dataset.leaveConfirmed='1';
- return ok;
+ if(input)input.dataset.leaveConfirmed='1';
+ return true;
 }
 function commitScheduleInput(id,date,raw,input,isWeekly=false){
- if(!requireScheduleDateEdit(date)){restoreScheduleInput(id,date,input,isWeekly);return false;}
+ if(!requireEmployeeScheduleDay(id,date)){restoreScheduleInput(id,date,input,isWeekly);return false;}
  let code=normalizeScheduleInput(raw);
  // 한글 조합 중간값/잘못된 문자열은 화면에는 둘 수 있지만 DB에는 절대 저장하지 않는다.
  if(code===null)return false;
@@ -3823,7 +3831,7 @@ async function scheduleBlur(id,date,input){
  await flushScheduleQueue();
 }
 async function quickSave(id,date,raw){
- if(!requireScheduleDateEdit(date))return;
+ if(!requireEmployeeScheduleDay(id,date))return;
  let payload=schedulePayload(id,date,raw);applyLocalSchedule(payload);queueScheduleSave(payload);await flushScheduleQueue();
 }
 function scheduleKey(ev,input){
@@ -3848,12 +3856,13 @@ window.addEventListener('pagehide',()=>{keepalivePageLeft()});
 window.addEventListener('pageshow',()=>{if(currentSessionUser&&accessSessionTableAvailable===true)touchAccessSession(false)});
 window.addEventListener('beforeunload',()=>{commitVisibleScheduleEdits();if(scheduleSaveQueue.size)flushScheduleQueue()});
 function mins(t){if(!t)return null;let [h,m]=t.slice(0,5).split(':').map(Number);return h*60+m}function hoursBetween(a,b,br){let x=mins(a),y=mins(b);if(x==null||y==null)return 0;if(y<x)y+=1440;return Math.max(0,(y-x-Number(br||0))/60)}
-function openShift(id,date){if(!requireScheduleDateEdit(date))return;let e=employees.find(x=>x.id===id),cond=workConditionForDate(e||{},date),rule=conditionTimesForDate(cond,date),s=sched(e,date)||{},start=(s.start_time||rule.start||'').slice(0,5),end=(s.end_time||rule.end||'').slice(0,5),br=s.break_minutes??rule.break_minutes??60;modal(`<h2>${esc(e.name)} · ${date}</h2><div class="formgrid"><div class="field"><label>구분</label><select id="mCode"><option value="work">근무</option><option value="leave">연차</option><option value="sick">병가(확인필요)</option><option value="absence">결근</option><option value="deemed">법정 출근간주</option><option value="reserve">예비군(연차 차감 없음)</option><option value="off">휴무</option></select></div><div class="field"><label>출근</label><input id="mStart" type="time" value="${start}"></div><div class="field"><label>퇴근</label><input id="mEnd" type="time" value="${end}"></div><div class="field"><label>휴게(분)</label><input id="mBreak" type="number" value="${br}"></div></div><div class="help">이 날짜에 적용되는 근무조건(${esc(workTypeForDate(e,date))}) 기준입니다. 소정 ${rule.daily_hours||cond.daily_hours||8}h를 넘는 부분은 연장으로 표시합니다.</div><div class="modalActions"><button class="btn gray" onclick="closeModal()">취소</button><button class="btn" onclick="saveShiftDetail(${id},'${date}')">저장</button></div>`);$('mCode').value=s.status||((s.work_code==='연')?'leave':(s.work_code==='병')?'sick':(s.work_code==='결')?'absence':(s.work_code==='법')?'deemed':(s.work_code==='예')?'reserve':(s.work_code==='0')?'off':'work')}
+function openShift(id,date){if(!requireEmployeeScheduleDay(id,date))return;let e=employees.find(x=>x.id===id),cond=workConditionForDate(e||{},date),rule=conditionTimesForDate(cond,date),s=sched(e,date)||{},start=(s.start_time||rule.start||'').slice(0,5),end=(s.end_time||rule.end||'').slice(0,5),br=s.break_minutes??rule.break_minutes??60;modal(`<h2>${esc(e.name)} · ${date}</h2><div class="formgrid"><div class="field"><label>구분</label><select id="mCode"><option value="work">근무</option><option value="leave">연차</option><option value="sick">병가(확인필요)</option><option value="absence">결근</option><option value="deemed">법정 출근간주</option><option value="reserve">예비군(연차 차감 없음)</option><option value="off">휴무</option></select></div><div class="field"><label>출근</label><input id="mStart" type="time" value="${start}"></div><div class="field"><label>퇴근</label><input id="mEnd" type="time" value="${end}"></div><div class="field"><label>휴게(분)</label><input id="mBreak" type="number" value="${br}"></div></div><div class="help">이 날짜에 적용되는 근무조건(${esc(workTypeForDate(e,date))}) 기준입니다. 소정 ${rule.daily_hours||cond.daily_hours||8}h를 넘는 부분은 연장으로 표시합니다.</div><div class="modalActions"><button class="btn gray" onclick="closeModal()">취소</button><button class="btn" onclick="saveShiftDetail(${id},'${date}')">저장</button></div>`);$('mCode').value=s.status||((s.work_code==='연')?'leave':(s.work_code==='병')?'sick':(s.work_code==='결')?'absence':(s.work_code==='법')?'deemed':(s.work_code==='예')?'reserve':(s.work_code==='0')?'off':'work')}
 async function saveShiftDetail(id,date){
- if(!requireScheduleDateEdit(date))return;
+ if(!requireEmployeeScheduleDay(id,date))return;
  let e=employees.find(x=>x.id===id),cond=workConditionForDate(e||{},date),rule=conditionTimesForDate(cond,date),st=$('mCode').value,start=$('mStart').value,end=$('mEnd').value,br=Number($('mBreak').value||0),base=Number(rule.daily_hours||cond.daily_hours||8),detailHours=Math.round(hoursBetween(start,end,br)*100)/100,decision=leaveUseHoursDecision(e,date),leaveH=detailHours>0?detailHours:Number(decision.hours||0),worked=0,scheduled=0,ot=0,code='0';
  if(st==='leave'){
-   if(!leaveH)return alert('연차 사용일의 소정근로시간을 확인할 수 없습니다. 출근·퇴근·휴게시간을 입력해 주세요.');
+   if(!(leaveH>0))leaveH=Number(workConditionForDate(e,date)?.leave_day_hours||e?.leave_day_hours||e?.daily_hours||0);
+   if(!(leaveH>0))return alert('직원관리에서 1일 소정근로시간을 설정해 주세요.');
    let ok=await confirmLeaveUseAfterRefresh(e,date,null,leaveH);if(!ok)return;
  }
  if(st==='work'){worked=detailHours;scheduled=Math.min(worked,base);ot=Math.max(0,worked-base);code=String(worked).replace(/\.0$/,'')}
@@ -6090,7 +6099,7 @@ function renderStores(){
   ${isAppAdmin()?`<div class="help" style="margin-top:9px"><b>접근 사용자</b> ${users.length?esc(names):'없음'}</div>`:''}
   <div class="toolbar" style="margin-top:12px">
    <button class="btn gray small" onclick="editStore(${s.id})">업장정보 수정</button>
-   <button class="btn green small" onclick="document.getElementById('storeSelect').value='${s.id}';refreshAll()">이 업장 보기</button>
+   <button class="btn green small" onclick="document.getElementById('storeSelect').value='${s.id}';switchStore()">이 업장 보기</button>
   </div>
  </div>`}).join('')
 }
