@@ -2355,6 +2355,9 @@ async function refreshAll(){
        return;
      }
      schedules=ss.data||[];
+     // 네트워크/화면이동 직전에 남은 미확정 입력이 있으면 화면에 복원하고 서버 저장을 다시 시도한다.
+     let restored=restorePendingScheduleDrafts(pr.start,pr.end);
+     if(restored)Promise.resolve().then(()=>flushScheduleQueue());
    }
    if(canViewModule('schedule')){
      renderSchedule();
@@ -3481,32 +3484,22 @@ function refreshWeeklyRow(employeeId,date){
 }
 /* V9.1.1 FIX: Korean IME composition guard for schedule special codes (연/병/결/법/예). */
 async function weeklyScheduleInput(id,date,raw,input){
- // V9.1.1: 한글 IME 조합 중간값(예: "연" 입력 중 "여")은 스케줄로 저장하지 않는다.
- if(input?.dataset?.imeComposing==='1')return;
- if(!requireScheduleDateEdit(date)){let e=allEmployees().find(x=>x.id===id),old=sched(e,date);input.value=normalizeScheduleCode(old?.work_code||'');return;}
- let emp0=allEmployees().find(x=>x.id===id),existing0=sched(emp0,date);
- let rawCode=normalizeScheduleCode(raw);
- // 한글 IME가 d→du→dus처럼 중간 영문을 내보내도 절대 DB에 저장하지 않는다.
- if(!isValidScheduleCode(rawCode))return;
- if(input&&input.value!==rawCode)input.value=rawCode;
- let payload=schedulePayload(id,date,rawCode),snapshot=String(rawCode??'');
- if(payload.work_code==='연'){
-   if(input.dataset.leaveChecking==='1')return;
-   input.dataset.leaveChecking='1';
-   let emp=allEmployees().find(e=>e.id===id),existing=sched(emp,date),ok=await confirmLeaveUseAfterRefresh(emp,date,input);
-   delete input.dataset.leaveChecking;
-   if(String(input.value??'')!==snapshot)return;
-   if(!ok){input.value=normalizeScheduleCode(existing?.work_code||'');input.className=`weekCode code${normalizeScheduleCode(existing?.work_code||'')}`;return}
- }else{
-   delete input.dataset.leaveConfirmed;delete input.dataset.leaveChecking;
+ if(input?.dataset?.imeComposing==='1')return false;
+ if(!requireScheduleDateEdit(date)){let e=allEmployees().find(x=>x.id===id),old=sched(e,date);if(input)input.value=normalizeScheduleCode(old?.work_code||'');return false;}
+ let emp=allEmployees().find(x=>x.id===id),existing=sched(emp,date),code=normalizeScheduleInputValue(input,raw);
+ if(!isValidScheduleCode(code))return false;
+ if(input&&input.value!==code)input.value=code;
+ if(code==='연'){
+   let d=leaveUseHoursDecision(emp,date,existing);
+   if(!d.known||!Number(d.hours||0)){let old=normalizeScheduleCode(existing?.work_code||'');alert('이 직원은 해당 날짜의 소정근로시간을 확인할 수 없습니다. 먼저 예정 근로시간을 입력한 뒤 연차로 바꿔 주세요.');if(input){input.value=old;input.className=`weekCode code${old}`}return false;}
+   let leaveH=Number(d.hours||0),balance=Number(leaveSummary(emp,date).balance||0);if(existing?.work_code==='연')balance+=Number(existing.scheduled_hours||leaveH);
+   if(balance<leaveH&&!confirm(`${emp.name} 현재 표시 연차잔여 ${Math.round(balance*100)/100}h / 이번 사용 ${leaveH}h입니다.\n그래도 연차로 입력할까요?`)){let old=normalizeScheduleCode(existing?.work_code||'');if(input){input.value=old;input.className=`weekCode code${old}`}return false;}
  }
- input.className=`weekCode code${payload.work_code}`;
- applyLocalSchedule(payload);
- queueScheduleSave(payload);
- // 예전처럼 입력 즉시 서버 저장을 시작한다. 저장 중 추가 입력은 큐가 순서대로 이어서 처리한다.
- await flushScheduleQueue();
- refreshWeeklyRow(id,date);
+ let payload=schedulePayload(id,date,code);
+ if(input){input.className=`weekCode code${payload.work_code}`;input.dataset.lastScheduleCode=payload.work_code;input.dataset.focusScheduleValue=payload.work_code;}
+ applyLocalSchedule(payload);queueScheduleSave(payload);refreshWeeklyRow(id,date);return true;
 }
+
 function weeklyScheduleKey(ev,input){
  const key=ev.key;
  if(!['Enter','ArrowRight','ArrowLeft','ArrowUp','ArrowDown'].includes(key))return;
@@ -3561,24 +3554,46 @@ function normalizeScheduleCode(raw){
  if(/^[-+]?\d+(?:\.\d+)?$/.test(code))return code;
  let m=code.match(/^[-+]?\d+(?:\.\d+)?(연|병|결|법|예)$/);
  if(m)return m[1];
+ // 일부 Windows/원격환경에서 한글 IME 조합 이벤트 없이 두벌식 영문키가 그대로 들어오는 경우 보정
+ // 연=dus, 병=qud, 결=ruf, 법=qjq, 예=dP(환경에 따라 dp로 들어오는 경우도 허용)
+ let ascii=code.match(/^(?:[-+]?\d+(?:\.\d+)?)?(dus|qud|ruf|qjq|dP|dp)$/);
+ if(ascii){let map={dus:'연',qud:'병',ruf:'결',qjq:'법',dP:'예',dp:'예'};return map[ascii[1]]||code}
  return code;
+}
+function normalizeScheduleInputValue(input,raw){
+ let compact=String(raw??'').trim().replace(/\s+/g,''),focus=String(input?.dataset?.focusScheduleValue??'');
+ // 포커스 직후 전체선택보다 키입력이 먼저 들어와 기존값 뒤에 붙은 경우: 새로 입력한 뒤쪽 값만 사용한다.
+ if(focus&&compact.startsWith(focus)&&compact.length>focus.length){
+   let suffix=compact.slice(focus.length),candidate=normalizeScheduleCode(suffix);
+   if(candidate===''||['연','병','결','법','예','0'].includes(candidate)||/^[-+]?\d+(?:\.\d+)?$/.test(candidate))return candidate;
+ }
+ return normalizeScheduleCode(compact);
 }
 function scheduleCodeClassValue(raw){return normalizeScheduleCode(raw)}
 function isValidScheduleCode(raw){
  let code=normalizeScheduleCode(raw);
  return code===''||['연','병','결','법','예','0'].includes(code)||/^[-+]?\d+(?:\.\d+)?$/.test(code);
 }
-function focusScheduleCodeInput(input){highlightScheduleContext(input);setTimeout(()=>{try{input.select()}catch(_){ }},0)}
+function focusScheduleCodeInput(input){
+ highlightScheduleContext(input);
+ if(!input)return;
+ input.dataset.focusScheduleValue=normalizeScheduleCode(input.value||'');
+ // 지연 선택은 빠른 타이핑과 경합해서 8연/88/00을 만들었으므로 포커스 시 즉시 전체선택한다.
+ try{input.select()}catch(_){ }
+}
 function scheduleInputBlur(input){
  if(!input)return;
  if(input.dataset?.imeComposing==='1')return;
- let raw=String(input.value??''),code=normalizeScheduleCode(raw);
+ let raw=String(input.value??''),code=normalizeScheduleInputValue(input,raw),id=Number(input.dataset.emp||0),date=String(input.dataset.date||'');
  if(!isValidScheduleCode(code)){
-   let id=Number(input.dataset.emp||0),date=String(input.dataset.date||''),e=allEmployees().find(x=>Number(x.id)===id),old=sched(e,date),v=scheduleCodeClassValue(old?.work_code||'');
-   input.value=v;
-   input.className=`${input.classList.contains('weekCode')?'weekCode':'code'} code${v}`;
+   let e=allEmployees().find(x=>Number(x.id)===id),old=sched(e,date),v=scheduleCodeClassValue(old?.work_code||'');
+   input.value=v;input.className=`${input.classList.contains('weekCode')?'weekCode':'code'} code${v}`;
+ }else if(id&&date){
+   // 칸을 벗나는 순간 현재 보이는 최종값을 한 번 더 확정하고 즉시 flush한다.
+   if(input.classList.contains('weekCode'))weeklyScheduleInput(id,date,code,input);else scheduleInput(id,date,code,input);
  }
- if(scheduleSaveQueue.size)flushScheduleQueue();
+ clearTimeout(scheduleSaveTimer);scheduleSaveTimer=null;
+ if(scheduleSaveQueue.size||scheduleSaveInFlight)flushScheduleQueue();
 }
 function schedulePayload(id,date,raw){
  let emp=allEmployees().find(e=>e.id===id),cond=workConditionForDate(emp||{},date),rule=conditionTimesForDate(cond,date),code=normalizeScheduleCode(raw),base=Number(rule.daily_hours||cond.daily_hours||8),leaveH=leaveDayHoursAt(emp,date),scheduled=0,worked=0,ot=0,status='';
@@ -3613,13 +3628,42 @@ function setSaveState(type,text){
  let el=$('scheduleSaveState');if(!el)return;
  el.className='saveState '+type;el.textContent=text;
 }
-/* V9.1.3 FIX: 스케줄 저장을 DB 확정 → 화면이동 순으로 직렬화한다. 빈칸 신규입력도 서버 응답을 확인한다. */
+/* V9.1.5 FIX: 화면입력은 먼저 로컬에 보존하고, DB 저장은 하나의 직렬 큐로 처리한다. */
+function schedulePendingStorageKey(){
+ let uid=currentSessionUser?.id||'anonymous',sid=$('storeSelect')?.value||'0';
+ return `staff_schedule_pending_v915_${uid}_${sid}`;
+}
+function readPendingScheduleDrafts(){
+ try{return JSON.parse(localStorage.getItem(schedulePendingStorageKey())||'{}')||{}}catch(_){return {}}
+}
+function persistPendingScheduleDraft(payload){
+ if(!payload?.employee_id||!payload?.work_date)return;
+ let bag=readPendingScheduleDrafts(),key=`${payload.employee_id}|${payload.work_date}`;
+ bag[key]={...payload,_saved_at:new Date().toISOString()};
+ try{localStorage.setItem(schedulePendingStorageKey(),JSON.stringify(bag))}catch(_){ }
+}
+function removePendingScheduleDraft(employeeId,date){
+ let bag=readPendingScheduleDrafts(),key=`${employeeId}|${date}`;
+ if(!(key in bag))return;delete bag[key];
+ try{localStorage.setItem(schedulePendingStorageKey(),JSON.stringify(bag))}catch(_){ }
+}
+function restorePendingScheduleDrafts(startDate,endDate){
+ let bag=readPendingScheduleDrafts(),restored=0;
+ Object.values(bag).forEach(p=>{
+   if(!p?.employee_id||!p?.work_date)return;
+   if(startDate&&p.work_date<startDate)return;if(endDate&&p.work_date>endDate)return;
+   let payload={employee_id:Number(p.employee_id),work_date:p.work_date,work_code:p.work_code,scheduled_hours:Number(p.scheduled_hours||0),worked_hours:Number(p.worked_hours||0),overtime_hours:Number(p.overtime_hours||0),status:p.status||'',memo:p.memo??null};
+   applyLocalSchedule(payload);scheduleSaveQueue.set(`${payload.employee_id}|${payload.work_date}`,payload);restored++;
+ });
+ return restored;
+}
 function queueScheduleSave(payload){
  if(!canEditScheduleDate(payload?.work_date||$('monthSelect')?.value))return;
+ persistPendingScheduleDraft(payload);
  scheduleSaveQueue.set(`${payload.employee_id}|${payload.work_date}`,payload);
  setSaveState('saving',`저장대기 ${scheduleSaveQueue.size}`);
  clearTimeout(scheduleSaveTimer);
- scheduleSaveTimer=setTimeout(()=>flushScheduleQueue(),120);
+ scheduleSaveTimer=setTimeout(()=>flushScheduleQueue(),180);
 }
 function scheduleBackgroundLeaveSync(){
  clearTimeout(scheduleLeaveSyncTimer);
@@ -3640,61 +3684,59 @@ function mergeConfirmedScheduleRows(rows){
 }
 async function flushScheduleQueue(){
  clearTimeout(scheduleSaveTimer);scheduleSaveTimer=null;
- if(!canEditModule('schedule')){scheduleSaveQueue.clear();setSaveState('error','보기전용');return false}
- // 먼저 진행 중인 저장을 끝낸다. 그 사이 새 입력은 queue에 남아 다음 차례에 저장한다.
- if(scheduleSaveInFlight){
-   try{await scheduleSaveInFlight}catch(_){ }
-   if(scheduleSaveQueue.size)return flushScheduleQueue();
-   return true;
- }
- if(!scheduleSaveQueue.size){setSaveState('saved','저장완료');return true}
- let rows=[...scheduleSaveQueue.values()];
- if(!isAppAdmin()){
-   let blocked=rows.filter(r=>isScheduleMonthLocked(scheduleMonthKey(r.work_date)));
-   if(blocked.length){
-     blocked.forEach(r=>scheduleSaveQueue.delete(`${r.employee_id}|${r.work_date}`));
-     setSaveState('error','마감월 수정차단');
-     alert(`${scheduleMonthKey(blocked[0].work_date)} 스케줄은 마감되어 저장하지 않았습니다.`);
-     rows=rows.filter(r=>!blocked.includes(r));
-   }
- }
- rows.forEach(r=>scheduleSaveQueue.delete(`${r.employee_id}|${r.work_date}`));
- if(!rows.length)return false;
- setSaveState('saving',`저장중 ${rows.length}`);
+ if(!canEditModule('schedule')){setSaveState('error','보기전용');return false}
+ if(scheduleSaveInFlight)return await scheduleSaveInFlight;
  scheduleSaveInFlight=(async()=>{
-   // select()까지 받아 신규행 INSERT가 실제 서버에 생성됐는지 확인한다.
-   let q=await sb.from('schedules').upsert(rows,{onConflict:'employee_id,work_date'}).select('*');
-   if(q.error)throw q.error;
-   mergeConfirmedScheduleRows(q.data||[]);
-   stampRecentAuditIp(storeId());
-   return q.data||[];
- })();
- try{
-   await scheduleSaveInFlight;
-   setSaveState('saved','저장완료');
-   scheduleBackgroundLeaveSync();
- }catch(err){
-   let msg=String(err?.message||err?.details||err||'');
-   if(/SCHEDULE_MONTH_LOCKED/i.test(msg)){
-     scheduleSaveQueue.clear();setSaveState('error','마감월 수정차단');
-     try{await loadScheduleMonthLocks()}catch(_){ }
-     renderSchedule();if(scheduleView==='weekly')renderWeeklyPlanner();applyScheduleEditState();
-     alert('관리자가 이 달 스케줄을 마감하여 방금 변경내용은 저장하지 않았습니다. 화면을 최신 상태로 다시 불러왔습니다.');
+   try{
+     while(scheduleSaveQueue.size){
+       let rows=[...scheduleSaveQueue.values()];
+       if(!isAppAdmin()){
+         let blocked=rows.filter(r=>isScheduleMonthLocked(scheduleMonthKey(r.work_date)));
+         if(blocked.length){
+           blocked.forEach(r=>scheduleSaveQueue.delete(`${r.employee_id}|${r.work_date}`));
+           setSaveState('error','마감월 수정차단');
+           alert(`${scheduleMonthKey(blocked[0].work_date)} 스케줄은 마감되어 저장하지 않았습니다.`);
+           rows=rows.filter(r=>!blocked.includes(r));
+         }
+       }
+       if(!rows.length)break;
+       // 이번 배치를 큐에서 먼저 떼어낸다. 저장 중 새 입력은 Map에 새로 쌓여 다음 while에서 처리된다.
+       rows.forEach(r=>scheduleSaveQueue.delete(`${r.employee_id}|${r.work_date}`));
+       setSaveState('saving',`저장중 ${rows.length}`);
+       let q=await sb.from('schedules').upsert(rows,{onConflict:'employee_id,work_date'}).select('*');
+       if(q.error){
+         rows.forEach(r=>scheduleSaveQueue.set(`${r.employee_id}|${r.work_date}`,r));
+         throw q.error;
+       }
+       let confirmed=q.data||[];
+       mergeConfirmedScheduleRows(confirmed);
+       // 서버에서 실제로 돌아온 행만 임시보관함에서 제거한다.
+       confirmed.forEach(r=>removePendingScheduleDraft(r.employee_id,r.work_date));
+       stampRecentAuditIp(storeId());
+     }
+     setSaveState('saved','저장완료');
+     scheduleBackgroundLeaveSync();
+     return true;
+   }catch(err){
+     let msg=String(err?.message||err?.details||err||'');
+     if(/SCHEDULE_MONTH_LOCKED/i.test(msg)){
+       setSaveState('error','마감월 수정차단');
+       try{await loadScheduleMonthLocks()}catch(_){ }
+       renderSchedule();if(scheduleView==='weekly')renderWeeklyPlanner();applyScheduleEditState();
+       alert('관리자가 이 달 스케줄을 마감하여 방금 변경내용은 저장하지 않았습니다.');
+     }else{
+       setSaveState('error','저장오류 · 입력값 보관됨');
+       console.error(err);
+       clearTimeout(scheduleSaveTimer);scheduleSaveTimer=setTimeout(()=>flushScheduleQueue(),1200);
+     }
      return false;
+   }finally{
+     scheduleSaveInFlight=null;
    }
-   // 네트워크 오류면 입력값을 버리지 않고 다시 큐에 보존한다.
-   rows.forEach(r=>scheduleSaveQueue.set(`${r.employee_id}|${r.work_date}`,r));
-   setSaveState('error','저장오류 · 재시도');
-   console.error(err);
-   clearTimeout(scheduleSaveTimer);scheduleSaveTimer=setTimeout(()=>flushScheduleQueue(),1200);
-   return false;
- }finally{
-   scheduleSaveInFlight=null;
- }
- // 저장 도중 추가 입력이 생겼으면 순서대로 바로 이어 저장한다.
- if(scheduleSaveQueue.size)return flushScheduleQueue();
- return true;
+ })();
+ return await scheduleSaveInFlight;
 }
+
 async function ensureScheduleSavedBeforeLeave(){
  clearTimeout(scheduleSaveTimer);scheduleSaveTimer=null;
  let ok=await flushScheduleQueue();
@@ -3762,38 +3804,37 @@ async function confirmLeaveUseAfterRefresh(emp,date,input,overrideHours=null){
  return ok;
 }
 async function scheduleInput(id,date,raw,input){
- // V9.1.1: 한글 IME 조합 중간값(예: "연" 입력 중 "여")은 스케줄로 저장하지 않는다.
- if(input?.dataset?.imeComposing==='1')return;
- if(!requireScheduleDateEdit(date)){let e=allEmployees().find(x=>x.id===id),old=sched(e,date);input.value=old?.work_code||'';return;}
- let emp0=allEmployees().find(x=>x.id===id),existing0=sched(emp0,date),rawCode=normalizeScheduleCode(raw);
- // 한글 IME 중간값(d/du/dus, 8d/8dus 등)과 그 밖의 잘못된 코드는 화면에는 입력 중으로 두되 DB에는 절대 보내지 않는다.
- if(!isValidScheduleCode(rawCode))return;
- if(input&&input.value!==rawCode)input.value=rawCode;
- if(rawCode==='연'){
-   let d=leaveUseHoursDecision(emp0,date,existing0);
+ if(input?.dataset?.imeComposing==='1')return false;
+ if(!requireScheduleDateEdit(date)){let e=allEmployees().find(x=>x.id===id),old=sched(e,date);if(input)input.value=normalizeScheduleCode(old?.work_code||'');return false;}
+ let emp=allEmployees().find(x=>x.id===id),existing=sched(emp,date),code=normalizeScheduleInputValue(input,raw);
+ // 한글 조합 중간 영문(d/du/dus 등)은 절대로 저장하지 않는다.
+ if(!isValidScheduleCode(code))return false;
+ if(input&&input.value!==code)input.value=code;
+ if(code==='연'){
+   let d=leaveUseHoursDecision(emp,date,existing);
    if(!d.known||!Number(d.hours||0)){
-     alert('이 직원은 요일별 소정근로시간이 고정되지 않은 스케줄 근무입니다.\n\n연차를 정확히 차감하려면 먼저 해당 날짜의 예정 근로시간을 입력한 뒤 “연”으로 바꾸거나, 날짜를 더블클릭해 출퇴근·휴게시간을 입력하고 연차로 저장하세요.');
-     input.value=normalizeScheduleCode(existing0?.work_code||'');input.className=`code code${normalizeScheduleCode(existing0?.work_code||'')}`;return;
+     alert('이 직원은 해당 날짜의 소정근로시간을 확인할 수 없습니다. 먼저 예정 근로시간을 입력한 뒤 연차로 바꿔 주세요.');
+     let old=normalizeScheduleCode(existing?.work_code||'');if(input){input.value=old;input.className=`code code${old}`}return false;
+   }
+   // 예전처럼 입력 반응을 늦추지 않는다. 서버 원장 재계산은 저장 후 백그라운드에서 한다.
+   let leaveH=Number(d.hours||0),balance=Number(leaveSummary(emp,date).balance||0);
+   if(existing?.work_code==='연')balance+=Number(existing.scheduled_hours||leaveH);
+   if(balance<leaveH){
+     let ok=confirm(`${emp.name} 현재 표시 연차잔여 ${Math.round(balance*100)/100}h / 이번 사용 ${leaveH}h입니다.\n그래도 연차로 입력할까요?`);
+     if(!ok){let old=normalizeScheduleCode(existing?.work_code||'');if(input){input.value=old;input.className=`code code${old}`}return false;}
    }
  }
- let payload=schedulePayload(id,date,rawCode),snapshot=String(rawCode??'');
- if(payload.work_code==='연'){
-   if(input.dataset.leaveChecking==='1')return;
-   input.dataset.leaveChecking='1';
-   let emp=allEmployees().find(e=>e.id===id),existing=sched(emp,date),ok=await confirmLeaveUseAfterRefresh(emp,date,input);
-   delete input.dataset.leaveChecking;
-   // 확인 중 사용자가 다른 값을 입력했다면 오래된 '연' 결과는 적용하지 않는다.
-   if(String(input.value??'')!==snapshot)return;
-   if(!ok){input.value=normalizeScheduleCode(existing?.work_code||'');input.className=`code code${normalizeScheduleCode(existing?.work_code||'')}`;return}
- }else{
-   delete input.dataset.leaveConfirmed;delete input.dataset.leaveChecking;
+ let payload=schedulePayload(id,date,code);
+ if(input){
+   input.className=`code code${payload.work_code}`;
+   input.dataset.lastScheduleCode=payload.work_code;input.dataset.focusScheduleValue=payload.work_code;
  }
- input.className=`code code${payload.work_code}`;
+ // 화면색·합계는 즉시 바꾸고, 같은 순간 로컬 임시저장 + 서버 저장큐에 넣는다.
  applyLocalSchedule(payload);
  queueScheduleSave(payload);
- // 숫자 수정/특수코드/빈칸 신규입력 모두 즉시 서버 저장을 시작한다.
- await flushScheduleQueue();
+ return true;
 }
+
 
 async function quickSave(id,date,raw){
  if(!requireScheduleDateEdit(date))return;
