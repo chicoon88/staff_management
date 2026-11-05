@@ -3449,7 +3449,7 @@ function renderWeeklyPlanner(){
        }else{
          row+=`<td class="${cl} ${out?'weekOutsideMonth':''}" ondblclick="openShift(${e.id},'${date}')" title="${hol?esc(hol.name):date}">
            <input class="weekCode code${esc(v)}" data-weekstart="${ws}" data-emp="${e.id}" data-date="${date}" value="${esc(v)}" maxlength="4"
-             oninput="weeklyScheduleInput(${e.id},'${date}',this.value,this)" onkeydown="weeklyScheduleKey(event,this)" onfocus="highlightScheduleContext(this)">
+             oncompositionstart="this.dataset.imeComposing='1'" oncompositionend="delete this.dataset.imeComposing;weeklyScheduleInput(${e.id},'${date}',this.value,this)" oninput="if(this.dataset.imeComposing!=='1'&&!event.isComposing)weeklyScheduleInput(${e.id},'${date}',this.value,this)" onkeydown="weeklyScheduleKey(event,this)" onfocus="highlightScheduleContext(this)">
          </td>`;
        }
      }
@@ -3472,7 +3472,10 @@ function refreshWeeklyRow(employeeId,date){
    diffEl.innerHTML=`<span class="weekDiff ${cls}">${txt}</span>`;
  }
 }
+/* V9.1.1 FIX: Korean IME composition guard for schedule special codes (연/병/결/법/예). */
 async function weeklyScheduleInput(id,date,raw,input){
+ // V9.1.1: 한글 IME 조합 중간값(예: "연" 입력 중 "여")은 스케줄로 저장하지 않는다.
+ if(input?.dataset?.imeComposing==='1')return;
  if(!requireScheduleDateEdit(date)){let e=allEmployees().find(x=>x.id===id),old=sched(e,date);input.value=old?.work_code||'';return;}
  let payload=schedulePayload(id,date,raw),snapshot=String(raw??'');
  if(payload.work_code==='연'){
@@ -3527,7 +3530,7 @@ function renderSchedule(){
    }else{
     row+=`<td class="${cl}" ondblclick="openShift(${e.id},'${date}')" title="${hol?esc(hol.name):''}">
      <input id="sc-${e.id}-${d}" data-row="${ri}" data-col="${d}" data-emp="${e.id}" data-date="${date}" class="code code${esc(v)}" value="${esc(v)}" maxlength="4"
-       oninput="scheduleInput(${e.id},'${date}',this.value,this)" onkeydown="scheduleKey(event,this)" onfocus="highlightScheduleContext(this)" title="Enter/Tab/방향키 이동 · 더블클릭 상세시간">
+       oncompositionstart="this.dataset.imeComposing='1'" oncompositionend="delete this.dataset.imeComposing;scheduleInput(${e.id},'${date}',this.value,this)" oninput="if(this.dataset.imeComposing!=='1'&&!event.isComposing)scheduleInput(${e.id},'${date}',this.value,this)" onkeydown="scheduleKey(event,this)" onfocus="highlightScheduleContext(this)" title="Enter/Tab/방향키 이동 · 더블클릭 상세시간">
     </td>`;
    }
   }
@@ -3667,6 +3670,8 @@ async function confirmLeaveUseAfterRefresh(emp,date,input,overrideHours=null){
  return ok;
 }
 async function scheduleInput(id,date,raw,input){
+ // V9.1.1: 한글 IME 조합 중간값(예: "연" 입력 중 "여")은 스케줄로 저장하지 않는다.
+ if(input?.dataset?.imeComposing==='1')return;
  if(!requireScheduleDateEdit(date)){let e=allEmployees().find(x=>x.id===id),old=sched(e,date);input.value=old?.work_code||'';return;}
  let emp0=allEmployees().find(x=>x.id===id),existing0=sched(emp0,date),rawCode=String(raw??'').trim();
  if(rawCode==='연'){
