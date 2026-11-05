@@ -3456,7 +3456,7 @@ function renderWeeklyPlanner(){
        }else{
          row+=`<td class="${cl} ${out?'weekOutsideMonth':''}" ondblclick="openShift(${e.id},'${date}')" title="${hol?esc(hol.name):date}">
            <input class="weekCode code${esc(v)}" data-weekstart="${ws}" data-emp="${e.id}" data-date="${date}" value="${esc(v)}" maxlength="4"
-             oncompositionstart="this.dataset.imeComposing='1'" oncompositionend="delete this.dataset.imeComposing;weeklyScheduleInput(${e.id},'${date}',this.value,this)" oninput="if(this.dataset.imeComposing!=='1'&&!event.isComposing)weeklyScheduleInput(${e.id},'${date}',this.value,this)" onkeydown="weeklyScheduleKey(event,this)" onfocus="focusScheduleCodeInput(this)" onblur="if(scheduleSaveQueue.size)flushScheduleQueue()">
+             oncompositionstart="this.dataset.imeComposing='1'" oncompositionend="delete this.dataset.imeComposing;weeklyScheduleInput(${e.id},'${date}',this.value,this)" oninput="if(this.dataset.imeComposing!=='1'&&!event.isComposing)weeklyScheduleInput(${e.id},'${date}',this.value,this)" onkeydown="weeklyScheduleKey(event,this)" onfocus="focusScheduleCodeInput(this)" onblur="scheduleInputBlur(this)">
          </td>`;
        }
      }
@@ -3485,7 +3485,10 @@ async function weeklyScheduleInput(id,date,raw,input){
  if(input?.dataset?.imeComposing==='1')return;
  if(!requireScheduleDateEdit(date)){let e=allEmployees().find(x=>x.id===id),old=sched(e,date);input.value=normalizeScheduleCode(old?.work_code||'');return;}
  let emp0=allEmployees().find(x=>x.id===id),existing0=sched(emp0,date);
- let rawCode=normalizeScheduleCode(raw);if(input&&input.value!==rawCode)input.value=rawCode;
+ let rawCode=normalizeScheduleCode(raw);
+ // 한글 IME가 d→du→dus처럼 중간 영문을 내보내도 절대 DB에 저장하지 않는다.
+ if(!isValidScheduleCode(rawCode))return;
+ if(input&&input.value!==rawCode)input.value=rawCode;
  let payload=schedulePayload(id,date,rawCode),snapshot=String(rawCode??'');
  if(payload.work_code==='연'){
    if(input.dataset.leaveChecking==='1')return;
@@ -3500,7 +3503,8 @@ async function weeklyScheduleInput(id,date,raw,input){
  input.className=`weekCode code${payload.work_code}`;
  applyLocalSchedule(payload);
  queueScheduleSave(payload);
- if(!existing0)await flushScheduleQueue();
+ // 예전처럼 입력 즉시 서버 저장을 시작한다. 저장 중 추가 입력은 큐가 순서대로 이어서 처리한다.
+ await flushScheduleQueue();
  refreshWeeklyRow(id,date);
 }
 function weeklyScheduleKey(ev,input){
@@ -3540,7 +3544,7 @@ function renderSchedule(){
    }else{
     row+=`<td class="${cl}" ondblclick="openShift(${e.id},'${date}')" title="${hol?esc(hol.name):''}">
      <input id="sc-${e.id}-${d}" data-row="${ri}" data-col="${d}" data-emp="${e.id}" data-date="${date}" class="code code${esc(v)}" value="${esc(v)}" maxlength="4"
-       oncompositionstart="this.dataset.imeComposing='1'" oncompositionend="delete this.dataset.imeComposing;scheduleInput(${e.id},'${date}',this.value,this)" oninput="if(this.dataset.imeComposing!=='1'&&!event.isComposing)scheduleInput(${e.id},'${date}',this.value,this)" onkeydown="scheduleKey(event,this)" onfocus="focusScheduleCodeInput(this)" onblur="if(scheduleSaveQueue.size)flushScheduleQueue()" title="Enter/Tab/방향키 이동 · 더블클릭 상세시간">
+       oncompositionstart="this.dataset.imeComposing='1'" oncompositionend="delete this.dataset.imeComposing;scheduleInput(${e.id},'${date}',this.value,this)" oninput="if(this.dataset.imeComposing!=='1'&&!event.isComposing)scheduleInput(${e.id},'${date}',this.value,this)" onkeydown="scheduleKey(event,this)" onfocus="focusScheduleCodeInput(this)" onblur="scheduleInputBlur(this)" title="Enter/Tab/방향키 이동 · 더블클릭 상세시간">
     </td>`;
    }
   }
@@ -3560,7 +3564,22 @@ function normalizeScheduleCode(raw){
  return code;
 }
 function scheduleCodeClassValue(raw){return normalizeScheduleCode(raw)}
+function isValidScheduleCode(raw){
+ let code=normalizeScheduleCode(raw);
+ return code===''||['연','병','결','법','예','0'].includes(code)||/^[-+]?\d+(?:\.\d+)?$/.test(code);
+}
 function focusScheduleCodeInput(input){highlightScheduleContext(input);setTimeout(()=>{try{input.select()}catch(_){ }},0)}
+function scheduleInputBlur(input){
+ if(!input)return;
+ if(input.dataset?.imeComposing==='1')return;
+ let raw=String(input.value??''),code=normalizeScheduleCode(raw);
+ if(!isValidScheduleCode(code)){
+   let id=Number(input.dataset.emp||0),date=String(input.dataset.date||''),e=allEmployees().find(x=>Number(x.id)===id),old=sched(e,date),v=scheduleCodeClassValue(old?.work_code||'');
+   input.value=v;
+   input.className=`${input.classList.contains('weekCode')?'weekCode':'code'} code${v}`;
+ }
+ if(scheduleSaveQueue.size)flushScheduleQueue();
+}
 function schedulePayload(id,date,raw){
  let emp=allEmployees().find(e=>e.id===id),cond=workConditionForDate(emp||{},date),rule=conditionTimesForDate(cond,date),code=normalizeScheduleCode(raw),base=Number(rule.daily_hours||cond.daily_hours||8),leaveH=leaveDayHoursAt(emp,date),scheduled=0,worked=0,ot=0,status='';
  if(code==='연'){scheduled=leaveH;status='leave'}
@@ -3571,7 +3590,9 @@ function schedulePayload(id,date,raw){
  else if(code==='0'||!code){code=code||'0';status='off'}
  else if(!isNaN(Number(code))){worked=Number(code);scheduled=Math.min(worked,base);ot=Math.max(0,worked-base);status='work'}
  else {status='other'}
- return {employee_id:id,work_date:date,work_code:code,scheduled_hours:scheduled,worked_hours:worked,overtime_hours:ot,status};
+ // 사람이 직접 입력한 값은 자동생성 행 표시만 제거한다. 다른 메모는 보존한다.
+ let old=sched(emp,date),oldMemo=old?.memo??null,memo=String(oldMemo||'')==='[[AUTO_EMP_PATTERN]]'?null:oldMemo;
+ return {employee_id:id,work_date:date,work_code:code,scheduled_hours:scheduled,worked_hours:worked,overtime_hours:ot,status,memo};
 }
 function applyLocalSchedule(payload){
  let idx=schedules.findIndex(s=>s.employee_id===payload.employee_id&&s.work_date===payload.work_date);
@@ -3745,6 +3766,8 @@ async function scheduleInput(id,date,raw,input){
  if(input?.dataset?.imeComposing==='1')return;
  if(!requireScheduleDateEdit(date)){let e=allEmployees().find(x=>x.id===id),old=sched(e,date);input.value=old?.work_code||'';return;}
  let emp0=allEmployees().find(x=>x.id===id),existing0=sched(emp0,date),rawCode=normalizeScheduleCode(raw);
+ // 한글 IME 중간값(d/du/dus, 8d/8dus 등)과 그 밖의 잘못된 코드는 화면에는 입력 중으로 두되 DB에는 절대 보내지 않는다.
+ if(!isValidScheduleCode(rawCode))return;
  if(input&&input.value!==rawCode)input.value=rawCode;
  if(rawCode==='연'){
    let d=leaveUseHoursDecision(emp0,date,existing0);
@@ -3768,14 +3791,15 @@ async function scheduleInput(id,date,raw,input){
  input.className=`code code${payload.work_code}`;
  applyLocalSchedule(payload);
  queueScheduleSave(payload);
- // 기존 DB 행이 없던 빈칸 입력은 120ms 대기를 하지 않고 즉시 INSERT 확정한다.
- if(!existing0)await flushScheduleQueue();
+ // 숫자 수정/특수코드/빈칸 신규입력 모두 즉시 서버 저장을 시작한다.
+ await flushScheduleQueue();
 }
 
 async function quickSave(id,date,raw){
  if(!requireScheduleDateEdit(date))return;
- let payload=schedulePayload(id,date,raw);
- applyLocalSchedule(payload);queueScheduleSave(payload);
+ let code=normalizeScheduleCode(raw);if(!isValidScheduleCode(code))return;
+ let payload=schedulePayload(id,date,code);
+ applyLocalSchedule(payload);queueScheduleSave(payload);await flushScheduleQueue();
 }
 function scheduleKey(ev,input){
  const key=ev.key;
