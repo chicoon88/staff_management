@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>직원관리 대시보드 · V9.1.11</title>
+<title>직원관리 대시보드 · V9.1.12</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
@@ -1297,7 +1297,7 @@ body.resizingEmployeeColumn *{
   <div><h1 class="title">급여관리 <span style="font-size:12px;color:#315efb;background:#eef3ff;border-radius:999px;padding:4px 8px;vertical-align:middle">v2026.08.23-1655</span></h1><div class="sub">월별 급여대장을 검산하고, 기간별·직원별 누적 급여도 조회합니다.</div></div>
   <div class="toolbar">
    <input type="file" id="payrollFile" accept=".xlsx,.xls,.xlsm" multiple style="display:none" onchange="importPayrollFiles(this.files);this.value=''">
-   <button class="btn" onclick="$('payrollFile').click()">급여대장 여러개 불러오기</button>
+   <button id="payrollBatchImportBtn" class="btn" onclick="$('payrollFile').click()">급여대장 여러개 불러오기</button>
    <button id="payrollReapplyBtn" class="btn gray" onclick="reapplyStoredPayrollSource()" title="서버에 보관된 이 달 급여대장 원본을 최신 로직으로 다시 적용합니다.">⟳ 원본 새로고침</button>
    <span id="payrollLoadState" class="saveState">대기</span>
   </div>
@@ -6572,13 +6572,12 @@ async function parseLaborPayrollExact(file){
 
  let payMonth=periodStart?periodStart.slice(0,7):'';
  if(!payMonth){
-   // 제목 "(7월)급 여 대 장"에서 월 추출 + 지급일 연도 사용
-   let title=text(cell('A1')),mm=title.match(/\((\d{1,2})월\)/);
-   if(mm){
-     let yy=(payDate||new Date().toISOString()).slice(0,4);
-     payMonth=`${yy}-${String(Number(mm[1])).padStart(2,'0')}`;
-   }
+   // 내부 산정기간이 없는 양식은 제목의 월과 파일명 YYYYMM을 상호 검증한다.
+   // 지급일의 연도나 현재 연도를 추측해 다른 월을 덮어쓰지 않는다.
+   let title=text(cell('A1')),mm=title.match(/\((\d{1,2})월\)/),filenameYm=payrollBatchFileMonth(file.name);
+   if(filenameYm&&(!mm||Number(filenameYm.slice(5))===Number(mm[1])))payMonth=filenameYm;
  }
+ if(!/^20\d{2}-(0[1-9]|1[0-2])$/.test(payMonth))return {error:'급여대장 산정월을 확정할 수 없습니다. 파일명 YYYYMM 또는 내부 산정기간을 확인하세요.'};
 
  return {
    sheetName,storeName,payMonth,periodStart,periodEnd,payDate,
@@ -6861,32 +6860,124 @@ async function syncEmployeeResidentsFromPayroll(parsed,targetEmployees,targetSto
  return {updated};
 }
 
+let payrollBatchImportBusy=false;
+function payrollBatchFileMonth(name){
+ const m=String(name||'').match(/(?:^|[^0-9])(20\d{2})[.\-_ ]?(0?[1-9]|1[0-2])(?=[^0-9]|$)/);
+ return m?`${m[1]}-${String(Number(m[2])).padStart(2,'0')}`:'';
+}
+function payrollBatchSummary(results){
+ const host=$('payrollImportInfo');if(!host)return;
+ let success=results.filter(x=>x.ok),skipped=results.filter(x=>!x.ok);
+ host.style.display='block';
+ host.innerHTML=`<b>급여대장 월별 일괄 처리 결과 · 저장 ${success.length}개 월 / 제외 ${skipped.length}개 파일</b>`+
+   `<div class="help" style="margin-top:5px">선택한 화면의 월을 변경하지 않았습니다. 월별 보기 버튼으로 7월·8월·9월 등 등록 내용을 확인하세요. 각 월의 기존 급여대장은 확인 후 교체하며 다른 월은 유지합니다.</div>`+
+   `<div style="margin-top:10px;display:grid;gap:6px">${results.map(x=>
+    `<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:7px 9px;border:1px solid #e4e7ed;border-radius:8px">`+
+    `<span style="font-weight:800;color:${x.ok?'#087451':'#b42318'}">${x.ok?'✓ 저장':'– 제외'}</span>`+
+    `<span>${esc(x.storeName||'-')} · ${esc(x.ym||'-')} · ${esc(x.file||'')}</span>`+
+    (x.ok?`<span class="help">${Number(x.rows||0)}건</span><button class="btn gray small" onclick="viewPayrollImportedMonth(${Number(x.sid)},'${x.ym}')">이 달 보기</button>`:
+    `<span class="help">${esc(x.reason||'업로드 취소 또는 오류')}</span>`)+
+    `</div>`).join('')}</div>`;
+}
+async function viewPayrollImportedMonth(sid,ym){
+ if(!/^20\d{2}-(0[1-9]|1[0-2])$/.test(String(ym))||!stores.some(x=>Number(x.id)===Number(sid)))return;
+ if(!await persistScheduleEdits())return;
+ if($('storeSelect').value!==String(sid)){
+   if(!isAppAdmin()&&permissionSystemAvailable===true&&!currentStoreAccess.has(Number(sid)))return alert('이 업장에 접근 권한이 없습니다.');
+   $('storeSelect').value=String(sid);
+   localStorage.setItem('staff_dashboard_store_id',String(sid));
+ }
+ $('monthSelect').value=ym;
+ ++payrollReloadToken;
+ clearStoreScopedUI();
+ await refreshAll();
+}
 async function importPayrollFiles(fileList){
  const files=[...(fileList||[])].filter(Boolean);
- employeeSensitiveColumnsMissingDetected=false;
  if(!files.length)return;
+ if(payrollBatchImportBusy)return alert('급여대장 업로드가 진행 중입니다. 완료 후 다시 선택해 주세요.');
+ // 단일 파일은 기존의 분석·교체 확인창을 그대로 사용한다.
  if(files.length===1)return importPayrollSimple(files[0]);
- if(!confirm(`급여대장 ${files.length}개를 선택했습니다.\n\n각 파일의 내부 산정월/업장을 확인하면서 순서대로 적용합니다.\n같은 월 파일이 여러 개면 뒤에 처리되는 파일이 최종자료가 됩니다.\n\n계속할까요?`))return;
- let completed=0;
- for(let i=0;i<files.length;i++){
-   const f=files[i];
-   setPayrollLoadState(`일괄 ${i+1}/${files.length} · ${f.name}`,'saving');
-   try{
-     await importPayrollSimple(f,{batchIndex:i+1,batchTotal:files.length});
-     completed++;
-   }catch(err){
-     console.error('급여대장 일괄 처리 오류',f.name,err);
-     alert(`${f.name} 처리 중 오류가 발생했습니다.\n\n${err.message||err}\n\n다음 파일 처리는 계속합니다.`);
+ payrollBatchImportBusy=true;
+ if($('payrollBatchImportBtn'))$('payrollBatchImportBtn').disabled=true;
+ employeeSensitiveColumnsMissingDetected=false;
+ const previousStore=$('storeSelect')?.value||'',previousMonth=$('monthSelect')?.value||'';
+ const results=[],items=[];
+ try{
+   // 파일의 실제 산정기간을 먼저 전부 확인한다. 화면의 선택월을 적용하지 않는다.
+   for(let i=0;i<files.length;i++){
+     const file=files[i];
+     setPayrollLoadState(`산정월 분석 ${i+1}/${files.length} · ${file.name}`,'saving');
+     try{
+       const parsed=await parseLaborPayrollExact(file);
+       if(parsed.error)throw new Error(parsed.error);
+       if(!/^20\d{2}-(0[1-9]|1[0-2])$/.test(String(parsed.payMonth||'')))throw new Error('파일 내부 산정월을 확인할 수 없어 업로드하지 않았습니다.');
+       const namedYm=payrollBatchFileMonth(file.name);
+       if(namedYm&&namedYm!==parsed.payMonth)throw new Error(`파일명 ${namedYm} / 급여대장 내부 ${parsed.payMonth} 불일치. 잘못된 월 교체 방지를 위해 제외`);
+       if(!parsed.rows?.length)throw new Error('직원 급여행이 없습니다.');
+       const target=findStoreFromPayrollName(parsed.storeName);
+       const storeKey=target?String(target.id):normalizeStoreNameForPayroll(parsed.storeName||'미확인');
+       items.push({file,parsed,storeKey,target,ym:parsed.payMonth,index:i});
+     }catch(err){
+       results.push({ok:false,file:file.name,reason:String(err.message||err)});
+       console.warn('급여대장 사전분석 제외',file.name,err);
+     }
    }
+   // 같은 업장·월 파일이 함께 선택되면 마지막 파일만 확정자료로 사용한다.
+   // 앞 파일을 저장하고 즉시 지우는 과정을 없애 기존 데이터 손실 위험과 시간을 줄인다.
+   const lastByMonth=new Map();
+   items.forEach((x,i)=>lastByMonth.set(x.storeKey+'|'+x.ym,i));
+   const pending=items.filter((x,i)=>{
+     if(lastByMonth.get(x.storeKey+'|'+x.ym)===i)return true;
+     results.push({ok:false,file:x.file.name,ym:x.ym,storeName:x.target?.name||x.parsed.storeName,reason:'같은 업장·월의 뒤 파일을 최종본으로 사용'});
+     return false;
+   });
+   if(!pending.length){
+     setPayrollLoadState('일괄 업로드 가능 파일 없음','error');
+     payrollBatchSummary(results);
+     alert('급여대장으로 등록할 수 있는 파일이 없습니다. 파일 내부 산정월과 시트를 확인해 주세요.');
+     return;
+   }
+   let plan='급여대장 월별 일괄 업로드\n\n'+pending.map((x,i)=>
+     `${i+1}. ${x.target?.name||x.parsed.storeName||'업장 확인 필요'} · ${x.ym}\n   ${x.file.name} · ${x.parsed.rows.length}건`
+   ).join('\n\n');
+   plan+='\n\n각 파일의 내부 산정월에 등록합니다. 기존 동일 월 자료는 파일별 교체 확인창을 거쳐 최신 파일로 교체합니다. 다른 월 자료와 기존 직원관리 설정은 유지합니다.\n\n계속할까요?';
+   if(!confirm(plan)){
+     pending.forEach(x=>results.push({ok:false,file:x.file.name,ym:x.ym,storeName:x.target?.name||x.parsed.storeName,reason:'일괄 업로드 취소'}));
+     setPayrollLoadState('일괄 업로드 취소','saved');
+     payrollBatchSummary(results);
+     return;
+   }
+   for(let i=0;i<pending.length;i++){
+     const x=pending[i];
+     setPayrollLoadState(`월별 저장 ${i+1}/${pending.length} · ${x.ym}`,'saving');
+     try{
+       const outcome=await importPayrollSimple(x.file,{parsed:x.parsed, deferRefresh:true, targetStoreId:x.target?.id});
+       if(outcome?.ok){
+         results.push({ok:true,file:x.file.name,sid:outcome.sid,ym:outcome.ym,rows:outcome.rows,storeName:outcome.storeName});
+       }else{
+         results.push({ok:false,file:x.file.name,ym:x.ym,storeName:x.target?.name||x.parsed.storeName,reason:'교체 확인 취소 또는 업로드 오류'});
+       }
+     }catch(err){
+       console.error('급여대장 월별 저장 오류',x.file.name,err);
+       results.push({ok:false,file:x.file.name,ym:x.ym,storeName:x.target?.name||x.parsed.storeName,reason:String(err.message||err)});
+       alert(`${x.file.name} 처리 오류:\n${err.message||err}\n\n다른 월 처리는 계속합니다.`);
+     }
+   }
+ }finally{
+   // 업로드 중 표시 업장/월을 매 파일마다 바꾸지 않는다. 마지막에 한 번만 새로 조회한다.
+   if(previousStore && $('storeSelect'))$('storeSelect').value=previousStore;
+   if(previousMonth && $('monthSelect'))$('monthSelect').value=previousMonth;
+   try{await refreshAll();if($('payrollPage')?.classList.contains('active'))await loadPayrollSimple();}
+   catch(err){console.warn('급여대장 일괄 처리 후 화면 갱신 오류',err);}
+   payrollBatchImportBusy=false;
+   if($('payrollBatchImportBtn'))$('payrollBatchImportBtn').disabled=false;
  }
- setPayrollLoadState(`일괄 처리 완료 · ${completed}/${files.length}`,'saved');
+ const successes=results.filter(x=>x.ok);
+ setPayrollLoadState(`월별 저장 ${successes.length}건 · 제외 ${results.length-successes.length}건`,successes.length?'saved':'error');
+ payrollBatchSummary(results);
  if(employeeSensitiveColumnsMissingDetected){
-   alert(
-     `급여대장 일괄 처리는 계속 완료했습니다.\n\n`+
-     `다만 employees 테이블에 resident_number / bank_account 컬럼이 아직 없어 `+
-     `직원관리 주민번호 자동채움만 건너뛰었습니다.\n\n`+
-     `아래 SQL을 Supabase SQL Editor에서 1회 실행하면, 기존 급여대장에 저장된 주민번호를 바탕으로 직원관리에서 다시 자동채움됩니다.`
-   );
+   alert('급여대장 저장은 완료됐지만 직원관리 주민번호 자동채움용 DB 컬럼이 없어 해당 부분은 건너뛰었습니다. 급여자료 자체는 유지됩니다.');
  }
 }
 
@@ -6896,7 +6987,7 @@ async function importPayrollSimple(file,options={}){
 
  let parsed;
  try{
-   parsed=await parseLaborPayrollExact(file);
+   parsed=options.parsed||await parseLaborPayrollExact(file);
  }catch(err){
    setPayrollLoadState('읽기 오류','error');
    return alert('급여대장 읽기 오류:\n'+(err.message||err));
@@ -7272,6 +7363,7 @@ async function importPayrollSimple(file,options={}){
    await syncEmploymentHistoryFromPayroll(parsed,targetStore,targetEmployees);
  }
 
+ if(!options.deferRefresh){
  $('storeSelect').value=String(sid);
  localStorage.setItem('staff_dashboard_store_id',String(sid));
  $('monthSelect').value=ym;
@@ -7286,7 +7378,7 @@ async function importPayrollSimple(file,options={}){
    document.querySelectorAll('[data-page="payroll"]').forEach(x=>x.classList.add('active'));
  }
  await loadPayrollSimple();
-
+ }
  setPayrollLoadState(`${ym} · ${parsed.rows.length}건`,'saved');
  if($('payrollImportInfo')){
    let kim=parsed.rows.find(x=>normalizeName(x.employee_name)==='김현');
@@ -7301,6 +7393,7 @@ async function importPayrollSimple(file,options={}){
      `새 급여행 ${parsed.rows.length}건 · 직원매칭 ${parsed.matched}건 · 기존 직원정보 보존`+
      `${residentSync?.skippedMissingColumns?' · <b>직원 주민번호 자동채움은 DB 컬럼 생성 후 적용</b>':''}</span>${audit}`;
  }
+ return {ok:true,sid,ym,rows:parsed.rows.length,storeName:targetStore.name,file:file.name};
 }
 function showPayrollImportInfo(parsed,fileName){
  let el=$('payrollImportInfo');if(!el)return;
