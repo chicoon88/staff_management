@@ -900,6 +900,7 @@ body.resizingEmployeeColumn *{
 #hoursPage .workBucket.empty{background:#fafafa;border:1px dashed #e1e5eb;color:#9aa1ad}
 #hoursPage .workFormula{font-size:12px;font-weight:700;white-space:normal;word-break:keep-all}
 #hoursPage .workTerm{white-space:nowrap}
+#hoursPage .workLeaveTerm{color:#18794e;font-weight:800;white-space:nowrap}
 #hoursPage .workPlus{color:#8c94a3;padding:0 2px}
 #hoursPage .workEquals{font-size:13px;color:#283447}
 #hoursPage .hoursStrong{font-size:14px;background:#fbfcfe}
@@ -1256,7 +1257,7 @@ body.resizingEmployeeColumn *{
  </div>
  <div id="hoursSummaryView">
   <div class="card hoursSummaryCard" style="margin-top:13px">
-   <div class="hoursSummaryGuide"><b>보는 방법</b> · 예: <b>10일 × 8h + 2일 × 5h = 90h</b>처럼 같은 근무시간끼리 자동으로 묶습니다. 직원관리에서 <b>스케줄·근로 제외</b>를 체크한 직원은 월간스케줄·주간편성·근로시간에서 모두 표시하지 않습니다.</div>
+   <div class="hoursSummaryGuide"><b>보는 방법</b> · 예: <b>10일 × 8h + 2일 × 5h = 90h</b>처럼 같은 근무시간끼리 자동으로 묶습니다. 연차가 있으면 <b>14일 × 8h + 연 1일 × 8h</b>, 합계는 <b>112h + 연 8h</b>로 따로 표시합니다(실근로에 연차 합산 없음). 직원관리에서 <b>스케줄·근로 제외</b>를 체크한 직원은 월간스케줄·주간편성·근로시간에서 모두 표시하지 않습니다.</div>
    <div class="tablewrap" style="margin-top:10px"><table class="hoursSummaryTable"><thead><tr><th class="name">직원</th><th>근무형태</th><th class="hoursKindHead weekdayHead">평일</th><th class="hoursKindHead weekendHead">주말</th><th class="hoursKindHead holidayHead">공휴일</th><th>실근로<br><small>출근간주 포함</small></th><th>주휴 예상</th><th>비교 합계</th><th>연장</th><th>연차</th><th>병가</th><th>급여대장 월근무</th><th>차이</th></tr></thead><tbody id="hoursBody"></tbody></table></div>
   </div>
   <div class="help" style="margin-top:7px">※ 평일·주말·공휴일 시간은 대시보드의 실제 worked_hours 기준입니다.</div>
@@ -3169,9 +3170,16 @@ function classifyDate(date){
 }
 function classLabel(c){return c==='holiday'?'공휴일':c==='weekend'?'주말':'평일'}
 function classifyWork(emp){
- let r=monthRange(),o={weekday:{days:0,hours:0,dates:[]},weekend:{days:0,hours:0,dates:[]},holiday:{days:0,hours:0,dates:[]}};
+ // V50 확정 형식 복구: 실제 근무시간과 연차시간을 서로 섞지 않고 같은 셀에 '+ 연'으로 병기한다.
+ let r=monthRange(),o={weekday:{days:0,hours:0,dates:[],leaveDates:[],leaveHours:0},weekend:{days:0,hours:0,dates:[],leaveDates:[],leaveHours:0},holiday:{days:0,hours:0,dates:[],leaveDates:[],leaveHours:0}};
  for(let d=1;d<=r.days;d++){
-   let date=r.m+'-'+String(d).padStart(2,'0'),s=sched(emp,date),worked=String(s?.work_code||'').trim()==='예'?scheduleRowPrescribedHours(emp,date,s):Number(s?.worked_hours||0);
+   let date=r.m+'-'+String(d).padStart(2,'0'),s=sched(emp,date),code=String(s?.work_code||'').trim();
+   if(code==='연'){
+     let leaveH=Number(s?.scheduled_hours||leaveDayHoursAt(emp,date));
+     if(leaveH>0){let c=classifyDate(date),h=holidayFor(date);o[c].leaveDates.push({date,hours:leaveH,name:h?.name||''});o[c].leaveHours+=leaveH;}
+     continue;
+   }
+   let worked=code==='예'?scheduleRowPrescribedHours(emp,date,s):Number(s?.worked_hours||0);
    if(worked<=0)continue;
    let c=classifyDate(date),h=holidayFor(date);
    o[c].days++;o[c].hours+=worked;o[c].dates.push({date,hours:worked,name:h?.name||''});
@@ -3952,15 +3960,18 @@ function expectedWeeklyHolidayHours(e){
 }
 
 function formatWorkBucket(bucket,kind){
- if(!bucket?.dates?.length)return `<div class="workBucket ${kind} empty">-</div>`;
- let groups=new Map();
- bucket.dates.forEach(x=>{
-   let h=round2(Number(x.hours||0)),key=String(h);
-   if(!groups.has(key))groups.set(key,{hours:h,count:0});
-   groups.get(key).count++;
- });
- let formula=[...groups.values()].map(g=>`<span class="workTerm"><b>${g.count}일</b> × ${hour2(g.hours)}h</span>`).join('<span class="workPlus"> + </span>');
- return `<div class="workBucket ${kind}"><div class="workFormula">${formula}</div><div class="workEquals">= <b>${hour2(bucket.hours)}h</b></div></div>`;
+ // V50 디자인: 47px 기존 셀 배치를 유지하고 연차는 줄을 추가하지 않고 옆에 +로 표시한다.
+ if(!bucket?.dates?.length&&!bucket?.leaveDates?.length)return `<div class="workBucket ${kind} empty">-</div>`;
+ const groupDates=dates=>{
+   let groups=new Map();
+   (dates||[]).forEach(x=>{let h=round2(Number(x.hours||0)),key=String(h);if(!groups.has(key))groups.set(key,{hours:h,count:0});groups.get(key).count++});
+   return [...groups.values()];
+ };
+ let terms=[...groupDates(bucket.dates).map(g=>`<span class="workTerm"><b>${g.count}일</b> × ${hour2(g.hours)}h</span>`),
+   ...groupDates(bucket.leaveDates).map(g=>`<span class="workTerm workLeaveTerm">연 <b>${g.count}일</b> × ${hour2(g.hours)}h</span>`)];
+ let formula=terms.join('<span class="workPlus"> + </span>');
+ let total=`<b>${hour2(bucket.hours)}h</b>`+(bucket.leaveDates?.length?`<span class="workLeaveTerm"> + 연 ${hour2(bucket.leaveHours)}h</span>`:'');
+ return `<div class="workBucket ${kind}"><div class="workFormula">${formula}</div><div class="workEquals">= ${total}</div></div>`;
 }
 
 function renderHours(){
