@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>직원관리 대시보드 · V9.1.12</title>
+<title>직원관리 대시보드 · V9.1.16</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
@@ -1090,6 +1090,57 @@ body.resizingEmployeeColumn *{
 /* Employment-date guard: a grey cell outside hire/resignation dates cannot be edited. */
 #schedulePage input.outsideEmploymentInput:disabled,
 #schedulePage input.weekCode.outsideEmploymentInput:disabled{background:#e9edf2!important;color:#a3acb9!important;border:1px solid #dde3eb!important;cursor:not-allowed;opacity:.78}
+
+/* V9.1.14: 직원관리의 '출력색'을 월간 스케줄 직원 이름 칸에만 적용한다.
+   직원관리/주간 스케줄의 직책별 배경색은 사용하지 않는다. */
+#schedulePage #schBody tr:not(.selectedRow)>td.schedulePrintNameCell{
+  background:var(--employee-print-bg,#fff)!important;
+}
+/* V9.1.13에서 확정한 체크박스 선택 행 강조는 그대로 유지한다. */
+#schedulePage #schBody tr.selectedRow>td,
+#employeesPage #employeeBody tr.employeeSelectedRow>td{
+  background:#ffecad!important;
+  box-shadow:inset 0 2px 0 #d99518,inset 0 -2px 0 #d99518!important;
+}
+#schedulePage #schBody tr.selectedRow>td.schedulePrintNameCell,
+#employeesPage #employeeBody tr.employeeSelectedRow>td.name{
+  background:#ffd574!important;
+  box-shadow:inset 5px 0 0 #bd6b00,inset 0 2px 0 #d99518,inset 0 -2px 0 #d99518!important;
+}
+#schedulePage #schBody tr.selectedRow .selectEmp,
+#employeesPage #employeeBody tr.employeeSelectedRow .empDeleteCheck{accent-color:#b75b00}
+/* V9.1.15: 입사 전·퇴사 후 날짜는 입력 차단을 그대로 두고 사선으로 명확하게 표시한다.
+   주말·공휴일 배경이 우선 적용되더라도 이 사선이 보이도록 높은 선택자 우선순위를 사용한다. */
+#schedulePage #schBody td.outsideEmploymentCell,
+#schedulePage #weeklyPlanner td.outsideEmploymentCell{
+  background-color:#e8edf3!important;
+  background-image:repeating-linear-gradient(135deg,transparent 0,transparent 7px,#c7d1dd 7px,#c7d1dd 9px,transparent 9px,transparent 16px)!important;
+  cursor:not-allowed;
+}
+/* 기존 입력 상자의 단색 배경이 사선을 가리지 않도록 한다. */
+#schedulePage #schBody td.outsideEmploymentCell input.outsideEmploymentInput:disabled,
+#schedulePage #weeklyPlanner td.outsideEmploymentCell input.outsideEmploymentInput:disabled{
+  background:transparent!important;
+  border-color:rgba(117,133,155,.33)!important;
+  color:#8c97a7!important;
+  opacity:1!important;
+  box-shadow:none!important;
+  cursor:not-allowed;
+  pointer-events:none;
+}
+/* V9.1.16: 재직기간 밖 칸은 선택한 직원이어도 항상 회색 사선이다.
+   선택 행의 노란 테두리만 남겨 선택 상태와 입력 불가 날짜를 혼동하지 않도록 한다. */
+#schedulePage #schBody tr.selectedRow>td.outsideEmploymentCell{
+  background-color:#e8edf3!important;
+  background-image:repeating-linear-gradient(135deg,transparent 0,transparent 7px,#c7d1dd 7px,#c7d1dd 9px,transparent 9px,transparent 16px)!important;
+}
+#schedulePage .scheduleOutsideLegend{
+  color:#475569;
+  border:1px solid #cbd5e1;
+  background-color:#e8edf3;
+  background-image:repeating-linear-gradient(135deg,transparent 0,transparent 7px,#c7d1dd 7px,#c7d1dd 9px,transparent 9px,transparent 16px);
+}
+/* 연·결·병·예 등 스케줄 입력 코드의 색상은 기존 규칙을 그대로 유지한다. */
 </style>
 </head>
 <body>
@@ -1230,7 +1281,7 @@ body.resizingEmployeeColumn *{
   <span id="scheduleStoreState" class="saveState"></span><span id="scheduleLoadState" class="saveState saved">준비</span><span id="scheduleSaveState" class="saveState saved">저장완료</span><span class="help">연차잔여는 입력 즉시 반영</span>
  </div>
  </div>
- <div class="legend"><span class="tag">8 = 8시간</span><span class="tag">9 = 9시간</span><span class="tag">0 = 휴무</span><span class="tag">연 = 연차</span><span class="tag">병 = 병가(연차판정 확인)</span><span class="tag">결 = 결근</span><span class="tag">법 = 법정 출근간주</span><span class="tag">예 = 예비군(출근간주 · 소정시간 인정 · 연차차감 없음)</span><span class="tag">주5일 목표 40h</span><span class="tag">주4일 목표 36h</span><span class="tag">공휴일은 주말보다 우선</span><span id="scheduleOrderHint" class="tag scheduleOrderHint">↕ 이름을 끌어 스케줄 순서 변경</span></div>
+ <div class="legend"><span class="tag">8 = 8시간</span><span class="tag">9 = 9시간</span><span class="tag">0 = 휴무</span><span class="tag">연 = 연차</span><span class="tag">병 = 병가(연차판정 확인)</span><span class="tag">결 = 결근</span><span class="tag">법 = 법정 출근간주</span><span class="tag">예 = 예비군(출근간주 · 소정시간 인정 · 연차차감 없음)</span><span class="tag">주5일 목표 40h</span><span class="tag">주4일 목표 36h</span><span class="tag">공휴일은 주말보다 우선</span><span class="tag scheduleOutsideLegend">사선 = 입사 전·퇴사 후 (입력 불가)</span><span id="scheduleOrderHint" class="tag scheduleOrderHint">↕ 이름을 끌어 스케줄 순서 변경</span></div>
  <div class="readOnlyScheduleNotice" id="scheduleReadOnlyNotice">보기 전용 권한입니다. 스케줄 확인은 가능하지만 수정은 할 수 없습니다.</div><div class="schedulerFocusNote infoBox help" style="margin-top:8px"><b>사용 순서</b> · 스케줄 입력 → 근태 확인 → 스케줄 출력</div>
 
  <div id="monthlyScheduleWrap">
@@ -3636,7 +3687,7 @@ function renderSchedule(){
  $('schHead').innerHTML=h;
  $('schBody').innerHTML=list.map((e,ri)=>{
   let x=calc(e),checked=selectedEmployees.has(e.id);
-  let row=`<tr data-schedule-emp="${e.id}" ondragover="scheduleDragOver(event,${e.id})" ondrop="scheduleDrop(event,${e.id})" class="${checked?'selectedRow':''}"><td class="name scheduleNameCell"><div style="display:flex;gap:6px;align-items:center"><input class="selectEmp" type="checkbox" ${checked?'checked':''} onchange="toggleEmployee(${e.id},this.checked)"><span>${scheduleDragHandleHtml(e)}<br><span class="pill">${workTypeForDate(e,r.first)}</span></span></div></td>`;
+  let row=`<tr data-schedule-emp="${e.id}" ondragover="scheduleDragOver(event,${e.id})" ondrop="scheduleDrop(event,${e.id})" class="${checked?'selectedRow':''}"><td class="name scheduleNameCell schedulePrintNameCell" style="--employee-print-bg:${employeeColor(e)}" title="출력색: ${esc(PRINT_COLORS.find(([c])=>c.toLowerCase()===String(employeeColor(e)).toLowerCase())?.[1]||'직원관리에서 설정')}"><div style="display:flex;gap:6px;align-items:center"><input class="selectEmp" type="checkbox" ${checked?'checked':''} onchange="toggleEmployee(${e.id},this.checked)"><span>${scheduleDragHandleHtml(e)}<br><span class="pill">${workTypeForDate(e,r.first)}</span></span></div></td>`;
   for(let d=1;d<=r.days;d++){
    let date=r.m+'-'+String(d).padStart(2,'0'),valid=employedOn(e,date),s=sched(e,date),v=s?.work_code||'',wd=new Date(r.y,r.mo-1,d).getDay(),hol=holidayFor(date),cl=hol?' holidayHead':(wd===0||wd===6?' weekendHead':''),outside=!valid;
    let title=outside?(date<e.hire_date?'입사일 이전 · 입력 불가':'퇴사일 이후 · 입력 불가'):(hol?hol.name:'');
@@ -5056,7 +5107,7 @@ function renderEmployees(){
      ?`<select class="empInline" onchange="saveEmployeeInline(${e.id},'pay_type',this.value)">${employeePayTypeOptions(e)}</select>`
      :(e.pay_type==='hourly'?'시급/파트타임':e.pay_type==='daily'?'일당':e.pay_type==='business'?'사업소득':'월급');
 
-   return `<tr class="${employeeView==='retired'?'retiredRow':''}" ${employeeView==='active'?'data-emp-id="'+e.id+'"':''}>
+   return `<tr class="${employeeView==='retired'?'retiredRow ':''}${delChecked?'employeeSelectedRow':''}" ${employeeView==='active'?'data-emp-id="'+e.id+'"':''}>
    <td style="text-align:center"><input type="checkbox" class="empDeleteCheck" data-id="${e.id}" ${delChecked?'checked':''} onchange="toggleEmployeeDeleteSelection(${e.id},this.checked)"></td>
    <td><span class="empDragHandle" draggable="${dragEnabled?'true':'false'}" data-emp-id="${e.id}" title="${dragEnabled?'이 손잡이만 잡아서 순서 이동':'연번순 보기에서만 순서 이동 가능'}">☰</span> <span class="seqBadge">${idx+1}</span></td>
 
@@ -5113,6 +5164,8 @@ ${employeeView==='retired'?`<button class="btn gray small" onclick="openEmployee
 function toggleEmployeeDeleteSelection(id,on){
  if(on)employeeDeleteSelection.add(id);
  else employeeDeleteSelection.delete(id);
+ // 선택 여부만 갱신해서 이름/비고 등의 편집 중인 입력값을 보존한다.
+ document.querySelector(`#employeeBody .empDeleteCheck[data-id="${id}"]`)?.closest('tr')?.classList.toggle('employeeSelectedRow',!!on);
 }
 function selectAllEmployeeRows(on){
  let list=employeeView==='retired'?retiredEmployees:employeeManagementActiveEmployees();
@@ -5722,6 +5775,9 @@ async function saveEmployee(id){
 
 function toggleEmployee(id,checked){
  if(checked)selectedEmployees.add(id);else selectedEmployees.delete(id);
+ // 체크만 했을 때 월간표 전체를 다시 렌더링하지 않아 입력 중인 근무값을 보호한다.
+ let row=document.querySelector(`#schBody tr[data-schedule-emp="${id}"]`);
+ if(row){row.classList.toggle('selectedRow',!!checked);return;}
  renderSchedule();
 }
 function toggleAllEmployees(on){
