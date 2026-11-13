@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>직원관리 대시보드 V9.1.20</title>
+<title>직원관리 대시보드 V9.1.23</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
@@ -1142,6 +1142,57 @@ body.resizingEmployeeColumn *{
 }
 /* 연·결·병·예 등 스케줄 입력 코드의 색상은 기존 규칙을 그대로 유지한다. */
 
+
+/* ===== V9.1.23 · 주간편성 공통 출력색/선택 및 날짜별 출근자 확인 ===== */
+#schedulePage #weeklyPlanner tbody tr:not(.selectedRow)>td.schedulePrintNameCell{
+ background:var(--employee-print-bg,#fff)!important;
+}
+#schedulePage #weeklyPlanner tbody tr.selectedRow>td{
+ background:#ffecad!important;
+ box-shadow:inset 0 2px 0 #d99518,inset 0 -2px 0 #d99518!important;
+}
+#schedulePage #weeklyPlanner tbody tr.selectedRow>td.schedulePrintNameCell{
+ background:#ffd574!important;
+ box-shadow:inset 5px 0 0 #bd6b00,inset 0 2px 0 #d99518,inset 0 -2px 0 #d99518!important;
+}
+#schedulePage #weeklyPlanner tbody tr.selectedRow>td.outsideEmploymentCell{
+ background-color:#e8edf3!important;
+ background-image:repeating-linear-gradient(135deg,transparent 0,transparent 7px,#c7d1dd 7px,#c7d1dd 9px,transparent 9px,transparent 16px)!important;
+}
+#schedulePage #weeklyPlanner tr.selectedRow input.selectEmp{accent-color:#b75b00}
+#schedulePage .scheduleDateInteractive{cursor:pointer;user-select:none;position:sticky}
+#schedulePage th.scheduleDateInteractive:hover{filter:brightness(.95)}
+#schedulePage th.scheduleTodayHeader{
+ box-shadow:inset 0 0 0 3px #d28a19,0 2px 5px rgba(172,106,8,.2)!important;
+ color:#7c4306!important;
+}
+#schedulePage th.scheduleSelectedDateHeader:not(.scheduleTodayHeader){
+ box-shadow:inset 0 -3px 0 #3468ca!important;
+}
+#schedulePage .scheduleTodayBadge{display:inline-block;padding:1px 4px;margin-top:3px;border-radius:4px;background:#ffe3a5;color:#7c4306;font-size:10px;font-weight:950;line-height:1.4}
+#schedulePage .scheduleRosterPanel{
+ display:flex;align-items:flex-start;justify-content:space-between;gap:10px;flex-wrap:wrap;
+ padding:10px 12px;margin:9px 0 12px;border:1px solid #cfdbed;background:#f8fbff;border-radius:11px;font-size:12px;
+}
+#schedulePage .scheduleRosterPanel.scheduleRosterPanelToday{border-color:#e6b65e;background:#fffaf0}
+#schedulePage .scheduleRosterPanel .scheduleRosterHeading{font-weight:900;color:#223752;white-space:nowrap}
+#schedulePage .scheduleRosterPanel .scheduleRosterNames{display:flex;flex:1;gap:6px;flex-wrap:wrap;align-items:center;min-width:170px}
+#schedulePage .scheduleRosterPanel .scheduleRosterPerson{display:inline-flex;align-items:center;gap:5px;white-space:nowrap;padding:4px 7px;background:var(--roster-name-bg,#fff);border:1px solid rgba(51,65,85,.16);border-radius:7px;font-weight:800;color:#273443}
+#schedulePage .scheduleRosterPanel .scheduleRosterPerson small{font-size:10px;font-weight:700;color:#566074}
+#schedulePage .scheduleRosterPanel .scheduleRosterHint{color:#667085;font-size:11px;align-self:center}
+.scheduleDateTooltip{
+ position:fixed;z-index:70;pointer-events:none;display:none;
+ width:max-content;max-width:min(410px,calc(100vw - 24px));
+ padding:11px 12px;background:#182636;color:#fff;border:1px solid #364a5c;border-radius:11px;
+ box-shadow:0 8px 28px #0005;font-size:12px;text-align:left;line-height:1.5;
+}
+.scheduleDateTooltip .rosterTooltipTitle{font-size:13px;font-weight:900;margin-bottom:7px}
+.scheduleDateTooltip .rosterTooltipGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:3px 12px;max-height:65vh;overflow:hidden}
+.scheduleDateTooltip .rosterTooltipPerson{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:11px}
+.scheduleDateTooltip .rosterTooltipMore{color:#ffd38b;font-weight:800;margin-top:6px}
+.scheduleDateTooltip .rosterTooltipFoot{border-top:1px solid #536476;margin-top:8px;padding-top:6px;color:#c9d4e2;font-size:10px}
+@media(max-width:640px){.scheduleDateTooltip .rosterTooltipGrid{grid-template-columns:repeat(2,minmax(0,1fr))}#schedulePage .scheduleRosterPanel{flex-direction:column}}
+
 /* V9.1.17: 직원관리 '출력색' -> 근로시간 탭 (월별 집계 / 날짜 목록) */
 #hoursPage .hoursSummaryTable td.hoursPrintNameCell,
 #hoursPage .workDateTable td.hoursPrintNameCell{
@@ -1154,9 +1205,9 @@ body.resizingEmployeeColumn *{
 #homePage .homeWorkChangeHead b{font-size:13px;color:#344054}
 #homePage .homeWorkChangeBody{max-height:350px;overflow:auto;border:1px solid #e5e9f0;border-radius:8px;background:#fff;margin-top:8px}
 #homePage .homeWorkChangeBody>span{display:block;padding:11px}
-#homePage .homeWorkChangeTable{width:100%;min-width:640px;border-collapse:collapse}
+#homePage .homeWorkChangeTable{width:100%;min-width:520px;border-collapse:collapse}
 #homePage .homeWorkChangeTable th{background:#f8fafc;position:sticky;top:0;z-index:2;text-align:center;font-size:11px;padding:7px 6px}
-#homePage .homeWorkChangeTable td{font-size:11px;white-space:normal;padding:7px 5px;line-height:1.5}
+#homePage .homeWorkChangeTable td{font-size:11px;white-space:normal;padding:6px 5px;line-height:1.45}
 #homePage .homeWorkChangeTable td:first-child{font-weight:800;white-space:nowrap}
 #homePage .homeWorkChangeTag{display:inline-block;padding:2px 5px;border-radius:5px;margin:1px 2px 1px 0;font-size:10px;font-weight:800;background:#fff3db;color:#924700}
 #homePage .homeWorkChangeTag.important{background:#fff0ef;color:#b42318}
@@ -1167,6 +1218,10 @@ body.resizingEmployeeColumn *{
 #homePage .homeWorkChangeTotal{border-top:1px solid #e5e9f0;padding-top:3px;color:#35445a}
 #homePage .homeWorkChangeDecreased{font-weight:900;color:#b42318}
 #homePage .homeWorkChangeIncreased{font-weight:800;color:#087451}
+#homePage .homeSalaryReviewButton{margin:2px 0 0 3px;padding:3px 7px;font-size:10px;border:1px solid #b8c7df;border-radius:6px;background:#f7faff;color:#244b78;cursor:pointer;font-weight:800}
+#homePage .homeSalaryReviewButton:hover{background:#e7f0ff}
+#homePage .homeSalaryChangeSummary{display:inline-block;color:#344054;font-size:10px;margin:3px 0}
+#homePage .homeSalaryChangeSummary strong{font-weight:900}
 </style>
 </head>
 <body>
@@ -1218,7 +1273,7 @@ body.resizingEmployeeColumn *{
   <div class="card"><h3>운영 흐름</h3><p class="help">① 월간 스케줄 작성 → ② 실제 근무시간 필요 시 날짜 클릭해 수정 → ③ 월 근로시간 확인 → ④ 노무사 급여대장 Excel 업로드 → ⑤ 스케줄 시간과 급여대장 시간 차이 검수 → ⑥ 필요 시 스케줄/급여 Excel 출력.</p>
   <div class="homeWorkChangeBoard">
    <div class="homeWorkChangeHead"><b>전월 대비 근무 변화 감지</b><span id="homeWorkChangeStatus" class="help">조회 중...</span></div>
-   <div class="help" style="margin:4px 0 7px">실제 근로시간과 연차 사용 횟수·시간을 구분 표시하고, 연차 포함 참고시간도 함께 비교합니다. 주간 5일→4일 같은 편성 변화는 별도 경고 · 급여는 자동 수정하지 않음</div>
+   <div class="help" style="margin:4px 0 7px">전월 대비 근무 변화와 급여계약 변경 확인을 구분합니다. 변경된 계약급여는 관리자가 직접 확인하며, 급여액은 자동 수정하지 않습니다.</div>
    <div id="homeWorkChangeBody" class="homeWorkChangeBody"><span class="help">자료를 확인하고 있습니다.</span></div>
   </div>
  </div>
@@ -1314,6 +1369,7 @@ body.resizingEmployeeColumn *{
  </div>
  </div>
  <div class="legend"><span class="tag">8 = 8시간</span><span class="tag">9 = 9시간</span><span class="tag">0 = 휴무</span><span class="tag">연 = 연차</span><span class="tag">병 = 병가(연차판정 확인)</span><span class="tag">결 = 결근</span><span class="tag">법 = 법정 출근간주</span><span class="tag">예 = 예비군(출근간주 · 소정시간 인정 · 연차차감 없음)</span><span class="tag">주5일 목표 40h</span><span class="tag">주4일 목표 36h</span><span class="tag">공휴일은 주말보다 우선</span><span class="tag scheduleOutsideLegend">사선 = 입사 전·퇴사 후 (입력 불가)</span><span id="scheduleOrderHint" class="tag scheduleOrderHint">↕ 이름을 끌어 스케줄 순서 변경</span></div>
+ <div id="scheduleRosterPanel" class="scheduleRosterPanel" aria-live="polite"></div>
  <div class="readOnlyScheduleNotice" id="scheduleReadOnlyNotice">보기 전용 권한입니다. 스케줄 확인은 가능하지만 수정은 할 수 없습니다.</div><div class="schedulerFocusNote infoBox help" style="margin-top:8px"><b>사용 순서</b> · 스케줄 입력 → 근태 확인 → 스케줄 출력</div>
 
  <div id="monthlyScheduleWrap">
@@ -2410,6 +2466,7 @@ function clearStoreScopedUI(){
  lastLoadedScheduleStoreId=null;lastLoadedScheduleMonth=null;
  employees=[];retiredEmployees=[];schedules=[];payroll=[];leaveLedger=[];paymentRegister=[];incentiveRegister=[];employeeDocumentStatusMap=new Map();employeeDocumentStatusReadyStoreId=null;scheduleMonthLocks=[];scheduleEmployeeOrderMap=new Map();scheduleEmployeeOrderTableAvailable=null;scheduleDragEmployeeId=null;
  selectedEmployees.clear();
+ scheduleRosterSelectedDate='';hideScheduleDateTooltip();
  if($('schBody'))$('schBody').innerHTML='<tr><td colspan="40" style="padding:20px;text-align:center">직원·스케줄 불러오는 중...</td></tr>';
  if($('employeeBody'))$('employeeBody').innerHTML='<tr><td colspan="20" style="padding:20px;text-align:center">직원 불러오는 중...</td></tr>';
  if($('hoursBody'))$('hoursBody').innerHTML='<tr><td colspan="13" style="padding:20px;text-align:center">근로자료는 근로 탭에서 불러옵니다.</td></tr>';
@@ -3404,6 +3461,30 @@ function leaveDueInfo(e){
 
 /* ===== 홈 운영흐름: 전월 대비 월별 스케줄/급여 리스크 확인 V9.1.17 ===== */
 let homeWorkChangeState=null,homeWorkChangeSeq=0;
+// 승인된 급여계약 기준은 급여대장과 별도, 관리자만 읽을 수 있는 테이블에 보관한다.
+// 기존 급여대장, 근로조건, 스케줄은 이 기능에서 절대 수정하지 않는다.
+function salaryContractReviewFingerprint(x,ym){
+ return JSON.stringify([ym,Number(x.e.id),x.oldWeek,x.newWeek,
+  x.prevConditionSignature,x.currentConditionSignature,
+  Number(x.old.worked),Number(x.now.worked),Number(x.old.leave),Number(x.now.leave),
+  Number(x.prevPayroll?.gross||0),Number(x.prevPayroll?.net||0),
+  Number(x.currentPayroll?.gross||0),Number(x.currentPayroll?.net||0)]);
+}
+function salaryContractReviewMatches(r,p){
+ if(!r||!p)return false;
+ const g=r.expected_gross_pay,n=r.expected_net_pay;
+ if(g==null&&n==null)return false;
+ return (g==null||Math.abs(Number(g)-Number(p.gross))<1)
+    && (n==null||Math.abs(Number(n)-Number(p.net))<1);
+}
+function salaryContractReviewValue(value){
+ const txt=String(value??'').replace(/[,\s]/g,'').trim();
+ if(txt==='')return null;
+ const n=Number(txt);
+ if(!Number.isFinite(n)||n<0||n>1000000000000)return NaN;
+ return Math.round(n);
+}
+
 function homeWorkMonthEnd(ym){let [y,m]=ym.split('-').map(Number);return ym+'-'+String(new Date(y,m,0).getDate()).padStart(2,'0')}
 function homeWorkMonthlySummary(rows){
  let worked=0,leave=0,leaveDays=0,entered=0,workedDays=0;
@@ -3438,6 +3519,22 @@ function homeWorkWeekPattern(rows,ym,e){
 function homeWorkConditionSignature(e,date){
  const c=workConditionForDate(e,date)||{};
  return [String(c.work_type||''),String(c.daily_hours||''),String(c.leave_weekly_hours||''),JSON.stringify(normalizedWorkDays(c.work_days).slice().sort())].join('|');
+}
+// 월간 스케줄의 실제 주간 근무일수와 그 달에 적용되는 근로조건 이력을 대조한다.
+// 근로조건 적용 시작일을 선택월로 등록해야 전월과 이번 달이 각각 다른 기준으로 판정된다.
+function homeWorkConditionDays(e,date){
+ const c=workConditionForDate(e,date)||{};
+ const rules=conditionDayRules(c);
+ if(rules.length){
+  const days=new Set();
+  rules.forEach(r=>(r.days||[]).forEach(d=>days.add(Number(d))));
+  if(days.size)return days.size;
+ }
+ const days=normalizedWorkDays(c.work_days);
+ if(days.length)return new Set(days).size;
+ if(c.work_type==='40')return 5;
+ if(c.work_type==='36')return 4;
+ return null;
 }
 function homeWorkPayrollByEmployee(rows){
  let m=new Map();
@@ -3475,39 +3572,60 @@ function renderHomeWorkChange(){
   const weekReduced=oldWeek!==null&&newWeek!==null&&oldWeek>newWeek;
   const weekChanged=oldWeek!==null&&newWeek!==null&&oldWeek!==newWeek;
   const contractChanged=homeWorkConditionSignature(e,lastPrev)!==homeWorkConditionSignature(e,lastNow);
+  const prevCondDays=homeWorkConditionDays(e,lastPrev),nowCondDays=homeWorkConditionDays(e,lastNow);
+  const conditionMatches=weekChanged&&prevCondDays===oldWeek&&nowCondDays===newWeek;
+  const conditionNeedsReview=weekChanged&&!conditionMatches;
   const diff=round2(now.worked-old.worked);
-  const adjustedDiff=round2(now.worked+now.leave-old.worked-old.leave);
-  const leaveDelta=round2(now.leave-old.leave);
   const pct=old.worked>0?Math.abs(diff)/old.worked:0;
   const bigHours=finalized&&old.entered>=12&&now.entered>=12&&Math.abs(diff)>=16&&pct>=.10;
-  // 연차 때문에 실제 근로시간의 변동이 가려지는 경우도 별도로 비교 대상으로 표시한다.
-  const leaveAffectsComparison=finalized&&old.entered>=12&&now.entered>=12&&Math.abs(diff)>=8&&Math.abs(leaveDelta)>=4;
-  if(!weekChanged&&!contractChanged&&!bigHours&&!leaveAffectsComparison)continue;
+  // 연차만의 변동은 별도의 복잡한 경고를 만들지 않는다. 월간 연차 칸에서만 표시한다.
+  if(!weekChanged&&!contractChanged&&!bigHours)continue;
   const tags=[];
-  if(weekChanged)tags.push(homeWorkTag(`주간 ${oldWeek}일 → ${newWeek}일`,weekReduced?'important':''));
-  if(contractChanged)tags.push(homeWorkTag('근로조건 이력 변경','important'));
-  if(weekChanged&&!contractChanged)tags.push(homeWorkTag('근로조건 이력 미반영 확인','note'));
-  if(bigHours)tags.push(homeWorkTag(`실근로 ${Math.abs(diff)}h ${diff<0?'감소':'증가'}`,diff<0?'important':''));
-  if(leaveAffectsComparison){
-   const mitigated=Math.abs(adjustedDiff)<Math.abs(diff);
-   tags.push(homeWorkTag(mitigated?`연차 ${now.leaveDays}회 반영 · 차이 ${hour2(Math.abs(diff)-Math.abs(adjustedDiff))}h 축소`:'연차 사용 변동 · 비교 확인','note'));
+  if(weekChanged)tags.push(homeWorkTag(`주 ${oldWeek}일 → ${newWeek}일`,weekReduced?'important':''));
+  if(conditionNeedsReview){
+   tags.push(homeWorkTag('근로조건 확인','important'));
+   if(canEditModule('employees'))tags.push(`<button type="button" class="homeSalaryReviewButton" onclick="openWorkConditionHistory(${Number(e.id)},'${ym}-01')">근로조건 이력 수정</button>`);
+  }else if(weekChanged)tags.push(homeWorkTag('이력 일치','note'));
+  else if(contractChanged)tags.push(homeWorkTag('근로조건 변경','note'));
+  let payNote='',reviewButton='',salaryReviewNeeded=weekChanged||contractChanged,salaryConfirmed=false;
+  const oldPay=homeWorkPayrollFor(e,prevPayrollMap),newPay=homeWorkPayrollFor(e,curPayrollMap);
+  const issue={e,old,now,diff,oldWeek,newWeek,prevPayroll:oldPay,currentPayroll:newPay,
+    prevConditionSignature:homeWorkConditionSignature(e,lastPrev),
+    currentConditionSignature:homeWorkConditionSignature(e,lastNow)};
+  if(isAppAdmin()&&canViewModule('payroll')&&salaryReviewNeeded){
+   const review=(st.reviews||[]).find(r=>Number(r.employee_id)===Number(e.id))||null;
+   issue.review=review;
+   const fingerprint=salaryContractReviewFingerprint(issue,ym);
+   issue.fingerprint=fingerprint;
+   if(!newPay){
+    payNote=homeWorkTag(payroll.length?'당월 직원 급여대장 없음':'당월 급여대장 없음','important');
+   }else if(!review){
+    payNote=homeWorkTag('급여계약 확인 필요','important');
+   }else if(String(review.review_fingerprint||'')!==fingerprint){
+    payNote=homeWorkTag('계약급여 재확인 필요','important');
+   }else if(!salaryContractReviewMatches(review,newPay)){
+    payNote=homeWorkTag('계약급여 불일치','important');
+   }else{
+    payNote=homeWorkTag('계약급여 확인됨','note');salaryConfirmed=true;
+   }
+   if(!salaryConfirmed&&oldPay&&newPay&&weekReduced&&Math.abs(oldPay.gross-newPay.gross)<100){
+    payNote=homeWorkTag('근무일 감소 · 세전급여 동일','important')+payNote;
+   }
+   if(newPay&&canEditModule('payroll')){
+    reviewButton=`<button type="button" class="homeSalaryReviewButton" onclick="openSalaryContractReview(${Number(e.id)})">${review?'계약금액 재확인':'계약금액 확인'}</button>`;
+   }
   }
-  let payNote='';
-  if(isAppAdmin()&&canViewModule('payroll')){
-   const oldPay=homeWorkPayrollFor(e,prevPayrollMap),newPay=homeWorkPayrollFor(e,curPayrollMap);
-   if(oldPay&&newPay){
-    if(weekReduced&&Math.abs(oldPay.gross-newPay.gross)<100)payNote=homeWorkTag('근무일↓ · 세전 급여 동일','important');
-    else payNote=homeWorkTag('급여대장 금액 확인','note');
-   }else if(oldPay&&!newPay){payNote=homeWorkTag('선택월 급여대장 미등록','note')}
-  }
-  issues.push({e,old,now,diff,adjustedDiff,oldWeek,newWeek,tags:tags.join(''),payNote,priority:(weekReduced?4:0)+(contractChanged?2:0)+(diff<0?1:0)});
+  const needsReview=conditionNeedsReview||(isAppAdmin()&&canViewModule('payroll')&&salaryReviewNeeded&&!salaryConfirmed);
+  issues.push({...issue,tags:tags.join(''),payNote,reviewButton,needsReview,
+    priority:(needsReview?8:0)+(weekReduced?4:0)+(contractChanged?2:0)+(diff<0?1:0)});
  }
  issues.sort((a,b)=>b.priority-a.priority||String(a.e.name).localeCompare(String(b.e.name),'ko'));
- if(status)status.textContent=issues.length?`확인 필요 ${issues.length}명 · ${prev} → ${ym}`:`특이 변화 없음 · ${prev} → ${ym}`;
- if(!issues.length){body.innerHTML=`<span class="help">${esc(prev)}과 ${esc(ym)}의 입력된 스케줄에서 경고 기준에 해당하는 큰 변화가 발견되지 않았습니다.${!finalized?' 이번 달은 진행 중으로 월 전체 시간차 경고를 보류합니다.':''}</span>`;return}
- const summary=s=>`<span class="homeWorkChangeLine">실근로 <b>${hour2(s.worked)}h</b> <span class="help">(${s.workedDays}일)</span></span><span class="homeWorkChangeLine homeWorkChangeLeave">연차 <b>${s.leaveDays}회 · ${hour2(s.leave)}h</b></span><span class="homeWorkChangeLine homeWorkChangeTotal">연차 포함 <b>${hour2(round2(s.worked+s.leave))}h</b></span>`;
+ st.issues=issues;
+ const reviewCount=issues.filter(x=>x.needsReview).length;
+ if(status)status.textContent=issues.length?`변화 ${issues.length}명${reviewCount?' · 확인 '+reviewCount+'명':''} · ${prev} → ${ym}`:`특이 변화 없음 · ${prev} → ${ym}`;
+ if(!issues.length){body.innerHTML=`<span class="help">${esc(prev)}과 ${esc(ym)}의 스케줄에서 주요 변화가 발견되지 않았습니다.${!finalized?' 이번 달은 진행 중이므로 월간 시간차 경고는 보류합니다.':''}</span>`;return}
  const change=v=>`${v>0?'+':''}${hour2(v)}h`;
- body.innerHTML=`<table class="homeWorkChangeTable"><thead><tr><th>직원</th><th>전월 근로·연차</th><th>선택월 근로·연차</th><th>전월 대비 차이</th><th>변화·급여 확인</th></tr></thead><tbody>${issues.map(x=>`<tr><td>${esc(x.e.name)}</td><td>${summary(x.old)}</td><td>${summary(x.now)}</td><td><span class="homeWorkChangeLine ${x.diff<0?'homeWorkChangeDecreased':x.diff>0?'homeWorkChangeIncreased':''}">실근로 <b>${change(x.diff)}</b></span><span class="homeWorkChangeLine ${x.adjustedDiff<0?'homeWorkChangeDecreased':x.adjustedDiff>0?'homeWorkChangeIncreased':''}">연차 포함 <b>${change(x.adjustedDiff)}</b></span></td><td>${x.tags}${x.payNote||''}</td></tr>`).join('')}</tbody></table>`;
+ body.innerHTML=`<table class="homeWorkChangeTable"><thead><tr><th>직원</th><th>실근로 (전월 → 이번 달)</th><th>이번 달 연차</th><th>변화·확인</th></tr></thead><tbody>${issues.map(x=>`<tr><td>${esc(x.e.name)}</td><td>${hour2(x.old.worked)} → <b>${hour2(x.now.worked)}h</b> <span class="${x.diff<0?'homeWorkChangeDecreased':x.diff>0?'homeWorkChangeIncreased':''}">(${change(x.diff)})</span></td><td class="homeWorkChangeLeave">${x.now.leaveDays?`${x.now.leaveDays}회 · ${hour2(x.now.leave)}h`:'-'}</td><td>${x.tags}${x.payNote||''}${x.reviewButton||''}</td></tr>`).join('')}</tbody></table>`;
 }
 async function loadHomeWorkChange(token=refreshToken,sid=storeId()){
  const ym=$('monthSelect').value,prev=shiftMonth(ym,-1),key=sid+'|'+ym,seq=++homeWorkChangeSeq;
@@ -3515,20 +3633,71 @@ async function loadHomeWorkChange(token=refreshToken,sid=storeId()){
  try{
   const ids=allEmployees().filter(e=>employedInMonth(e,ym)&&employedInMonth(e,prev)).map(e=>e.id);
   const payrollAllowed=isAppAdmin()&&canViewModule('payroll');
-  const [prevRows,prMonth]=await Promise.all([
+  const [prevRows,prMonth,reviewQuery]=await Promise.all([
    fetchScheduleRowsComplete(ids,prev+'-01',homeWorkMonthEnd(prev)),
-   payrollAllowed?sb.from('payroll_months').select('id').eq('store_id',sid).eq('pay_month',prev+'-01').limit(1):Promise.resolve({data:[],error:null})
+   payrollAllowed?sb.from('payroll_months').select('id').eq('store_id',sid).eq('pay_month',prev+'-01').limit(1):Promise.resolve({data:[],error:null}),
+   payrollAllowed?sb.from('salary_contract_reviews').select('*').eq('store_id',sid).eq('work_month',ym+'-01'):Promise.resolve({data:[],error:null})
   ]);
   if(prMonth.error)throw new Error('전월 급여대장 조회: '+prMonth.error.message);
+  if(reviewQuery.error)throw new Error('급여계약 확인 이력 조회: '+reviewQuery.error.message);
   const mId=prMonth.data?.[0]?.id;
   let prevPayroll=[];
   if(mId){const q=await sb.from('payroll_entries').select('employee_id,employee_name,gross_pay,net_pay').eq('payroll_month_id',mId);if(q.error)throw new Error('전월 급여 조회: '+q.error.message);prevPayroll=q.data||[]}
   if(seq!==homeWorkChangeSeq||token!==refreshToken||sid!==storeId()||ym!==$('monthSelect').value)return;
-  homeWorkChangeState={key,ym,prev,loading:false,prevRows,prevPayroll};renderHomeWorkChange();
+  homeWorkChangeState={key,ym,prev,loading:false,prevRows,prevPayroll,reviews:reviewQuery.data||[]};renderHomeWorkChange();
  }catch(err){
   if(seq!==homeWorkChangeSeq||token!==refreshToken||sid!==storeId()||ym!==$('monthSelect').value)return;
   homeWorkChangeState={key,ym,prev,loading:false,error:err?.message||String(err)};renderHomeWorkChange();
  }
+}
+
+// 계약 내용은 화면에서 자동 추정하지 않는다. 실제 합의한 금액을 관리자가 입력해야 확인 이력이 남는다.
+function openSalaryContractReview(employeeId){
+ if(!isAppAdmin()||!canEditModule('payroll'))return alert('급여계약 확인은 급여 수정 권한이 있는 관리자만 가능합니다.');
+ const st=homeWorkChangeState,issue=st?.issues?.find(x=>Number(x.e.id)===Number(employeeId));
+ if(!issue||!issue.currentPayroll)return alert('비교자료 또는 해당 월 급여대장이 없습니다.');
+ const {e,prevPayroll,currentPayroll,review}=issue;
+ const fmtPay=p=>p?`세전 <b>${money(p.gross)}</b> · 실수령 <b>${money(p.net)}</b>`:'등록된 급여대장 없음';
+ const refGross=review?.expected_gross_pay??'',refNet=review?.expected_net_pay??'';
+ modal(`<h2>${esc(e.name)} · ${esc(st.ym)} 급여계약 확인</h2>
+  <div class="help" style="margin:6px 0 12px">스케줄의 주 ${issue.oldWeek??'?'}일 → ${issue.newWeek??'?'}일 변화와 <b>실제로 합의한 계약금액</b>을 대조합니다. 급여대장 숫자를 임의로 계약금액으로 인정하지 않습니다.</div>
+  <div class="infoBox" style="line-height:1.8"><b>전월 급여대장</b> · ${fmtPay(prevPayroll)}<br><b>이번 달 급여대장</b> · ${fmtPay(currentPayroll)}</div>
+  <div class="formgrid" style="margin-top:12px">
+    <div class="field"><label>변경된 계약 세전금액 (원)</label><input id="salaryReviewGross" type="text" inputmode="numeric" value="${esc(refGross)}" placeholder="실제 합의한 세전금액"></div>
+    <div class="field"><label>변경된 계약 실수령 목표 (원)</label><input id="salaryReviewNet" type="text" inputmode="numeric" value="${esc(refNet)}" placeholder="실수령 보장 합의 시 입력"></div>
+    <div class="field wide"><label>확인 근거 (필수)</label><textarea id="salaryReviewNote" rows="2" style="width:100%" maxlength="1000" placeholder="예: 10월 1일 주4일 변경 합의, 재산정된 급여명세서 확인">${esc(review?.source_note||'')}</textarea></div>
+  </div>
+  <div class="help" style="margin-top:8px">세전금액 또는 실수령 목표 중 <b>실제 합의한 값만</b> 입력하세요. 현재 급여대장과 다르면 '계약급여 불일치'로 표시됩니다. 근로조건·스케줄·급여대장이 변경되면 다시 확인해야 합니다.</div>
+  <div class="modalActions"><button class="btn gray" onclick="closeModal()">취소</button><button id="salaryReviewSubmit" class="btn" onclick="saveSalaryContractReview(${Number(employeeId)})">계약 확인 기록 저장</button></div>`);
+}
+async function saveSalaryContractReview(employeeId){
+ if(!isAppAdmin()||!canEditModule('payroll'))return alert('급여 수정 권한이 있는 관리자만 가능합니다.');
+ const st=homeWorkChangeState,issue=st?.issues?.find(x=>Number(x.e.id)===Number(employeeId));
+ if(!issue||!issue.currentPayroll||!currentSessionUser?.id)return alert('비교자료가 갱신되었습니다. 다시 확인해 주세요.');
+ const gross=salaryContractReviewValue($('salaryReviewGross')?.value),net=salaryContractReviewValue($('salaryReviewNet')?.value);
+ const note=String($('salaryReviewNote')?.value||'').trim();
+ if(Number.isNaN(gross)||Number.isNaN(net))return alert('계약급여는 0 이상의 숫자로 입력해 주세요.');
+ if(gross===null&&net===null)return alert('실제 합의한 세전급여 또는 실수령 목표를 한 개 이상 입력해 주세요.');
+ if(note.length<2)return alert('계약내용을 확인한 근거를 입력해 주세요.');
+ if(note.length>1000)return alert('확인 근거는 1000자 이내로 입력해 주세요.');
+ const sid=storeId(),ym=$('monthSelect').value,btn=$('salaryReviewSubmit');
+ if(!st||st.key!==sid+'|'+ym||ym!==st.ym)return alert('업장 또는 월이 변경됐습니다. 다시 확인해 주세요.');
+ if(btn){btn.disabled=true;btn.textContent='저장 중...'}
+ const payload={store_id:sid,employee_id:Number(employeeId),work_month:ym+'-01',
+   expected_gross_pay:gross,expected_net_pay:net,source_note:note,
+   review_fingerprint:salaryContractReviewFingerprint(issue,ym),
+   verified_by:currentSessionUser.id,verified_at:new Date().toISOString()};
+ try{
+  const q=await sb.from('salary_contract_reviews').upsert(payload,{onConflict:'store_id,employee_id,work_month'}).select('*').single();
+  if(q.error)throw q.error;
+  if(st.key===sid+'|'+ym){
+   const reviews=st.reviews||[];st.reviews=[...reviews.filter(x=>Number(x.employee_id)!==Number(employeeId)),q.data];
+   closeModal();renderHomeWorkChange();
+  }
+  const matched=salaryContractReviewMatches(q.data,issue.currentPayroll);
+  if(!matched)alert('계약 확인 내역은 저장했습니다. 다만 급여대장과 계약금액이 다르므로 전체현황에서 불일치 경고가 유지됩니다.');
+ }catch(err){alert('급여계약 확인 저장 실패: '+(err?.message||String(err)))}
+ finally{if(btn&&btn.isConnected){btn.disabled=false;btn.textContent='계약 확인 기록 저장'}}
 }
 /* ===== /홈 운영흐름: 전월 대비 월별 스케줄/급여 리스크 확인 ===== */
 
@@ -3754,10 +3923,74 @@ async function setScheduleView(v){
  if(monthly)renderSchedule();
  else renderWeeklyPlanner();
 }
+
+/* V9.1.23: date navigation works without opening a modal. Only entered onsite work counts. */
+let scheduleRosterSelectedDate='';
+let scheduleRosterTooltipDate='';
+function scheduleAttendeesForDate(date){
+ if(!/^\d{4}-\d{2}-\d{2}$/.test(String(date||'')))return [];
+ const result=[];
+ for(const e of sortEmployeesForSchedule(allEmployees().filter(e=>e.hide_monthly_schedule!==true&&employedOn(e,date)))){
+   const row=sched(e,date),code=String(row?.work_code||'').trim();
+   if(!code||['0','연','병','결','법','예'].includes(code))continue;
+   const numerical=/^(?:\d+(?:\.\d*)?|\.\d+)$/.test(code) ? Number(code) : 0;
+   const worked=Number(row?.worked_hours||0);
+   if(!(numerical>0 || (row?.status==='work'&&worked>0)))continue;
+   result.push({employee:e,hours:Math.round((worked>0?worked:numerical)*100)/100});
+ }
+ return result;
+}
+function scheduleRosterDateVisible(date){
+ const ym=$('monthSelect')?.value||'';
+ if(!ym)return false;
+ if(scheduleView==='weekly'){
+   const pr=plannerRange();return date>=pr.start&&date<=pr.end;
+ }
+ return date.startsWith(ym+'-');
+}
+function activeScheduleRosterDate(){
+ if(scheduleRosterSelectedDate&&scheduleRosterDateVisible(scheduleRosterSelectedDate))return scheduleRosterSelectedDate;
+ const today=isoToday();
+ return scheduleRosterDateVisible(today)?today:'';
+}
+function renderScheduleRosterPanel(){
+ const host=$('scheduleRosterPanel');if(!host)return;
+ const date=activeScheduleRosterDate(),today=isoToday();
+ if(!date){host.classList.remove('scheduleRosterPanelToday');host.innerHTML='<span class="scheduleRosterHeading">날짜별 출근자</span><span class="scheduleRosterHint">날짜 머리글에 마우스를 올리면 출근자 요약 · 클릭하면 명단을 확인할 수 있습니다.</span>';return;}
+ const list=scheduleAttendeesForDate(date),isToday=date===today;
+ host.classList.toggle('scheduleRosterPanelToday',isToday);
+ host.innerHTML=`<span class="scheduleRosterHeading">${isToday?'오늘 · ':''}${esc(date)} 출근 ${list.length}명</span><span class="scheduleRosterNames">${list.length?list.map(x=>`<span class="scheduleRosterPerson" style="--roster-name-bg:${employeeColor(x.employee)}">${esc(x.employee.name)} <small>${x.hours}h</small></span>`).join(''):'<span class="scheduleRosterHint">입력된 출근 스케줄이 없습니다.</span>'}</span><span class="scheduleRosterHint">스케줄 입력 기준 · 연차/휴무 등 제외</span>`;
+ document.querySelectorAll('#schedulePage th[data-schedule-date]').forEach(th=>th.classList.toggle('scheduleSelectedDateHeader',th.dataset.scheduleDate===date));
+}
+function selectScheduleRosterDate(date){
+ if(!scheduleRosterDateVisible(date))return;
+ scheduleRosterSelectedDate=date;
+ hideScheduleDateTooltip();renderScheduleRosterPanel();
+}
+function hideScheduleDateTooltip(){
+ scheduleRosterTooltipDate='';const tip=document.getElementById('scheduleDateTooltip');if(tip)tip.style.display='none';
+}
+function showScheduleDateTooltip(event,date){
+ if(!scheduleRosterDateVisible(date))return;
+ const target=event?.currentTarget;if(!target)return;
+ const list=scheduleAttendeesForDate(date),today=date===isoToday();
+ let tip=document.getElementById('scheduleDateTooltip');
+ if(!tip){tip=document.createElement('div');tip.id='scheduleDateTooltip';tip.className='scheduleDateTooltip';tip.setAttribute('role','tooltip');document.body.appendChild(tip)}
+ scheduleRosterTooltipDate=date;
+ const maxShown=42,shown=list.slice(0,maxShown);
+ tip.innerHTML=`<div class="rosterTooltipTitle">${today?'오늘 · ':''}${esc(date)} · 출근 ${list.length}명</div><div class="rosterTooltipGrid">${shown.length?shown.map(x=>`<div class="rosterTooltipPerson">${esc(x.employee.name)} · ${x.hours}h</div>`).join(''):'<div class="rosterTooltipPerson">입력된 출근 스케줄 없음</div>'}</div>${list.length>maxShown?`<div class="rosterTooltipMore">외 ${list.length-maxShown}명 · 날짜를 클릭해 전체 보기</div>`:''}<div class="rosterTooltipFoot">연차·휴무·병가·결근·법정 출근간주·예비군 제외 · 클릭하면 화면에 펼쳐집니다.</div>`;
+ tip.style.display='block';tip.style.left='0px';tip.style.top='0px';
+ const r=target.getBoundingClientRect(),w=tip.offsetWidth,h=tip.offsetHeight;
+ const left=Math.max(8,Math.min(r.left+r.width/2-w/2,window.innerWidth-w-8));
+ const top=r.bottom+9+h<=window.innerHeight-8?r.bottom+9:Math.max(8,r.top-h-9);
+ tip.style.left=left+'px';tip.style.top=top+'px';
+}
+/* Tooltip closes when leaving the date header, and is not suppressed by auto-scroll. */
+
 function renderWeeklyPlanner(){
  let host=$('weeklyPlanner');if(!host)return;
  let weeks=plannerWeeks(),list=weeklyPlannerEmployees(),selectedMonth=$('monthSelect').value;
- if(!weeks.length||!list.length){host.innerHTML='<div class="card">표시할 직원 또는 주간 데이터가 없습니다.</div>';return;}
+ if(!weeks.length||!list.length){host.innerHTML='<div class="card">표시할 직원 또는 주간 데이터가 없습니다.</div>';renderScheduleRosterPanel();return;}
  host.innerHTML=weeks.map((ws,wi)=>{
    let we=addDaysIso(ws,6);
    let head=`<div class="weekBlock"><div class="weekBlockHead"><b>${Number(ws.slice(5,7))}/${Number(ws.slice(8,10))} ~ ${Number(we.slice(5,7))}/${Number(we.slice(8,10))}</b><span class="weekMeta">월요일 ~ 일요일 · 주간 실근로/출근간주 기준</span></div>`;
@@ -3765,14 +3998,15 @@ function renderWeeklyPlanner(){
    for(let d=0;d<7;d++){
      let date=addDaysIso(ws,d),[yy,mm,dd]=date.split('-').map(Number),wd=new Date(yy,mm-1,dd).getDay(),hol=holidayFor(date);
      let out=!date.startsWith(selectedMonth),cl=hol?'weekHoliday':(wd===0||wd===6?'weekWeekend':'');
-     th+=`<th data-schedule-date="${date}" class="weekDayHead ${cl} ${out?'weekOutsideMonth':''}">${mm}/${dd}<br>${'일월화수목금토'[wd]}${hol?`<span class="weekHolidayLabel">${esc(hol.name)}</span>`:''}</th>`;
+     th+=`<th data-schedule-date="${date}" class="weekDayHead scheduleDateInteractive ${cl} ${out?'weekOutsideMonth':''} ${date===isoToday()?'scheduleTodayHeader':''}" tabindex="0" role="button" aria-label="${date} 출근자 보기" onmouseenter="showScheduleDateTooltip(event,'${date}')" onmouseleave="hideScheduleDateTooltip()" onfocus="showScheduleDateTooltip(event,'${date}')" onblur="hideScheduleDateTooltip()" onclick="selectScheduleRosterDate('${date}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();selectScheduleRosterDate('${date}')}" title="출근자 조회">${mm}/${dd}<br>${'일월화수목금토'[wd]}${hol?`<span class="weekHolidayLabel">${esc(hol.name)}</span>`:''}${date===isoToday()?'<span class="scheduleTodayBadge">오늘</span>':''}</th>`;
    }
    th+='<th>주간합계</th><th>기준대비</th></tr>';
    let body=list.map((e,ri)=>{
      let target=weeklyTargetHours(e,ws),total=weeklyWorkedHours(e,ws),diff=Math.round((total-target)*100)/100;
      let diffClass=target===0?'':(diff===0?'exact':(diff<0?'under':'over'));
      let diffText=target===0?'-':(diff===0?'맞음':`${diff>0?'+':''}${diff}h`);
-     let row=`<tr data-schedule-emp="${e.id}" ondragover="scheduleDragOver(event,${e.id})" ondrop="scheduleDrop(event,${e.id})"><td class="name scheduleNameCell">${scheduleDragHandleHtml(e)}</td><td>${workTypeForWeek(e,ws)}</td><td class="weekTarget">${target?target+'h':'-'}</td>`;
+     let checked=selectedEmployees.has(e.id);
+     let row=`<tr data-schedule-emp="${e.id}" class="${checked?'selectedRow':''}" ondragover="scheduleDragOver(event,${e.id})" ondrop="scheduleDrop(event,${e.id})"><td class="name scheduleNameCell schedulePrintNameCell" style="--employee-print-bg:${employeeColor(e)}" title="출력색: ${esc(PRINT_COLORS.find(([c])=>c.toLowerCase()===String(employeeColor(e)).toLowerCase())?.[1]||'직원관리에서 설정')}"><div style="display:flex;align-items:center;gap:6px"><input class="selectEmp" type="checkbox" ${checked?'checked':''} onchange="toggleEmployee(${e.id},this.checked)">${scheduleDragHandleHtml(e)}</div></td><td>${workTypeForWeek(e,ws)}</td><td class="weekTarget">${target?target+'h':'-'}</td>`;
      for(let d=0;d<7;d++){
        let date=addDaysIso(ws,d),valid=employedOn(e,date),s=sched(e,date),v=s?.work_code||'';
        let [yy,mm,dd]=date.split('-').map(Number),wd=new Date(yy,mm-1,dd).getDay(),hol=holidayFor(date);
@@ -3788,7 +4022,7 @@ function renderWeeklyPlanner(){
    }).join('');
    return head+`<div class="tablewrap scheduleGridScroll"><table class="weekTable"><thead>${th}</thead><tbody>${body}</tbody></table></div></div>`;
  }).join('');
- applyScheduleEditState();updateScheduleOrderHint();
+ applyScheduleEditState();updateScheduleOrderHint();renderScheduleRosterPanel();
 }
 function refreshWeeklyRow(employeeId,date){
  if(scheduleView!=='weekly')return;
@@ -3848,7 +4082,7 @@ function renderSchedule(){
  let r=monthRange(),list=monthlyScheduleEmployees(r.m),st=stores.find(s=>s.id===storeId());if($('scheduleStoreState'))$('scheduleStoreState').textContent=st?.name||'업장';h='<tr><th class="name">선택 · 직원</th>';
  for(let d=1;d<=r.days;d++){
   let date=r.m+'-'+String(d).padStart(2,'0'),wd=new Date(r.y,r.mo-1,d).getDay(),hol=holidayFor(date),cl=hol?'holidayHead':(wd===0||wd===6?'weekendHead':'');
-  h+=`<th data-schedule-date="${date}" class="${cl}" title="${hol?esc(hol.name):''}">${d}<br>${'일월화수목금토'[wd]}${hol?`<span class="holidayName">${esc(hol.name)}</span>`:''}</th>`;
+  h+=`<th data-schedule-date="${date}" class="scheduleDateInteractive ${cl} ${date===isoToday()?'scheduleTodayHeader':''}" tabindex="0" role="button" aria-label="${date} 출근자 보기" onmouseenter="showScheduleDateTooltip(event,'${date}')" onmouseleave="hideScheduleDateTooltip()" onfocus="showScheduleDateTooltip(event,'${date}')" onblur="hideScheduleDateTooltip()" onclick="selectScheduleRosterDate('${date}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();selectScheduleRosterDate('${date}')}" title="${hol?esc(hol.name)+' · ':''}출근자 조회">${d}<br>${'일월화수목금토'[wd]}${hol?`<span class="holidayName">${esc(hol.name)}</span>`:''}${date===isoToday()?'<span class="scheduleTodayBadge">오늘</span>':''}</th>`;
  }
  h+='<th>실근로<br><small>출근간주 포함</small></th><th>연장</th></tr>';
  $('schHead').innerHTML=h;
@@ -3865,7 +4099,7 @@ function renderSchedule(){
   }
   return row+`<td id="workTotal-${e.id}"><b>${x.worked}h</b></td><td id="otTotal-${e.id}">${x.ot}h</td></tr>`;
  }).join('');
- applyScheduleEditState();updateScheduleOrderHint();
+ applyScheduleEditState();updateScheduleOrderHint();renderScheduleRosterPanel();
 }
 function schedulePayload(id,date,raw){
  let emp=allEmployees().find(e=>e.id===id),cond=workConditionForDate(emp||{},date),rule=conditionTimesForDate(cond,date),code=String(raw??'').trim(),base=Number(rule.daily_hours||cond.daily_hours||emp?.daily_hours||8),leaveH=Number(leaveDayHoursAt(emp,date)||base||emp?.leave_day_hours||emp?.daily_hours||8),scheduled=0,worked=0,ot=0,status='';
@@ -3898,6 +4132,7 @@ function applyLocalSchedule(payload){
    if(b)b.textContent=`${x.ot}h`;
    refreshLiveLeaveUI(e.id);
    refreshWeeklyRow(e.id,payload.work_date);
+   if(payload.work_date===activeScheduleRosterDate())renderScheduleRosterPanel();
  }
 }
 function setSaveState(type,text){
@@ -5944,10 +6179,11 @@ async function saveEmployee(id){
 
 function toggleEmployee(id,checked){
  if(checked)selectedEmployees.add(id);else selectedEmployees.delete(id);
- // 체크만 했을 때 월간표 전체를 다시 렌더링하지 않아 입력 중인 근무값을 보호한다.
- let row=document.querySelector(`#schBody tr[data-schedule-emp="${id}"]`);
- if(row){row.classList.toggle('selectedRow',!!checked);return;}
- renderSchedule();
+ // 월간·주간의 모든 복제 행을 함께 강조한다. 입력 중에는 표를 다시 그리지 않는다.
+ document.querySelectorAll(`#schedulePage tr[data-schedule-emp="${Number(id)}"]`).forEach(row=>{
+   row.classList.toggle('selectedRow',!!checked);
+   row.querySelectorAll('input.selectEmp').forEach(box=>{box.checked=!!checked});
+ });
 }
 function toggleAllEmployees(on){
  selectedEmployees.clear();
@@ -5956,8 +6192,12 @@ function toggleAllEmployees(on){
    let list=scheduleManagedEmployees(ym);
    list.forEach(e=>selectedEmployees.add(e.id));
  }
- renderSchedule();
- if(scheduleView==='weekly')renderWeeklyPlanner();
+ // 선택 버튼도 편집 중인 스케줄 입력값을 안전하게 유지한다.
+ document.querySelectorAll('#schedulePage tr[data-schedule-emp]').forEach(row=>{
+   const checked=selectedEmployees.has(Number(row.dataset.scheduleEmp));
+   row.classList.toggle('selectedRow',checked);
+   row.querySelectorAll('input.selectEmp').forEach(box=>{box.checked=checked});
+ });
 }
 async function clearSelectedSchedules(){
  if(!requireScheduleDateEdit($('monthSelect').value+'-01'))return;
