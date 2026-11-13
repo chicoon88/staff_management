@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>직원관리 대시보드 V9.1.26</title>
+<title>직원관리 대시보드 V9.1.27</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
@@ -1299,6 +1299,44 @@ body.resizingEmployeeColumn *{
   #schedulePage .scheduleGridScroll thead{transform:none!important}
   #schedulePage .scheduleGridScroll{overflow:visible!important}
 }
+
+
+/* ===== V9.1.27: 주간편성에도 월간과 동일한 토·일 / 공휴일 색상 ===== */
+#schedulePage #weeklyPlanner .weekTable th.weekWeekend:not(.scheduleTodayHeader){background:#ffeaeb!important;color:#a4323d!important}
+#schedulePage #weeklyPlanner .weekTable th.weekHoliday:not(.scheduleTodayHeader){background:#ffd5d9!important;color:#ad202d!important;border-top:3px solid #cb3541!important}
+#schedulePage #weeklyPlanner .weekTable tbody tr:not(.selectedRow)>td.weekWeekendCell:not(.outsideEmploymentCell){background:#fff1f2!important;color:#a4323d!important}
+#schedulePage #weeklyPlanner .weekTable tbody tr:not(.selectedRow)>td.weekHolidayCell:not(.outsideEmploymentCell){background:#ffe4e8!important;color:#ad202d!important}
+#schedulePage #weeklyPlanner .weekTable th.scheduleTodayHeader.weekWeekend{background:#ffeaeb!important;color:#854e12!important}
+#schedulePage #weeklyPlanner .weekTable th.scheduleTodayHeader.weekHoliday{background:#ffd5d9!important;color:#854e12!important}
+#schedulePage #weeklyPlanner .weekHolidayLabel{color:#ad202d!important}
+/* 선택된 직원 행의 노란색·입퇴사 기간 밖 사선은 기존 표시를 유지한다. */
+
+/* ===== V9.1.27: 빈 공간 최소화한 날짜 출근·연차 말풍선 ===== */
+.scheduleDateTooltip{
+ width:max-content;max-width:min(660px,calc(100vw - 20px));
+ padding:7px 9px;border-radius:10px;line-height:1.22;
+ background:#182636;border:1px solid #3a4e64;
+ box-shadow:0 9px 25px rgba(12,24,40,.3);
+}
+.scheduleDateTooltip .rosterTooltipTop{display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin-bottom:1px}
+.scheduleDateTooltip .rosterTooltipDate{font-size:12px;font-weight:950;margin-right:5px;color:#fff;white-space:nowrap}
+.scheduleDateTooltip .rosterTooltipStat{font-size:10px;line-height:1.5;font-weight:800;padding:2px 6px;border-radius:5px;background:#244b45;color:#cef7e5;white-space:nowrap}
+.scheduleDateTooltip .rosterTooltipStat.leave{background:#53402b;color:#ffe5b2}
+.scheduleDateTooltip .rosterTooltipGroup{display:flex;gap:8px;align-items:flex-start;padding:3px 0 0}
+.scheduleDateTooltip .rosterTooltipGroup+.rosterTooltipGroup{border-top:1px solid #36495c;margin-top:2px;padding-top:4px}
+.scheduleDateTooltip .rosterTooltipGroupLabel{flex:0 0 27px;font-size:10px;font-weight:850;line-height:22px;color:#b9f7d7}
+.scheduleDateTooltip .rosterTooltipGroupLabel.leave{color:#ffe2a3}
+.scheduleDateTooltip .rosterTooltipGrid{display:grid;grid-template-columns:repeat(var(--roster-cols,1),max-content);gap:3px 7px;overflow:visible;max-height:none;min-width:0}
+.scheduleDateTooltip .rosterTooltipPerson{display:inline-flex;align-items:center;gap:4px;min-width:0;max-width:none;padding:0;line-height:1.2;font-size:11px}
+.scheduleDateTooltip .rosterTooltipName{display:inline-block;max-width:104px;min-width:0;padding:2px 6px;border-radius:5px;font-size:11px;font-weight:850;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.scheduleDateTooltip .rosterTooltipHours{font-size:10px;color:#f0f5fc;font-weight:750;white-space:nowrap;font-variant-numeric:tabular-nums}
+.scheduleDateTooltip .rosterTooltipBlank{font-size:11px;color:#cbd5e1;padding:5px 1px 1px}
+@media(max-width:560px){
+ .scheduleDateTooltip .rosterTooltipGrid{grid-template-columns:repeat(2,max-content)}
+ .scheduleDateTooltip .rosterTooltipGrid.singleCol{grid-template-columns:max-content}
+ .scheduleDateTooltip .rosterTooltipName{max-width:86px}
+}
+@media(max-width:365px){.scheduleDateTooltip .rosterTooltipGrid{grid-template-columns:max-content!important}}
 
 </style>
 </head>
@@ -4058,13 +4096,22 @@ function showScheduleDateTooltip(event,date){
  let tip=document.getElementById('scheduleDateTooltip');
  if(!tip){tip=document.createElement('div');tip.id='scheduleDateTooltip';tip.className='scheduleDateTooltip';tip.setAttribute('role','tooltip');document.body.appendChild(tip)}
  scheduleRosterTooltipDate=date;
- const maxShown=48,shown=list.slice(0,maxShown),shownLeave=leave.slice(0,maxShown);
- const fmt=(items,empty)=>items.length?items.map(x=>{
-  const configuredColor=employeeColor(x.employee);
-  const color=/^#[0-9a-fA-F]{6}$/.test(configuredColor)?configuredColor:'#ffffff';
-  return `<div class="rosterTooltipPerson"><span class="rosterTooltipName" style="--roster-name-bg:${color}">${esc(x.employee.name)}</span><span class="rosterTooltipHours">${x.hours}h</span></div>`;
- }).join(''):`<div class="rosterTooltipPerson rosterTooltipEmpty">${empty}</div>`;
- tip.innerHTML=`<div class="rosterTooltipTitle">${today?'오늘 · ':''}${esc(date)}</div><div class="rosterTooltipSection">출근 ${list.length}명</div><div class="rosterTooltipGrid">${fmt(shown,'출근 예정자 없음')}</div>${list.length>maxShown?`<div class="rosterTooltipMore">외 ${list.length-maxShown}명</div>`:''}<div class="rosterTooltipSection rosterTooltipLeaveTitle">연차 ${leave.length}명</div><div class="rosterTooltipGrid">${fmt(shownLeave,'연차 사용자 없음')}</div>${leave.length>maxShown?`<div class="rosterTooltipMore">외 ${leave.length-maxShown}명</div>`:''}<div class="rosterTooltipFoot">출근은 실제 근무시간 입력 기준 · 연차는 출근 인원에서 제외</div>`;
+ const maxShown=80;
+ const fmt=(items)=>{
+  const cols=items.length>24?4:items.length>10?3:items.length>4?2:1;
+  return `<div class="rosterTooltipGrid ${cols===1?'singleCol':''}" style="--roster-cols:${cols}">${items.map(x=>{
+   const configuredColor=employeeColor(x.employee);
+   const color=/^#[0-9a-fA-F]{6}$/.test(configuredColor)?configuredColor:'#ffffff';
+   return `<span class="rosterTooltipPerson"><span class="rosterTooltipName" style="--roster-name-bg:${color}">${esc(x.employee.name)}</span><span class="rosterTooltipHours">${x.hours}h</span></span>`;
+  }).join('')}</div>`;
+ };
+ const [y,m,d]=date.split('-').map(Number),weekday='일월화수목금토'[new Date(y,m-1,d).getDay()];
+ const title=`${today?'오늘 · ':''}${m}/${d} (${weekday})`;
+ tip.innerHTML=`<div class="rosterTooltipTop"><span class="rosterTooltipDate">${title}</span><span class="rosterTooltipStat">출근 ${list.length}</span><span class="rosterTooltipStat leave">연차 ${leave.length}</span></div>`+
+   (list.length?`<div class="rosterTooltipGroup"><span class="rosterTooltipGroupLabel">출근</span>${fmt(list.slice(0,maxShown))}</div>`:'')+
+   (leave.length?`<div class="rosterTooltipGroup"><span class="rosterTooltipGroupLabel leave">연차</span>${fmt(leave.slice(0,maxShown))}</div>`:'')+
+   (!list.length&&!leave.length?'<div class="rosterTooltipBlank">등록된 출근·연차 일정이 없습니다.</div>':'')+
+   (list.length>maxShown||leave.length>maxShown?`<div class="rosterTooltipMore">추가 ${Math.max(0,list.length-maxShown)+Math.max(0,leave.length-maxShown)}명</div>`:'');
  tip.style.display='block';tip.style.left='0px';tip.style.top='0px';
  const r=target.getBoundingClientRect(),w=tip.offsetWidth,h=tip.offsetHeight;
  const left=Math.max(8,Math.min(r.left+r.width/2-w/2,window.innerWidth-w-8));
