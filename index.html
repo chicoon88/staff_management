@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>직원관리 대시보드 V9.1.24</title>
+<title>직원관리 대시보드 V9.1.26</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
@@ -1223,6 +1223,17 @@ body.resizingEmployeeColumn *{
 #homePage .homeSalaryChangeSummary{display:inline-block;color:#344054;font-size:10px;margin:3px 0}
 #homePage .homeSalaryChangeSummary strong{font-weight:900}
 
+/* ===== V9.1.25 · 날짜 말풍선 직원 이름을 직원관리 출력색으로 구분 ===== */
+.scheduleDateTooltip .rosterTooltipGrid{gap:5px 10px}
+.scheduleDateTooltip .rosterTooltipPerson{display:flex;align-items:center;gap:5px;min-width:0;max-width:100%;padding:1px 0;overflow:visible;white-space:nowrap}
+.scheduleDateTooltip .rosterTooltipName{
+ display:inline-block;min-width:0;max-width:100%;padding:3px 7px;border-radius:6px;
+ background:var(--roster-name-bg,#fff);color:#263345;border:1px solid rgba(26,42,64,.17);
+ font-weight:900;line-height:1.5;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.scheduleDateTooltip .rosterTooltipHours{color:#f2f6fe;font-weight:800;white-space:nowrap;font-variant-numeric:tabular-nums}
+.scheduleDateTooltip .rosterTooltipEmpty{color:#c6d0de}
+
 /* ===== V9.1.24 · 날짜 클릭 제거 / 오늘 세로선 / 연차 포함 툴팁 / 월간 주말 붉은색 ===== */
 /* 날짜는 누르지 않고 커서나 키보드 포커스로 출근·연차 정보를 확인한다. */
 #schedulePage th.scheduleDateInteractive{cursor:help}
@@ -1258,6 +1269,37 @@ body.resizingEmployeeColumn *{
 .scheduleDateTooltip .rosterTooltipEmpty{color:#c6d0de}
 .scheduleDateTooltip .rosterTooltipGrid{max-height:unset;overflow:visible}
 .scheduleDateTooltip{max-height:calc(100vh - 16px);overflow:hidden}
+
+/* V9.1.26: 월간·주간편성 세로 스크롤은 페이지 하나로 통일한다.
+   가로 스크롤은 유지. 가로 overflow 영역에서는 CSS sticky가 창 기준으로
+   고정되지 않으므로 아래 JS가 기존 thead 자체를 추적 이동시킨다. */
+#schedulePage .scheduleGridScroll,
+#schedulePage .weekBlock .scheduleGridScroll{
+  height:auto!important;
+  min-height:0!important;
+  max-height:none!important;
+  overflow-x:auto!important;
+  overflow-y:visible!important;
+  overscroll-behavior-x:contain;
+  overscroll-behavior-y:auto!important;
+  scrollbar-gutter:auto!important;
+}
+#schedulePage .scheduleGridScroll thead{
+  position:relative;
+  z-index:26;
+}
+#schedulePage .scheduleGridScroll thead th{
+  top:0!important;
+}
+@media(max-width:900px){
+  #schedulePage .scheduleGridScroll,
+  #schedulePage .weekBlock .scheduleGridScroll{height:auto!important;max-height:none!important;min-height:0!important}
+}
+@media print{
+  #schedulePage .scheduleGridScroll thead{transform:none!important}
+  #schedulePage .scheduleGridScroll{overflow:visible!important}
+}
+
 </style>
 </head>
 <body>
@@ -1410,7 +1452,7 @@ body.resizingEmployeeColumn *{
 
  <div id="monthlyScheduleWrap">
    <div class="tablewrap scheduleGridScroll"><table><thead id="schHead"></thead><tbody id="schBody"></tbody></table></div>
-   <div class="help" style="margin-top:7px">※ 월간표는 선택한 달의 전체 스케줄을 표시합니다. 아래로 스크롤해도 날짜 머리글이 고정되며, 이름을 끌어 스케줄 전용 순서를 바꿀 수 있습니다.</div>
+   <div class="help" style="margin-top:7px">※ 월간표는 페이지를 한 번만 아래로 스크롤합니다. 날짜 머리글은 상단에 유지되고, 가로 스크롤과 이름 드래그 정렬은 그대로 사용할 수 있습니다.</div>
  </div>
 
  <div id="weeklyScheduleWrap" class="hidden">
@@ -4017,7 +4059,11 @@ function showScheduleDateTooltip(event,date){
  if(!tip){tip=document.createElement('div');tip.id='scheduleDateTooltip';tip.className='scheduleDateTooltip';tip.setAttribute('role','tooltip');document.body.appendChild(tip)}
  scheduleRosterTooltipDate=date;
  const maxShown=48,shown=list.slice(0,maxShown),shownLeave=leave.slice(0,maxShown);
- const fmt=(items,empty)=>items.length?items.map(x=>`<div class="rosterTooltipPerson">${esc(x.employee.name)} · ${x.hours}h</div>`).join(''):`<div class="rosterTooltipPerson rosterTooltipEmpty">${empty}</div>`;
+ const fmt=(items,empty)=>items.length?items.map(x=>{
+  const configuredColor=employeeColor(x.employee);
+  const color=/^#[0-9a-fA-F]{6}$/.test(configuredColor)?configuredColor:'#ffffff';
+  return `<div class="rosterTooltipPerson"><span class="rosterTooltipName" style="--roster-name-bg:${color}">${esc(x.employee.name)}</span><span class="rosterTooltipHours">${x.hours}h</span></div>`;
+ }).join(''):`<div class="rosterTooltipPerson rosterTooltipEmpty">${empty}</div>`;
  tip.innerHTML=`<div class="rosterTooltipTitle">${today?'오늘 · ':''}${esc(date)}</div><div class="rosterTooltipSection">출근 ${list.length}명</div><div class="rosterTooltipGrid">${fmt(shown,'출근 예정자 없음')}</div>${list.length>maxShown?`<div class="rosterTooltipMore">외 ${list.length-maxShown}명</div>`:''}<div class="rosterTooltipSection rosterTooltipLeaveTitle">연차 ${leave.length}명</div><div class="rosterTooltipGrid">${fmt(shownLeave,'연차 사용자 없음')}</div>${leave.length>maxShown?`<div class="rosterTooltipMore">외 ${leave.length-maxShown}명</div>`:''}<div class="rosterTooltipFoot">출근은 실제 근무시간 입력 기준 · 연차는 출근 인원에서 제외</div>`;
  tip.style.display='block';tip.style.left='0px';tip.style.top='0px';
  const r=target.getBoundingClientRect(),w=tip.offsetWidth,h=tip.offsetHeight;
@@ -4027,10 +4073,40 @@ function showScheduleDateTooltip(event,date){
 }
 /* Tooltip closes when leaving the date header, and is not suppressed by auto-scroll. */
 
+/* V9.1.26: 스케줄 표는 내부 세로 스크롤을 없애고 창 스크롤을 사용한다.
+   날짜 머리글 thead를 복제하지 않아 기존 날짜 툴팁·입력·가로스크롤이 유지된다.
+   각 주간표의 마지막 직원행을 넘지 않게 한 주 범위 안에서만 고정한다. */
+let schedulePageHeaderFrame=0;
+function refreshScheduleViewportHeaders(){
+ schedulePageHeaderFrame=0;
+ const page=document.getElementById('schedulePage');
+ if(!page||!page.classList.contains('active'))return;
+ const bar=document.querySelector('.top');
+ let pinTop=bar?bar.getBoundingClientRect().bottom:0;
+ const nav=document.querySelector('.mobileNav');
+ if(nav&&getComputedStyle(nav).display!=='none')pinTop=Math.max(pinTop,nav.getBoundingClientRect().bottom);
+ pinTop+=2;
+ page.querySelectorAll('.scheduleGridScroll').forEach(wrap=>{
+   const head=wrap.querySelector('thead');
+   if(!head||!wrap.getClientRects().length)return;
+   const rect=wrap.getBoundingClientRect(),height=head.offsetHeight;
+   const maxMove=Math.max(0,rect.height-height-3);
+   const move=Math.min(maxMove,Math.max(0,pinTop-rect.top));
+   head.style.transform=move>=1?`translate3d(0,${Math.round(move)}px,0)`:'';
+ });
+}
+function scheduleViewportHeaderRequest(){
+ if(schedulePageHeaderFrame)return;
+ schedulePageHeaderFrame=requestAnimationFrame(refreshScheduleViewportHeaders);
+}
+window.addEventListener('scroll',scheduleViewportHeaderRequest,{passive:true});
+window.addEventListener('resize',scheduleViewportHeaderRequest,{passive:true});
+
+
 function renderWeeklyPlanner(){
  let host=$('weeklyPlanner');if(!host)return;
  let weeks=plannerWeeks(),list=weeklyPlannerEmployees(),selectedMonth=$('monthSelect').value;
- if(!weeks.length||!list.length){host.innerHTML='<div class="card">표시할 직원 또는 주간 데이터가 없습니다.</div>';renderScheduleRosterPanel();return;}
+ if(!weeks.length||!list.length){host.innerHTML='<div class="card">표시할 직원 또는 주간 데이터가 없습니다.</div>';renderScheduleRosterPanel();scheduleViewportHeaderRequest();return;}
  host.innerHTML=weeks.map((ws,wi)=>{
    let we=addDaysIso(ws,6);
    let head=`<div class="weekBlock"><div class="weekBlockHead"><b>${Number(ws.slice(5,7))}/${Number(ws.slice(8,10))} ~ ${Number(we.slice(5,7))}/${Number(we.slice(8,10))}</b><span class="weekMeta">월요일 ~ 일요일 · 주간 실근로/출근간주 기준</span></div>`;
@@ -4062,7 +4138,7 @@ function renderWeeklyPlanner(){
    }).join('');
    return head+`<div class="tablewrap scheduleGridScroll"><table class="weekTable"><thead>${th}</thead><tbody>${body}</tbody></table></div></div>`;
  }).join('');
- applyScheduleEditState();updateScheduleOrderHint();renderScheduleRosterPanel();
+ applyScheduleEditState();updateScheduleOrderHint();renderScheduleRosterPanel();scheduleViewportHeaderRequest();
 }
 function refreshWeeklyRow(employeeId,date){
  if(scheduleView!=='weekly')return;
@@ -4139,7 +4215,7 @@ function renderSchedule(){
   }
   return row+`<td id="workTotal-${e.id}"><b>${x.worked}h</b></td><td id="otTotal-${e.id}">${x.ot}h</td></tr>`;
  }).join('');
- applyScheduleEditState();updateScheduleOrderHint();renderScheduleRosterPanel();
+ applyScheduleEditState();updateScheduleOrderHint();renderScheduleRosterPanel();scheduleViewportHeaderRequest();
 }
 function schedulePayload(id,date,raw){
  let emp=allEmployees().find(e=>e.id===id),cond=workConditionForDate(emp||{},date),rule=conditionTimesForDate(cond,date),code=String(raw??'').trim(),base=Number(rule.daily_hours||cond.daily_hours||emp?.daily_hours||8),leaveH=Number(leaveDayHoursAt(emp,date)||base||emp?.leave_day_hours||emp?.daily_hours||8),scheduled=0,worked=0,ot=0,status='';
