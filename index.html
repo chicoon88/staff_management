@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>직원관리 대시보드 V9.1.23</title>
+<title>직원관리 대시보드 V9.1.24</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
@@ -1222,6 +1222,42 @@ body.resizingEmployeeColumn *{
 #homePage .homeSalaryReviewButton:hover{background:#e7f0ff}
 #homePage .homeSalaryChangeSummary{display:inline-block;color:#344054;font-size:10px;margin:3px 0}
 #homePage .homeSalaryChangeSummary strong{font-weight:900}
+
+/* ===== V9.1.24 · 날짜 클릭 제거 / 오늘 세로선 / 연차 포함 툴팁 / 월간 주말 붉은색 ===== */
+/* 날짜는 누르지 않고 커서나 키보드 포커스로 출근·연차 정보를 확인한다. */
+#schedulePage th.scheduleDateInteractive{cursor:help}
+#schedulePage th.scheduleDateInteractive:focus-visible{outline:2px solid #cc821d;outline-offset:-3px}
+#schedulePage .scheduleTodayBadge{display:block;width:max-content;margin:0 auto 2px;padding:0 5px;background:#ffecba;border:1px solid #d6a348;border-radius:4px;color:#854e12;font-size:10px;font-weight:950;line-height:1.35}
+#schedulePage .scheduleDateNumber{font-weight:900}
+/* 공휴일을 진하게, 토/일은 조금 더 연한 붉은색으로 구분한다. */
+#schedulePage #schHead th.weekendHead:not(.scheduleTodayHeader){background:#ffeaeb!important;color:#a4323d!important}
+#schedulePage #schHead th.holidayHead:not(.scheduleTodayHeader){background:#ffd5d9!important;color:#ad202d!important;border-top:3px solid #cb3541!important}
+#schedulePage #schBody tr:not(.selectedRow)>td.weekendHead:not(.outsideEmploymentCell){background:#fff1f2!important;color:#a4323d!important}
+#schedulePage #schBody tr:not(.selectedRow)>td.holidayHead:not(.outsideEmploymentCell){background:#ffe4e8!important;color:#ad202d!important}
+#schedulePage #schHead th.scheduleTodayHeader.weekendHead{background:#ffeaeb!important;color:#854e12!important}
+#schedulePage #schHead th.scheduleTodayHeader.holidayHead{background:#ffd5d9!important;color:#854e12!important}
+/* 오늘 열 전체를 하나의 세로 박스로 표시. 행 선택색과 재직기간 밖 회색 사선은 그대로 둔다. */
+#schedulePage #schHead th.scheduleTodayColumn,
+#schedulePage #weeklyPlanner th.scheduleTodayColumn{
+ box-shadow:inset 3px 0 0 #bb7115,inset -3px 0 0 #bb7115,inset 0 3px 0 #bb7115,0 2px 5px rgba(172,106,8,.13)!important;
+}
+#schedulePage #schBody tr>td.scheduleTodayColumn,
+#schedulePage #weeklyPlanner tbody tr>td.scheduleTodayColumn{
+ box-shadow:inset 3px 0 0 #bb7115,inset -3px 0 0 #bb7115!important;
+}
+#schedulePage #schBody tr.selectedRow>td.scheduleTodayColumn,
+#schedulePage #weeklyPlanner tbody tr.selectedRow>td.scheduleTodayColumn{
+ box-shadow:inset 3px 0 0 #bb7115,inset -3px 0 0 #bb7115,inset 0 2px 0 #d99518,inset 0 -2px 0 #d99518!important;
+}
+#schedulePage #schBody tr:last-child>td.scheduleTodayColumn,
+#schedulePage #weeklyPlanner tbody tr:last-child>td.scheduleTodayColumn{
+ border-bottom:3px solid #bb7115!important;
+}
+.scheduleDateTooltip .rosterTooltipSection{font-size:11px;font-weight:950;color:#b9f7d7;margin:7px 0 3px}
+.scheduleDateTooltip .rosterTooltipLeaveTitle{color:#ffe2a3;border-top:1px solid #526276;padding-top:6px;margin-top:8px}
+.scheduleDateTooltip .rosterTooltipEmpty{color:#c6d0de}
+.scheduleDateTooltip .rosterTooltipGrid{max-height:unset;overflow:visible}
+.scheduleDateTooltip{max-height:calc(100vh - 16px);overflow:hidden}
 </style>
 </head>
 <body>
@@ -1368,7 +1404,7 @@ body.resizingEmployeeColumn *{
   <span id="scheduleStoreState" class="saveState"></span><span id="scheduleLoadState" class="saveState saved">준비</span><span id="scheduleSaveState" class="saveState saved">저장완료</span><span class="help">연차잔여는 입력 즉시 반영</span>
  </div>
  </div>
- <div class="legend"><span class="tag">8 = 8시간</span><span class="tag">9 = 9시간</span><span class="tag">0 = 휴무</span><span class="tag">연 = 연차</span><span class="tag">병 = 병가(연차판정 확인)</span><span class="tag">결 = 결근</span><span class="tag">법 = 법정 출근간주</span><span class="tag">예 = 예비군(출근간주 · 소정시간 인정 · 연차차감 없음)</span><span class="tag">주5일 목표 40h</span><span class="tag">주4일 목표 36h</span><span class="tag">공휴일은 주말보다 우선</span><span class="tag scheduleOutsideLegend">사선 = 입사 전·퇴사 후 (입력 불가)</span><span id="scheduleOrderHint" class="tag scheduleOrderHint">↕ 이름을 끌어 스케줄 순서 변경</span></div>
+ <div class="legend"><span class="tag">8 = 8시간</span><span class="tag">9 = 9시간</span><span class="tag">0 = 휴무</span><span class="tag">연 = 연차</span><span class="tag">병 = 병가(연차판정 확인)</span><span class="tag">결 = 결근</span><span class="tag">법 = 법정 출근간주</span><span class="tag">예 = 예비군(출근간주 · 소정시간 인정 · 연차차감 없음)</span><span class="tag">주5일 목표 40h</span><span class="tag">주4일 목표 36h</span><span class="tag">공휴일은 주말보다 우선</span><span class="tag scheduleOutsideLegend">사선 = 입사 전·퇴사 후 (입력 불가)</span><span class="tag" style="border:2px solid #bb7115;background:#fff9ed">오늘 = 세로 테두리</span><span class="tag">날짜에 마우스 올리기 = 출근·연차 확인</span><span id="scheduleOrderHint" class="tag scheduleOrderHint">↕ 이름을 끌어 스케줄 순서 변경</span></div>
  <div id="scheduleRosterPanel" class="scheduleRosterPanel" aria-live="polite"></div>
  <div class="readOnlyScheduleNotice" id="scheduleReadOnlyNotice">보기 전용 권한입니다. 스케줄 확인은 가능하지만 수정은 할 수 없습니다.</div><div class="schedulerFocusNote infoBox help" style="margin-top:8px"><b>사용 순서</b> · 스케줄 입력 → 근태 확인 → 스케줄 출력</div>
 
@@ -2466,7 +2502,7 @@ function clearStoreScopedUI(){
  lastLoadedScheduleStoreId=null;lastLoadedScheduleMonth=null;
  employees=[];retiredEmployees=[];schedules=[];payroll=[];leaveLedger=[];paymentRegister=[];incentiveRegister=[];employeeDocumentStatusMap=new Map();employeeDocumentStatusReadyStoreId=null;scheduleMonthLocks=[];scheduleEmployeeOrderMap=new Map();scheduleEmployeeOrderTableAvailable=null;scheduleDragEmployeeId=null;
  selectedEmployees.clear();
- scheduleRosterSelectedDate='';hideScheduleDateTooltip();
+ hideScheduleDateTooltip();
  if($('schBody'))$('schBody').innerHTML='<tr><td colspan="40" style="padding:20px;text-align:center">직원·스케줄 불러오는 중...</td></tr>';
  if($('employeeBody'))$('employeeBody').innerHTML='<tr><td colspan="20" style="padding:20px;text-align:center">직원 불러오는 중...</td></tr>';
  if($('hoursBody'))$('hoursBody').innerHTML='<tr><td colspan="13" style="padding:20px;text-align:center">근로자료는 근로 탭에서 불러옵니다.</td></tr>';
@@ -3925,7 +3961,6 @@ async function setScheduleView(v){
 }
 
 /* V9.1.23: date navigation works without opening a modal. Only entered onsite work counts. */
-let scheduleRosterSelectedDate='';
 let scheduleRosterTooltipDate='';
 function scheduleAttendeesForDate(date){
  if(!/^\d{4}-\d{2}-\d{2}$/.test(String(date||'')))return [];
@@ -3940,6 +3975,17 @@ function scheduleAttendeesForDate(date){
  }
  return result;
 }
+function scheduleAnnualLeaveForDate(date){
+ if(!/^\d{4}-\d{2}-\d{2}$/.test(String(date||'')))return [];
+ const list=[];
+ for(const e of sortEmployeesForSchedule(allEmployees().filter(e=>e.hide_monthly_schedule!==true&&employedOn(e,date)))){
+   const s=sched(e,date);
+   if(String(s?.work_code||'').trim()!=='연')continue;
+   const h=Number(s?.scheduled_hours||0);
+   list.push({employee:e,hours:Math.round(h*100)/100});
+ }
+ return list;
+}
 function scheduleRosterDateVisible(date){
  const ym=$('monthSelect')?.value||'';
  if(!ym)return false;
@@ -3949,23 +3995,16 @@ function scheduleRosterDateVisible(date){
  return date.startsWith(ym+'-');
 }
 function activeScheduleRosterDate(){
- if(scheduleRosterSelectedDate&&scheduleRosterDateVisible(scheduleRosterSelectedDate))return scheduleRosterSelectedDate;
  const today=isoToday();
  return scheduleRosterDateVisible(today)?today:'';
 }
 function renderScheduleRosterPanel(){
  const host=$('scheduleRosterPanel');if(!host)return;
  const date=activeScheduleRosterDate(),today=isoToday();
- if(!date){host.classList.remove('scheduleRosterPanelToday');host.innerHTML='<span class="scheduleRosterHeading">날짜별 출근자</span><span class="scheduleRosterHint">날짜 머리글에 마우스를 올리면 출근자 요약 · 클릭하면 명단을 확인할 수 있습니다.</span>';return;}
+ if(!date){host.classList.remove('scheduleRosterPanelToday');host.innerHTML='<span class="scheduleRosterHeading">날짜별 출근자</span><span class="scheduleRosterHint">날짜에 마우스를 올리면 출근자와 연차 사용자를 확인할 수 있습니다.</span>';return;}
  const list=scheduleAttendeesForDate(date),isToday=date===today;
  host.classList.toggle('scheduleRosterPanelToday',isToday);
  host.innerHTML=`<span class="scheduleRosterHeading">${isToday?'오늘 · ':''}${esc(date)} 출근 ${list.length}명</span><span class="scheduleRosterNames">${list.length?list.map(x=>`<span class="scheduleRosterPerson" style="--roster-name-bg:${employeeColor(x.employee)}">${esc(x.employee.name)} <small>${x.hours}h</small></span>`).join(''):'<span class="scheduleRosterHint">입력된 출근 스케줄이 없습니다.</span>'}</span><span class="scheduleRosterHint">스케줄 입력 기준 · 연차/휴무 등 제외</span>`;
- document.querySelectorAll('#schedulePage th[data-schedule-date]').forEach(th=>th.classList.toggle('scheduleSelectedDateHeader',th.dataset.scheduleDate===date));
-}
-function selectScheduleRosterDate(date){
- if(!scheduleRosterDateVisible(date))return;
- scheduleRosterSelectedDate=date;
- hideScheduleDateTooltip();renderScheduleRosterPanel();
 }
 function hideScheduleDateTooltip(){
  scheduleRosterTooltipDate='';const tip=document.getElementById('scheduleDateTooltip');if(tip)tip.style.display='none';
@@ -3973,12 +4012,13 @@ function hideScheduleDateTooltip(){
 function showScheduleDateTooltip(event,date){
  if(!scheduleRosterDateVisible(date))return;
  const target=event?.currentTarget;if(!target)return;
- const list=scheduleAttendeesForDate(date),today=date===isoToday();
+ const list=scheduleAttendeesForDate(date),leave=scheduleAnnualLeaveForDate(date),today=date===isoToday();
  let tip=document.getElementById('scheduleDateTooltip');
  if(!tip){tip=document.createElement('div');tip.id='scheduleDateTooltip';tip.className='scheduleDateTooltip';tip.setAttribute('role','tooltip');document.body.appendChild(tip)}
  scheduleRosterTooltipDate=date;
- const maxShown=42,shown=list.slice(0,maxShown);
- tip.innerHTML=`<div class="rosterTooltipTitle">${today?'오늘 · ':''}${esc(date)} · 출근 ${list.length}명</div><div class="rosterTooltipGrid">${shown.length?shown.map(x=>`<div class="rosterTooltipPerson">${esc(x.employee.name)} · ${x.hours}h</div>`).join(''):'<div class="rosterTooltipPerson">입력된 출근 스케줄 없음</div>'}</div>${list.length>maxShown?`<div class="rosterTooltipMore">외 ${list.length-maxShown}명 · 날짜를 클릭해 전체 보기</div>`:''}<div class="rosterTooltipFoot">연차·휴무·병가·결근·법정 출근간주·예비군 제외 · 클릭하면 화면에 펼쳐집니다.</div>`;
+ const maxShown=48,shown=list.slice(0,maxShown),shownLeave=leave.slice(0,maxShown);
+ const fmt=(items,empty)=>items.length?items.map(x=>`<div class="rosterTooltipPerson">${esc(x.employee.name)} · ${x.hours}h</div>`).join(''):`<div class="rosterTooltipPerson rosterTooltipEmpty">${empty}</div>`;
+ tip.innerHTML=`<div class="rosterTooltipTitle">${today?'오늘 · ':''}${esc(date)}</div><div class="rosterTooltipSection">출근 ${list.length}명</div><div class="rosterTooltipGrid">${fmt(shown,'출근 예정자 없음')}</div>${list.length>maxShown?`<div class="rosterTooltipMore">외 ${list.length-maxShown}명</div>`:''}<div class="rosterTooltipSection rosterTooltipLeaveTitle">연차 ${leave.length}명</div><div class="rosterTooltipGrid">${fmt(shownLeave,'연차 사용자 없음')}</div>${leave.length>maxShown?`<div class="rosterTooltipMore">외 ${leave.length-maxShown}명</div>`:''}<div class="rosterTooltipFoot">출근은 실제 근무시간 입력 기준 · 연차는 출근 인원에서 제외</div>`;
  tip.style.display='block';tip.style.left='0px';tip.style.top='0px';
  const r=target.getBoundingClientRect(),w=tip.offsetWidth,h=tip.offsetHeight;
  const left=Math.max(8,Math.min(r.left+r.width/2-w/2,window.innerWidth-w-8));
@@ -3998,7 +4038,7 @@ function renderWeeklyPlanner(){
    for(let d=0;d<7;d++){
      let date=addDaysIso(ws,d),[yy,mm,dd]=date.split('-').map(Number),wd=new Date(yy,mm-1,dd).getDay(),hol=holidayFor(date);
      let out=!date.startsWith(selectedMonth),cl=hol?'weekHoliday':(wd===0||wd===6?'weekWeekend':'');
-     th+=`<th data-schedule-date="${date}" class="weekDayHead scheduleDateInteractive ${cl} ${out?'weekOutsideMonth':''} ${date===isoToday()?'scheduleTodayHeader':''}" tabindex="0" role="button" aria-label="${date} 출근자 보기" onmouseenter="showScheduleDateTooltip(event,'${date}')" onmouseleave="hideScheduleDateTooltip()" onfocus="showScheduleDateTooltip(event,'${date}')" onblur="hideScheduleDateTooltip()" onclick="selectScheduleRosterDate('${date}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();selectScheduleRosterDate('${date}')}" title="출근자 조회">${mm}/${dd}<br>${'일월화수목금토'[wd]}${hol?`<span class="weekHolidayLabel">${esc(hol.name)}</span>`:''}${date===isoToday()?'<span class="scheduleTodayBadge">오늘</span>':''}</th>`;
+     th+=`<th data-schedule-date="${date}" class="weekDayHead scheduleDateInteractive ${cl} ${out?'weekOutsideMonth':''} ${date===isoToday()?'scheduleTodayHeader scheduleTodayColumn':''}" tabindex="0" aria-label="${date} 출근·연차 확인" onmouseenter="showScheduleDateTooltip(event,'${date}')" onmouseleave="hideScheduleDateTooltip()" onfocus="if(this.matches(':focus-visible'))showScheduleDateTooltip(event,'${date}')" onblur="hideScheduleDateTooltip()">${date===isoToday()?'<span class="scheduleTodayBadge">오늘</span>':''}<span class="scheduleDateNumber">${mm}/${dd}</span><br>${'일월화수목금토'[wd]}${hol?`<span class="weekHolidayLabel">${esc(hol.name)}</span>`:''}</th>`;
    }
    th+='<th>주간합계</th><th>기준대비</th></tr>';
    let body=list.map((e,ri)=>{
@@ -4012,7 +4052,7 @@ function renderWeeklyPlanner(){
        let [yy,mm,dd]=date.split('-').map(Number),wd=new Date(yy,mm-1,dd).getDay(),hol=holidayFor(date);
        let out=!date.startsWith(selectedMonth),cl=hol?'weekHolidayCell':(wd===0||wd===6?'weekWeekendCell':''),outside=!valid;
        let outsideTitle=outside?(date<e.hire_date?'입사일 이전 · 입력 불가':'퇴사일 이후 · 입력 불가'):(hol?hol.name:date);
-       row+=`<td class="${cl} ${out?'weekOutsideMonth':''} ${outside?'outsideEmploymentCell':''}" ondblclick="${valid?`openShift(${e.id},'${date}')`:''}" title="${esc(outsideTitle)}">
+       row+=`<td class="${cl} ${out?'weekOutsideMonth':''} ${outside?'outsideEmploymentCell':''} ${date===isoToday()?'scheduleTodayColumn':''}" ondblclick="${valid?`openShift(${e.id},'${date}')`:''}" title="${esc(outsideTitle)}">
          <input class="weekCode code${esc(v)} ${outside?'outsideEmploymentInput':''}" data-weekstart="${ws}" data-emp="${e.id}" data-date="${date}" value="${esc(v)}" maxlength="4" ${outside?'disabled tabindex="-1"':''}
            oncompositionstart="this.dataset.composing='1'" oninput="weeklyScheduleInput(${e.id},'${date}',this.value,this,event)" oncompositionend="weeklyScheduleCompositionEnd(${e.id},'${date}',this)" onchange="weeklyScheduleChange(${e.id},'${date}',this)" onblur="weeklyScheduleBlur(${e.id},'${date}',this)" onkeydown="weeklyScheduleKey(event,this)" onfocus="highlightScheduleContext(this);this.select()" onclick="this.select()">
        </td>`;
@@ -4082,7 +4122,7 @@ function renderSchedule(){
  let r=monthRange(),list=monthlyScheduleEmployees(r.m),st=stores.find(s=>s.id===storeId());if($('scheduleStoreState'))$('scheduleStoreState').textContent=st?.name||'업장';h='<tr><th class="name">선택 · 직원</th>';
  for(let d=1;d<=r.days;d++){
   let date=r.m+'-'+String(d).padStart(2,'0'),wd=new Date(r.y,r.mo-1,d).getDay(),hol=holidayFor(date),cl=hol?'holidayHead':(wd===0||wd===6?'weekendHead':'');
-  h+=`<th data-schedule-date="${date}" class="scheduleDateInteractive ${cl} ${date===isoToday()?'scheduleTodayHeader':''}" tabindex="0" role="button" aria-label="${date} 출근자 보기" onmouseenter="showScheduleDateTooltip(event,'${date}')" onmouseleave="hideScheduleDateTooltip()" onfocus="showScheduleDateTooltip(event,'${date}')" onblur="hideScheduleDateTooltip()" onclick="selectScheduleRosterDate('${date}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();selectScheduleRosterDate('${date}')}" title="${hol?esc(hol.name)+' · ':''}출근자 조회">${d}<br>${'일월화수목금토'[wd]}${hol?`<span class="holidayName">${esc(hol.name)}</span>`:''}${date===isoToday()?'<span class="scheduleTodayBadge">오늘</span>':''}</th>`;
+  h+=`<th data-schedule-date="${date}" class="scheduleDateInteractive ${cl} ${date===isoToday()?'scheduleTodayHeader scheduleTodayColumn':''}" tabindex="0" aria-label="${date} 출근·연차 확인" onmouseenter="showScheduleDateTooltip(event,'${date}')" onmouseleave="hideScheduleDateTooltip()" onfocus="if(this.matches(':focus-visible'))showScheduleDateTooltip(event,'${date}')" onblur="hideScheduleDateTooltip()">${date===isoToday()?'<span class="scheduleTodayBadge">오늘</span>':''}<span class="scheduleDateNumber">${d}</span><br>${'일월화수목금토'[wd]}${hol?`<span class="holidayName">${esc(hol.name)}</span>`:''}</th>`;
  }
  h+='<th>실근로<br><small>출근간주 포함</small></th><th>연장</th></tr>';
  $('schHead').innerHTML=h;
@@ -4092,7 +4132,7 @@ function renderSchedule(){
   for(let d=1;d<=r.days;d++){
    let date=r.m+'-'+String(d).padStart(2,'0'),valid=employedOn(e,date),s=sched(e,date),v=s?.work_code||'',wd=new Date(r.y,r.mo-1,d).getDay(),hol=holidayFor(date),cl=hol?' holidayHead':(wd===0||wd===6?' weekendHead':''),outside=!valid;
    let title=outside?(date<e.hire_date?'입사일 이전 · 입력 불가':'퇴사일 이후 · 입력 불가'):(hol?hol.name:'');
-   row+=`<td class="${cl} ${outside?'outsideEmploymentCell':''}" ondblclick="${valid?`openShift(${e.id},'${date}')`:''}" title="${esc(title)}">
+   row+=`<td class="${cl} ${outside?'outsideEmploymentCell':''} ${date===isoToday()?'scheduleTodayColumn':''}" ondblclick="${valid?`openShift(${e.id},'${date}')`:''}" title="${esc(title)}">
      <input id="sc-${e.id}-${d}" data-row="${ri}" data-col="${d}" data-emp="${e.id}" data-date="${date}" class="code code${esc(v)} ${outside?'outsideEmploymentInput':''}" value="${esc(v)}" maxlength="4" ${outside?'disabled tabindex="-1"':''}
        oncompositionstart="this.dataset.composing='1'" oninput="scheduleInput(${e.id},'${date}',this.value,this,event)" oncompositionend="scheduleCompositionEnd(${e.id},'${date}',this)" onchange="scheduleChange(${e.id},'${date}',this)" onblur="scheduleBlur(${e.id},'${date}',this)" onkeydown="scheduleKey(event,this)" onfocus="highlightScheduleContext(this);this.select()" onclick="this.select()" title="Enter/Tab/방향키 이동 · 더블클릭 상세시간${outside?' · 재직기간 밖 입력불가':''}">
     </td>`;
