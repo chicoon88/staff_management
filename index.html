@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>직원관리 대시보드 V9.1.28</title>
+<title>직원관리 대시보드 V9.1.29</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
@@ -1339,7 +1339,7 @@ body.resizingEmployeeColumn *{
 @media(max-width:365px){.scheduleDateTooltip .rosterTooltipGrid{grid-template-columns:max-content!important}}
 
 
-/* ===== V9.1.28 업장별 특이사항 메모 ===== */
+/* ===== V9.1.29 업장별 특이사항 메모 ===== */
 .storeMemoTopBtn{display:inline-flex;align-items:center;gap:6px;background:#fff;border:1px solid #d6dfed;border-radius:9px;padding:7px 10px;color:#26374e;font-size:12px;font-weight:850;cursor:pointer;white-space:nowrap}
 .storeMemoTopBtn:hover{background:#f3f7ff;border-color:#a5b9dd}
 .storeMemoUnread{display:inline-grid;place-items:center;min-width:20px;height:20px;padding:0 5px;border-radius:12px;color:#fff;background:#c72b3e;font-size:11px;font-weight:900;line-height:1.1}
@@ -1368,6 +1368,10 @@ body.resizingEmployeeColumn *{
 .storeMemoItemFoot{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:9px;flex-wrap:wrap}
 .storeMemoStatus{display:inline-block;background:#edf2f7;color:#526174;border-radius:6px;padding:3px 7px;font-size:10px;font-weight:850}
 .storeMemoStatus.unread{background:#fff0d7;color:#91570d}
+.storeMemoItemActions{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.storeMemoDeleteBtn{color:#b42332!important;border:1px solid #f2c5cb!important;background:#fff7f8!important;font-weight:800}
+.storeMemoDeleteBtn:hover{background:#ffe9ec!important;border-color:#e79aa5!important}
+.storeMemoDeleteBtn:disabled{opacity:.52;cursor:wait}
 .storeMemoPriority{font-size:10px;font-weight:850;border-radius:6px;padding:3px 6px;background:#f0f3f8;color:#61718a}
 .storeMemoPriority.urgent{color:#ad2434;background:#ffe8eb}.storeMemoPriority.important{color:#9a6000;background:#fff2d4}
 .storeMemoFilter{display:flex;gap:7px;flex-wrap:wrap;align-items:center;margin:10px 0}
@@ -10597,9 +10601,9 @@ async function addWorkCondition(employeeId){
 /* ===== /V7 수기 최종수정 우선 ===== */
 
 
-/* ===== V9.1.28 업장별 특이사항 메모: UI + Supabase RLS ===== */
+/* ===== V9.1.29 업장별 특이사항 메모: UI + Supabase RLS ===== */
 let storeMemoRows=[],storeMemoMonitorTimer=null,storeMemoFirstScan=true,storeMemoKnownIds=new Set(),storeMemoPolling=false,storeMemoToastTimer=null;
-let storeMemoInboxLoading=false;
+let storeMemoInboxLoading=false,storeMemoDeletingIds=new Set();
 const STORE_MEMO_PAGE_NAMES={home:'전체 현황',schedule:'스케줄',hours:'근로시간',payroll:'급여관리',employees:'직원관리',stores:'업장관리',holidays:'공휴일관리',homeshop:'홈쇼핑',users:'사용자 관리',audit:'수정이력'};
 function storeMemoStamp(iso){try{return new Date(iso).toLocaleString('ko-KR',{year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'})}catch(_){return String(iso||'')}}
 function storeMemoAuthorName(row){
@@ -10675,7 +10679,7 @@ function openStoreNoteComposer(){
  let selected=String(storeId()),opts=stores.map(s=>`<option value="${Number(s.id)}" ${String(s.id)===selected?'selected':''}>${esc(s.name)}</option>`).join('');
  let page=document.querySelector('.page.active')?.id?.replace(/Page$/,'')||'home';
  modal(`<div class="storeMemoHead"><h2 style="margin:0">✎ 업장 특이사항 남기기</h2><button type="button" class="btn gray small" onclick="closeModal()">닫기</button></div>
- <div class="storeMemoHelp">이 메모는 서버에 저장되며 관리자에게 전달됩니다. 다른 업장 일반 사용자에게는 표시되지 않습니다.</div>
+ <div class="storeMemoHelp">이 메모는 서버에 저장되며 관리자에게 전달됩니다. 다른 업장 일반 사용자에게는 표시되지 않습니다. 잘못 등록한 메모는 작성자 또는 관리자가 메모함에서 삭제할 수 있습니다.</div>
  <div class="storeMemoForm">
   <label>업장<select id="storeMemoStore">${opts}</select></label>
   <label>중요도<select id="storeMemoPriority"><option value="normal">일반</option><option value="important">중요</option><option value="urgent">긴급</option></select></label>
@@ -10705,7 +10709,7 @@ async function submitStoreNote(){
 }
 async function openStoreNoteInbox(){
  if(!currentSessionUser)return alert('로그인 후 이용해 주세요.');storeMemoCloseContext();
- modal(`<div class="storeMemoHead"><div><h2 style="margin:0">▣ ${isAppAdmin()?'전체 업장 특이사항':'내가 남긴 메모'}</h2><div class="storeMemoHelp" style="margin:3px 0 0">${isAppAdmin()?'업장별 메모를 모아서 확인하고 확인 완료 처리합니다.':'내가 등록한 메모와 관리자의 확인 여부를 볼 수 있습니다.'}</div></div><div class="toolbar"><button type="button" class="btn gray small" onclick="openStoreNoteComposer()">+ 메모 작성</button><button type="button" class="btn gray small" onclick="closeModal()">닫기</button></div></div>
+ modal(`<div class="storeMemoHead"><div><h2 style="margin:0">▣ ${isAppAdmin()?'전체 업장 특이사항':'내가 남긴 메모'}</h2><div class="storeMemoHelp" style="margin:3px 0 0">${isAppAdmin()?'업장별 메모를 모아서 확인하고 확인 완료 처리합니다.':'내가 등록한 메모와 관리자의 확인 여부를 볼 수 있습니다.'} · 잘못 작성한 메모는 삭제할 수 있습니다.</div></div><div class="toolbar"><button type="button" class="btn gray small" onclick="openStoreNoteComposer()">+ 메모 작성</button><button type="button" class="btn gray small" onclick="closeModal()">닫기</button></div></div>
  <div class="storeMemoFilter">${isAppAdmin()?`<select id="storeMemoFilterStore" onchange="renderStoreMemoInbox()"><option value="">전체 업장</option>${stores.map(s=>`<option value="${Number(s.id)}">${esc(s.name)}</option>`).join('')}</select><select id="storeMemoFilterStatus" onchange="renderStoreMemoInbox()"><option value="">전체 상태</option><option value="unread">미확인만</option><option value="ack">확인 완료만</option></select>`:''}<button type="button" class="btn gray small" onclick="loadStoreNoteInbox()">새로고침</button><span class="storeMemoHelp" style="margin:0">최근 200건</span></div>
  <div id="storeMemoInboxList" class="storeMemoList"><div class="storeMemoEmpty">메모를 불러오는 중입니다.</div></div>`);
  $('modalBox')?.classList.add('storeMemoModal');await loadStoreNoteInbox();
@@ -10732,7 +10736,7 @@ function renderStoreMemoInbox(){
   return `<article class="storeMemoItem ${unread?'unread':''} ${esc(pri)}"><div class="storeMemoItemHead"><span class="storeMemoItemTitle">${esc(r.subject)}</span><span class="storeMemoPriority ${esc(pri)}">${storeMemoPriorityLabel(pri)}</span></div>
   <div class="storeMemoItemMeta">${esc(meta)}${r.month_ref?' · '+esc(String(r.month_ref).slice(0,7)):''}</div>
   <div class="storeMemoItemBody">${esc(r.body)}</div>
-  <div class="storeMemoItemFoot"><span class="storeMemoStatus ${unread?'unread':''}">${unread?'관리자 미확인':'관리자 확인 완료 · '+storeMemoStamp(r.acknowledged_at)}</span>${isAppAdmin()&&unread?`<button type="button" class="btn green small" onclick="acknowledgeStoreNote(${Number(r.id)})">확인 처리</button>`:''}</div></article>`;
+  <div class="storeMemoItemFoot"><span class="storeMemoStatus ${unread?'unread':''}">${unread?'관리자 미확인':'관리자 확인 완료 · '+storeMemoStamp(r.acknowledged_at)}</span><div class="storeMemoItemActions">${isAppAdmin()&&unread?`<button type="button" class="btn green small" onclick="acknowledgeStoreNote(${Number(r.id)})">확인 처리</button>`:''}${(isAppAdmin()||r.author_id===currentSessionUser?.id)?`<button type="button" class="btn small storeMemoDeleteBtn" onclick="deleteStoreNote(${Number(r.id)})" ${storeMemoDeletingIds.has(Number(r.id))?'disabled':''}>삭제</button>`:''}</div></div></article>`;
  }).join('');
 }
 async function acknowledgeStoreNote(id){
@@ -10745,7 +10749,27 @@ async function acknowledgeStoreNote(id){
   await loadStoreNoteInbox();await checkStoreMemoUpdates();
  }catch(err){alert('메모 확인 처리 오류: '+(err?.message||err))}
 }
-/* ===== /V9.1.28 ===== */
+/* ===== V9.1.29 잘못 작성한 메모 삭제: 본인 또는 통합관리자 ===== */
+async function deleteStoreNote(id){
+ const target=storeMemoRows.find(r=>Number(r.id)===Number(id));
+ if(!target||!currentSessionUser)return;
+ if(!isAppAdmin()&&target.author_id!==currentSessionUser.id)return alert('본인이 작성한 메모만 삭제할 수 있습니다.');
+ if(storeMemoDeletingIds.has(Number(id)))return;
+ if(!confirm(`[${storeMemoStoreName(target.store_id)}] ${target.subject}\n\n이 메모를 삭제하시겠습니까?\n삭제 후 복구할 수 없습니다.`))return;
+ storeMemoDeletingIds.add(Number(id));renderStoreMemoInbox();
+ try{
+  const q=await sb.from('store_notes').delete().eq('id',Number(id)).select('id');
+  if(q.error)throw q.error;
+  if(!q.data?.length)throw new Error('삭제할 수 있는 메모가 없거나 삭제 권한이 없습니다. 메모함을 새로고침해 주세요.');
+  storeMemoRows=storeMemoRows.filter(r=>Number(r.id)!==Number(id));
+  renderStoreMemoInbox();
+  if(isAppAdmin())await checkStoreMemoUpdates();
+  storeMemoToast('메모를 삭제했습니다.');
+ }catch(err){alert('메모 삭제 실패: '+(err?.message||err));await loadStoreNoteInbox();}
+ finally{storeMemoDeletingIds.delete(Number(id));renderStoreMemoInbox();}
+}
+/* ===== /V9.1.29 ===== */
+/* ===== /V9.1.29 ===== */
 
 boot();
 </script>
