@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>직원관리 대시보드 V9.1.31</title>
+<title>직원관리 대시보드 V9.1.33</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
@@ -1405,6 +1405,14 @@ body.resizingEmployeeColumn *{
 .storeMemoModal .storeMemoEditBtn:hover{background:#e7f0ff!important}
 @media(max-width:600px){.modalBack>.modal.storeMemoModal{width:calc(100vw - 16px)!important;padding:14px 12px!important}.storeMemoModal .storeMemoItem{padding:8px}}
 
+/* ===== V9.1.32 관리자 → 업장 담당자 발송 바로가기 ===== */
+.storeMemoSendBtn{align-items:center;gap:5px;border:1px solid #7ea2d4;background:#e9f2ff;color:#184b85;border-radius:9px;padding:7px 11px;font-size:12px;font-weight:900;cursor:pointer;white-space:nowrap}
+.top .storeMemoSendBtn{background:#e9f2ff;color:#184b85;border:1px solid #7ea2d4;box-shadow:0 0 0 1px #3c66a0}
+.storeMemoSendBtn:hover,.storeMemoSendBtn:focus{background:#d9eaff;border-color:#527eb8;outline-offset:2px}
+.storeMemoSendBtn:disabled{cursor:wait;opacity:.7}
+.storeMemoModal .storeMemoSendAction{background:#eaf2ff!important;color:#1d528a!important;border-color:#b4cbeb!important;font-weight:900!important}
+.storeMemoModal .storeMemoSendAction:hover{background:#d9e9ff!important}
+@media(max-width:650px){.storeMemoSendBtn{font-size:11px;padding:6px 8px}}
 /* ===== V9.1.31 로그인/양방향 메모 알림 ===== */
 .storeMemoTopBtn.hasUnread{background:#ffe7cd!important;border:1px solid #f0ac55!important;color:#793d07!important;box-shadow:0 0 0 1px #f6c79160}
 .storeMemoNotice{position:sticky;top:66px;z-index:29;margin:0;padding:8px 18px;background:#fff7e7;color:#6e4317;border-bottom:1px solid #efcd93;box-shadow:0 3px 9px #30200c0d;display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:12px}
@@ -1425,7 +1433,7 @@ body.resizingEmployeeColumn *{
 </section>
 
 <section id="app" class="app hidden">
-<header class="top"><div class="brand">직원관리 대시보드<small>업장 · 스케줄 · 근로시간 · 급여 · 홈쇼핑</small></div><div class="toolbar" style="margin-left:auto"><button type="button" id="storeMemoTopBtn" class="storeMemoTopBtn" onclick="openStoreNoteInbox()" title="업장 특이사항 메모 · 우클릭으로 빠르게 작성">📝 <span id="storeMemoTopLabel">메모</span><span id="storeMemoUnread" class="storeMemoUnread" style="display:none">0</span></button><span id="currentUserBadge" class="userBadge">사용자 확인 중</span><button onclick="signOut()">로그아웃</button></div></header>
+<header class="top"><div class="brand">직원관리 대시보드<small>업장 · 스케줄 · 근로시간 · 급여 · 홈쇼핑</small></div><div class="toolbar" style="margin-left:auto"><button type="button" id="storeMemoSendBtn" class="storeMemoSendBtn" style="display:none" onclick="openStoreNoteComposer()" title="통합관리자 → 업장 담당자: 업장과 계정을 지정해 메모 발송">✉ 담당자에게 메모</button><button type="button" id="storeMemoTopBtn" class="storeMemoTopBtn" onclick="openStoreNoteInbox()" title="업장 특이사항 메모 · 우클릭으로 빠르게 작성">📝 <span id="storeMemoTopLabel">메모</span><span id="storeMemoUnread" class="storeMemoUnread" style="display:none">0</span></button><span id="currentUserBadge" class="userBadge">사용자 확인 중</span><button onclick="signOut()">로그아웃</button></div></header>
 <div id="storeMemoNotice" class="storeMemoNotice" style="display:none" role="status" aria-live="polite"></div>
 <div class="mobileNav">
  <button class="nav active" data-page="home">현황</button><button class="nav" data-page="homeshop">홈쇼핑</button><button class="nav" data-page="schedule">스케줄</button><button class="nav" data-page="hours">근로</button><button class="nav" data-page="payroll">급여</button><button class="nav" data-page="employees">직원</button><button class="nav" data-page="stores">업장</button>
@@ -1765,7 +1773,8 @@ body.resizingEmployeeColumn *{
 </section>
 
 <div id="storeMemoContext" class="storeMemoContext" role="menu" aria-label="특이사항 메모" style="display:none">
- <button type="button" role="menuitem" onclick="openStoreNoteComposer()">✎ 특이사항 메모 작성</button>
+ <button type="button" role="menuitem" id="storeMemoSendContextBtn" style="display:none" onclick="openStoreNoteComposer()">✉ 업장 담당자에게 메모 보내기</button>
+ <button type="button" role="menuitem" id="storeMemoWriteContextBtn" onclick="openStoreNoteComposer()">✎ 특이사항 메모 작성</button>
  <button type="button" role="menuitem" onclick="openStoreNoteInbox()">▣ 업장 메모함 열기</button>
 </div>
 <div id="storeMemoToast" class="storeMemoToast" role="status" aria-live="polite" style="display:none"></div>
@@ -1790,9 +1799,13 @@ function modal(content){
    wrap.innerHTML='<div class="modal" id="modalBox" role="dialog" aria-modal="true"></div>';
    document.body.appendChild(wrap);
 
-   // 팝업 바깥 어두운 영역 클릭 시 닫기
+   // V9.1.33: 저장하지 않은 입력이 사라지지 않도록 배경 클릭으로는 팝업을 닫지 않는다.
+   // 직원 등록/수정, 근로계약, 메모 등 모든 입력창은 명시적 저장/취소/닫기 버튼으로만 닫는다.
    wrap.addEventListener('click',function(ev){
-     if(ev.target===wrap)closeModal();
+     if(ev.target===wrap){
+       // 배경 클릭을 무시하며 현재 입력값 및 포커스를 그대로 유지한다.
+       ev.preventDefault();
+     }
    });
  }
  let box=document.getElementById('modalBox');
@@ -2138,6 +2151,10 @@ function applyPermissionUI(){
  if($('adminNavDivider'))$('adminNavDivider').style.display=(canViewModule('users')||canViewModule('audit'))?'':'none';
  if($('renameStoreBtn'))$('renameStoreBtn').style.display=canEditModule('stores')?'':'none';
  document.querySelectorAll('.adminOnly').forEach(el=>{el.style.display=isAppAdmin()?'':'none'});
+ // V9.1.32: 관리자 발송은 별도의 눈에 띄는 바로가기에서 열 수 있다.
+ if($('storeMemoSendBtn'))$('storeMemoSendBtn').style.display=isAppAdmin()?'inline-flex':'none';
+ if($('storeMemoSendContextBtn'))$('storeMemoSendContextBtn').style.display=isAppAdmin()?'block':'none';
+ if($('storeMemoWriteContextBtn'))$('storeMemoWriteContextBtn').style.display=isAppAdmin()?'none':'block';
  document.querySelectorAll('.homePayrollSensitive').forEach(el=>{el.style.display=isAppAdmin()?'':'none'});
  updateCurrentUserBadge();applyScheduleEditState();if($('adminTaskBoard'))$('adminTaskBoard').style.display=canViewModule('home')?'':'none';
 }
@@ -6287,7 +6304,7 @@ async function openEmployee(id,isRetired=false){
  let currentCond=workConditionForDate(e,isoToday());
  let birthCompact=employeeBirthDate(e).replace(/-/g,'');
  let checks=[0,1,2,3,4,5,6].map(d=>`<label><input type="checkbox" class="wd" value="${d}" ${normalizedWorkDays(currentCond.work_days).includes(d)?'checked':''}><span>${'일월화수목금토'[d]}</span></label>`).join('');
- modal(`<h2>${id?'직원 수정':'직원 추가'}</h2><div class="formgrid">
+ modal(`<h2>${id?'직원 수정':'직원 추가'}</h2><div class="help" style="margin:-4px 0 10px">입력 중 바깥을 클릭해도 창이 닫히지 않습니다. 저장 또는 취소 버튼으로 닫으세요.</div><div class="formgrid">
  <div class="field"><label>이름</label><input id="eName" value="${esc(e.name||'')}"></div>
  <div class="field"><label>주민등록번호</label><input id="eResident" value="${esc(e.resident_number||'')}" placeholder="예: 900101-1234567" autocomplete="off" oninput="syncEmployeeBirthFromResident()"></div>
  <div class="field"><label>계좌번호</label><input id="eBankAccount" value="${esc(e.bank_account||'')}" placeholder="직접 입력" autocomplete="off"></div>
@@ -10642,7 +10659,7 @@ async function addWorkCondition(employeeId){
 
 /* ===== V9.1.30 업장별 특이사항 메모: UI + Supabase RLS ===== */
 let storeMemoRows=[],storeMemoMonitorTimer=null,storeMemoFirstScan=true,storeMemoKnownIds=new Set(),storeMemoPolling=false,storeMemoToastTimer=null;
-let storeMemoInboxLoading=false,storeMemoDeletingIds=new Set(),storeMemoEditingIds=new Set();
+let storeMemoInboxLoading=false,storeMemoDeletingIds=new Set(),storeMemoEditingIds=new Set(),storeMemoComposerLoading=false;
 let storeMemoDismissedKey='',storeMemoCurrentNoticeKey='';
 const STORE_MEMO_PAGE_NAMES={home:'전체 현황',schedule:'스케줄',hours:'근로시간',payroll:'급여관리',employees:'직원관리',stores:'업장관리',holidays:'공휴일관리',homeshop:'홈쇼핑',users:'사용자 관리',audit:'수정이력'};
 function storeMemoStamp(iso){try{return new Date(iso).toLocaleString('ko-KR',{year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'})}catch(_){return String(iso||'')}}
@@ -10749,7 +10766,8 @@ function storeMemoRefreshRecipients(){
  people.sort((a,b)=>Number(managers.has(String(b.user_id)))-Number(managers.has(String(a.user_id))));
  sel.innerHTML='<option value="">받는 담당자 선택</option>'+people.map(u=>`<option value="${esc(u.user_id)}">${esc(u.display_name||u.login_id||'사용자')}${managers.has(String(u.user_id))?' · 스케줄/직원관리 수정권한':''}</option>`).join('');
  if(people.some(u=>u.user_id===previous))sel.value=previous;
- let help=$('storeMemoRecipientHelp');if(help)help.textContent=people.length?'이 업장에 등록된 계정 중 받을 담당자를 직접 선택합니다.':'이 업장에 등록된 담당자 계정이 없습니다. 사용자 관리에서 권한을 확인하세요.';
+  let help=$('storeMemoRecipientHelp');if(help)help.textContent=people.length?'받는 담당자를 선택하면 해당 계정 로그인 시 새 메모 알림이 나타납니다.': '이 업장에 등록된 담당자 계정이 없습니다. 사용자 관리의 업장 접근 권한을 확인해 주세요.';
+ let save=$('storeMemoSaveBtn');if(save){save.disabled=people.length===0;save.title=people.length?'':'받는 담당자 계정이 없는 업장에는 보낼 수 없습니다.';}
 }
 function storeMemoRecipientName(r){
  if(!r.recipient_user_id)return '통합관리자';
@@ -10767,22 +10785,30 @@ function storeMemoStatus(r){
  if(r.acknowledged_at)return '확인 완료';
  return storeMemoNeedsMyCheck(r)?'확인 필요':'상대 미확인';
 }
-function openStoreNoteComposer(){
- if(!currentSessionUser)return alert('로그인 후 이용해 주세요.');storeMemoCloseContext();
- let selected=String(storeId()),opts=stores.map(s=>`<option value="${Number(s.id)}" ${String(s.id)===selected?'selected':''}>${esc(s.name)}</option>`).join('');
- let page=document.querySelector('.page.active')?.id?.replace(/Page$/,'')||'home';
- let receiverHtml=isAppAdmin()?`<label>받는 담당자<select id="storeMemoRecipient"></select></label><div id="storeMemoRecipientHelp" class="storeMemoHelp storeMemoWide" style="margin:0"></div>`:
- `<div class="storeMemoHelp storeMemoWide" style="margin:0">이 메모는 통합관리자에게 전달됩니다.</div>`;
- modal(`<div class="storeMemoHead"><h2>✎ ${isAppAdmin()?'업장 담당자에게 메모 보내기':'관리자에게 특이사항 전달'}</h2><button type="button" class="btn gray small" onclick="closeModal()">닫기</button></div>
- <div class="storeMemoForm">
-  <label>업장<select id="storeMemoStore" onchange="storeMemoRefreshRecipients()">${opts}</select></label>
-  <label>중요도<select id="storeMemoPriority"><option value="normal">일반</option><option value="important">중요</option><option value="urgent">긴급</option></select></label>
-  ${receiverHtml}
-  <label class="storeMemoWide">메모<textarea id="storeMemoBody" maxlength="2000" placeholder="전달할 내용을 바로 입력하세요."></textarea></label>
- </div>
- <div class="storeMemoHelp" style="margin-top:7px">작성자 ${esc(currentAppUser?.display_name||'현재 사용자')} · ${esc(STORE_MEMO_PAGE_NAMES[page]||'대시보드')}</div>
- <div class="modalActions"><button type="button" class="btn gray" onclick="openStoreNoteInbox()">메모함</button><button type="button" class="btn" id="storeMemoSaveBtn" onclick="submitStoreNote()">메모 전달</button></div>`);
- $('modalBox')?.classList.add('storeMemoModal');if(isAppAdmin())storeMemoRefreshRecipients();$('storeMemoBody')?.focus();
+async function openStoreNoteComposer(){
+ if(!currentSessionUser)return alert('로그인 후 이용해 주세요.');
+ if(storeMemoComposerLoading)return;
+ storeMemoCloseContext();storeMemoComposerLoading=true;
+ const send=$('storeMemoSendBtn');if(send){send.disabled=true;send.setAttribute('aria-busy','true');}
+ try{
+  // 로그인 도중 또는 사용자 관리 탭을 열지 않은 상태에도 받는 계정 목록을 확보한다.
+  if(isAppAdmin()&&permissionSystemAvailable===true)await loadAdminAccountDirectory();
+  let selected=String(storeId()),opts=stores.map(s=>`<option value="${Number(s.id)}" ${String(s.id)===selected?'selected':''}>${esc(s.name)}</option>`).join('');
+  let page=document.querySelector('.page.active')?.id?.replace(/Page$/,'')||'home';
+  let receiverHtml=isAppAdmin()?`<label class="storeMemoWide">받는 업장 담당자<select id="storeMemoRecipient" required></select></label><div id="storeMemoRecipientHelp" class="storeMemoHelp storeMemoWide" style="margin:0"></div>`:
+  `<div class="storeMemoHelp storeMemoWide" style="margin:0">이 메모는 통합관리자에게 전달됩니다.</div>`;
+  modal(`<div class="storeMemoHead"><h2>✉ ${isAppAdmin()?'업장 담당자에게 메모 보내기':'관리자에게 특이사항 전달'}</h2><button type="button" class="btn gray small" onclick="closeModal()">닫기</button></div>
+  <div class="storeMemoForm">
+   <label>받는 업장<select id="storeMemoStore" onchange="storeMemoRefreshRecipients()">${opts}</select></label>
+   <label>중요도<select id="storeMemoPriority"><option value="normal">일반</option><option value="important">중요</option><option value="urgent">긴급</option></select></label>
+   ${receiverHtml}
+   <label class="storeMemoWide">메모<textarea id="storeMemoBody" maxlength="2000" placeholder="전달할 내용을 바로 입력하세요."></textarea></label>
+  </div>
+  <div class="storeMemoHelp" style="margin-top:7px">작성자 ${esc(currentAppUser?.display_name||'현재 사용자')} · ${esc(STORE_MEMO_PAGE_NAMES[page]||'대시보드')}</div>
+  <div class="modalActions"><button type="button" class="btn gray" onclick="openStoreNoteInbox()">메모함</button><button type="button" class="btn" id="storeMemoSaveBtn" onclick="submitStoreNote()">${isAppAdmin()?'담당자에게 보내기':'메모 전달'}</button></div>`);
+  $('modalBox')?.classList.add('storeMemoModal');if(isAppAdmin())storeMemoRefreshRecipients();$('storeMemoBody')?.focus();
+ }catch(err){console.error('담당자 목록 불러오기 실패',err);alert('업장 담당자 계정 목록을 불러오지 못했습니다.\n'+(err?.message||String(err))+'\n계정 권한과 네트워크를 확인해 주세요.');}
+ finally{storeMemoComposerLoading=false;if(send){send.disabled=false;send.removeAttribute('aria-busy');}}
 }
 async function submitStoreNote(){
  if(!currentSessionUser)return;
@@ -10808,7 +10834,7 @@ async function submitStoreNote(){
 }
 async function openStoreNoteInbox(){
  if(!currentSessionUser)return alert('로그인 후 이용해 주세요.');storeMemoCloseContext();
- modal(`<div class="storeMemoHead"><div><h2>${isAppAdmin()?'전체 업장 메모':'받은 메모 · 내가 쓴 메모'}</h2></div><div class="toolbar"><button type="button" class="btn gray small" onclick="openStoreNoteComposer()">+ 새 메모</button><button type="button" class="btn gray small" onclick="closeModal()">닫기</button></div></div>
+ modal(`<div class="storeMemoHead"><div><h2>${isAppAdmin()?'전체 업장 메모':'받은 메모 · 내가 쓴 메모'}</h2></div><div class="toolbar"><button type="button" class="btn small ${isAppAdmin()?'storeMemoSendAction':'gray'}" onclick="openStoreNoteComposer()">${isAppAdmin()?'✉ 담당자에게 보내기':'+ 새 메모'}</button><button type="button" class="btn gray small" onclick="closeModal()">닫기</button></div></div>
  <div class="storeMemoFilter">${isAppAdmin()?`<select id="storeMemoFilterStore" onchange="renderStoreMemoInbox()"><option value="">전체 업장</option>${stores.map(s=>`<option value="${Number(s.id)}">${esc(s.name)}</option>`).join('')}</select>`:''}<select id="storeMemoFilterDirection" onchange="renderStoreMemoInbox()"><option value="">받은·보낸 메모</option><option value="in">받은 메모</option><option value="out">보낸 메모</option></select><select id="storeMemoFilterStatus" onchange="renderStoreMemoInbox()"><option value="">전체 상태</option><option value="unread">미확인</option><option value="ack">확인 완료</option></select><button type="button" class="btn gray small" onclick="loadStoreNoteInbox()">새로고침</button><span class="storeMemoHelp" style="margin:0 0 0 auto">최근 200건</span></div>
  <div id="storeMemoInboxList" class="storeMemoList"><div class="storeMemoEmpty">메모를 불러오는 중입니다.</div></div>`);
  $('modalBox')?.classList.add('storeMemoModal');await loadStoreNoteInbox();
