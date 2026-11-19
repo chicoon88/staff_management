@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>직원관리 대시보드 V9.1.33</title>
+<title>직원관리 대시보드 V9.1.37</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
@@ -1393,7 +1393,10 @@ body.resizingEmployeeColumn *{
 .storeMemoModal .storeMemoList{max-height:min(66vh,660px);overflow-y:auto;padding-right:2px;overscroll-behavior:contain}
 .storeMemoModal .storeMemoItem{padding:9px 11px;margin:0 0 7px;border-radius:9px;line-height:1.3}
 .storeMemoModal .storeMemoItemHead{display:flex;align-items:center;gap:5px;margin-bottom:5px;justify-content:flex-start;flex-wrap:wrap}
-.storeMemoModal .storeMemoStoreTag{font-size:11px;font-weight:900;color:#254b69;background:#eaf2fb;border-radius:5px;padding:3px 6px}
+.storeMemoModal .storeMemoStoreTag{font-size:10px;font-weight:700;color:#637488;background:#f2f5f9;border-radius:5px;padding:3px 6px}
+.storeMemoModal .storeMemoDirectionTag{font-size:12px;font-weight:950;padding:4px 9px;letter-spacing:-.2px}
+.storeMemoPartyPreview{border-radius:7px;background:#ebf2fb;border:1px solid #c9d7e8;padding:9px 11px;font-size:13px;font-weight:900;color:#385574}
+.storeMemoPartyPreview.ready{background:#e6f5ee;border-color:#b4d8c5;color:#176447}
 .storeMemoModal .storeMemoItemMeta{font-size:10px;margin:0;color:#69778a;line-height:1.35}
 .storeMemoModal .storeMemoCardText{font-size:13px;color:#25344b;line-height:1.5;white-space:pre-wrap;overflow-wrap:anywhere;padding:1px 0 4px}
 .storeMemoModal .storeMemoItemFoot{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-top:4px;padding-top:6px;border-top:1px solid #eef1f5;flex-wrap:wrap}
@@ -1425,6 +1428,54 @@ body.resizingEmployeeColumn *{
 .storeMemoModal .storeMemoDirectionTag.incoming{background:#e8f7ee;color:#206947}
 @media(max-width:600px){.storeMemoNotice{padding:7px 9px;gap:5px;font-size:11px}.storeMemoNotice .storeMemoNoticeText{max-width:60vw}.storeMemoNotice button{padding:5px 7px}}
 
+
+/* ===== V9.1.37 메모 알림: 불필요한 여백 없이 컴팩트한 카드 ===== */
+.storeMemoAlertPopup{
+ position:fixed;z-index:1200;right:18px;top:78px;
+ width:min(370px,calc(100vw - 24px));max-height:min(76vh,500px);
+ overflow-y:auto;overflow-x:hidden;background:#fff;color:#263449;
+ border:1px solid #e6e9ee;border-radius:14px;padding:0;
+ box-shadow:0 12px 38px rgba(20,32,52,.19),0 2px 8px rgba(20,32,52,.07);
+ animation:storeMemoPopupAppear .22s ease-out;
+}
+@keyframes storeMemoPopupAppear{from{opacity:0;transform:translateY(-9px) scale(.985)}to{opacity:1;transform:translateY(0) scale(1)}}
+.storeMemoAlertPopup .storeMemoAlertTitle{
+ display:flex;align-items:center;justify-content:space-between;gap:8px;
+ min-height:43px;padding:10px 13px 9px;background:#fffbf5;
+ border-bottom:1px solid #f1e8d9;font-size:13px;font-weight:850;color:#553c21;
+}
+.storeMemoAlertPopup .storeMemoAlertHeading{display:inline-flex;align-items:center;min-width:0;gap:8px}
+.storeMemoAlertPopup .storeMemoAlertIcon{display:inline-grid;place-items:center;flex-shrink:0;width:25px;height:25px;border-radius:8px;background:#fff0d9;color:#ab5a14;font-size:14px}
+.storeMemoAlertPopup .storeMemoAlertCount{display:inline-flex;align-items:center;flex-shrink:0;border-radius:20px;padding:3px 8px;background:#c55d24;color:#fff;font-size:10.5px;font-weight:850;white-space:nowrap}
+.storeMemoAlertPopup .storeMemoAlertBody{padding:11px 13px 1px}
+.storeMemoAlertPopup .storeMemoAlertRoute{font-size:14px;line-height:1.35;letter-spacing:-.15px;font-weight:900;color:#1e354f;overflow-wrap:anywhere}
+.storeMemoAlertPopup .storeMemoAlertMeta{display:flex;gap:5px 9px;align-items:center;flex-wrap:wrap;margin-top:5px;color:#788292;font-size:10.5px;line-height:1.35}
+.storeMemoAlertPopup .storeMemoAlertMeta span+span:not(.storeMemoAlertPriority)::before{content:'·';margin-right:9px;color:#b4bcc8}
+.storeMemoAlertPopup .storeMemoAlertPriority{font-size:10px;font-weight:850;border-radius:5px;padding:2px 5px;background:#edf1f6;color:#536171}
+.storeMemoAlertPopup .storeMemoAlertPriority.urgent{background:#ffe2e4;color:#b42336}
+.storeMemoAlertPopup .storeMemoAlertPriority.important{background:#fff0d7;color:#97550a}
+.storeMemoAlertPopup .storeMemoAlertContent{
+ margin:9px 0 10px;padding:9px 10px;background:#f7f9fc;border:1px solid #eef0f4;
+ border-radius:8px;white-space:pre-wrap;overflow-wrap:anywhere;max-height:132px;
+ overflow-y:auto;font-size:12.5px;line-height:1.5;color:#29394d;
+}
+.storeMemoAlertPopup .storeMemoAlertActions{
+ display:grid;grid-template-columns:1fr 1fr 1.13fr;gap:6px;
+ margin:0;padding:9px 13px 11px;border-top:1px solid #f0f2f5;background:#fff;
+}
+.storeMemoAlertPopup .storeMemoAlertActions button{
+ min-width:0;cursor:pointer;border:1px solid #dfe4ea;background:#fff;
+ border-radius:8px;padding:8px 5px;color:#586578;font-weight:800;font-size:11.5px;line-height:1.25;
+ transition:background .15s,border-color .15s,transform .15s;
+}
+.storeMemoAlertPopup .storeMemoAlertActions button.primary{background:#eff5fd;border-color:#dbe8f8;color:#28558a}
+.storeMemoAlertPopup .storeMemoAlertActions button.success{background:#12805b;border-color:#12805b;color:#fff}
+.storeMemoAlertPopup .storeMemoAlertActions button:hover{filter:brightness(.975)}
+.storeMemoAlertPopup .storeMemoAlertActions button:active{transform:translateY(1px)}
+.storeMemoAlertPopup .storeMemoAlertActions button:focus-visible{outline:2px solid #3164be;outline-offset:2px}
+.storeMemoAlertPopup .storeMemoAlertActions button:disabled{opacity:.55;cursor:not-allowed}
+@media(max-width:650px){.storeMemoAlertPopup{right:10px;left:10px;top:70px;width:auto;max-height:76vh}.storeMemoAlertPopup .storeMemoAlertBody{padding:10px 12px 1px}.storeMemoAlertPopup .storeMemoAlertActions{padding:9px 12px 11px}}
+
 </style>
 </head>
 <body>
@@ -1435,6 +1486,7 @@ body.resizingEmployeeColumn *{
 <section id="app" class="app hidden">
 <header class="top"><div class="brand">직원관리 대시보드<small>업장 · 스케줄 · 근로시간 · 급여 · 홈쇼핑</small></div><div class="toolbar" style="margin-left:auto"><button type="button" id="storeMemoSendBtn" class="storeMemoSendBtn" style="display:none" onclick="openStoreNoteComposer()" title="통합관리자 → 업장 담당자: 업장과 계정을 지정해 메모 발송">✉ 담당자에게 메모</button><button type="button" id="storeMemoTopBtn" class="storeMemoTopBtn" onclick="openStoreNoteInbox()" title="업장 특이사항 메모 · 우클릭으로 빠르게 작성">📝 <span id="storeMemoTopLabel">메모</span><span id="storeMemoUnread" class="storeMemoUnread" style="display:none">0</span></button><span id="currentUserBadge" class="userBadge">사용자 확인 중</span><button onclick="signOut()">로그아웃</button></div></header>
 <div id="storeMemoNotice" class="storeMemoNotice" style="display:none" role="status" aria-live="polite"></div>
+<div id="storeMemoAlertPopup" class="storeMemoAlertPopup" role="alertdialog" aria-label="미확인 메모 알림" aria-live="polite" style="display:none"></div>
 <div class="mobileNav">
  <button class="nav active" data-page="home">현황</button><button class="nav" data-page="homeshop">홈쇼핑</button><button class="nav" data-page="schedule">스케줄</button><button class="nav" data-page="hours">근로</button><button class="nav" data-page="payroll">급여</button><button class="nav" data-page="employees">직원</button><button class="nav" data-page="stores">업장</button>
 </div>
@@ -1811,6 +1863,7 @@ function modal(content){
  let box=document.getElementById('modalBox');
  box.className='modal';
  box.innerHTML=content;
+  if($('storeMemoAlertPopup')?.style.display==='block'){ $('storeMemoAlertPopup').style.display='none'; if(typeof storeMemoPopupPending!=='undefined')storeMemoPopupPending=true; }
  wrap.style.display='grid';
  document.body.style.overflow='hidden';
 
@@ -1822,6 +1875,7 @@ function closeModal(){
  if(!wrap)return;
  wrap.style.display='none';
  document.body.style.overflow='';
+ if(typeof storeMemoShowPendingPopup==='function')storeMemoShowPendingPopup();
 }
 $('monthSelect').value=new Date().toISOString().slice(0,7);
 let employees=[],schedules=[],payroll=[],stores=[],holidays=[],manualHolidays=[],autoHolidays=[],selectedEmployees=new Set(),leaveLedger=[],leaveAttendanceSchedules=[],scheduleSaveQueue=new Map(),scheduleSaveTimer=null,scheduleFlushPromise=null,scheduleLeaveSyncTimer=null,employeeImportRows=[],paymentRegister=[],incentiveRegister=[],retiredEmployees=[],employeeView='active',employeeActiveSort='manual',refreshToken=0,payrollReloadToken=0,employeeDeleteSelection=new Set(),scheduleView='monthly',employeeResidentBackfillDoneStores=new Set(),employeeSensitiveColumnsMissingDetected=false,employeeDocumentStatusMap=new Map(),employeeDocumentStatusReadyStoreId=null,employeeDocumentPeriodColumnsAvailable=true,employeeDocumentIndefiniteColumnAvailable=true,employeeWorkConditions=[],employeeWorkConditionTableAvailable=null,currentSessionUser=null,currentAppUser=null,currentPermissions=new Map(),currentStoreAccess=new Set(),permissionSystemAvailable=null,adminUsers=[],adminUserStoreAccess=[],adminUserPermissions=[],auditLogs=[],accessLogs=[],accessSessions=[],accessSessionTableAvailable=null,accessHeartbeatTimer=null,accessSessionRefreshTimer=null,currentAccessToken='',ipAddressLabels=new Map(),scheduleMonthLocks=[],scheduleLockTableAvailable=null,adminTaskRefreshToken=0,hoursView='summary',attendanceSchemaAvailable=null,attendanceActiveImport=null,attendanceRecords=[],attendanceReviews=[],attendanceReviewHistory=[],attendanceListMode='pending',attendanceSelected=new Set(),attendancePendingManualParse=null,attendanceSettings={late_minutes:10,early_leave_minutes:10,late_out_minutes:60},scheduleOutputMode='all',scheduleOutputSelected=new Set(),pendingContractExtraction=null,scheduleEmployeeOrderMap=new Map(),scheduleEmployeeOrderTableAvailable=null,scheduleDragEmployeeId=null,scheduleDragPosition='before';
@@ -1891,9 +1945,39 @@ function employeeManagementActiveEmployees(){
  return list;
 }
 function allEmployees(){return [...employees,...retiredEmployees]}
+// V9.1.35: 직원관리 현재 입퇴사일 외에 수기로 확정한 과거 재직기간도 인정한다.
+// 급여대장 자동 수집 이력은 참고용이므로 근무 가능 기간을 임의로 확장하지 않는다.
+// 퇴사일 없이 열려 있는 옛 이력은 최신 퇴사일을 우회할 수 있어 적용하지 않는다.
+let confirmedPastEmploymentPeriods=new Map();
+async function loadConfirmedPastEmploymentPeriods(sid=storeId()){
+ const next=new Map();let start=0,page=1000;
+ while(true){
+  const q=await sb.from('employee_employment_history')
+   .select('employee_id,start_date,end_date,source')
+   .eq('store_id',sid).eq('source','manual').not('end_date','is',null)
+   .order('id',{ascending:true}).range(start,start+page-1);
+  if(q.error){console.warn('수기 재직기간 조회 오류',q.error);throw new Error('재직기간 조회 실패: '+q.error.message)}
+  for(const h of (q.data||[])){
+   if(!h.start_date||!h.end_date||h.start_date>h.end_date)continue;
+   const id=Number(h.employee_id);if(!next.has(id))next.set(id,[]);
+   next.get(id).push({start:h.start_date,end:h.end_date});
+  }
+  if((q.data||[]).length<page)break;start+=page;
+ }
+ if(Number(sid)===Number(storeId()))confirmedPastEmploymentPeriods=next;
+ return next;
+}
 function employedOn(e,date){
- if(!e?.hire_date)return false;
- return date>=e.hire_date && (!e.resign_date || date<=e.resign_date);
+ if(!e||!/^\d{4}-\d{2}-\d{2}$/.test(String(date||'')))return false;
+ if(e.hire_date&&date>=e.hire_date&&(!e.resign_date||date<=e.resign_date))return true;
+ return (confirmedPastEmploymentPeriods.get(Number(e.id))||[])
+  .some(p=>p.start<=date&&date<=p.end);
+}
+function employedInRange(e,first,last){
+ if(!e||!first||!last)return false;
+ if(e.hire_date&&e.hire_date<=last&&(!e.resign_date||e.resign_date>=first))return true;
+ return (confirmedPastEmploymentPeriods.get(Number(e.id))||[])
+  .some(p=>p.start<=last&&p.end>=first);
 }
 // Only the employee-management hire/resignation interval may be edited.
 // This is distinct from the store/month lock: both checks must pass.
@@ -1912,9 +1996,8 @@ function requireEmployeeScheduleDay(employeeId,date){
  return Number(e.store_id)===Number(storeId());
 }
 function employedInMonth(e,ym){
- let [y,m]=ym.split('-').map(Number),last=String(new Date(y,m,0).getDate()).padStart(2,'0'),
-     first=`${ym}-01`,end=`${ym}-${last}`;
- return !!e.hire_date && e.hire_date<=end && (!e.resign_date || e.resign_date>=first);
+ let [y,m]=ym.split('-').map(Number),last=String(new Date(y,m,0).getDate()).padStart(2,'0');
+ return employedInRange(e,`${ym}-01`,`${ym}-${last}`);
 }
 function employeesForMonth(ym){
  return allEmployees().filter(e=>employedInMonth(e,ym))
@@ -2796,6 +2879,7 @@ async function refreshAll(){
  if(needScheduleData){
    loadMeta.push(loadEmployeeWorkConditions(sid));
    loadMeta.push(loadScheduleMonthLocks(sid));
+   loadMeta.push(loadConfirmedPastEmploymentPeriods(sid));
  }else employeeWorkConditions=[];
  await Promise.all(loadMeta);
  if(token!==refreshToken || sid!==storeId())return;
@@ -2804,7 +2888,7 @@ async function refreshAll(){
 
  schedules=[];
  if(needScheduleData){
-   let pr=plannerRange(),plannerEmpIds=allEmployees().filter(e=>e.hire_date<=pr.end&&(!e.resign_date||e.resign_date>=pr.start)).map(x=>x.id);
+   let pr=plannerRange(),plannerEmpIds=allEmployees().filter(e=>employedInRange(e,pr.start,pr.end)).map(x=>x.id);
    let ids=[...new Set([...employeesForMonth(r.m).map(x=>x.id),...plannerEmpIds])];
    if(ids.length){
      try{
@@ -4126,8 +4210,7 @@ function weeklyPlannerEmployees(){
  let list=allEmployees().filter(e=>{
    // 직원관리에서 '스케줄·근로 제외'한 인원은 주간편성에도 나오면 안 된다.
    if(e.hide_monthly_schedule===true)return false;
-   if(!e.hire_date)return false;
-   return e.hire_date<=pr.end && (!e.resign_date || e.resign_date>=pr.start);
+   return employedInRange(e,pr.start,pr.end);
  });
  return sortEmployeesForSchedule(list);
 }
@@ -4277,7 +4360,7 @@ function renderWeeklyPlanner(){
        let date=addDaysIso(ws,d),valid=employedOn(e,date),s=sched(e,date),v=s?.work_code||'';
        let [yy,mm,dd]=date.split('-').map(Number),wd=new Date(yy,mm-1,dd).getDay(),hol=holidayFor(date);
        let out=!date.startsWith(selectedMonth),cl=hol?'weekHolidayCell':(wd===0||wd===6?'weekWeekendCell':''),outside=!valid;
-       let outsideTitle=outside?(date<e.hire_date?'입사일 이전 · 입력 불가':'퇴사일 이후 · 입력 불가'):(hol?hol.name:date);
+       let outsideTitle=outside?'등록된 재직기간 밖 · 입력 불가':(hol?hol.name:date);
        row+=`<td class="${cl} ${out?'weekOutsideMonth':''} ${outside?'outsideEmploymentCell':''} ${date===isoToday()?'scheduleTodayColumn':''}" ondblclick="${valid?`openShift(${e.id},'${date}')`:''}" title="${esc(outsideTitle)}">
          <input class="weekCode code${esc(v)} ${outside?'outsideEmploymentInput':''}" data-weekstart="${ws}" data-emp="${e.id}" data-date="${date}" value="${esc(v)}" maxlength="4" ${outside?'disabled tabindex="-1"':''}
            oncompositionstart="this.dataset.composing='1'" oninput="weeklyScheduleInput(${e.id},'${date}',this.value,this,event)" oncompositionend="weeklyScheduleCompositionEnd(${e.id},'${date}',this)" onchange="weeklyScheduleChange(${e.id},'${date}',this)" onblur="weeklyScheduleBlur(${e.id},'${date}',this)" onkeydown="weeklyScheduleKey(event,this)" onfocus="highlightScheduleContext(this);this.select()" onclick="this.select()">
@@ -4357,7 +4440,7 @@ function renderSchedule(){
   let row=`<tr data-schedule-emp="${e.id}" ondragover="scheduleDragOver(event,${e.id})" ondrop="scheduleDrop(event,${e.id})" class="${checked?'selectedRow':''}"><td class="name scheduleNameCell schedulePrintNameCell" style="--employee-print-bg:${employeeColor(e)}" title="출력색: ${esc(PRINT_COLORS.find(([c])=>c.toLowerCase()===String(employeeColor(e)).toLowerCase())?.[1]||'직원관리에서 설정')}"><div style="display:flex;gap:6px;align-items:center"><input class="selectEmp" type="checkbox" ${checked?'checked':''} onchange="toggleEmployee(${e.id},this.checked)"><span>${scheduleDragHandleHtml(e)}<br><span class="pill">${workTypeForDate(e,r.first)}</span></span></div></td>`;
   for(let d=1;d<=r.days;d++){
    let date=r.m+'-'+String(d).padStart(2,'0'),valid=employedOn(e,date),s=sched(e,date),v=s?.work_code||'',wd=new Date(r.y,r.mo-1,d).getDay(),hol=holidayFor(date),cl=hol?' holidayHead':(wd===0||wd===6?' weekendHead':''),outside=!valid;
-   let title=outside?(date<e.hire_date?'입사일 이전 · 입력 불가':'퇴사일 이후 · 입력 불가'):(hol?hol.name:'');
+   let title=outside?'등록된 재직기간 밖 · 입력 불가':(hol?hol.name:'');
    row+=`<td class="${cl} ${outside?'outsideEmploymentCell':''} ${date===isoToday()?'scheduleTodayColumn':''}" ondblclick="${valid?`openShift(${e.id},'${date}')`:''}" title="${esc(title)}">
      <input id="sc-${e.id}-${d}" data-row="${ri}" data-col="${d}" data-emp="${e.id}" data-date="${date}" class="code code${esc(v)} ${outside?'outsideEmploymentInput':''}" value="${esc(v)}" maxlength="4" ${outside?'disabled tabindex="-1"':''}
        oncompositionstart="this.dataset.composing='1'" oninput="scheduleInput(${e.id},'${date}',this.value,this,event)" oncompositionend="scheduleCompositionEnd(${e.id},'${date}',this)" onchange="scheduleChange(${e.id},'${date}',this)" onblur="scheduleBlur(${e.id},'${date}',this)" onkeydown="scheduleKey(event,this)" onfocus="highlightScheduleContext(this);this.select()" onclick="this.select()" title="Enter/Tab/방향키 이동 · 더블클릭 상세시간${outside?' · 재직기간 밖 입력불가':''}">
@@ -6715,12 +6798,21 @@ async function addEmploymentHistory(employeeId){
  let q=await sb.from('employee_employment_history').upsert(obj,{onConflict:'source_key'});
  if(q.error)return alert('재직이력 저장 오류:\n'+q.error.message);
  await loadEmploymentHistory(employeeId);
+ await loadConfirmedPastEmploymentPeriods(e.store_id||storeId());
+ if(Number(e.store_id||storeId())===Number(storeId())&&!scheduleHasDirtyInputs()&&!scheduleSaveQueue.size){
+  renderSchedule();if(scheduleView==='weekly')renderWeeklyPlanner();
+ }
 }
 async function deleteEmploymentHistory(historyId,employeeId){
  if(!confirm('이 재직이력만 삭제할까요? 직원 자체는 삭제되지 않습니다.'))return;
  let q=await sb.from('employee_employment_history').delete().eq('id',historyId);
  if(q.error)return alert(q.error.message);
  await loadEmploymentHistory(employeeId);
+ const e=findEmployeeAny(employeeId);
+ await loadConfirmedPastEmploymentPeriods(e?.store_id||storeId());
+ if(Number(e?.store_id||storeId())===Number(storeId())&&!scheduleHasDirtyInputs()&&!scheduleSaveQueue.size){
+  renderSchedule();if(scheduleView==='weekly')renderWeeklyPlanner();
+ }
 }
 async function recordEmploymentHistory(employeeId,startDate,endDate,role,note,source='manual'){
  if(!employeeId||!startDate)return;
@@ -10661,10 +10753,25 @@ async function addWorkCondition(employeeId){
 let storeMemoRows=[],storeMemoMonitorTimer=null,storeMemoFirstScan=true,storeMemoKnownIds=new Set(),storeMemoPolling=false,storeMemoToastTimer=null;
 let storeMemoInboxLoading=false,storeMemoDeletingIds=new Set(),storeMemoEditingIds=new Set(),storeMemoComposerLoading=false;
 let storeMemoDismissedKey='',storeMemoCurrentNoticeKey='';
+let storeMemoPopupRows=[],storeMemoPopupId=null,storeMemoPopupPending=false,storeMemoPopupBusy=false;
+// 메모별 실제 발신·수신자 이름(권한 검사를 거친 서버 조회 결과)
+let storeMemoPartyNames=new Map();
+async function storeMemoLoadPartyNames(rows){
+ if(!currentSessionUser||!rows?.length)return;
+ let ids=[...new Set(rows.map(r=>Number(r.id)).filter(id=>Number.isSafeInteger(id)&&id>0&&!storeMemoPartyNames.has(id)))].slice(0,200);
+ if(!ids.length)return;
+ try{
+  const out=await sb.rpc('get_store_note_participants',{p_note_ids:ids});
+  if(out.error)throw out.error;
+  (out.data||[]).forEach(p=>storeMemoPartyNames.set(Number(p.note_id),{sender:String(p.sender_name||'작성자'),recipient:String(p.recipient_name||'수신자')}));
+ }catch(err){console.warn('메모 발신·수신자 이름 조회 실패',err?.message||err)}
+}
 const STORE_MEMO_PAGE_NAMES={home:'전체 현황',schedule:'스케줄',hours:'근로시간',payroll:'급여관리',employees:'직원관리',stores:'업장관리',holidays:'공휴일관리',homeshop:'홈쇼핑',users:'사용자 관리',audit:'수정이력'};
 function storeMemoStamp(iso){try{return new Date(iso).toLocaleString('ko-KR',{year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'})}catch(_){return String(iso||'')}}
 function storeMemoAuthorName(row){
- if(row.author_id===currentSessionUser?.id)return currentAppUser?.display_name||'나';
+ const name=storeMemoPartyNames.get(Number(row.id))?.sender;
+ if(name)return name;
+ if(row.author_id===currentSessionUser?.id)return currentAppUser?.display_name||currentAppUser?.login_id||'작성자';
  let person=adminUsers.find(u=>u.user_id===row.author_id);
  return person?.display_name||person?.login_id||(row.recipient_user_id===currentSessionUser?.id?'통합관리자':'작성자');
 }
@@ -10702,6 +10809,60 @@ function storeMemoToast(message){
  clearTimeout(storeMemoToastTimer);storeMemoToastTimer=setTimeout(()=>{el.style.display='none'},8500);
 }
 function storeMemoDismissNotice(){storeMemoDismissedKey=storeMemoCurrentNoticeKey;let el=$('storeMemoNotice');if(el)el.style.display='none';}
+function storeMemoPopupModalActive(){
+ const overlay=$('modalOverlay');return !!(overlay && overlay.style.display!=='' && overlay.style.display!=='none');
+}
+function storeMemoPopupHide(){
+ const popup=$('storeMemoAlertPopup');if(popup)popup.style.display='none';
+ storeMemoPopupPending=false;storeMemoPopupId=null;
+}
+// 알림만 닫으면 읽음 처리하지 않는다. 새 메모/재로그인 시 다시 알린다.
+function storeMemoPopupLater(){storeMemoPopupHide();}
+function storeMemoPopupRender(){
+ const popup=$('storeMemoAlertPopup');if(!popup||!currentSessionUser)return;
+ const rows=storeMemoPopupRows;
+ if(!rows.length){storeMemoPopupHide();return}
+ const r=rows.find(x=>Number(x.id)===Number(storeMemoPopupId))||rows[0];storeMemoPopupId=Number(r.id);
+ const route=storeMemoDirection(r).name;
+ const text=String(r.body||r.subject||'').trim();
+ popup.innerHTML=`<div class="storeMemoAlertTitle"><span class="storeMemoAlertHeading"><span class="storeMemoAlertIcon" aria-hidden="true">✉</span><span>새 메모 알림</span></span><span class="storeMemoAlertCount">미확인 ${rows.length}건${rows.length>=40?'+':''}</span></div>
+ <div class="storeMemoAlertBody"><div class="storeMemoAlertRoute">${esc(route)}</div>
+ <div class="storeMemoAlertMeta"><span>${esc(storeMemoStoreName(r.store_id))}</span><span>${esc(storeMemoStamp(r.edited_at||r.created_at))}</span><span class="storeMemoAlertPriority ${esc(r.priority||'normal')}">${esc(storeMemoPriorityLabel(r.priority))}</span></div>
+ <div class="storeMemoAlertContent">${esc(text)}</div></div>
+ <div class="storeMemoAlertActions"><button type="button" onclick="storeMemoPopupLater()">나중에</button><button type="button" class="primary" onclick="storeMemoPopupOpenInbox()">메모함</button><button type="button" class="success" id="storeMemoPopupAckBtn" onclick="storeMemoPopupAcknowledge()" ${storeMemoPopupBusy?'disabled':''}>확인 처리</button></div>`;
+ popup.style.display='block';
+}
+function storeMemoPopupTryShow(){
+ if(!currentSessionUser||!storeMemoPopupRows.length||document.hidden)return;
+ if(storeMemoPopupModalActive()){storeMemoPopupPending=true;return}
+ storeMemoPopupPending=false;storeMemoPopupRender();
+}
+function storeMemoPopupQueue(rows,preferredId){
+ storeMemoPopupRows=(rows||[]).slice();
+ if(preferredId!=null)storeMemoPopupId=Number(preferredId);
+ if(!storeMemoPopupRows.length){storeMemoPopupHide();return}
+ storeMemoPopupTryShow();
+}
+// 직원 등록/수정 같은 입력 중엔 팝업을 미루고 입력창이 닫힌 뒤 표시한다.
+function storeMemoShowPendingPopup(){if(storeMemoPopupPending)storeMemoPopupTryShow()}
+function storeMemoPopupOpenInbox(){storeMemoPopupHide();openStoreNoteInbox()}
+async function storeMemoPopupAcknowledge(){
+ if(storeMemoPopupBusy||!currentSessionUser)return;
+ const id=Number(storeMemoPopupId),r=storeMemoPopupRows.find(x=>Number(x.id)===id);
+ if(!r||!storeMemoNeedsMyCheck(r))return;
+ storeMemoPopupBusy=true;
+ const button=$('storeMemoPopupAckBtn');if(button){button.disabled=true;button.textContent='처리 중…'}
+ try{
+  const out=await sb.from('store_notes').update({acknowledged_at:new Date().toISOString(),acknowledged_by:currentSessionUser.id}).eq('id',id).is('acknowledged_at',null).select('id');
+  if(out.error)throw out.error;
+  if(!out.data?.length)throw new Error('이미 확인된 메모입니다. 메모함을 다시 확인해 주세요.');
+  storeMemoPopupRows=storeMemoPopupRows.filter(x=>Number(x.id)!==id);
+  storeMemoPopupId=storeMemoPopupRows.length?Number(storeMemoPopupRows[0].id):null;
+  if(storeMemoPopupRows.length)storeMemoPopupRender();else storeMemoPopupHide();
+  await checkStoreMemoUpdates();
+ }catch(err){alert('메모 확인 처리 오류: '+(err?.message||err));}
+ finally{storeMemoPopupBusy=false;const b=$('storeMemoPopupAckBtn');if(b){b.disabled=false;b.textContent='확인 처리'}}
+}
 function storeMemoNeedsMyCheck(r){
  return !!currentSessionUser && !r.acknowledged_at && (
    (isAppAdmin() && !r.recipient_user_id && r.author_id!==currentSessionUser.id)
@@ -10713,37 +10874,35 @@ function storeMemoUpdateBadges(count,items){
  if(label)label.textContent=isAppAdmin()?'업장 메모':'받은 메모';
  if(badge){badge.textContent=count>99?'99+':String(count);badge.style.display=count>0?'inline-grid':'none';}
  if(top){top.classList.toggle('hasUnread',count>0);top.setAttribute('aria-label',count?`미확인 메모 ${count}건 · 메모함 열기`:'메모함 열기');}
- let notice=$('storeMemoNotice');
- if(notice){
-   storeMemoCurrentNoticeKey=(items||[]).map(r=>String(r.id)+':'+String(r.edited_at||'')).join(',');
-   if(count>0 && storeMemoDismissedKey!==storeMemoCurrentNoticeKey){
-     const newest=(items||[])[0];
-     let preview=newest?`${storeMemoStoreName(newest.store_id)} · ${String(newest.subject||'메모').slice(0,80)}`:'';
-     notice.innerHTML=`<div class="storeMemoNoticeText"><b>📩 ${isAppAdmin()?'업장 특이사항':'관리자 전달 메모'} ${count}건 미확인</b> <span>· ${esc(preview)}</span></div><div class="storeMemoNoticeActions"><button type="button" onclick="openStoreNoteInbox(true)">내용 확인</button><button type="button" onclick="storeMemoDismissNotice()" title="알림만 접기">접기</button></div>`;
-     notice.style.display='flex';
-   }else notice.style.display='none';
- }
+ let notice=$('storeMemoNotice');if(notice)notice.style.display='none';
  let home=$('storeMemoHomeBanner');if(home)home.style.display='none';
 }
 async function checkStoreMemoUpdates(){
  if(!currentSessionUser||storeMemoPolling)return;
  storeMemoPolling=true;
  try{
-  let q=sb.from('store_notes').select('id,store_id,author_id,recipient_user_id,subject,created_at,edited_at',{count:'exact'})
+  let q=sb.from('store_notes').select('id,store_id,author_id,recipient_user_id,subject,body,priority,created_at,edited_at',{count:'exact'})
    .is('acknowledged_at',null).order('created_at',{ascending:false}).limit(40);
   if(isAppAdmin())q=q.is('recipient_user_id',null).neq('author_id',currentSessionUser.id);
   else q=q.eq('recipient_user_id',currentSessionUser.id);
   const out=await q;if(out.error)throw out.error;
+  await storeMemoLoadPartyNames(out.data||[]);
   const rows=out.data||[],ids=new Set(rows.map(r=>String(r.id)+':'+String(r.edited_at||''))),unread=out.count??rows.length;
   const newest=rows.filter(r=>!storeMemoKnownIds.has(String(r.id)+':'+String(r.edited_at||'')) && r.author_id!==currentSessionUser.id);
-  if(newest.length && (storeMemoFirstScan||!document.hidden)){
-    storeMemoToast(`${isAppAdmin()?'업장 특이사항':'관리자가 보낸 메모'} ${unread}건 미확인 · ${storeMemoStoreName(newest[0].store_id)}: ${String(newest[0].subject||'').slice(0,45)}`);
+  const showAlert=rows.length>0&&(storeMemoFirstScan||newest.length>0);
+  // 현재 화면에 열린 알림은 서버 최신 상태로 갱신한다.
+  if(showAlert){storeMemoPopupQueue(rows,newest[0]?.id??rows[0].id);}
+  else if($('storeMemoAlertPopup')?.style.display==='block'||storeMemoPopupPending){
+   storeMemoPopupRows=rows;
+   if(rows.length){if(storeMemoPopupPending)storeMemoPopupTryShow();else storeMemoPopupRender();}
+   else storeMemoPopupHide();
   }
   storeMemoKnownIds=ids;storeMemoFirstScan=false;storeMemoUpdateBadges(unread,rows);
  }catch(err){console.warn('특이사항 알림 확인 실패',err)}finally{storeMemoPolling=false}
 }
 function startStoreMemoMonitor(){
- stopStoreMemoMonitor();storeMemoFirstScan=true;storeMemoKnownIds=new Set();storeMemoDismissedKey='';storeMemoCurrentNoticeKey='';
+ stopStoreMemoMonitor();storeMemoFirstScan=true;storeMemoKnownIds=new Set();storeMemoPartyNames.clear();storeMemoDismissedKey='';storeMemoCurrentNoticeKey='';
+ storeMemoPopupRows=[];storeMemoPopupId=null;storeMemoPopupPending=false;storeMemoPopupBusy=false;
  storeMemoUpdateBadges(0,[]);
  if(!currentSessionUser)return;
  checkStoreMemoUpdates();
@@ -10751,7 +10910,7 @@ function startStoreMemoMonitor(){
 }
 function stopStoreMemoMonitor(){
  if(storeMemoMonitorTimer){clearInterval(storeMemoMonitorTimer);storeMemoMonitorTimer=null;}
- clearTimeout(storeMemoToastTimer);storeMemoCloseContext();
+ clearTimeout(storeMemoToastTimer);storeMemoCloseContext();storeMemoPopupHide();storeMemoPopupRows=[];
  let notice=$('storeMemoNotice');if(notice)notice.style.display='none';
 }
 function storeMemoPossibleRecipients(sid){
@@ -10768,18 +10927,28 @@ function storeMemoRefreshRecipients(){
  if(people.some(u=>u.user_id===previous))sel.value=previous;
   let help=$('storeMemoRecipientHelp');if(help)help.textContent=people.length?'받는 담당자를 선택하면 해당 계정 로그인 시 새 메모 알림이 나타납니다.': '이 업장에 등록된 담당자 계정이 없습니다. 사용자 관리의 업장 접근 권한을 확인해 주세요.';
  let save=$('storeMemoSaveBtn');if(save){save.disabled=people.length===0;save.title=people.length?'':'받는 담당자 계정이 없는 업장에는 보낼 수 없습니다.';}
+ storeMemoRefreshSenderReceiverPreview();
+}
+function storeMemoRefreshSenderReceiverPreview(){
+ const el=$('storeMemoPartyPreview');if(!el)return;
+ const sender=String(currentAppUser?.display_name||currentAppUser?.login_id||'보내는 사람');
+ const uid=String($('storeMemoRecipient')?.value||'');
+ const p=adminUsers.find(u=>String(u.user_id)===uid);
+ el.textContent=sender+' → '+(p?String(p.display_name||p.login_id||'받는 담당자'):'담당자를 선택해 주세요');
+ el.classList.toggle('ready',!!p);
 }
 function storeMemoRecipientName(r){
+ const name=storeMemoPartyNames.get(Number(r.id))?.recipient;
+ if(name)return name;
  if(!r.recipient_user_id)return '통합관리자';
- if(r.recipient_user_id===currentSessionUser?.id)return '나';
+ if(r.recipient_user_id===currentSessionUser?.id)return currentAppUser?.display_name||currentAppUser?.login_id||'받는 담당자';
  let u=adminUsers.find(x=>x.user_id===r.recipient_user_id);
  return u?.display_name||u?.login_id||'지정 담당자';
 }
 function storeMemoDirection(r){
- if(r.recipient_user_id===currentSessionUser?.id)return {name:'관리자 → 나',received:true};
- if(r.recipient_user_id)return {name:'→ '+storeMemoRecipientName(r),received:false};
- if(isAppAdmin())return {name:'업장 → 관리자',received:r.author_id!==currentSessionUser?.id};
- return {name:'→ 관리자',received:false};
+ const received=r.recipient_user_id===currentSessionUser?.id
+  ||(isAppAdmin()&&!r.recipient_user_id&&r.author_id!==currentSessionUser?.id);
+ return {name:`${storeMemoAuthorName(r)} → ${storeMemoRecipientName(r)}`,received};
 }
 function storeMemoStatus(r){
  if(r.acknowledged_at)return '확인 완료';
@@ -10795,7 +10964,7 @@ async function openStoreNoteComposer(){
   if(isAppAdmin()&&permissionSystemAvailable===true)await loadAdminAccountDirectory();
   let selected=String(storeId()),opts=stores.map(s=>`<option value="${Number(s.id)}" ${String(s.id)===selected?'selected':''}>${esc(s.name)}</option>`).join('');
   let page=document.querySelector('.page.active')?.id?.replace(/Page$/,'')||'home';
-  let receiverHtml=isAppAdmin()?`<label class="storeMemoWide">받는 업장 담당자<select id="storeMemoRecipient" required></select></label><div id="storeMemoRecipientHelp" class="storeMemoHelp storeMemoWide" style="margin:0"></div>`:
+  let receiverHtml=isAppAdmin()?`<label class="storeMemoWide">받는 업장 담당자<select id="storeMemoRecipient" onchange="storeMemoRefreshSenderReceiverPreview()" required></select></label><div id="storeMemoRecipientHelp" class="storeMemoHelp storeMemoWide" style="margin:0"></div><div id="storeMemoPartyPreview" class="storeMemoPartyPreview storeMemoWide" aria-live="polite"></div>`:
   `<div class="storeMemoHelp storeMemoWide" style="margin:0">이 메모는 통합관리자에게 전달됩니다.</div>`;
   modal(`<div class="storeMemoHead"><h2>✉ ${isAppAdmin()?'업장 담당자에게 메모 보내기':'관리자에게 특이사항 전달'}</h2><button type="button" class="btn gray small" onclick="closeModal()">닫기</button></div>
   <div class="storeMemoForm">
@@ -10846,7 +11015,9 @@ async function loadStoreNoteInbox(){
   let q=sb.from('store_notes').select('id,store_id,author_id,recipient_user_id,created_at,edited_at,month_ref,page_key,subject,body,priority,acknowledged_at,acknowledged_by').order('created_at',{ascending:false}).limit(200);
   // RLS: 일반 사용자는 본인이 작성한 메모 + 본인 앞으로 온 메모만 조회
   let out=await q;if(out.error)throw out.error;
-  storeMemoRows=out.data||[];renderStoreMemoInbox();
+  storeMemoRows=out.data||[];
+  await storeMemoLoadPartyNames(storeMemoRows);
+  renderStoreMemoInbox();
   checkStoreMemoUpdates();
  }catch(err){if(host)host.innerHTML=`<div class="warn" style="padding:14px">메모 조회 오류: ${esc(err?.message||err)}</div>`}
  finally{storeMemoInboxLoading=false}
@@ -10861,9 +11032,9 @@ function renderStoreMemoInbox(){
  host.innerHTML=rows.map(r=>{
   const unread=!r.acknowledged_at,pri=r.priority||'normal',canEdit=isAppAdmin()||r.author_id===currentSessionUser?.id;
   const canAck=storeMemoNeedsMyCheck(r);
-  const meta=`${storeMemoAuthorName(r)} · ${storeMemoStamp(r.created_at)}${r.edited_at?' · 수정 '+storeMemoStamp(r.edited_at):''}`;
+  const meta=`${storeMemoStamp(r.created_at)}${r.edited_at?' · 수정 '+storeMemoStamp(r.edited_at):''}`;
   const full=storeMemoUnifiedBody(r),dir=storeMemoDirection(r);
-  return `<article class="storeMemoItem ${unread?'unread':''} ${esc(pri)}"><div class="storeMemoItemHead"><span class="storeMemoStoreTag">${esc(storeMemoStoreName(r.store_id))}</span><span class="storeMemoDirectionTag ${dir.received?'incoming':''}">${esc(dir.name)}</span><span class="storeMemoItemMeta">${esc(meta)}</span><span class="storeMemoPriority ${esc(pri)}">${storeMemoPriorityLabel(pri)}</span></div>
+  return `<article class="storeMemoItem ${unread?'unread':''} ${esc(pri)}"><div class="storeMemoItemHead"><span class="storeMemoDirectionTag ${dir.received?'incoming':''}">${esc(dir.name)}</span><span class="storeMemoStoreTag">${esc(storeMemoStoreName(r.store_id))}</span><span class="storeMemoItemMeta">${esc(meta)}</span><span class="storeMemoPriority ${esc(pri)}">${storeMemoPriorityLabel(pri)}</span></div>
   <div class="storeMemoCardText">${esc(full)}</div>
   <div class="storeMemoItemFoot"><span class="storeMemoStatus ${unread?'unread':''}">${storeMemoStatus(r)}</span><div class="storeMemoItemActions">${canAck?`<button type="button" class="btn green small" onclick="acknowledgeStoreNote(${Number(r.id)})">확인 처리</button>`:''}${canEdit?`<button type="button" class="btn small storeMemoEditBtn" onclick="openStoreNoteEditor(${Number(r.id)})" ${storeMemoEditingIds.has(Number(r.id))?'disabled':''}>수정</button><button type="button" class="btn small storeMemoDeleteBtn" onclick="deleteStoreNote(${Number(r.id)})" ${storeMemoDeletingIds.has(Number(r.id))?'disabled':''}>삭제</button>`:''}</div></div></article>`;
  }).join('');
@@ -10873,7 +11044,7 @@ function openStoreNoteEditor(id){
  if(!isAppAdmin()&&r.author_id!==currentSessionUser.id)return alert('본인이 작성한 메모만 수정할 수 있습니다.');
  const body=storeMemoUnifiedBody(r);
  modal(`<div class="storeMemoHead"><h2>✎ 메모 수정</h2><button type="button" class="btn gray small" onclick="openStoreNoteInbox()">메모함</button></div>
- <div class="storeMemoHelp">${esc(storeMemoStoreName(r.store_id))} · ${esc(storeMemoAuthorName(r))} · ${esc(storeMemoStamp(r.created_at))}</div>
+ <div class="storeMemoHelp">${esc(storeMemoDirection(r).name)} · ${esc(storeMemoStoreName(r.store_id))} · ${esc(storeMemoStamp(r.created_at))}</div>
  <div class="storeMemoForm"><label>중요도<select id="storeMemoEditPriority"><option value="normal" ${r.priority==='normal'?'selected':''}>일반</option><option value="important" ${r.priority==='important'?'selected':''}>중요</option><option value="urgent" ${r.priority==='urgent'?'selected':''}>긴급</option></select></label>
  <label class="storeMemoWide">메모<textarea id="storeMemoEditBody" maxlength="2000"></textarea></label></div>
  <div class="storeMemoHelp" style="margin-top:7px">수정한 메모는 받는 사람에게 다시 미확인으로 표시됩니다.</div>
@@ -10914,7 +11085,7 @@ async function deleteStoreNote(id){
  if(!target||!currentSessionUser)return;
  if(!isAppAdmin()&&target.author_id!==currentSessionUser.id)return alert('본인이 작성한 메모만 삭제할 수 있습니다.');
  if(storeMemoDeletingIds.has(Number(id)))return;
- if(!confirm(`[${storeMemoStoreName(target.store_id)}] ${target.subject}\n\n이 메모를 삭제하시겠습니까?\n삭제 후 복구할 수 없습니다.`))return;
+ if(!confirm(`[${storeMemoDirection(target).name}] ${target.subject}\n\n이 메모를 삭제하시겠습니까?\n삭제 후 복구할 수 없습니다.`))return;
  storeMemoDeletingIds.add(Number(id));renderStoreMemoInbox();
  try{
   const q=await sb.from('store_notes').delete().eq('id',Number(id)).select('id');
