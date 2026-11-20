@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>직원관리 대시보드 V9.1.39</title>
+<title>직원관리 대시보드 V9.1.40</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
@@ -1494,20 +1494,26 @@ body.resizingEmployeeColumn *{
 #printArea .pceremony{background:#fff0e0!important;color:#9e5218;font-weight:900}
 #printArea .pcelebrate{background:#f5eaff!important;color:#7b3998;font-weight:900}
 
-/* V9.1.39: V9.1.38 경조휴가 유지 · 상/경/결 인라인 사유 입력 */
-#schedulePage .scheduleReasonEditorRow>td{padding:0!important;text-align:left!important;white-space:normal!important;background:#f6faff!important;border-bottom:2px solid #cdddf5!important}
-#schedulePage .scheduleReasonInline{position:sticky;left:0;width:min(780px,calc(100vw - 56px));max-width:100%;display:flex;flex-wrap:wrap;flex-direction:column;gap:9px;padding:12px 14px;line-height:1.4;color:#2d3e55;font-size:12px}
-#schedulePage .scheduleReasonInlineHeading{display:flex;align-items:center;gap:8px;justify-content:space-between;flex-wrap:wrap}
-#schedulePage .scheduleReasonInlineFields{display:flex;align-items:flex-end;gap:8px;flex-wrap:wrap}
-#schedulePage .scheduleReasonInlineFields label{display:flex;flex-direction:column;gap:4px;font-size:11px;font-weight:850;min-width:132px;flex:1;color:#45566d}
-#schedulePage .scheduleReasonInlineFields input,#schedulePage .scheduleReasonInlineFields select{height:35px;min-width:0;padding:6px 8px;font-size:12px;border:1px solid #cbd6e6;background:#fff}
-#schedulePage .scheduleReasonInlineHelp{color:#61718a;font-size:11px;line-height:1.5}
-#schedulePage .scheduleReasonInlineActions{display:flex;gap:6px;align-self:flex-end}
-#schedulePage .scheduleReasonInlineError{color:#b42318;font-size:11px;font-weight:700}
+/* V9.1.40 · V9.1.38 ceremonial-leave business logic retained.
+   Schedule reason entry is a compact, anchored popover; no full-width table row. */
 #schedulePage .scheduleReasonDot{position:absolute;top:1px;right:1px;font-size:9px;color:#1d4ed8;pointer-events:none}
 #schedulePage td.hasScheduleReason{position:relative}
 #scheduleReasonFloatingTip{position:fixed;z-index:1200;display:none;pointer-events:none;max-width:min(370px,calc(100vw - 24px));border:1px solid #41556e;border-radius:10px;padding:9px 12px;background:#233449;color:#fff;white-space:pre-wrap;line-height:1.5;font-size:12px;box-shadow:0 9px 28px #12203945}
-@media(max-width:600px){#schedulePage .scheduleReasonInline{padding:10px;width:calc(100vw - 40px)}#schedulePage .scheduleReasonInlineFields label{min-width:155px}}
+#scheduleReasonPopover{position:fixed;z-index:1350;display:block;width:min(398px,calc(100vw - 16px));max-height:calc(100vh - 18px);overflow:auto;box-sizing:border-box;padding:12px 13px;background:#fff;color:#263449;border:1px solid #aec3e6;border-radius:12px;box-shadow:0 12px 34px #0f254b35;font-size:12px;line-height:1.4;text-align:left}
+#scheduleReasonPopover .srpTitle{display:flex;justify-content:space-between;align-items:center;gap:7px;margin-bottom:9px}
+#scheduleReasonPopover .srpTitle b{font-size:13px;font-weight:900;line-height:1.3}
+#scheduleReasonPopover .srpClose{border:0;border-radius:7px;background:#eff2f7;color:#475569;font-size:17px;font-weight:900;line-height:1;padding:5px 9px;cursor:pointer}
+#scheduleReasonPopover .srpGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+#scheduleReasonPopover label{display:flex;flex-direction:column;gap:4px;min-width:0;font-size:11px;color:#42536b;font-weight:850}
+#scheduleReasonPopover label.srpFull{grid-column:1/-1}
+#scheduleReasonPopover input,#scheduleReasonPopover select{width:100%;min-width:0;height:34px;box-sizing:border-box;padding:5px 7px;border:1px solid #cbd6e6;border-radius:7px;background:#fff;color:#233349;font-size:12px}
+#scheduleReasonPopover .srpInfo{font-size:10.5px;line-height:1.45;color:#64748b;margin:8px 0 2px;white-space:normal;word-break:keep-all}
+#scheduleReasonPopover .srpInfo.warn{color:#9a5215}
+#scheduleReasonPopover .srpError{font-size:11px;min-height:0;color:#b42318;font-weight:800;margin-top:4px;white-space:normal}
+#scheduleReasonPopover .srpActions{display:flex;gap:6px;justify-content:flex-end;margin-top:8px}
+#scheduleReasonPopover .srpActions button{font-size:11.5px;padding:7px 10px;border-radius:8px}
+#scheduleReasonPopover .srpActions button:disabled{opacity:.6;cursor:wait}
+@media(max-width:440px){#scheduleReasonPopover{padding:10px 11px}#scheduleReasonPopover .srpGrid{gap:6px}}
 </style>
 </head>
 <body>
@@ -4409,9 +4415,9 @@ function renderWeeklyPlanner(){
        let [yy,mm,dd]=date.split('-').map(Number),wd=new Date(yy,mm-1,dd).getDay(),hol=holidayFor(date);
        let out=!date.startsWith(selectedMonth),cl=hol?'weekHolidayCell':(wd===0||wd===6?'weekWeekendCell':''),outside=!valid;
        let outsideTitle=outside?'등록된 재직기간 밖 · 입력 불가':(scheduleReasonTooltip(s)||(hol?hol.name:date));
-       row+=`<td class="${cl} ${out?'weekOutsideMonth':''} ${outside?'outsideEmploymentCell':''} ${date===isoToday()?'scheduleTodayColumn':''}" ondblclick="${valid?`openScheduleReasonOrShift(${e.id},'${date}')`:''}" title="${esc(outsideTitle)}">
+       row+=`<td class="${cl} ${out?'weekOutsideMonth':''} ${outside?'outsideEmploymentCell':''} ${date===isoToday()?'scheduleTodayColumn':''}" ondblclick="${valid?`openScheduleReasonOrShift(${e.id},'${date}')`:''}">
          <input class="weekCode code${esc(v)} ${outside?'outsideEmploymentInput':''}" data-weekstart="${ws}" data-emp="${e.id}" data-date="${date}" value="${esc(v)}" maxlength="4" ${outside?'disabled tabindex="-1"':''}
-           oncompositionstart="this.dataset.composing='1'" oninput="weeklyScheduleInput(${e.id},'${date}',this.value,this,event)" oncompositionend="weeklyScheduleCompositionEnd(${e.id},'${date}',this)" onchange="weeklyScheduleChange(${e.id},'${date}',this)" onblur="weeklyScheduleBlur(${e.id},'${date}',this)" onkeydown="weeklyScheduleKey(event,this)" onfocus="highlightScheduleContext(this);this.select()" onclick="this.select()" onmouseenter="showScheduleReasonTip(event)" onmouseleave="hideScheduleReasonTip()" title="${esc(specialScheduleReasonCode(v)?(scheduleReasonTooltip(s)||'사유 미입력'):outsideTitle)}">
+           oncompositionstart="this.dataset.composing='1'" oninput="weeklyScheduleInput(${e.id},'${date}',this.value,this,event)" oncompositionend="weeklyScheduleCompositionEnd(${e.id},'${date}',this)" onchange="weeklyScheduleChange(${e.id},'${date}',this)" onblur="weeklyScheduleBlur(${e.id},'${date}',this)" onkeydown="weeklyScheduleKey(event,this)" onfocus="highlightScheduleContext(this);this.select()" onclick="this.select()" onmouseenter="showScheduleReasonTip(event)" onmouseleave="hideScheduleReasonTip()">
        </td>`;
      }
      row+=`<td id="weekTotal-${e.id}-${ws}" class="weekTotal">${total}h</td><td id="weekDiff-${e.id}-${ws}"><span class="weekDiff ${diffClass}">${diffText}</span></td></tr>`;
@@ -4419,7 +4425,7 @@ function renderWeeklyPlanner(){
    }).join('');
    return head+`<div class="tablewrap scheduleGridScroll"><table class="weekTable"><thead>${th}</thead><tbody>${body}</tbody></table></div></div>`;
  }).join('');
- applyScheduleEditState();updateScheduleOrderHint();renderScheduleRosterPanel();scheduleViewportHeaderRequest();document.querySelectorAll('#schedulePage #schBody input[data-emp],#schedulePage #weeklyPlanner input[data-emp]').forEach(el=>{if(el.closest('#monthlyScheduleWrap')&&el.closest('#monthlyScheduleWrap').classList.contains('hidden'))return;const e=allEmployees().find(x=>x.id===Number(el.dataset.emp));if(specialScheduleReasonCode(sched(e,el.dataset.date)?.work_code))refreshScheduleReasonVisual(Number(el.dataset.emp),el.dataset.date)});
+ applyScheduleEditState();updateScheduleOrderHint();renderScheduleRosterPanel();scheduleViewportHeaderRequest();stripScheduleReasonNativeTitles();document.querySelectorAll('#schedulePage #schBody input[data-emp],#schedulePage #weeklyPlanner input[data-emp]').forEach(el=>{if(el.closest('#monthlyScheduleWrap')&&el.closest('#monthlyScheduleWrap').classList.contains('hidden'))return;const e=allEmployees().find(x=>x.id===Number(el.dataset.emp));if(specialScheduleReasonCode(sched(e,el.dataset.date)?.work_code))refreshScheduleReasonVisual(Number(el.dataset.emp),el.dataset.date)});
 }
 function refreshWeeklyRow(employeeId,date){
  if(scheduleView!=='weekly')return;
@@ -4489,14 +4495,14 @@ function renderSchedule(){
   for(let d=1;d<=r.days;d++){
    let date=r.m+'-'+String(d).padStart(2,'0'),valid=employedOn(e,date),s=sched(e,date),v=s?.work_code||'',wd=new Date(r.y,r.mo-1,d).getDay(),hol=holidayFor(date),cl=hol?' holidayHead':(wd===0||wd===6?' weekendHead':''),outside=!valid;
    let title=outside?'등록된 재직기간 밖 · 입력 불가':(scheduleReasonTooltip(s)||(hol?hol.name:''));
-   row+=`<td class="${cl} ${outside?'outsideEmploymentCell':''} ${date===isoToday()?'scheduleTodayColumn':''}" ondblclick="${valid?`openScheduleReasonOrShift(${e.id},'${date}')`:''}" title="${esc(title)}">
+   row+=`<td class="${cl} ${outside?'outsideEmploymentCell':''} ${date===isoToday()?'scheduleTodayColumn':''}" ondblclick="${valid?`openScheduleReasonOrShift(${e.id},'${date}')`:''}">
      <input id="sc-${e.id}-${d}" data-row="${ri}" data-col="${d}" data-emp="${e.id}" data-date="${date}" class="code code${esc(v)} ${outside?'outsideEmploymentInput':''}" value="${esc(v)}" maxlength="4" ${outside?'disabled tabindex="-1"':''}
-       oncompositionstart="this.dataset.composing='1'" oninput="scheduleInput(${e.id},'${date}',this.value,this,event)" oncompositionend="scheduleCompositionEnd(${e.id},'${date}',this)" onchange="scheduleChange(${e.id},'${date}',this)" onblur="scheduleBlur(${e.id},'${date}',this)" onkeydown="scheduleKey(event,this)" onfocus="highlightScheduleContext(this);this.select()" onclick="this.select()" onmouseenter="showScheduleReasonTip(event)" onmouseleave="hideScheduleReasonTip()" title="${esc(specialScheduleReasonCode(v)?(scheduleReasonTooltip(s)||'사유 미입력'):'Enter/Tab/방향키 이동 · 더블클릭 상세시간'+(outside?' · 재직기간 밖 입력불가':''))}">
+       oncompositionstart="this.dataset.composing='1'" oninput="scheduleInput(${e.id},'${date}',this.value,this,event)" oncompositionend="scheduleCompositionEnd(${e.id},'${date}',this)" onchange="scheduleChange(${e.id},'${date}',this)" onblur="scheduleBlur(${e.id},'${date}',this)" onkeydown="scheduleKey(event,this)" onfocus="highlightScheduleContext(this);this.select()" onclick="this.select()" onmouseenter="showScheduleReasonTip(event)" onmouseleave="hideScheduleReasonTip()">
     </td>`;
   }
   return row+`<td id="workTotal-${e.id}"><b>${x.worked}h</b></td><td id="otTotal-${e.id}">${x.ot}h</td></tr>`;
  }).join('');
- applyScheduleEditState();updateScheduleOrderHint();renderScheduleRosterPanel();scheduleViewportHeaderRequest();document.querySelectorAll('#schedulePage #schBody input[data-emp],#schedulePage #weeklyPlanner input[data-emp]').forEach(el=>{if(el.closest('#monthlyScheduleWrap')&&el.closest('#monthlyScheduleWrap').classList.contains('hidden'))return;const e=allEmployees().find(x=>x.id===Number(el.dataset.emp));if(specialScheduleReasonCode(sched(e,el.dataset.date)?.work_code))refreshScheduleReasonVisual(Number(el.dataset.emp),el.dataset.date)});
+ applyScheduleEditState();updateScheduleOrderHint();renderScheduleRosterPanel();scheduleViewportHeaderRequest();stripScheduleReasonNativeTitles();document.querySelectorAll('#schedulePage #schBody input[data-emp],#schedulePage #weeklyPlanner input[data-emp]').forEach(el=>{if(el.closest('#monthlyScheduleWrap')&&el.closest('#monthlyScheduleWrap').classList.contains('hidden'))return;const e=allEmployees().find(x=>x.id===Number(el.dataset.emp));if(specialScheduleReasonCode(sched(e,el.dataset.date)?.work_code))refreshScheduleReasonVisual(Number(el.dataset.emp),el.dataset.date)});
 }
 
 /* V9.1.38 · employer-provided paid celebration/bereavement policy.
@@ -4638,10 +4644,9 @@ function hideScheduleReasonTip(){const tip=document.getElementById('scheduleReas
 function refreshScheduleReasonVisual(id,date){
  const row=sched(allEmployees().find(e=>e.id===id),date);if(!row)return;
  document.querySelectorAll('#schedulePage input[data-emp="'+id+'"][data-date="'+date+'"]').forEach(input=>{
-  const title=scheduleReasonTooltip(row);
-  input.title=title||'Enter/Tab/방향키 이동 · 더블클릭 상세시간';
+  input.removeAttribute('title');
   const td=input.closest('td');if(td){
-   td.title=title||date;
+   td.removeAttribute('title');
    const prior=td.querySelector('.scheduleReasonDot');if(prior)prior.remove();
    td.classList.toggle('hasScheduleReason',!!scheduleReasonValue(row));
    if(scheduleReasonValue(row)){const dot=document.createElement('span');dot.className='scheduleReasonDot';dot.textContent='●';dot.setAttribute('aria-hidden','true');td.appendChild(dot)}
@@ -4649,61 +4654,161 @@ function refreshScheduleReasonVisual(id,date){
  });
 }
 function closeScheduleReasonInline(){
- const old=document.querySelector('#schedulePage tr.scheduleReasonEditorRow');if(old)old.remove();activeScheduleReasonEditor=null;
+ const p=document.getElementById('scheduleReasonPopover');if(p)p.remove();
+ activeScheduleReasonEditor=null;
 }
 function openScheduleReasonOrShift(id,date){
  const row=sched(allEmployees().find(e=>e.id===id),date);
  if(specialScheduleReasonCode(row?.work_code))return openScheduleReasonInline(id,date);
  return openShift(id,date);
 }
+function positionScheduleReasonPopover(){
+ const p=document.getElementById('scheduleReasonPopover'),a=activeScheduleReasonEditor?.anchor;
+ if(!p||!a)return;
+ if(!a.isConnected){closeScheduleReasonInline();return}
+ const r=a.getBoundingClientRect();
+ p.style.visibility='hidden';p.style.left='0px';p.style.top='0px';
+ const w=p.offsetWidth,h=p.offsetHeight,margin=8;
+ let left=Math.min(Math.max(margin,r.left-7),Math.max(margin,window.innerWidth-w-margin));
+ let below=r.bottom+9,above=r.top-h-9;
+ let top=below+h<=window.innerHeight-margin?below:(above>=margin?above:Math.max(margin,window.innerHeight-h-margin));
+ p.style.left=Math.round(left)+'px';p.style.top=Math.round(top)+'px';p.style.visibility='visible';
+}
+function scheduleReasonIsIsoDate(d){
+ if(!/^\d{4}-\d{2}-\d{2}$/.test(String(d||'')))return false;
+ const a=new Date(d+'T12:00:00');return !Number.isNaN(a.getTime())&&a.getFullYear()===Number(d.slice(0,4))&&a.getMonth()+1===Number(d.slice(5,7))&&a.getDate()===Number(d.slice(8,10));
+}
+function scheduleReasonPeriodDays(first,last){
+ if(!scheduleReasonIsIsoDate(first)||!scheduleReasonIsIsoDate(last)||first>last)return null;
+ const days=[],diff=Math.round((Date.parse(last+'T12:00:00')-Date.parse(first+'T12:00:00'))/86400000);
+ if(diff>31)return null; // never generate an unbounded range
+ for(let i=0;i<=diff;i++)days.push(addDaysIso(first,i));
+ return days;
+}
+function scheduleReasonUpdatePopoverPreview(){
+ const ed=activeScheduleReasonEditor,p=document.getElementById('scheduleReasonPopover');if(!ed||!p)return;
+ const info=p.querySelector('.srpInfo');if(!info)return;
+ const k=p.querySelector('#scheduleReasonType')?.value,rule=CEREMONY_LEAVE_RULES[k];
+ if(ed.code==='결'){info.textContent='결근 사유는 해당 날짜에만 저장됩니다.';info.classList.remove('warn');positionScheduleReasonPopover();return}
+ const start=p.querySelector('#scheduleReasonStart')?.value,end=p.querySelector('#scheduleReasonEnd')?.value,dates=scheduleReasonPeriodDays(start,end);
+ if(!dates){info.textContent='시작일·종료일을 확인해 주세요 (최대 32일 범위).';info.classList.add('warn');positionScheduleReasonPopover();return}
+ const over=rule&&dates.length>rule.days;
+ const excluded=dates.filter(d=>!employedOn(ed.employee,d)||!canEditEmployeeScheduleDay(ed.id,d));
+ const special=dates.filter(d=>{let row=sched(ed.employee,d),c=String(row?.work_code||'');return c==='0'||['연','병','결','법','예','상','경'].includes(c)&&c!==ed.code;});
+ let msg=`${start} ~ ${end} · ${dates.length}일 일괄 적용 (시작일과 종료일 포함)`;
+ if(rule)msg+=` / ${rule.label} 최대 ${rule.days}일`;
+ if(over)msg+=' · 규정 일수 초과';
+ if(excluded.length)msg+=` · 재직기간/마감 확인 ${excluded.length}일`;
+ if(special.length)msg+=` · 기존 휴무·휴가 ${special.length}일 보호`;
+ info.textContent=msg;
+ info.classList.toggle('warn',!!(over||excluded.length||special.length));
+ positionScheduleReasonPopover();
+}
 function openScheduleReasonInline(id,date){
  if(!canEditEmployeeScheduleDay(id,date))return;
- let e=allEmployees().find(x=>Number(x.id)===Number(id)),row=sched(e,date),code=row?.work_code;
+ const e=allEmployees().find(x=>Number(x.id)===Number(id)),row=sched(e,date),code=row?.work_code;
  if(!e||!specialScheduleReasonCode(code))return;
- const found=[...document.querySelectorAll('#schedulePage tr[data-schedule-emp]')].find(tr=>!!tr.querySelector(`input[data-emp="${id}"][data-date="${date}"]`));
- if(!found)return;
+ const anchor=[...document.querySelectorAll('#schedulePage input[data-emp][data-date]')]
+  .find(el=>!el.disabled&&Number(el.dataset.emp)===Number(id)&&el.dataset.date===date&&el.getClientRects().length);
+ if(!anchor)return;
+ const prior=activeScheduleReasonEditor;
+ if(prior?.id===id&&prior?.date===date&&document.getElementById('scheduleReasonPopover')){
+  positionScheduleReasonPopover();return;
+ }
  closeScheduleReasonInline();hideScheduleReasonTip();
  let type=ceremonyMeta(row)?.kind||(code==='경'?'marriage':'parent');
- let memo=scheduleReasonValue(row),name=code==='결'?'결근 사유':code==='상'?'상례 사유':'결혼 사유';
- let existingDetail='';
- if(code==='결')existingDetail=memo;
- else {const a=String(row.memo||'').match(/(?:^|\s)사유:\s*(.*)$/);if(a)existingDetail=a[1].trim()}
- const reasonOptions=code==='결'
-  ? `<label class="scheduleReasonCustom" style="flex:2;min-width:230px">결근 사유<input type="text" id="scheduleReasonInput" maxlength="180" value="${esc(existingDetail)}" placeholder="예: 개인사정 / 병원 방문"></label>`
-  : `<label>사유 구분<select id="scheduleReasonType">${Object.entries(CEREMONY_LEAVE_RULES).filter(([k,v])=>v.code===code).map(([k,v])=>`<option value="${k}" ${k===type?'selected':''}>${esc(v.label)} (유급 ${v.days}일)</option>`).join('')}</select></label><label>경조사 발생일<input type="date" id="scheduleReasonEventDate" value="${esc(ceremonyMeta(row)?.eventDate||date)}"></label><label class="scheduleReasonCustom" style="flex:2;min-width:230px">상세 사유 (선택)<input type="text" id="scheduleReasonInput" maxlength="180" value="${esc(existingDetail)}" placeholder="예: 부친상 / 추가 메모"></label>`;
- const tr=document.createElement('tr');tr.className='scheduleReasonEditorRow';
- tr.innerHTML=`<td colspan="${found.cells.length}"><div class="scheduleReasonInline" role="group" aria-label="${esc(name)} 입력"><div class="scheduleReasonInlineHeading"><b>${esc(e.name)} · ${esc(date)} · ${esc(name)}</b><span class="scheduleReasonInlineHelp">큰 팝업 없이 이곳에서 입력 · 마우스를 올려 사유 확인</span></div><div class="scheduleReasonInlineFields">${reasonOptions}<div class="scheduleReasonInlineActions"><button type="button" class="btn small" onclick="saveScheduleReasonInline()">사유 저장</button><button type="button" class="btn gray small" onclick="closeScheduleReasonInline()">닫기</button></div></div><span class="scheduleReasonInlineHelp">${code==='결'?'결근은 유급 경조휴가에 포함되지 않습니다.': '규정에 따라 유급 경조휴가로 기록하며 연차는 차감하지 않습니다. 여러 날짜 등록은 기존 경조휴가 등록 버튼을 이용하세요.'}</span><div id="scheduleReasonInlineError" class="scheduleReasonInlineError" aria-live="polite"></div></div></td>`;
- found.insertAdjacentElement('afterend',tr);activeScheduleReasonEditor={id,date,code};
- document.getElementById(code==='결'?'scheduleReasonInput':'scheduleReasonType')?.focus();
+ let reason='';if(code==='결')reason=scheduleReasonValue(row);
+ else {const m=String(row.memo||'').match(/(?:^|\s)사유:\s*(.*)$/);if(m)reason=m[1].trim()}
+ const txt=code==='결'?'결근 사유':(code==='상'?'상례 유급휴가':'결혼 유급휴가');
+ const fields=code==='결'
+  ? `<label class="srpFull">결근 사유<input type="text" id="scheduleReasonInput" maxlength="180" value="${esc(reason)}" placeholder="예: 개인 사정"></label>`
+  : `<label class="srpFull">경조사 종류<select id="scheduleReasonType" onchange="scheduleReasonUpdatePopoverPreview()">${Object.entries(CEREMONY_LEAVE_RULES).filter(([k,v])=>v.code===code).map(([k,v])=>`<option value="${k}" ${k===type?'selected':''}>${esc(v.label)} · 유급 ${v.days}일</option>`).join('')}</select></label>
+<label>시작일<input type="date" id="scheduleReasonStart" value="${esc(date)}" onchange="scheduleReasonUpdatePopoverPreview()"></label>
+<label>종료일<input type="date" id="scheduleReasonEnd" value="${esc(date)}" onchange="scheduleReasonUpdatePopoverPreview()"></label>
+<label class="srpFull">경조 발생일<input type="date" id="scheduleReasonEventDate" value="${esc(ceremonyMeta(row)?.eventDate||date)}"></label>
+<label class="srpFull">상세 사유 (선택)<input type="text" id="scheduleReasonInput" maxlength="180" value="${esc(reason)}" placeholder="예: 부친상"></label>`;
+ const p=document.createElement('div');p.id='scheduleReasonPopover';p.setAttribute('role','dialog');p.setAttribute('aria-label',txt+' 입력');
+ p.innerHTML=`<div class="srpTitle"><b>${esc(e.name)} · ${esc(date)} · ${esc(txt)}</b><button type="button" class="srpClose" onclick="closeScheduleReasonInline()" aria-label="닫기">×</button></div><div class="srpGrid">${fields}</div><div class="srpInfo"></div><div class="srpError" id="scheduleReasonInlineError" aria-live="polite"></div><div class="srpActions"><button type="button" class="btn gray small" onclick="closeScheduleReasonInline()">닫기</button><button type="button" class="btn small" id="scheduleReasonSaveBtn" onclick="saveScheduleReasonInline()">${code==='결'?'사유 저장':'기간 일괄 저장'}</button></div>`;
+ document.body.appendChild(p);activeScheduleReasonEditor={id,date,code,employee:e,anchor};
+ scheduleReasonUpdatePopoverPreview();
+ (p.querySelector(code==='결'?'#scheduleReasonInput':'#scheduleReasonType'))?.focus({preventScroll:true});
+ positionScheduleReasonPopover();
 }
 async function saveScheduleReasonInline(){
- const selected=activeScheduleReasonEditor;if(!selected||!requireEmployeeScheduleDay(selected.id,selected.date))return;
- let e=allEmployees().find(x=>x.id===selected.id),row=sched(e,selected.date),code=selected.code;
- const err=x=>{let el=document.getElementById('scheduleReasonInlineError');if(el)el.textContent=x};
- if(!row||row.work_code!==code){err('스케줄 코드가 바뀌었습니다. 다시 선택하세요.');return}
- let reason=String(document.getElementById('scheduleReasonInput')?.value||'').trim(),memo='';
- if(code==='결'){
-  if(!reason){err('결근 사유를 입력해 주세요.');return}
-  memo=reason;
- }else{
-  const type=document.getElementById('scheduleReasonType')?.value,rule=CEREMONY_LEAVE_RULES[type];
-  if(!rule||rule.code!==code){err('경조사 사유를 선택해 주세요.');return}
-  // V9.1.38 ceremonyMeta() 및 사내 유급 경조휴가 일수 상한과 호환.
-  const eventDay=String(document.getElementById('scheduleReasonEventDate')?.value||'');
-  if(!/^\d{4}-\d{2}-\d{2}$/.test(eventDay)){err('경조사 발생일을 입력해 주세요.');return}
-  const stamp=`[[CEREMONY:${type}:${eventDay}]]`;
-  const found=await sb.from('schedules').select('work_date,memo').eq('employee_id',selected.id).like('memo',stamp+'%');
-  if(found.error){err('기존 경조휴가 확인 오류: '+found.error.message);return}
-  const used=new Set((found.data||[]).map(x=>x.work_date));used.add(selected.date);
-  if(used.size>rule.days){err(`${rule.label}은 같은 경조사 건당 최대 ${rule.days}일입니다. 이미 입력된 날짜를 확인해 주세요.`);return}
-  memo=`${stamp} ${rule.label} · 유급 경조휴가${code==='상'?' · 근조화환 기본 / 부조금 재량':''}${reason?' · 사유: '+reason:''}`;
+ const selected=activeScheduleReasonEditor,p=document.getElementById('scheduleReasonPopover');
+ if(!selected||!p||!canEditEmployeeScheduleDay(selected.id,selected.date))return;
+ const err=message=>{const el=p.querySelector('#scheduleReasonInlineError');if(el)el.textContent=message;positionScheduleReasonPopover()};
+ const btn=p.querySelector('#scheduleReasonSaveBtn');if(btn?.disabled)return;
+ const e=selected.employee,code=selected.code,cur=sched(e,selected.date),reason=String(p.querySelector('#scheduleReasonInput')?.value||'').trim();
+ if(cur?.work_code!==code){err('입력 코드가 변경되었습니다. 다시 선택해 주세요.');return}
+ if(code==='결'&&!reason){err('결근 사유를 입력해 주세요.');return}
+ let dates=[],rows=[],stamp='';
+ if(code==='결')dates=[selected.date];
+ else{
+  const kind=p.querySelector('#scheduleReasonType')?.value,rule=CEREMONY_LEAVE_RULES[kind];
+  const eventDay=p.querySelector('#scheduleReasonEventDate')?.value,start=p.querySelector('#scheduleReasonStart')?.value,end=p.querySelector('#scheduleReasonEnd')?.value;
+  dates=scheduleReasonPeriodDays(start,end);
+  if(!rule||rule.code!==code){err('경조사 종류를 확인해 주세요.');return}
+  if(!scheduleReasonIsIsoDate(eventDay)){err('경조사 발생일을 확인해 주세요.');return}
+  if(!dates){err('시작일·종료일을 확인해 주세요 (최대 32일 범위).');return}
+  if(dates.length>rule.days){err(`${rule.label} 유급 경조휴가는 최대 ${rule.days}일입니다. 현재 ${dates.length}일입니다.`);return}
+  if(dates.some(d=>!employedOn(e,d))){err('재직기간 밖 날짜는 일괄 입력할 수 없습니다.');return}
+  if(dates.some(d=>!canEditEmployeeScheduleDay(selected.id,d))){err('수정 권한이 없거나 마감된 날짜가 포함되어 있습니다.');return}
+  stamp=`[[CEREMONY:${kind}:${eventDay}]]`;
  }
- const updated={...row,memo};
- applyLocalSchedule(updated);queueScheduleSave(updated);
- await flushScheduleQueue();
- if(scheduleSaveQueue.has(`${selected.id}|${selected.date}`)){err('저장에 실패했습니다. 위쪽 저장오류를 확인하고 다시 시도하세요.');return}
- refreshScheduleReasonVisual(selected.id,selected.date);closeScheduleReasonInline();
+ if(btn)btn.disabled=true;
+ try{
+  // The first keypress already queued a single-day row. Persist it before the batch;
+  // otherwise a delayed single-day upsert could overwrite the newly saved reason.
+  await flushScheduleQueue();
+  if(scheduleSaveQueue.size)throw new Error('기존 스케줄 저장이 완료되지 않았습니다. 저장 상태를 확인해 주세요.');
+  if(code==='결'){
+   const r=await sb.from('schedules').update({memo:reason}).eq('employee_id',selected.id).eq('work_date',selected.date).eq('work_code','결').select('employee_id,work_date,memo');
+   if(r.error)throw r.error;
+   if((r.data||[]).length!==1)throw new Error('결근 기록이 서버에 없거나 변경되었습니다. 다시 확인해 주세요.');
+   applyLocalSchedule({...cur,memo:reason});refreshScheduleReasonVisual(selected.id,selected.date);
+   stampRecentAuditIp(storeId());closeScheduleReasonInline();setSaveState('saved','저장완료');return;
+  }
+  const q=await sb.from('schedules').select('*').eq('employee_id',selected.id).in('work_date',dates);
+  if(q.error)throw q.error;
+  const byDate=new Map((q.data||[]).map(x=>[x.work_date,x]));
+  const oldConflicts=dates.filter(d=>{
+   const x=byDate.get(d),c=String(x?.work_code||'').trim();
+   if(c==='0'||['연','병','결','법','예'].includes(c)||c&&c!==code&&!/^(?:\d+(?:\.\d+)?)$/.test(c))return true;
+   if(c===code){const meta=ceremonyMeta(x);return !!(meta&&!(String(x.memo||'').startsWith(stamp)));}
+   return false;
+  });
+  if(oldConflicts.length)throw new Error(`기존 휴무·연차·다른 경조사 기록을 보호하기 위해 중단했습니다: ${oldConflicts.join(', ')}. 해당 날짜는 개별 검토 후 변경해 주세요.`);
+  const same=await sb.from('schedules').select('work_date,memo').eq('employee_id',selected.id).like('memo',stamp+'%');
+  if(same.error)throw same.error;
+  const rule=CEREMONY_LEAVE_RULES[p.querySelector('#scheduleReasonType').value];
+  const count=new Set([...(same.data||[]).map(x=>x.work_date),...dates]);
+  if(count.size>rule.days)throw new Error(`같은 ${rule.label} 경조사 건에 이미 승인된 날짜를 포함하면 ${count.size}일입니다. 규정 최대 ${rule.days}일을 초과합니다.`);
+  const from=p.querySelector('#scheduleReasonStart').value,to=p.querySelector('#scheduleReasonEnd').value;
+  rows=dates.map(d=>{
+   const cond=workConditionForDate(e,d),dayRule=conditionRuleForDate(cond,d);
+   const h=Number(dayRule?.daily_hours||0)||Number(leaveDayHoursAt(e,d)||cond.daily_hours||e.daily_hours||0);
+   if(!(h>0))throw new Error(`${d}의 소정근로시간 정보가 없습니다. 직원관리에서 먼저 확인해 주세요.`);
+   return {employee_id:selected.id,work_date:d,work_code:code,scheduled_hours:h,worked_hours:0,overtime_hours:0,status:'paid_ceremony',start_time:null,end_time:null,break_minutes:0,memo:`${stamp} ${rule.label} · 유급 경조휴가${code==='상'?' · 근조화환 기본 / 부조금 재량':''} · 기간: ${from}~${to}${reason?' · 사유: '+reason:''}`};
+  });
+  const r=await sb.from('schedules').upsert(rows,{onConflict:'employee_id,work_date'}).select('employee_id,work_date,work_code,memo');
+  if(r.error)throw r.error;
+  if((r.data||[]).length!==rows.length)throw new Error('저장한 날짜 수가 일치하지 않습니다. 새로고침 후 확인해 주세요.');
+  stampRecentAuditIp(storeId());closeScheduleReasonInline();setSaveState('saved',`${rows.length}일 저장완료`);
+  await refreshAll();
+ }catch(ex){console.error('스케줄 사유 저장 실패',ex);err('저장 실패: '+String(ex?.message||ex));}
+ finally{if(btn?.isConnected)btn.disabled=false;}
 }
+// A native browser tooltip would duplicate the dark custom tooltip.
+// Remove titles on current schedule code input AND its parent cell, including after rerenders.
+function stripScheduleReasonNativeTitles(){
+ document.querySelectorAll('#schedulePage #schBody input.code[data-date],#schedulePage #weeklyPlanner input.weekCode[data-date]').forEach(input=>{
+  input.removeAttribute('title');input.closest('td')?.removeAttribute('title');
+ });
+}
+window.addEventListener('scroll',()=>{if(activeScheduleReasonEditor)positionScheduleReasonPopover();hideScheduleReasonTip()},{passive:true,capture:true});
+window.addEventListener('resize',()=>{if(activeScheduleReasonEditor)positionScheduleReasonPopover();hideScheduleReasonTip()},{passive:true});
+document.addEventListener('keydown',evt=>{if(evt.key==='Escape'&&activeScheduleReasonEditor){closeScheduleReasonInline();evt.stopPropagation()}});
 
 function schedulePayload(id,date,raw){
  let emp=allEmployees().find(e=>e.id===id),cond=workConditionForDate(emp||{},date),rule=conditionTimesForDate(cond,date),code=String(raw??'').trim(),base=Number(rule.daily_hours||cond.daily_hours||emp?.daily_hours||8),leaveH=Number(leaveDayHoursAt(emp,date)||base||emp?.leave_day_hours||emp?.daily_hours||8),scheduled=0,worked=0,ot=0,status='';
