@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>직원관리 대시보드 V9.1.40</title>
+<title>직원관리 대시보드 V9.1.42</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
@@ -1514,6 +1514,67 @@ body.resizingEmployeeColumn *{
 #scheduleReasonPopover .srpActions button{font-size:11.5px;padding:7px 10px;border-radius:8px}
 #scheduleReasonPopover .srpActions button:disabled{opacity:.6;cursor:wait}
 @media(max-width:440px){#scheduleReasonPopover{padding:10px 11px}#scheduleReasonPopover .srpGrid{gap:6px}}
+
+/* V9.1.41: Left navigation — fixed icon column and text column (no uneven Unicode symbols). */
+@media (min-width:901px){
+  .layout{grid-template-columns:232px minmax(0,1fr)}
+  .side{padding:15px 11px}
+  .side .nav{display:flex;align-items:center;justify-content:flex-start;gap:12px;width:100%;min-height:46px;padding:10px 12px;margin:2px 0;text-align:left;white-space:nowrap;line-height:1.35;border-radius:10px}
+  .side .navIcon{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;flex:0 0 24px;color:#667085}
+  .side .navIcon svg{display:block;width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+  .side .navText{display:block;min-width:0;font-size:13px;font-weight:800;line-height:22px;text-align:left;letter-spacing:-.15px}
+  .side .nav:hover{background:#f3f6fc}
+  .side .nav.active,.side .nav.active:hover{background:var(--soft);color:var(--blue)}
+  .side .nav.active .navIcon{color:var(--blue)}
+  .side #adminNavDivider{margin:13px 12px}
+}
+
+/* V9.1.42 - 연차관리: 월별 사용·발생·잔여를 안전하게 나누어 표시 */
+#schedulePage .annualLeavePanel{padding:16px}
+#schedulePage .annualLeavePanelHead{gap:12px}
+#schedulePage #annualLeaveYear{min-width:115px;width:auto;padding:8px 9px;font-weight:800}
+#schedulePage .annualLeaveSummaryTiles{display:grid;grid-template-columns:repeat(4,minmax(125px,1fr));gap:9px;margin:14px 0 11px}
+#schedulePage .annualLeaveTile{padding:11px 13px;background:#f8fafc;border:1px solid #e0e6ef;border-radius:11px}
+#schedulePage .annualLeaveTile small{display:block;font-size:11px;color:#64748b;font-weight:750}
+#schedulePage .annualLeaveTile b{display:block;font-size:19px;font-weight:950;margin-top:5px}
+#schedulePage .annualLeaveLegend{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0}
+#schedulePage .annualLeaveTag{font-size:11px;padding:4px 8px;font-weight:800;border-radius:999px;background:#eff2f7;color:#475569}
+#schedulePage .annualLeaveTag.auto{background:#e9f3ff;color:#235aaa}
+#schedulePage .annualLeaveTag.manual{background:#fff0d4;color:#945508}
+#schedulePage .annualLeaveTag.warning{background:#fff0f0;color:#a82121}
+#schedulePage .annualLeaveGridScroll{overflow:auto;max-width:100%;max-height:min(75vh,800px)}
+#schedulePage .annualLeaveTable{border-collapse:separate;border-spacing:0;table-layout:fixed;width:max-content;min-width:100%;}
+#schedulePage .annualLeaveTable th{position:sticky;top:0;z-index:5;background:#f2f5fa;min-width:69px;height:48px}
+#schedulePage .annualLeaveTable td{min-width:69px;height:58px;padding:5px 4px}
+#schedulePage .annualLeaveTable th.annualLeavePinned,#schedulePage .annualLeaveTable td.annualLeavePinned{position:sticky;left:0;z-index:8;min-width:142px;max-width:142px;width:142px;background:#fff;text-align:left;box-shadow:2px 0 4px #11223312}
+#schedulePage .annualLeaveTable th.annualLeavePinned{z-index:12;background:#f2f5fa}
+#schedulePage .annualLeaveTable td.annualLeavePinned b{display:block;font-size:12px}
+#schedulePage .annualLeaveTable td.annualLeavePinned small{display:block;font-size:10px;color:#778399;margin-top:3px}
+#schedulePage .annualLeaveCell{display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:50px;min-height:42px;width:100%;border:1px solid transparent;border-radius:8px;background:#f7f9fc;color:#344054;cursor:pointer;font-weight:950;padding:5px 4px;gap:2px}
+#schedulePage .annualLeaveCell:hover{background:#e7f0ff;border-color:#b3c9f1}
+#schedulePage .annualLeaveCell.manual{background:#fff2db;color:#945000;border-color:#f0cf93}
+#schedulePage .annualLeaveCell.auto.used{background:#edf5ff;color:#2258a1}
+#schedulePage .annualLeaveCell.empty{background:#fafafa;color:#adb5c0}
+#schedulePage .annualLeaveCell:disabled{cursor:default;opacity:.65}
+#schedulePage .annualLeaveCell small{font-weight:700;font-size:9px;line-height:1.1;white-space:nowrap}
+#schedulePage .annualLeaveStat{min-width:95px!important;background:#f9fbff;font-size:12px;font-weight:900}
+#schedulePage .annualLeaveStat.balance{background:#effbf3;color:#07633f}
+#schedulePage .annualLeaveStat.negative{background:#fff0f0;color:#b42318}
+#schedulePage .annualLeaveStat small{display:block;font-weight:600;color:#64748b;font-size:10px;margin-top:3px}
+#schedulePage .annualLeaveActions{display:flex;gap:5px;justify-content:center;flex-wrap:wrap;min-width:143px}
+#schedulePage .annualLeaveActions button{padding:5px 6px;font-size:10px}
+.modalBack>.modal.annualLeaveEditModal{width:min(560px,calc(100vw - 28px))!important;max-width:560px!important;padding:19px 20px!important}
+.modalBack>.modal.annualLeaveEditModal .modalActions{position:static!important;margin-top:12px!important;padding:8px 0 0!important}
+.annualLeaveEditModal .annualFormGrid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:10px}
+.annualLeaveEditModal .annualFormGrid .wide{grid-column:1/-1}
+.annualLeaveEditModal textarea{min-height:60px;resize:vertical;line-height:1.5}
+.annualLeaveEditModal .annualCheckTable{max-height:48vh;overflow:auto;margin-top:12px;border:1px solid #e1e7ef;border-radius:9px}
+.annualLeaveEditModal .annualCheckTable table{min-width:490px;width:100%}
+.annualLeaveEditModal .annualCheckTable th,.annualLeaveEditModal .annualCheckTable td{font-size:11px;padding:7px 5px;white-space:normal}
+.annualLeaveEditModal .annualCheckTable input,.annualLeaveEditModal .annualCheckTable select{width:100%;font-size:11px;padding:5px 6px}
+@media(max-width:900px){#schedulePage .annualLeaveSummaryTiles{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:560px){#schedulePage .annualLeavePanel{padding:10px}#schedulePage .annualLeaveSummaryTiles{grid-template-columns:repeat(2,1fr)}.annualLeaveEditModal .annualFormGrid{grid-template-columns:1fr}.annualLeaveEditModal .annualFormGrid .wide{grid-column:1}}
+
 </style>
 </head>
 <body>
@@ -1530,17 +1591,17 @@ body.resizingEmployeeColumn *{
 </div>
 <div class="layout">
 <aside class="side">
- <button class="nav active" data-page="home">▦ 전체 현황</button>
- <button class="nav" data-page="homeshop">◉ 홈쇼핑 건기식</button>
- <button class="nav" data-page="schedule">▣ 월간 스케줄</button>
- <button class="nav" data-page="hours">◷ 근로시간</button>
- <button class="nav" data-page="payroll">₩ 급여관리</button>
- <button class="nav" data-page="employees">♙ 직원관리</button>
- <button class="nav" data-page="stores">⌂ 업장관리</button>
- <button class="nav" data-page="holidays">★ 공휴일관리</button>
+ <button class="nav active" data-page="home"><span class="navIcon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg></span><span class="navText">전체 현황</span></button>
+ <button class="nav" data-page="homeshop"><span class="navIcon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><rect x="2" y="5" width="20" height="14" rx="3"/><path d="M7 22h10M12 19v3M8 2l4 3 4-3"/></svg></span><span class="navText">홈쇼핑 건기식</span></button>
+ <button class="nav" data-page="schedule"><span class="navIcon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/><path d="m9 16 2 2 4-4"/></svg></span><span class="navText">월간 스케줄</span></button>
+ <button class="nav" data-page="hours"><span class="navIcon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span><span class="navText">근로시간</span></button>
+ <button class="nav" data-page="payroll"><span class="navIcon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9h18M16 13h5v5h-5a2.5 2.5 0 0 1 0-5Z"/></svg></span><span class="navText">급여관리</span></button>
+ <button class="nav" data-page="employees"><span class="navIcon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><circle cx="9" cy="8" r="3"/><path d="M3 21v-2a6 6 0 0 1 12 0v2M17 5.5a3 3 0 0 1 0 5.8M18 15a5 5 0 0 1 3 4.5V21"/></svg></span><span class="navText">직원관리</span></button>
+ <button class="nav" data-page="stores"><span class="navIcon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><path d="M3 21h18M5 21V7l7-4 7 4v14M9 21v-6h6v6M9 10h.01M15 10h.01"/></svg></span><span class="navText">업장관리</span></button>
+ <button class="nav" data-page="holidays"><span class="navIcon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><path d="m12 2 3.1 6.3 7 .9-5 4.9 1.2 7L12 17.8l-6.3 3.3 1.2-7-5-4.9 7-.9Z"/></svg></span><span class="navText">공휴일관리</span></button>
  <div id="adminNavDivider" class="sideDivider"></div>
- <button class="nav" data-page="users">♟ 사용자 / 권한</button>
- <button class="nav" data-page="audit">☷ 접속 / 수정이력</button>
+ <button class="nav" data-page="users"><span class="navIcon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/><circle cx="12" cy="10" r="2"/><path d="M8.5 16a4 4 0 0 1 7 0"/></svg></span><span class="navText">사용자 / 권한</span></button>
+ <button class="nav" data-page="audit"><span class="navIcon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><path d="M3 12a9 9 0 1 0 3-6.7M3 3v6h6M12 7v5l3 2"/></svg></span><span class="navText">접속 / 수정이력</span></button>
 </aside>
 <main class="main">
 <div id="globalContextToolbar" class="toolbar" style="margin-bottom:12px">
@@ -1651,6 +1712,7 @@ body.resizingEmployeeColumn *{
   <div class="toolbar">
    <button id="monthlyViewBtn" class="btn" onclick="setScheduleView('monthly')">월간 스케줄</button>
    <button id="weeklyViewBtn" class="btn gray" onclick="setScheduleView('weekly')">주간 편성</button>
+    <button id="annualLeaveViewBtn" class="btn gray" onclick="setScheduleView('leave')">연차관리</button>
   <button class="btn gray" onclick="toggleAllEmployees(true)">전체 선택</button>
   <button class="btn gray" onclick="toggleAllEmployees(false)">선택 해제</button>
   <button class="btn" onclick="fillDefaults()">선택 직원 기본근무 채우기</button>
@@ -1674,7 +1736,21 @@ body.resizingEmployeeColumn *{
    <div class="help" style="margin-top:7px">※ 월간표는 페이지를 한 번만 아래로 스크롤합니다. 날짜 머리글은 상단에 유지되고, 가로 스크롤과 이름 드래그 정렬은 그대로 사용할 수 있습니다.</div>
  </div>
 
- <div id="weeklyScheduleWrap" class="hidden">
+
+  <div id="annualLeaveWrap" class="hidden">
+    <div class="card annualLeavePanel">
+      <div class="row annualLeavePanelHead">
+        <div><h3 style="margin:0">직원별 연차관리 <span class="pill">입사일 기준</span></h3><div class="help" style="margin-top:5px">월간·주간 스케줄의 ‘연’은 자동 반영됩니다. 과거 미입력 월은 해당 칸에서 실제 사용량을 수동 확정할 수 있습니다.</div></div>
+        <div class="toolbar"><select id="annualLeaveYear" aria-label="연차관리 연도" onchange="annualLeaveChangeYear()"></select><button type="button" class="btn gray small" onclick="refreshAnnualLeaveData(true)">새로고침</button><span id="annualLeaveLoadState" class="saveState">준비</span></div>
+      </div>
+      <div id="annualLeaveSummaryTiles" class="annualLeaveSummaryTiles"></div>
+      <div class="annualLeaveLegend"><span class="annualLeaveTag">숫자 = 사용한 연차 일수</span><span class="annualLeaveTag auto">스케줄 자동</span><span class="annualLeaveTag manual">관리자 확정</span><span class="annualLeaveTag warning">과거 근태 미확인 → 발생 보류</span><span class="annualLeaveTag">셀 클릭 = 사용량 직접 입력·수정</span></div>
+      <div class="tablewrap annualLeaveGridScroll"><table id="annualLeaveTable" class="annualLeaveTable"><thead><tr><th class="annualLeavePinned">직원 / 입사일</th><th>1월</th><th>2월</th><th>3월</th><th>4월</th><th>5월</th><th>6월</th><th>7월</th><th>8월</th><th>9월</th><th>10월</th><th>11월</th><th>12월</th><th>연도 발생</th><th>연도 사용</th><th>잔여 연차</th><th>관리</th></tr></thead><tbody id="annualLeaveBody"><tr><td colspan="17" class="help">연차 자료를 불러오는 중입니다.</td></tr></tbody></table></div>
+      <div class="help" style="margin-top:10px;line-height:1.65">잔여는 기존 연차원장의 발생·사용·조정 기록을 시간(h) 기준으로 계산합니다. 연차관리에서 월 사용량을 확정하면 스케줄에 입력된 그 달 연차와 <b>중복 차감하지 않습니다.</b> 근무조건이 바뀐 직원은 일수와 시간을 함께 확인하세요. 스케줄이 없는 기간은 자동으로 개근 처리하지 않으며, ‘출근확인’에서 실제 출근 사실을 확인한 후 발생에 반영합니다.</div>
+    </div>
+  </div>
+
+  <div id="weeklyScheduleWrap" class="hidden">
    <div class="infoBox help" style="margin-bottom:10px">
      <b>주간 편성 방식</b> · 월요일~일요일을 한 주로 계산합니다.
      선택한 달의 첫 주와 마지막 주는 이전달/다음달 날짜까지 함께 표시합니다.
@@ -2270,7 +2346,7 @@ function updateCurrentUserBadge(){let el=$('currentUserBadge');if(!el)return;let
 function applyPermissionUI(){
  document.body.classList.toggle('schedulerMode',!isAppAdmin());
  document.querySelectorAll('.nav[data-page]').forEach(btn=>{btn.style.display=canViewModule(btn.dataset.page)?'':'none'});
- document.querySelectorAll('.nav[data-page="hours"]').forEach(btn=>{let mobile=btn.closest('.mobileNav');btn.innerHTML=isAppAdmin()?(mobile?'근로':'◷ 근로시간'):(mobile?'근태 확인':'✓ 근태 확인')});
+ document.querySelectorAll('.nav[data-page="hours"]').forEach(btn=>{let mobile=btn.closest('.mobileNav');let label=isAppAdmin()?(mobile?'근로':'근로시간'):'근태 확인';let text=btn.querySelector('.navText');if(text)text.textContent=label;else btn.textContent=label});
  if($('adminNavDivider'))$('adminNavDivider').style.display=(canViewModule('users')||canViewModule('audit'))?'':'none';
  if($('renameStoreBtn'))$('renameStoreBtn').style.display=canEditModule('stores')?'':'none';
  document.querySelectorAll('.adminOnly').forEach(el=>{el.style.display=isAppAdmin()?'':'none'});
@@ -2783,7 +2859,7 @@ document.querySelectorAll('.nav').forEach(b=>b.onclick=async()=>{
  document.querySelectorAll(`[data-page="${b.dataset.page}"]`).forEach(x=>x.classList.add('active'));
  document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
  let page=$(b.dataset.page+'Page');if(page)page.classList.add('active');
- if(b.dataset.page==='schedule'){if(scheduleView==='weekly')renderWeeklyPlanner();else renderSchedule();applyScheduleEditState()}
+ if(b.dataset.page==='schedule'){if(scheduleView==='weekly')renderWeeklyPlanner();else if(scheduleView==='leave')await refreshAnnualLeaveData(false);else renderSchedule();applyScheduleEditState()}
  else if(b.dataset.page==='employees'){employeeView='active';$('activeEmpTab')?.classList.add('active');$('retiredEmpTab')?.classList.remove('active');loadEmployeesPageData()}
  else if(b.dataset.page==='hours'){setHoursView(isAppAdmin()?(localStorage.getItem('staff_hours_view')||'summary'):'attendance');loadHoursPageData();}
  else if(b.dataset.page==='payroll'){applyPayrollColumnWidths();loadPayrollSimple()}
@@ -2806,6 +2882,7 @@ async function loadStores(){
 let lastLoadedScheduleStoreId=null,lastLoadedScheduleMonth=null;
 function clearStoreScopedUI(){
  lastLoadedScheduleStoreId=null;lastLoadedScheduleMonth=null;
+ annualLeaveLoadedStore=null;annualLeaveLoadedYear=null;annualLeaveScheduleRows=[];annualLeaveLoadingSeq++;
  employees=[];retiredEmployees=[];schedules=[];payroll=[];leaveLedger=[];paymentRegister=[];incentiveRegister=[];employeeDocumentStatusMap=new Map();employeeDocumentStatusReadyStoreId=null;scheduleMonthLocks=[];scheduleEmployeeOrderMap=new Map();scheduleEmployeeOrderTableAvailable=null;scheduleDragEmployeeId=null;
  selectedEmployees.clear();
  hideScheduleDateTooltip();
@@ -2948,6 +3025,7 @@ async function refreshAll(){
    }
  }
  lastLoadedScheduleStoreId=sid;lastLoadedScheduleMonth=r.m;
+ if(scheduleView==='leave' && $('schedulePage')?.classList.contains('active'))Promise.resolve().then(()=>refreshAnnualLeaveData(false)).catch(err=>console.warn('연차관리 갱신',err));
  if($('scheduleLoadState')){$('scheduleLoadState').textContent=`완료 ${Math.round(performance.now()-started)}ms`;$('scheduleLoadState').className='saveState saved'}
 
  // 공휴일은 스케줄/근로/현황/공휴일 화면에서만 백그라운드 조회
@@ -3219,6 +3297,8 @@ function legalWeeklyHoursForAccrual(e,eventDate,scheduleRows,periodEnd){
 }
 function monthlyAttendanceStatus(e,periodStart,periodEnd,scheduleRows){
  let a=attendancePeriodAnalysis(e,periodStart,periodEnd,scheduleRows);
+ let verified=annualLeaveAttendanceVerification(e.id,'month',periodStart);
+ if(verified&&['pass','fail','review'].includes(verified.status))return {...a,status:verified.status,memo:'관리자 출근 확인',verification:verified,manualVerified:true};
  if(a.missing.length)return {...a,status:'pending',memo:`확인 중 · 스케줄 미입력 ${a.missing.length}일`};
  if(a.sick.length||a.review.length)return {...a,status:'review',memo:`확인 필요 · 병가/기타 ${a.sick.length+a.review.length}일`};
  if(a.absent.length)return {...a,status:'fail',memo:`미발생 · 결근 ${a.absent.length}일`};
@@ -3226,6 +3306,8 @@ function monthlyAttendanceStatus(e,periodStart,periodEnd,scheduleRows){
 }
 function annualAttendanceStatus(e,periodStart,periodEnd,scheduleRows){
  let a=attendancePeriodAnalysis(e,periodStart,periodEnd,scheduleRows);
+ let verified=annualLeaveAttendanceVerification(e.id,'year',periodStart);
+ if(verified&&['pass80','low80','review'].includes(verified.status))return {...a,status:verified.status,rate:verified.status==='pass80'?1:verified.status==='low80'?0.79:a.rate,verification:verified,manualVerified:true};
  if(a.missing.length)return {...a,status:'pending'};
  if(a.sick.length||a.review.length)return {...a,status:'review'};
  return {...a,status:a.rate>=0.8?'pass80':'low80'};
@@ -3245,7 +3327,9 @@ function expectedAccruals(e,through=isoToday(),attendanceSchedules=[]){
    let dt=addMonthsClamped(e.hire_date,m);if(dt>through)break;
    let periodStart=addMonthsClamped(e.hire_date,m-1),periodEnd=addDaysIso(dt,-1),att=monthlyAttendanceStatus(e,periodStart,periodEnd,attendanceSchedules);
    if(att.status!=='pass')continue;
-   let wh=legalWeeklyHoursForAccrual(e,dt,attendanceSchedules,periodEnd),weekly=Number(wh.hours||0);
+   let wh=legalWeeklyHoursForAccrual(e,dt,attendanceSchedules,periodEnd);
+   if(att.verification?.weeklyHours>0)wh={hours:att.verification.weeklyHours,unknown:[],source:'manual-confirmation'};
+   let weekly=Number(wh.hours||0);
    if(wh.unknown?.length||weekly<LEGAL_MIN_WEEKLY_HOURS_FOR_LEAVE)continue;
    let hrs=legalRoundLeaveHours(Math.min(weekly,40)/40*8);if(!hrs)continue;
    out.push({employee_id:e.id,event_date:dt,event_type:'accrual',hours:hrs,source:'auto',source_key:`accrual-month:${e.id}:${dt}`,memo:`입사 ${m}개월차 개근 · 주 소정 ${weekly}h 비례 ${hrs}h · ${periodStart}~${periodEnd}`});
@@ -3258,7 +3342,9 @@ function expectedAccruals(e,through=isoToday(),attendanceSchedules=[]){
    let yearStart=addYearsClamped(e.hire_date,y-1),yearEnd=addDaysIso(dt,-1),ann=annualAttendanceStatus(e,yearStart,yearEnd,attendanceSchedules);
    if(ann.status==='pending'||ann.status==='review')continue;
    if(ann.status==='pass80'){
-     let wh=legalWeeklyHoursForAccrual(e,dt,attendanceSchedules,yearEnd),weekly=Number(wh.hours||0);if(wh.unknown?.length||weekly<LEGAL_MIN_WEEKLY_HOURS_FOR_LEAVE)continue;
+     let wh=legalWeeklyHoursForAccrual(e,dt,attendanceSchedules,yearEnd);
+     if(ann.verification?.weeklyHours>0)wh={hours:ann.verification.weeklyHours,unknown:[],source:'manual-confirmation'};
+     let weekly=Number(wh.hours||0);if(wh.unknown?.length||weekly<LEGAL_MIN_WEEKLY_HOURS_FOR_LEAVE)continue;
      let hrs=annualLeaveHours(e,y,dt,weekly);if(!hrs)continue;
      out.push({employee_id:e.id,event_date:dt,event_type:'accrual',hours:hrs,source:'auto',source_key:`accrual-year:${e.id}:${dt}`,memo:`입사 ${y}주년 · 출근율 ${(ann.rate*100).toFixed(1)}% · ${annualLeaveDays(y)}일 비례 ${hrs}h`});
    }else if(ann.status==='low80'){
@@ -3317,6 +3403,8 @@ function monthlyAccrualEmployeeBadge(e,through=isoToday()){
 async function syncLeaveLedger(){
  if(!employees.length)return;
  const ids=employees.map(e=>e.id);
+ // 다른 PC에서 확인한 근태 판정을 자동 발생 계산에 반드시 반영한다.
+ try{leaveLedger=await fetchLeaveLedgerPaged(ids,null)}catch(err){console.warn('연차 판정 원장 사전조회',err);}
  // 기존 연차잔여값이 있다면 최초 1회 기초잔액으로 이관
  const opening=employees.filter(e=>Number(e.leave_balance||0)!==0).map(e=>({
    employee_id:e.id,event_date:e.hire_date,event_type:'adjust',hours:Number(e.leave_balance||0),source:'opening',
@@ -3337,19 +3425,14 @@ async function syncLeaveLedger(){
    if(a.error)console.warn(a.error.message);
  }
 
- // 과거 코드가 날짜만 지나면 만들어버린 잘못된 1년 미만 월 발생분 제거.
- // 현재 개근 판정 결과에 없는 accrual-month 키는 자동원장에서 삭제.
+ // 출근 확인 변경 시 더 이상 유효하지 않은 자동 월·연차 발생기록도 정리한다.
+ // 수동 조정이나 수동 확정 사용량은 이 과정에서 절대 삭제하지 않는다.
  let autoExisting=await fetchLeaveLedgerPaged(ids,'auto');
- let validAutoMonthly=new Set(
-   accruals.filter(x=>String(x.source_key||'').startsWith('accrual-month:'))
-           .map(x=>x.source_key)
- );
- let staleMonthly=autoExisting
-   .filter(x=>String(x.source_key||'').startsWith('accrual-month:') && !validAutoMonthly.has(x.source_key))
-   .map(x=>x.id);
- if(staleMonthly.length){
-   let del=await sb.from('leave_ledger').delete().in('id',staleMonthly);
-   if(del.error)console.warn('잘못된 월 연차 삭제 오류',del.error.message);
+ let validAutoKeys=new Set(accruals.map(x=>x.source_key));
+ let staleAuto=autoExisting.filter(x=>/^accrual-(month|year|low80):/.test(String(x.source_key||''))&&!validAutoKeys.has(x.source_key)).map(x=>x.id);
+ for(let i=0;i<staleAuto.length;i+=100){
+   let del=await sb.from('leave_ledger').delete().in('id',staleAuto.slice(i,i+100));
+   if(del.error)console.warn('무효 자동 발생연차 정리 오류',del.error.message);
  }
 
  // DB에 저장된 모든 '연' 스케줄을 연차사용 원장과 동기화
@@ -3371,15 +3454,18 @@ async function syncLeaveLedger(){
 }
 async function loadLeaveLedger(){
  leaveLedger=[];
- if(!employees.length)return;
- let ids=employees.map(e=>e.id);
+ if(!allEmployees().length)return;
+ let ids=allEmployees().map(e=>e.id);
  try{
    leaveLedger=await fetchLeaveLedgerPaged(ids,null);
    leaveLedger.sort((a,b)=>String(a.event_date||'').localeCompare(String(b.event_date||''))||(Number(a.id||0)-Number(b.id||0)));
  }catch(err){console.warn(err?.message||err);leaveLedger=[]}
 }
 function leaveSummary(e,asOf=monthRange().last){
- let rows=leaveLedger.filter(x=>x.employee_id===e.id&&x.event_date<=asOf);
+ let rows=leaveLedger.filter(x=>Number(x.employee_id)===Number(e.id)&&String(x.event_date||'')<=asOf);
+ // 월 확정사용량이 있으면 같은 달의 스케줄 연차원장과 중복 차감하지 않는다.
+ let confirmedMonths=new Set(rows.filter(x=>x.source==='annual_use_override'&&x.event_type==='use').map(x=>String(x.event_date).slice(0,7)));
+ rows=rows.filter(x=>!(x.event_type==='use'&&x.source==='schedule'&&confirmedMonths.has(String(x.event_date).slice(0,7))));
  let accrued=0,used=0,adjust=0,total=0;
  rows.forEach(x=>{
    let h=Number(x.hours||0);total+=h;
@@ -3397,6 +3483,9 @@ function liveLeaveSummary(e,asOf=monthRange().last){
  if(r.first>asOf)return base;
 
  let end=r.last<asOf?r.last:asOf;
+
+ // 관리자가 해당 월의 최종 사용량을 확정했다면 스케줄과의 임시 차이를 더하지 않는다.
+ if(leaveLedger.some(x=>Number(x.employee_id)===Number(e.id)&&x.source==='annual_use_override'&&String(x.event_date||'').slice(0,7)===r.m&&String(x.event_date)<=asOf))return base;
 
  // 현재 Supabase 연차원장에 기록된 선택월의 스케줄 연차사용
  let ledgerUsed=leaveLedger
@@ -4256,15 +4345,18 @@ function weeklyPlannerEmployees(){
  return sortEmployeesForSchedule(list);
 }
 async function setScheduleView(v){
+ if(!['monthly','weekly','leave'].includes(v))return;
  if(v!==scheduleView&&!await persistScheduleEdits())return;
  scheduleView=v;
- let monthly=v==='monthly';
- $('monthlyScheduleWrap')?.classList.toggle('hidden',!monthly);
- $('weeklyScheduleWrap')?.classList.toggle('hidden',monthly);
- if($('monthlyViewBtn'))$('monthlyViewBtn').className=monthly?'btn':'btn gray';
- if($('weeklyViewBtn'))$('weeklyViewBtn').className=monthly?'btn gray':'btn';
- if(monthly)renderSchedule();
- else renderWeeklyPlanner();
+ $('monthlyScheduleWrap')?.classList.toggle('hidden',v!=='monthly');
+ $('weeklyScheduleWrap')?.classList.toggle('hidden',v!=='weekly');
+ $('annualLeaveWrap')?.classList.toggle('hidden',v!=='leave');
+ if($('monthlyViewBtn'))$('monthlyViewBtn').className=v==='monthly'?'btn':'btn gray';
+ if($('weeklyViewBtn'))$('weeklyViewBtn').className=v==='weekly'?'btn':'btn gray';
+ if($('annualLeaveViewBtn'))$('annualLeaveViewBtn').className=v==='leave'?'btn':'btn gray';
+ if(v==='monthly')renderSchedule();
+ else if(v==='weekly')renderWeeklyPlanner();
+ else await refreshAnnualLeaveData(false);
 }
 
 /* V9.1.23: date navigation works without opening a modal. Only entered onsite work counts. */
@@ -4859,7 +4951,7 @@ function queueScheduleSave(payload){
 function scheduleBackgroundLeaveSync(){
  clearTimeout(scheduleLeaveSyncTimer);
  scheduleLeaveSyncTimer=setTimeout(async()=>{
-   try{await syncLeaveLedger();await loadLeaveLedger();if($('homePage')?.classList.contains('active'))renderHome();if($('employeesPage')?.classList.contains('active'))renderEmployees();}
+   try{await syncLeaveLedger();await loadLeaveLedger();if($('homePage')?.classList.contains('active'))renderHome();if($('employeesPage')?.classList.contains('active'))renderEmployees();if(scheduleView==='leave'&&$('annualLeaveWrap')&&!$('annualLeaveWrap').classList.contains('hidden'))refreshAnnualLeaveData(true);}
    catch(err){console.warn('연차원장 백그라운드 동기화',err)}
  },350);
 }
@@ -11471,5 +11563,195 @@ async function deleteStoreNote(id){
 /* ===== /V9.1.30 ===== */
 
 boot();
+
+// === V9.1.42 직원별 연차관리 (기존 연차원장 활용 / 스케줄값 덮어쓰기 없음) ===
+let annualLeaveYear=Number(($('monthSelect')?.value||isoToday()).slice(0,4))||new Date().getFullYear();
+let annualLeaveScheduleRows=[],annualLeaveLoadedStore=null,annualLeaveLoadedYear=null,annualLeaveLoadingSeq=0;
+const annualLeaveRound=n=>Math.round(Number(n||0)*100)/100;
+const annualLeaveFmt=n=>String(annualLeaveRound(n));
+const annualLeaveYm=(year,month)=>`${year}-${String(month).padStart(2,'0')}`;
+function annualLeaveManualSourceKey(id,ym){return `annual-use-override:${id}:${ym}`;}
+function annualLeaveAttendanceKey(id,type,start){return `annual-attendance-${type}:${id}:${start}`;}
+function annualLeaveParseMemo(str){try{const p=JSON.parse(str||'{}');return p&&typeof p==='object'?p:{};}catch(_){return {};}}
+function annualLeaveManualEntry(id,ym){return leaveLedger.find(x=>Number(x.employee_id)===Number(id)&&x.source_key===annualLeaveManualSourceKey(id,ym))||null;}
+function annualLeaveAttendanceVerification(id,type,start){
+ const row=leaveLedger.find(x=>Number(x.employee_id)===Number(id)&&x.source_key===annualLeaveAttendanceKey(id,type,start));
+ if(!row)return null;
+ let v=annualLeaveParseMemo(row.memo);
+ return {...v,sourceRow:row};
+}
+function annualLeaveEmployeeList(year=annualLeaveYear){
+ const first=year+'-01-01',last=year+'-12-31';
+ return sortEmployeesForSchedule(allEmployees().filter(e=>employedInRange(e,first,last)));
+}
+function annualLeaveMonthSchedule(e,ym){
+ const rows=annualLeaveScheduleRows.filter(s=>Number(s.employee_id)===Number(e.id)&&String(s.work_date||'').startsWith(ym));
+ return {days:rows.length,hours:annualLeaveRound(rows.reduce((sum,s)=>sum+(Number(s.scheduled_hours)>0?Number(s.scheduled_hours):Number(leaveUseHoursDecision(e,s.work_date,s).hours||0)),0)),rows};
+}
+function annualLeaveMonthUsage(e,ym){
+ const actual=annualLeaveMonthSchedule(e,ym),override=annualLeaveManualEntry(e.id,ym);
+ if(override){const v=annualLeaveParseMemo(override.memo);return {days:Number(v.days??0),hours:Math.abs(Number(override.hours||0)),manual:true,actual,override,unitHours:Number(v.unitHours||0),note:v.note||''};}
+ return {days:actual.days,hours:actual.hours,manual:false,actual,override:null};
+}
+function annualLeaveAccrualCount(e,year,asOf){
+ let rows=leaveLedger.filter(x=>Number(x.employee_id)===Number(e.id)&&x.event_type==='accrual'&&String(x.event_date||'').startsWith(String(year))&&String(x.event_date)<=asOf);
+ let days=0,hours=0;
+ rows.forEach(r=>{
+  hours+=Math.max(0,Number(r.hours||0));
+  let sk=String(r.source_key||'');
+  if(sk.startsWith('accrual-month:')||sk.startsWith('accrual-low80:'))days+=1;
+  else if(sk.startsWith('accrual-year:')){
+   let y=Number(String(r.event_date||'').slice(0,4))-Number(String(e.hire_date||'').slice(0,4));
+   days+=annualLeaveDays(Math.max(1,y));
+  }else{
+   let unit=Number(leaveMonthlyHoursAt(e,r.event_date)||0);
+   if(unit>0)days+=Number(r.hours||0)/unit;
+  }
+ });
+ return {days:annualLeaveRound(days),hours:annualLeaveRound(hours)};
+}
+async function fetchAnnualLeaveScheduleRows(year){
+ const ids=allEmployees().map(e=>Number(e.id)).filter(Boolean),all=[],start=year+'-01-01',end=year+'-12-31',size=1000;
+ for(let group=0;group<ids.length;group+=18){
+  let chunk=ids.slice(group,group+18),from=0;
+  while(true){
+   const q=await sb.from('schedules').select('employee_id,work_date,work_code,scheduled_hours')
+    .in('employee_id',chunk).eq('work_code','연').gte('work_date',start).lte('work_date',end)
+    .order('work_date',{ascending:true}).range(from,from+size-1);
+   if(q.error)throw new Error('연차 스케줄 불러오기: '+q.error.message);
+   const rows=q.data||[];all.push(...rows);
+   if(rows.length<size)break;
+   from+=size;
+  }
+ }
+ return all;
+}
+function annualLeaveFillYearOptions(){
+ const el=$('annualLeaveYear');if(!el)return;
+ const currentYear=Number(isoToday().slice(0,4)),hireYears=allEmployees().map(e=>Number(String(e.hire_date||'').slice(0,4))).filter(x=>x>=2000&&x<=currentYear+5);
+ const from=Math.min(2025,...hireYears,annualLeaveYear),to=Math.max(currentYear+2,annualLeaveYear);
+ let opts='';for(let y=to;y>=from;y--)opts+=`<option value="${y}">${y}년</option>`;
+ el.innerHTML=opts;el.value=String(annualLeaveYear);
+}
+async function annualLeaveChangeYear(){
+ const year=Number($('annualLeaveYear')?.value);if(year>=2000&&year<=2100)annualLeaveYear=year;
+ await refreshAnnualLeaveData(false);
+}
+async function refreshAnnualLeaveData(force=false){
+ if(!$('annualLeaveWrap')||!storeId())return;
+ let year=annualLeaveYear, sid=storeId(),seq=++annualLeaveLoadingSeq,state=$('annualLeaveLoadState');
+ annualLeaveFillYearOptions();
+ if(state){state.className='saveState saving';state.textContent='확인 중';}
+ try{
+  // 장부는 월간·주간 편성과 공유하지만, 스케줄 전체 과거 데이터는 연도별로 페이지 조회한다.
+  if(!await persistScheduleEdits())return;
+  await loadLeaveLedger();
+  if(seq!==annualLeaveLoadingSeq||sid!==storeId())return;
+  if(force||annualLeaveLoadedStore!==sid||annualLeaveLoadedYear!==year){
+   annualLeaveScheduleRows=await fetchAnnualLeaveScheduleRows(year);
+   if(seq!==annualLeaveLoadingSeq||sid!==storeId())return;
+   annualLeaveLoadedStore=sid;annualLeaveLoadedYear=year;
+  }
+  renderAnnualLeaveTable();
+  if(state){state.className='saveState saved';state.textContent=`${year}년 조회완료`;}
+ }catch(err){
+  console.warn('연차관리 조회 오류',err);
+  if(state){state.className='saveState error';state.textContent='조회 오류';}
+  if($('annualLeaveBody'))$('annualLeaveBody').innerHTML=`<tr><td colspan="17" style="color:#b42318;text-align:left;padding:15px">${esc(err?.message||String(err))}</td></tr>`;
+ }
+}
+function renderAnnualLeaveTable(){
+ const body=$('annualLeaveBody'),tiles=$('annualLeaveSummaryTiles');if(!body)return;
+ const year=annualLeaveYear,today=isoToday(),cutoff=year===Number(today.slice(0,4))?today:(year<Number(today.slice(0,4))?year+'-12-31':null);
+ const editable=canEditModule('schedule'),list=annualLeaveEmployeeList(year);
+ let grandAccrual=0,grandUsed=0,grandBalance=0,missing=0;
+ body.innerHTML=list.length?list.map(e=>{
+  const ann=cutoff?annualLeaveAccrualCount(e,year,cutoff):{days:0,hours:0};
+  let sumUsed=0,monthCells='';
+  for(let m=1;m<=12;m++){
+   const ym=annualLeaveYm(year,m),entry=annualLeaveMonthUsage(e,ym),outside=!employedInRange(e,ym+'-01',ym+'-'+String(new Date(year,m,0).getDate()).padStart(2,'0'));
+   sumUsed+=entry.days;
+   const cls=entry.manual?'manual':(entry.days?'auto used':'empty');
+   const short=entry.manual?'수동확정':entry.days?'스케줄':'-';
+   const desc=entry.manual?`수동확정 ${entry.days}개 · ${annualLeaveFmt(entry.hours)}h · 스케줄 ${entry.actual.days}개`:entry.days?`스케줄 연차 ${entry.days}개 · ${annualLeaveFmt(entry.hours)}h`:'사용기록 없음';
+   monthCells+=`<td><button type="button" class="annualLeaveCell ${cls}" ${outside?'disabled':''} onclick="openAnnualLeaveMonth(${e.id},'${ym}')" title="${esc(desc)}" aria-label="${ym} ${esc(e.name)} 연차 사용: ${esc(desc)}">${entry.days?annualLeaveFmt(entry.days):'-'}<small>${short}</small></button></td>`;
+  }
+  let balance=cutoff?leaveSummary(e,cutoff).balance:0;
+  grandAccrual+=ann.days;grandUsed+=sumUsed;grandBalance+=balance;
+  const next=cutoff?nextMonthlyAccrualStatus(e,cutoff,leaveAttendanceSchedules):null;
+  if(next&&['pending','review'].includes(next.status))missing++;
+  return `<tr data-annual-employee="${e.id}"><td class="annualLeavePinned" style="--employee-print-bg:${employeeColor(e)}"><b>${esc(e.name)}</b><small>입사 ${esc(e.hire_date||'미등록')}</small><small>${esc(workTypeForDate(e,year+'-12-31'))}</small></td>${monthCells}<td class="annualLeaveStat">${annualLeaveFmt(ann.days)}개<small>${annualLeaveFmt(ann.hours)}h</small></td><td class="annualLeaveStat">${annualLeaveFmt(sumUsed)}개</td><td class="annualLeaveStat balance ${balance<0?'negative':''}">${cutoff?annualLeaveFmt(balance)+'h':'예정'}<small>${cutoff?'원장 기준':'아직 미도래'}</small></td><td><div class="annualLeaveActions"><button class="btn gray small" onclick="openAnnualLeaveAttendance(${e.id})">출근확인</button>${editable?`<button class="btn gray small" onclick="adjustLeave(${e.id})">잔여조정</button>`:''}</div></td></tr>`;
+ }).join(''):'<tr><td colspan="17" style="padding:24px">해당 연도에 재직한 직원이 없습니다.</td></tr>';
+ if(tiles)tiles.innerHTML=`<div class="annualLeaveTile"><small>${year}년 발생 합계</small><b>${annualLeaveFmt(grandAccrual)}개</b></div><div class="annualLeaveTile"><small>${year}년 사용 합계</small><b>${annualLeaveFmt(grandUsed)}개</b></div><div class="annualLeaveTile"><small>현재·연도말 잔여 합계</small><b>${cutoff?annualLeaveFmt(grandBalance)+'h':'예정 연도'}</b></div><div class="annualLeaveTile"><small>1년 미만 개근 확인 필요</small><b>${missing}명</b></div>`;
+}
+function openAnnualLeaveMonth(id,ym){
+ const e=allEmployees().find(x=>Number(x.id)===Number(id));if(!e)return;
+ const entry=annualLeaveMonthUsage(e,ym),editable=canEditModule('schedule');
+ const guess=Number(entry.unitHours||leaveUseHoursDecision(e,ym+'-01').hours||leaveMonthlyHoursAt(e,ym+'-01')||0);
+ const unit=annualLeaveRound(guess);
+ modal(`<h2>${esc(e.name)} · ${ym} 연차 사용량</h2><div class="infoBox help">스케줄 자동 연차: <b>${entry.actual.days}개 (${annualLeaveFmt(entry.actual.hours)}h)</b><br>이 달의 실제 사용량을 확정하면 월간·주간 스케줄을 변경하지 않고, 차감 계산에서 해당 월의 스케줄 사용량을 대체합니다.</div><div class="annualFormGrid"><div class="field"><label>해당 월 확정 사용 개수</label><input id="annualManualDays" type="number" min="0" max="31" step="0.1" value="${annualLeaveFmt(entry.days)}" ${editable?'':'disabled'}></div><div class="field"><label>연차 1개당 차감 시간(h)</label><input id="annualManualUnit" type="number" min="0.01" max="24" step="0.1" value="${unit}" ${editable?'':'disabled'}></div><div class="field wide"><label>수정 사유 (선택)</label><textarea id="annualManualNote" style="width:100%" maxlength="300" placeholder="예: 상반기 미입력 스케줄 확인 후 수동 확정" ${editable?'':'disabled'}>${esc(entry.note||'')}</textarea></div></div><div class="help" style="margin-top:9px">${entry.manual?'현재 관리자 수동확정 적용 중 · 자동연결로 되돌리려면 [자동 사용량 복원]을 누르세요.':'현재 스케줄 자동연결 중입니다. [사용량 확정]을 누르면 이 달만 수동확정으로 전환됩니다.'}</div><div class="modalActions"><button class="btn gray" onclick="closeModal()">닫기</button>${editable?`<button class="btn gray" onclick="annualLeaveResetManual(${id},'${ym}')" ${entry.manual?'':'disabled'}>자동 사용량 복원</button><button class="btn" onclick="annualLeaveSaveManual(${id},'${ym}')">사용량 확정</button>`:''}</div>`);
+ $('modalBox')?.classList.add('annualLeaveEditModal');
+}
+async function annualLeaveSaveManual(id,ym){
+ if(!canEditModule('schedule'))return alert('수정 권한이 없습니다.');
+ const days=Number($('annualManualDays')?.value),unit=Number($('annualManualUnit')?.value),note=String($('annualManualNote')?.value||'').trim();
+ if(!Number.isFinite(days)||days<0||days>31||!Number.isFinite(unit)||unit<=0||unit>24)return alert('연차 개수와 1개당 시간을 확인해 주세요.');
+ const hours=annualLeaveRound(days*unit),key=annualLeaveManualSourceKey(id,ym);
+ const payload={employee_id:id,event_date:ym+'-01',event_type:'use',hours:-hours,source:'annual_use_override',source_key:key,memo:JSON.stringify({days,unitHours:unit,note,savedAt:new Date().toISOString()})};
+ const q=await sb.from('leave_ledger').upsert(payload,{onConflict:'source_key'});
+ if(q.error)return alert('연차 수동확정 저장 오류: '+q.error.message);
+ await loadLeaveLedger();closeModal();renderAnnualLeaveTable();refreshLiveLeaveUI(id);
+}
+async function annualLeaveResetManual(id,ym){
+ if(!canEditModule('schedule'))return alert('수정 권한이 없습니다.');
+ if(!annualLeaveManualEntry(id,ym)){closeModal();return;}
+ if(!confirm(`${ym} 사용량을 스케줄 자동연결로 되돌릴까요?\n스케줄 원본은 변경되지 않습니다.`))return;
+ const q=await sb.from('leave_ledger').delete().eq('source_key',annualLeaveManualSourceKey(id,ym));
+ if(q.error)return alert('자동연결 복원 오류: '+q.error.message);
+ await loadLeaveLedger();closeModal();renderAnnualLeaveTable();refreshLiveLeaveUI(id);
+}
+function annualLeaveAttendanceRows(e,year=annualLeaveYear){
+ if(!e?.hire_date)return [];
+ const rows=[];
+ for(let m=1;m<=11;m++){
+  const event=addMonthsClamped(e.hire_date,m);if(Number(event.slice(0,4))!==year)continue;
+  const start=addMonthsClamped(e.hire_date,m-1),end=addDaysIso(event,-1),manual=annualLeaveAttendanceVerification(e.id,'month',start);
+  rows.push({type:'month',start,end,event,label:`입사 ${m}개월 개근`,options:[['auto','자동 판정'],['pass','개근 확인'],['fail','결근 확인'],['review','보류']],chosen:manual?.status||'auto',weeklyHours:manual?.weeklyHours||leaveWeeklyHoursAt(e,event)});
+ }
+ for(let y=1;y<=45;y++){
+  const event=addYearsClamped(e.hire_date,y);if(Number(event.slice(0,4))>year)break;
+  if(Number(event.slice(0,4))!==year)continue;
+  const start=addYearsClamped(e.hire_date,y-1),end=addDaysIso(event,-1),manual=annualLeaveAttendanceVerification(e.id,'year',start);
+  rows.push({type:'year',start,end,event,label:`입사 ${y}주년 출근율`,options:[['auto','자동 판정'],['pass80','80% 이상 확인'],['low80','80% 미만 확인'],['review','보류']],chosen:manual?.status||'auto',weeklyHours:manual?.weeklyHours||leaveWeeklyHoursAt(e,event)});
+ }
+ return rows;
+}
+function openAnnualLeaveAttendance(id){
+ const e=allEmployees().find(x=>Number(x.id)===Number(id));if(!e)return;
+ const rows=annualLeaveAttendanceRows(e,annualLeaveYear),edit=canEditModule('schedule');
+ const html=rows.map((x,i)=>`<tr><td style="text-align:left"><b>${esc(x.label)}</b><div class="help">${esc(x.start)} ~ ${esc(x.end)}<br>발생일 ${esc(x.event)}</div></td><td><select class="annualCheckStatus" data-type="${x.type}" data-start="${x.start}" ${edit?'':'disabled'}>${x.options.map(o=>`<option value="${o[0]}" ${x.chosen===o[0]?'selected':''}>${o[1]}</option>`).join('')}</select></td><td><input type="number" class="annualCheckWeekly" min="0" max="80" step="0.1" value="${annualLeaveFmt(x.weeklyHours)}" ${edit?'':'disabled'} aria-label="주 소정근로시간"></td></tr>`).join('');
+ modal(`<h2>${esc(e.name)} · ${annualLeaveYear}년 출근 확인</h2><div class="annualLeaveTag warning">스케줄이 없는 과거 기간은 자동 개근처리하지 않습니다.</div><div class="help" style="margin-top:10px;line-height:1.65">실제 출근·결근 사실을 확인한 구간만 직접 판정하세요. 입사일에 따라 확인 기간이 달라집니다. 주 소정근로시간은 근로계약 조건을 확인해 정확히 입력해야 합니다. <b>1주 15시간 미만은 자동 발생에서 제외</b>됩니다.</div><div class="annualCheckTable"><table><thead><tr><th>확인 기간</th><th style="width:145px">판정</th><th style="width:110px">주 소정시간</th></tr></thead><tbody>${html||'<tr><td colspan="3" style="padding:18px">이 연도에 발생 확인 대상이 없습니다.</td></tr>'}</tbody></table></div><div class="modalActions"><button class="btn gray" onclick="closeModal()">닫기</button>${edit&&rows.length?`<button class="btn" id="annualAttendanceSaveBtn" onclick="annualLeaveSaveAttendance(${id})">출근확인 저장 · 연차 재계산</button>`:''}</div>`);
+ $('modalBox')?.classList.add('annualLeaveEditModal');
+}
+async function annualLeaveSaveAttendance(id){
+ if(!canEditModule('schedule'))return alert('수정 권한이 없습니다.');
+ const selectors=[...document.querySelectorAll('#modalBox .annualCheckStatus')];
+ let upserts=[],deletes=[];
+ for(const sel of selectors){
+  const tr=sel.closest('tr'),wh=Number(tr?.querySelector('.annualCheckWeekly')?.value),start=sel.dataset.start,type=sel.dataset.type,key=annualLeaveAttendanceKey(id,type,start);
+  if(sel.value==='auto'){deletes.push(key);continue;}
+  if(!Number.isFinite(wh)||wh<0||wh>80)return alert(`${start} 소정근로시간을 확인해 주세요.`);
+  upserts.push({employee_id:id,event_date:start,event_type:'adjust',hours:0,source:'annual_attendance_verify',source_key:key,memo:JSON.stringify({status:sel.value,weeklyHours:wh,verifiedAt:new Date().toISOString()})});
+ }
+ const btn=$('annualAttendanceSaveBtn');if(btn){btn.disabled=true;btn.textContent='저장 중...';}
+ try{
+  if(upserts.length){const q=await sb.from('leave_ledger').upsert(upserts,{onConflict:'source_key'});if(q.error)throw q.error;}
+  if(deletes.length){const q=await sb.from('leave_ledger').delete().in('source_key',deletes);if(q.error)throw q.error;}
+  await loadLeaveLedger();
+  await syncLeaveLedger();await loadLeaveLedger();
+  closeModal();renderAnnualLeaveTable();
+ }catch(err){alert('출근확인 저장 또는 연차 재계산 오류: '+(err?.message||err));if(btn){btn.disabled=false;btn.textContent='출근확인 저장 · 연차 재계산';}}
+}
+
 </script>
 </body></html>
