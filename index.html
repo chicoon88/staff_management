@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>직원관리 대시보드 V9.1.52</title>
+<title>직원관리 대시보드 V9.1.53</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
@@ -2118,7 +2118,7 @@ body.commerceStoreMode #commerceSideNav .commerceNavGroupTitle{display:none!impo
  </div>
  <div id="hoursSummaryView">
   <div class="row laborExportRow" style="margin-top:12px;align-items:center;gap:12px">
-   <div class="help">노무사 전달용: 직원은 세로 · 날짜는 가로인 한 장짜리 스케줄형 Excel입니다. 실제 근무시간, 유급 경조휴가, 인센지급 체크 대상의 세후 30,000원을 함께 표시합니다.</div>
+   <div class="help" id="laborExportPeriodHint">노무사용 1시트 Excel: 선택월은 <b>급여 지급월</b>입니다. 전월 근로시간과 전전월 인센(대상 직원만, 세후 3만 원/일)을 표시합니다.</div>
    <button type="button" id="laborExcelExportBtn" class="btn green" onclick="exportLaborHoursWorkbook()">↓ 노무사용 근로시간 Excel 다운로드</button>
   </div>
   <div class="card hoursSummaryCard" style="margin-top:13px">
@@ -2128,7 +2128,7 @@ body.commerceStoreMode #commerceSideNav .commerceNavGroupTitle{display:none!impo
   <div class="help" style="margin-top:7px">※ 평일·주말·공휴일 시간은 대시보드의 실제 worked_hours 기준입니다.</div>
   <div class="card" style="margin-top:10px"><h3>직원별 출근 날짜</h3><div class="tablewrap" style="margin-top:10px"><table class="workDateTable"><thead><tr><th class="name">직원</th><th class="weekdayHead">평일 근무일</th><th class="weekendHead">주말 근무일</th><th class="holidayHead">공휴일 근무일</th></tr></thead><tbody id="workDateBody"></tbody></table></div></div>
   <div class="card" style="margin-top:10px">
-   <div class="row" style="align-items:center;gap:10px"><h3 style="margin:0">주말·공휴일 추가지급 대상</h3><span class="help">직원관리 인센지급 체크 직원만 · 실제 근무일 1일 1회 · 세후 30,000원 · 주말·공휴일 중복 제외</span></div>
+   <div class="row" style="align-items:center;gap:10px"><h3 style="margin:0">선택월 발생한 주말·공휴일 인센</h3><span class="help">직원관리 체크 대상만 · 실제 근무일 1일 1회 · 세후 30,000원 · 지급은 다다음달 급여</span></div><div class="help" id="laborBonusPreviewPeriod" style="margin-top:7px"></div>
    <div class="tablewrap" style="margin-top:10px"><table class="laborBonusTable"><thead><tr><th class="name">직원</th><th>해당 근무날짜</th><th>지급 횟수</th><th>1회 세후금액</th><th>합계(세후)</th><th>특이사항</th></tr></thead><tbody id="laborBonusBody"></tbody></table></div>
   </div>
  </div>
@@ -2242,7 +2242,7 @@ body.commerceStoreMode #commerceSideNav .commerceNavGroupTitle{display:none!impo
      <button class="btn gray small" onclick="resetEmployeeColumnWidths()">표 폭 초기화</button>
    </div>
   </div>
-  <div class="help" style="margin-bottom:8px">이름·주민등록번호·계좌번호·직책·업무·입사일·근무형태·휴게·급여형태·인센지급·비고는 표에서 바로 수정할 수 있습니다. 인센지급 체크된 직원만 실제 주말·공휴일 근로 1일당 세후 30,000원으로 계산합니다. <b>재직자는 기본적으로 내가 정한 연번순</b>이며 필요할 때만 입사일 오름차순으로 볼 수 있습니다. <b>퇴사자는 퇴사일 오름차순으로 자동 정렬</b>됩니다. <b>“스케줄·근로 제외”를 체크하면 재직·급여자료는 그대로 두고 월간스케줄·주간편성·근로시간에서 숨깁니다.</b> 문서 칸에서는 근로계약서의 계약 종료일을 기준으로 재계약 D-day와 근로·연봉계약서 등록 여부를 바로 확인합니다. 연봉계약서는 별도 기간을 관리하지 않고 근로계약기간을 따르는 원본 보관 문서로 취급합니다. 퇴사자 화면에서는 사직서 PDF 보관 여부도 확인할 수 있습니다. 근무형태가 날짜별로 바뀌는 직원은 우측 “근무조건”에서 적용 시작일별 이력을 등록합니다. 표 머리글의 오른쪽 경계선을 좌우로 끌면 열 폭을 직접 조절할 수 있고 자동 저장됩니다. 비고는 여러 줄로 입력할 수 있습니다.</div>
+  <div class="help" style="margin-bottom:8px">이름·주민등록번호·계좌번호·직책·업무·입사일·근무형태·휴게·급여형태·인센지급·비고는 표에서 바로 수정할 수 있습니다. 인센지급 체크 시 대상, 미체크 시 비대상입니다. 대상 직원은 실제 주말·공휴일 근로 1일당 세후 30,000원을 근무월의 다다음달 급여에 반영합니다. <b>재직자는 기본적으로 내가 정한 연번순</b>이며 필요할 때만 입사일 오름차순으로 볼 수 있습니다. <b>퇴사자는 퇴사일 오름차순으로 자동 정렬</b>됩니다. <b>“스케줄·근로 제외”를 체크하면 재직·급여자료는 그대로 두고 월간스케줄·주간편성·근로시간에서 숨깁니다.</b> 문서 칸에서는 근로계약서의 계약 종료일을 기준으로 재계약 D-day와 근로·연봉계약서 등록 여부를 바로 확인합니다. 연봉계약서는 별도 기간을 관리하지 않고 근로계약기간을 따르는 원본 보관 문서로 취급합니다. 퇴사자 화면에서는 사직서 PDF 보관 여부도 확인할 수 있습니다. 근무형태가 날짜별로 바뀌는 직원은 우측 “근무조건”에서 적용 시작일별 이력을 등록합니다. 표 머리글의 오른쪽 경계선을 좌우로 끌면 열 폭을 직접 조절할 수 있고 자동 저장됩니다. 비고는 여러 줄로 입력할 수 있습니다.</div>
   <datalist id="employeeWorkTypeSuggestions"><option value="주5일 스케줄근무"></option><option value="주4일 스케줄근무"></option><option value="기타"></option></datalist>
   <div class="tablewrap"><table><thead><tr><th style="width:44px">선택</th><th>연번</th><th class="name">이름</th><th>주민등록번호</th><th>계좌번호</th><th>직책</th><th>업무</th><th>입사일</th><th>퇴사일</th><th>근무형태</th><th>기본시간</th><th>휴게시간(분)</th><th>스케줄방식</th><th>급여형태</th><th>인센지급</th><th>연차 기준</th><th>연차 잔여</th><th>비고</th><th>출력색</th><th>문서 / 재계약</th><th></th></tr></thead><tbody id="employeeBody"></tbody></table></div>
  </div>
@@ -2374,7 +2374,8 @@ function leaveMonthlyHours(e){let w=leaveWeeklyHours(e);return w<LEGAL_MIN_WEEKL
 function leaveDayHours(e){return leaveDayHoursAt(e,isoToday())}
 function salaryDelay(e){return Number(e.salary_delay_months ?? (e.pay_type==='monthly'?1:0))}
 // V9.1.52: 신규 명시적 체크값만 세후 휴일 인센 대상으로 인정 (기존 기본-ON 설정과 분리).
-function incentiveDelay(e){return 0}
+// 휴일 인센은 근무월의 다다음달 급여에 반영한다 (예: 9월 근무 -> 11월 지급).
+function incentiveDelay(e){return 2}
 function incentiveUnit(e){return 30000}
 function incentiveEnabled(e){return e?.holiday_bonus_eligible===true}
 function payDayRule(e){return e.salary_pay_day || (e.pay_type==='monthly'?'10':'month_end')}
@@ -5557,10 +5558,13 @@ async function workRowsForMonth(employeeIds,ym){
 }
 function incentiveCountFromRows(emp,ym,rows){
  let seen=new Set(),dates=[];
- rows.filter(s=>s.employee_id===emp.id&&Number(s.worked_hours||0)>0).forEach(s=>{
-   let wd=new Date(s.work_date+'T12:00:00').getDay(),hol=holidayFor(s.work_date);
-   if((wd===0||wd===6||hol)&&!seen.has(s.work_date)){seen.add(s.work_date);dates.push(s.work_date)}
+ if(!incentiveEnabled(emp))return {count:0,dates:[]};
+ (rows||[]).filter(s=>Number(s.employee_id)===Number(emp.id)&&String(s.work_date||'').startsWith(ym)&&employedOn(emp,s.work_date)&&laborRealWork(s)).forEach(s=>{
+   if(classifyDate(s.work_date)!=='weekday'&&!seen.has(s.work_date)){
+     seen.add(s.work_date);dates.push(s.work_date);
+   }
  });
+ dates.sort();
  return {count:dates.length,dates};
 }
 function payrollFor(e){return payroll.find(p=>p.employee_id===e.id)||payroll.find(p=>p.employee_name===e.name)}
@@ -5673,8 +5677,8 @@ function laborRealWork(row){
  const code=String(row?.work_code||'').trim();
  return !!code && !['0','연','병','결','상','경','법','예'].includes(code) && Number(row?.worked_hours||0)>0;
 }
-function laborEmployeeDayRows(emp,ym){
- return schedules.filter(row=>Number(row.employee_id)===Number(emp.id)&&String(row.work_date||'').startsWith(ym)&&employedOn(emp,row.work_date))
+function laborEmployeeDayRows(emp,ym,sourceRows=schedules){
+ return (sourceRows||[]).filter(row=>Number(row.employee_id)===Number(emp.id)&&String(row.work_date||'').startsWith(ym)&&employedOn(emp,row.work_date))
   .sort((a,b)=>String(a.work_date).localeCompare(String(b.work_date)))
   .map(row=>{
    let date=String(row.work_date),code=String(row.work_code||'').trim(),kind=classifyDate(date),holiday=holidayFor(date),real=laborRealWork(row);
@@ -5702,6 +5706,7 @@ function laborSpecialDescription(row){
 function renderLaborBonusPreview(visible){
  const body=$('laborBonusBody');if(!body)return;
  const ym=$('monthSelect').value;
+ if($('laborBonusPreviewPeriod'))$('laborBonusPreviewPeriod').textContent=`${monthLabel(ym)} 근무분 → ${monthLabel(shiftMonth(ym,2))} 급여에 지급 (지급월 기준 엑셀에는 전전월 근무분을 표시)`;
  let entries=(visible||[]).map(e=>({e,rows:laborEmployeeDayRows(e,ym).filter(r=>r.eligible)})).filter(x=>x.rows.length);
  body.innerHTML=entries.map(({e,rows})=>{
   let note=rows.map(r=>r.warnings).filter(Boolean).join(' / ');
@@ -5732,34 +5737,46 @@ async function exportLaborHoursWorkbook(){
   if(typeof XLSX==='undefined')throw new Error('Excel 라이브러리를 불러오지 못했습니다. 인터넷 연결을 확인하세요.');
   if(!canViewModule('hours'))throw new Error('근로시간 조회 권한이 필요합니다.');
   if(!await persistScheduleEdits())throw new Error('스케줄 저장을 먼저 완료해 주세요.');
-  const ym=$('monthSelect').value,sid=storeId();
-  if(lastLoadedScheduleStoreId!==sid||lastLoadedScheduleMonth!==ym){
+  const payYm=$('monthSelect').value,sid=storeId();
+  // 사용자가 선택한 월 = 노무사에게 전달할 급여 지급월.
+  // 예) 2026-11 급여: 2026-10 근로시간 + 2026-09 휴일 인센.
+  const workYm=shiftMonth(payYm,-1),bonusYm=shiftMonth(payYm,-2);
+  if(lastLoadedScheduleStoreId!==sid||lastLoadedScheduleMonth!==payYm){
    await refreshAll();
-   if(lastLoadedScheduleStoreId!==sid||lastLoadedScheduleMonth!==ym)throw new Error('선택월 스케줄 자료가 아직 준비되지 않았습니다.');
+   if(lastLoadedScheduleStoreId!==sid||lastLoadedScheduleMonth!==payYm)throw new Error('선택월 직원 자료가 아직 준비되지 않았습니다.');
   }
-  await loadHolidays(false);
-  if(sid!==storeId()||ym!==$('monthSelect').value)throw new Error('작업 중 업장 또는 조회 월이 변경되었습니다. 다시 시도하세요.');
+  for(const y of new Set([Number(workYm.slice(0,4)),Number(bonusYm.slice(0,4))])){
+   if(!holidayYearData[y]?.merged)await loadHolidayYear(y,false);
+  }
+  const emps=sortEmployeesForSchedule(workTimeEmployees(workYm));
+  const employeeIds=emps.map(e=>e.id);
+  // 원본을 덮거나 날짜를 바꾸지 않고 이전 월들을 읽기 전용으로 조회한다.
+  const [workScheduleRows,bonusScheduleRows]=await Promise.all([
+    workRowsForMonth(employeeIds,workYm),
+    workRowsForMonth(emps.filter(incentiveEnabled).map(e=>e.id),bonusYm)
+  ]);
+  if(sid!==storeId()||payYm!==$('monthSelect').value)throw new Error('작업 중 업장 또는 조회 월이 변경되었습니다. 다시 시도하세요.');
   const rawStore=stores.find(v=>Number(v.id)===sid)?.name||'업장';
   const store=rawStore.replace(/약국$/,'');
-  const [year,month]=ym.split('-');
-  const dates=Array.from({length:new Date(Number(year),Number(month),0).getDate()},(_,i)=>`${ym}-${String(i+1).padStart(2,'0')}`);
-  const emps=workTimeEmployees(ym),units=LABOR_NET_HOLIDAY_BONUS;
-  const summaryHeads=['평일(h)','주말(h)','공휴일(h)','실근로(h)','연장(h)','연차(h)','유급경조(h)','결근(일)','병가(일)','인센지급','휴일근무(일)','추가상여 계산(세후)','추가상여(세후원)','특이사항 · 근태사유','노무사 확인 · 메모'];
+  const [year,month]=workYm.split('-');
+  const dates=Array.from({length:new Date(Number(year),Number(month),0).getDate()},(_,i)=>`${workYm}-${String(i+1).padStart(2,'0')}`);
+  const units=LABOR_NET_HOLIDAY_BONUS;
+  const summaryHeads=['평일(h)','주말(h)','공휴일(h)','실근로(h)','연장(h)','연차(h)','유급경조(h)','결근(일)','병가(일)','인센대상','인센근무일(전전월)','인센 근무날짜','추가상여 계산(세후)','추가상여(세후원)','특이사항 · 근태사유','노무사 확인 · 메모'];
   const headers=['순번','직원','근무형태',...dates.map(d=>{
     let t=classifyDate(d),day=laborWorkdayName(d).slice(0,1);
     return `${Number(d.slice(-2))}(${day})${t==='holiday'?'★':(t==='weekend'?'*':'')}`;
    }),...summaryHeads];
-  const firstSummary=3+dates.length,bonusCountColumn=firstSummary+10,bonusAmountColumn=firstSummary+12;
+  const firstSummary=3+dates.length,bonusCountColumn=firstSummary+10,bonusAmountColumn=firstSummary+13;
   const sheetRows=[
-   [`${year}년 ${Number(month)}월 ${store} · 노무사 근로시간 및 휴일 추가상여`],
-   ['기준: 저장된 월간/주간 스케줄의 실제 근무시간(h) · ★ 공휴일 / * 주말 · 인센지급 체크 직원만 휴일 근무 1일당 세후 30,000원'],
-   ['상·경 = 회사규정 유급 경조휴가(결근 아님), 연 = 연차, 결 = 결근, 병 = 병가 / 휴일·주말 중복 날짜는 1일 1회만 계산 · 추가상여는 세후 지급목표액(노무사 세전 환산 및 기지급 여부 확인)'],
+   [`${monthLabel(payYm)} 급여 지급용 · ${store} · 근로시간 및 휴일 추가상여`],
+   [`근로시간: ${monthLabel(workYm)} 근무분 / 휴일 인센: ${monthLabel(bonusYm)} 근무분 → ${monthLabel(payYm)} 급여 반영 · ★ 공휴일 / * 주말`],
+   ['상·경=유급 경조휴가(결근 아님), 연=연차, 결=결근, 병=병가 / 인센 대상만 전전월 주말·공휴일 실제 근무 1일당 세후 30,000원 / 노무사 세전 환산·기지급 여부 확인'],
    headers
   ];
   const sums=new Map(),detail=[];
   emps.forEach((emp,i)=>{
-   const monthRows=laborEmployeeDayRows(emp,ym),byDate=new Map(monthRows.map(r=>[r.date,r]));
-   const actual=monthRows.filter(r=>r.real),bonus=actual.filter(r=>r.eligible);
+   const monthRows=laborEmployeeDayRows(emp,workYm,workScheduleRows),byDate=new Map(monthRows.map(r=>[r.date,r]));
+   const actual=monthRows.filter(r=>r.real),bonusInfo=incentiveCountFromRows(emp,bonusYm,bonusScheduleRows);
    const hoursByKind=k=>round2(actual.filter(r=>r.kind===k).reduce((sum,r)=>sum+r.actualHours,0));
    const actualTotal=round2(actual.reduce((sum,r)=>sum+r.actualHours,0));
    const otTotal=round2(actual.reduce((sum,r)=>sum+r.ot,0));
@@ -5767,7 +5784,7 @@ async function exportLaborHoursWorkbook(){
    const ceremonial=round2(monthRows.reduce((sum,r)=>sum+r.ceremonyHours,0));
    const abs=monthRows.filter(r=>r.code==='결').length;
    const sick=monthRows.filter(r=>r.code==='병').length;
-   const bonusCount=bonus.length;
+   const bonusCount=bonusInfo.count;
    const bonusTotal=bonusCount*units;
    const special=monthRows.filter(r=>r.special).map(r=>{
     let status=['상','경'].includes(r.code)?'회사 유급 경조휴가(결근 아님)':r.status;
@@ -5780,14 +5797,15 @@ async function exportLaborHoursWorkbook(){
     if(row.real)return round2(row.actualHours);
     return {'연':'연차','병':'병가','결':'결근','상':'유급경조(상)','경':'유급경조(경)','법':'법정휴가','예':'예비군','0':'휴무'}[row.code]||row.status||'';
    });
-   const sheetRow=[i+1,emp.name,workTypeForDate(emp,ym+'-01'),...dayCells,
+   const sheetRow=[i+1,emp.name,workTypeForDate(emp,workYm+'-01'),...dayCells,
     hoursByKind('weekday'),hoursByKind('weekend'),hoursByKind('holiday'),actualTotal,otTotal,leaveTotal,ceremonial,abs,sick,
-    incentiveEnabled(emp)?'✓ 지급':'미지급',bonusCount,
+    incentiveEnabled(emp)?'✓ 대상':'비대상',bonusCount,
+    bonusInfo.dates.map(date=>`${Number(date.slice(8))}일`).join(', ')||'—',
     bonusCount?`${bonusCount}일 × ${units.toLocaleString('ko-KR')}원 = ${bonusTotal.toLocaleString('ko-KR')}원 (세후)`:'—',
     bonusTotal,special,''];
    sheetRows.push(sheetRow);
    detail.push({emp,bonusCount,bonusTotal});
-   [0,1,2,3,4,5,6,7,8,10,12].forEach(offset=>{
+   [0,1,2,3,4,5,6,7,8,10,13].forEach(offset=>{
     let col=firstSummary+offset,v=Number(sheetRow[col]||0);
     if(Number.isFinite(v))sums.set(col,(sums.get(col)||0)+v);
    });
@@ -5797,10 +5815,10 @@ async function exportLaborHoursWorkbook(){
   for(const [col,n] of sums){total[col]=col===bonusAmountColumn?Math.round(n):round2(n)}
   const footerRow=sheetRows.length;sheetRows.push(total);
   sheetRows.push(['※ 수기 미입력 근무일은 자동 생성하지 않습니다. 휴무/미입력과 실제 0시간을 구별하여 원본 스케줄을 확인하세요.']);
-  sheetRows.push(['※ 인센지급 체크는 직원관리 → 급여형태 옆에서 변경합니다. 대상 직원의 주말·공휴일 실제 근무일 1일당 30,000원(세후), 중복일 제외.']);
+  sheetRows.push([`※ 인센은 근무월 기준 2개월 뒤 급여 지급: ${monthLabel(bonusYm)} 근무분 → ${monthLabel(payYm)} 급여. 직원관리에서 체크한 인센 대상만 세후 30,000원/일, 중복일 제외.`]);
   sheetRows.push(['※ 상(상례)·경(결혼)은 회사규정 유급 경조휴가이며 실제 근무시간·결근으로 계산하지 않습니다. 병가는 유급/무급 여부를 노무사가 확인하세요.']);
   const ws=XLSX.utils.aoa_to_sheet(sheetRows);
-  ws['!cols']=headers.map((h,i)=>({wch:i===0?6:i===1?15:i===2?15:i<firstSummary?10:i===firstSummary+11?45:i===firstSummary+13?76:i===firstSummary+14?36:i===firstSummary+9?13:i===firstSummary+12?21:14}));
+  ws['!cols']=headers.map((h,i)=>({wch:i===0?6:i===1?15:i===2?15:i<firstSummary?10:i===firstSummary+12?49:i===firstSummary+14?76:i===firstSummary+15?36:i===firstSummary+11?29:i===firstSummary+9?13:i===firstSummary+13?21:14}));
   ws['!rows']=[{hpt:30},{hpt:24},{hpt:24},{hpt:29},...emps.map(()=>({hpt:23})),{hpt:27}];
   ws['!autofilter']={ref:XLSX.utils.encode_range({s:{r:3,c:0},e:{r:3+emps.length,c:headers.length-1}})};
   ws['!freeze']={xSplit:3,ySplit:4,topLeftCell:'D5',activePane:'bottomRight',state:'frozen'};
@@ -5820,13 +5838,16 @@ async function exportLaborHoursWorkbook(){
   }
   const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'근로시간_월간표');
   const safeStore=store.replace(/[\\/:*?"<>|]/g,'_');
-  XLSX.writeFile(wb,`${year}_${month}_${safeStore}.xlsx`,{bookType:'xlsx',compression:true});
+  XLSX.writeFile(wb,`${payYm.replace('-','_')}_${safeStore}.xlsx`,{bookType:'xlsx',compression:true});
  }catch(error){console.error('노무사용 Excel 출력 실패:',error);alert('노무사용 Excel 저장 오류: '+(error?.message||error))}
  finally{if(btn){btn.disabled=false;btn.textContent=originalLabel}}
 }
 
 function renderHours(){
- let visible=workTimeEmployees($('monthSelect').value);
+ const workYm=$('monthSelect').value;
+ const laborHint=$('laborExportPeriodHint');
+ if(laborHint)laborHint.textContent=`노무사용 Excel: ${monthLabel(workYm)} 급여 지급분 = ${monthLabel(shiftMonth(workYm,-1))} 근로시간 + ${monthLabel(shiftMonth(workYm,-2))} 주말·공휴일 인센(대상 직원만, 세후 3만원/일). 스케줄 원본은 수정하지 않습니다.`;
+ let visible=workTimeEmployees(workYm);
  $('hoursBody').innerHTML=visible.map(e=>{
   let x=calc(e),c=classifyWork(e),wh=expectedWeeklyHolidayHours(e),p=payrollFor(e),ph=Number(p?.scheduled_hours||0),
       compare=round2(x.worked+wh.hours),diff=p?round2(compare-ph):null;
@@ -6388,7 +6409,7 @@ async function saveEmployeeBonusEligibility(id,input){
   if(q.error)throw q.error;
   if(!q.data)throw new Error('저장된 직원 정보가 없습니다. 수정 권한을 확인하세요.');
   e.holiday_bonus_eligible=value;
-  input.closest('label')?.querySelector('span')?.replaceChildren(document.createTextNode(value?'지급':'미지급'));
+  input.closest('label')?.querySelector('span')?.replaceChildren(document.createTextNode(value?'대상':'비대상'));
   if($('hoursPage')?.classList.contains('active'))renderHours();
  }catch(error){input.checked=incentiveEnabled(e);alert('인센지급 설정 저장 오류: '+(error?.message||error));}
  finally{input.disabled=false;}
@@ -6933,7 +6954,7 @@ function renderEmployees(){
    <td>${currentCond.work_type==='36'?'주4일':currentCond.work_type==='40'?'주5일':'기타'}<br><span class="help">${conditionScheduleMode(currentCond)==='auto'?'고정요일 자동채우기':'스케줄 직접입력'}</span>${employeeView==='active'?`<label class="scheduleHideToggle" title="직원관리·급여관리에는 그대로 두고 월간스케줄·주간편성·근로시간에서만 숨깁니다."><input type="checkbox" ${employeeMonthlyScheduleHidden(e)?'checked':''} onchange="saveMonthlyScheduleVisibility(${e.id},this.checked,this)">스케줄·근로 제외</label>`:''}</td>
 
    <td class="empInlineCell">${payTypeCell}</td>
-   <td class="empBonusCheckCell"><label class="empBonusCheck" title="체크된 직원만 주말·공휴일 실제 근무일당 세후 30,000원 계산"><input type="checkbox" ${incentiveEnabled(e)?'checked':''} ${employeeView==='retired'?'disabled':''} onchange="saveEmployeeBonusEligibility(${e.id},this)"><span>${incentiveEnabled(e)?'지급':'미지급'}</span></label></td>
+   <td class="empBonusCheckCell"><label class="empBonusCheck" title="체크 = 인센 대상 / 체크 해제 = 인센 비대상 · 휴일 실제 근무 1일당 세후 30,000원"><input type="checkbox" ${incentiveEnabled(e)?'checked':''} ${employeeView==='retired'?'disabled':''} onchange="saveEmployeeBonusEligibility(${e.id},this)"><span>${incentiveEnabled(e)?'대상':'비대상'}</span></label></td>
 
    <!-- 연차기준: 원래 compact 표시 -->
    <td>주 ${leaveWeeklyHoursAt(e,employeeRefDate)}h<br><span class="help">월 +${leaveMonthlyHoursAt(e,employeeRefDate)}h / 1일 -${leaveUseHoursDisplay(e,employeeRefDate)}</span>${monthlyAccrualEmployeeBadge(e,isoToday())}</td>
@@ -7459,7 +7480,7 @@ async function openEmployee(id,isRetired=false){
  <div class="field"><label>기본 퇴근</label><input id="eEnd" type="time" value="${(currentCond.default_end_time||'').slice(0,5)}"></div>
  <div class="field"><label>휴게(분)</label><input id="eBreak" type="number" value="${currentCond.break_minutes||60}"></div>
  <div class="field"><label>급여형태</label><select id="ePay" onchange="applyPayPreset()"><option value="monthly">월급</option><option value="hourly">시급/파트타임</option><option value="daily">일당/파트타임</option><option value="business">사업소득</option></select></div>
- <div class="field"><label>인센지급</label><label class="empBonusCheck empBonusModalCheck"><input id="eBonusEligible" type="checkbox" ${incentiveEnabled(e)?'checked':''}><span>체크 시 주말·공휴일 실제 근무일당 세후 30,000원 지급 대상</span></label></div>
+ <div class="field"><label>인센지급</label><label class="empBonusCheck empBonusModalCheck"><input id="eBonusEligible" type="checkbox" ${incentiveEnabled(e)?'checked':''}><span>체크하면 인센 대상 · 미체크는 비대상 · 근무월의 다다음달 급여에 반영</span></label></div>
  <div class="field"><label>기본급 지급시차(개월)</label><input id="eSalaryDelay" type="number" min="0" max="12" value="${salaryDelay(e)}"></div>
  <div class="field"><label>급여 지급일</label><select id="ePayDay"><option value="10">10일</option><option value="month_end">말일</option><option value="25">25일</option></select></div>
  <div class="field"><label>연차 산정 주 소정시간</label><input id="eLeaveWeekly" type="number" step=".5" value="${leaveWeeklyHours(e)}"></div>
