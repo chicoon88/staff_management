@@ -1779,7 +1779,7 @@ body.resizingEmployeeColumn *{
         <div class="toolbar"><select id="annualLeaveYear" aria-label="연차관리 연도" onchange="annualLeaveChangeYear()"></select><button type="button" class="btn gray small" onclick="refreshAnnualLeaveData(true)">새로고침</button><span id="annualLeaveLoadState" class="saveState">준비</span></div>
       </div>
       <div id="annualLeaveSummaryTiles" class="annualLeaveSummaryTiles"></div>
-      <div class="annualLeaveLegend"><span class="annualLeaveTag">숫자 = 사용한 연차 일수</span><span class="annualLeaveTag auto">스케줄 자동</span><span class="annualLeaveTag manual">관리자 확정</span><span class="annualLeaveTag warning">과거 근태 미확인 → 발생 보류</span><span class="annualLeaveTag">셀 클릭 = 사용량 직접 입력·수정</span><span class="annualLeaveTag outside">회색 사선 = 입사 전·퇴사 후 (입력 불가)</span><span class="annualLeaveTag color">직원 이름 색상 = 월간 스케줄 출력색</span></div>
+      <div class="annualLeaveLegend"><span class="annualLeaveTag">숫자 = 사용한 연차 일수</span><span class="annualLeaveTag auto">스케줄 자동</span><span class="annualLeaveTag manual">관리자 확정</span><span class="annualLeaveTag warning">과거 근태 미확인 → 발생 보류</span><span class="annualLeaveTag">셀 클릭 = 사용량 직접 입력·수정</span><span class="annualLeaveTag outside">회색 사선 = 첫 연차 발생 전 또는 재직기간 밖 (입력 불가)</span><span class="annualLeaveTag color">직원 이름 색상 = 월간 스케줄 출력색</span></div>
       <div class="tablewrap annualLeaveGridScroll"><table id="annualLeaveTable" class="annualLeaveTable"><thead><tr><th class="annualLeavePinned">직원 / 입사일</th><th>1월</th><th>2월</th><th>3월</th><th>4월</th><th>5월</th><th>6월</th><th>7월</th><th>8월</th><th>9월</th><th>10월</th><th>11월</th><th>12월</th><th>연도 발생</th><th>연도 사용</th><th>잔여 연차</th><th>관리</th></tr></thead><tbody id="annualLeaveBody"><tr><td colspan="17" class="help">연차 자료를 불러오는 중입니다.</td></tr></tbody></table></div>
       <div class="help" style="margin-top:10px;line-height:1.65">잔여는 기존 연차원장의 발생·사용·조정 기록을 시간(h) 기준으로 계산합니다. 연차관리에서 월 사용량을 확정하면 스케줄에 입력된 그 달 연차와 <b>중복 차감하지 않습니다.</b> 근무조건이 바뀐 직원은 일수와 시간을 함께 확인하세요. 스케줄이 없는 기간은 자동으로 개근 처리하지 않으며, ‘출근확인’에서 실제 출근 사실을 확인한 후 발생에 반영합니다.</div>
     </div>
@@ -11628,6 +11628,28 @@ function annualLeaveMonthUsage(e,ym){
  if(override){const v=annualLeaveParseMemo(override.memo);return {days:Number(v.days??0),hours:Math.abs(Number(override.hours||0)),manual:true,actual,override,unitHours:Number(v.unitHours||0),note:v.note||''};}
  return {days:actual.days,hours:actual.hours,manual:false,actual,override:null};
 }
+// V9.1.45: 월별 수동 확정은 입사 후 첫 1개월이 완료된 뒤부터 허용한다.
+// 입사월은 잠그되, 퇴사월은 실제 재직기간 중 사용량을 기록할 수 있도록 유지한다.
+// 입사 전/입사월/퇴사월/퇴사 후를 절대 하나의 통합 문구로 표시하지 않는다.
+function annualLeaveMonthEligibility(e,ym){
+ const first=ym+'-01',last=ym+'-'+String(new Date(Number(ym.slice(0,4)),Number(ym.slice(5,7)),0).getDate()).padStart(2,'0');
+ const hire=String(e?.hire_date||''),resign=String(e?.resign_date||'');
+ const hired=employedInRange(e,first,last);
+ const firstAccrual=/^\d{4}-\d{2}-\d{2}$/.test(hire)?addMonthsClamped(hire,1):null;
+ if(!hired){
+  const label=hire&&last<hire?'입사 전':resign&&first>resign?'퇴사 후':'재직기간 밖';
+  return {locked:true,label,reason:`${label} · 연차 사용량 입력 불가`,partial:false,firstAccrual};
+ }
+ if(!firstAccrual)return {locked:true,label:'입사일 미등록',reason:'입사일 확인 후 연차 사용량을 입력할 수 있습니다.',partial:false,firstAccrual:null};
+ if(last<firstAccrual){
+  const label=hire.slice(0,7)===ym?'입사월':'발생 전';
+  return {locked:true,label,reason:`${label} · 첫 연차 발생일 ${firstAccrual}부터 입력 가능`,partial:true,firstAccrual};
+ }
+ const partial=!employedOn(e,first)||!employedOn(e,last);
+ const resignMonth=resign&&resign.slice(0,7)===ym;
+ const firstMonth=firstAccrual.slice(0,7)===ym;
+ return {locked:false,label:resignMonth?'퇴사월':firstMonth?'첫 발생월':partial?'부분 재직':'',reason:resignMonth?'퇴사월 · 퇴사일까지 사용한 연차만 기록':firstMonth?`첫 발생일 ${firstAccrual} 이후 사용분만 입력`:partial?'재직 중 사용한 연차만 기록':'',partial:!!(partial||resignMonth||firstMonth),firstAccrual};
+}
 function annualLeaveAccrualCount(e,year,asOf){
  let rows=leaveLedger.filter(x=>Number(x.employee_id)===Number(e.id)&&x.event_type==='accrual'&&String(x.event_date||'').startsWith(String(year))&&String(x.event_date)<=asOf);
  let days=0,hours=0;
@@ -11704,12 +11726,13 @@ function renderAnnualLeaveTable(){
   const ann=cutoff?annualLeaveAccrualCount(e,year,cutoff):{days:0,hours:0};
   let sumUsed=0,monthCells='';
   for(let m=1;m<=12;m++){
-   const ym=annualLeaveYm(year,m),entry=annualLeaveMonthUsage(e,ym),first=ym+'-01',last=ym+'-'+String(new Date(year,m,0).getDate()).padStart(2,'0'),outside=!employedInRange(e,first,last),partial=!outside&&(!employedOn(e,first)||!employedOn(e,last));
+   const ym=annualLeaveYm(year,m),entry=annualLeaveMonthUsage(e,ym),gate=annualLeaveMonthEligibility(e,ym);
    sumUsed+=entry.days;
    const cls=entry.manual?'manual':(entry.days?'auto used':'empty');
-   const short=outside?'입사 전·퇴사 후':entry.manual?'수동확정':entry.days?'스케줄':partial?'입·퇴사월':'-';
+   const short=gate.locked?gate.label:gate.label|| (entry.manual?'수동확정':entry.days?'스케줄':'-');
    const desc=entry.manual?`수동확정 ${entry.days}개 · ${annualLeaveFmt(entry.hours)}h · 스케줄 ${entry.actual.days}개`:entry.days?`스케줄 연차 ${entry.days}개 · ${annualLeaveFmt(entry.hours)}h`:'사용기록 없음';
-   monthCells+=`<td class="${outside?'annualLeaveOutsideCell':partial?'annualLeavePartialCell':''}"><button type="button" class="annualLeaveCell ${cls}" ${outside?'disabled title="재직기간 밖 · 연차 입력 불가"':''} onclick="openAnnualLeaveMonth(${e.id},'${ym}')" ${outside?'':`title="${esc(desc)}"`} aria-label="${ym} ${esc(e.name)} ${outside?'재직기간 밖 입력불가':'연차 사용: '+desc}">${outside?'—':entry.days?annualLeaveFmt(entry.days):'-'}<small>${short}</small></button></td>`;
+   const tooltip=gate.reason?`${gate.reason}${gate.locked?'':' · '+desc}`:desc;
+   monthCells+=`<td class="${gate.locked?'annualLeaveOutsideCell':gate.partial?'annualLeavePartialCell':''}"><button type="button" class="annualLeaveCell ${cls}" ${gate.locked?'disabled':''} onclick="openAnnualLeaveMonth(${e.id},'${ym}')" title="${esc(tooltip)}" aria-label="${ym} ${esc(e.name)} ${esc(tooltip)}">${entry.days?annualLeaveFmt(entry.days):gate.locked?'—':'-'}<small>${esc(short)}</small></button></td>`;
   }
   let balance=cutoff?leaveSummary(e,cutoff).balance:0;
   grandAccrual+=ann.days;grandUsed+=sumUsed;grandBalance+=balance;
@@ -11721,17 +11744,20 @@ function renderAnnualLeaveTable(){
 }
 function openAnnualLeaveMonth(id,ym){
  const e=allEmployees().find(x=>Number(x.id)===Number(id));if(!e)return;
- if(!employedInMonth(e,ym))return alert('입사 전·퇴사 후 월은 연차 사용량을 입력할 수 없습니다.');
+ const gate=annualLeaveMonthEligibility(e,ym);
+ if(gate.locked)return alert(gate.reason);
  const entry=annualLeaveMonthUsage(e,ym),editable=canEditModule('schedule');
  const guess=Number(entry.unitHours||leaveUseHoursDecision(e,ym+'-01').hours||leaveMonthlyHoursAt(e,ym+'-01')||0);
  const unit=annualLeaveRound(guess);
- modal(`<h2>${esc(e.name)} · ${ym} 연차 사용량</h2><div class="infoBox help">스케줄 자동 연차: <b>${entry.actual.days}개 (${annualLeaveFmt(entry.actual.hours)}h)</b><br>이 달의 실제 사용량을 확정하면 월간·주간 스케줄을 변경하지 않고, 차감 계산에서 해당 월의 스케줄 사용량을 대체합니다.</div><div class="annualFormGrid"><div class="field"><label>해당 월 확정 사용 개수</label><input id="annualManualDays" type="number" min="0" max="31" step="0.1" value="${annualLeaveFmt(entry.days)}" ${editable?'':'disabled'}></div><div class="field"><label>연차 1개당 차감 시간(h)</label><input id="annualManualUnit" type="number" min="0.01" max="24" step="0.1" value="${unit}" ${editable?'':'disabled'}></div><div class="field wide"><label>수정 사유 (선택)</label><textarea id="annualManualNote" style="width:100%" maxlength="300" placeholder="예: 상반기 미입력 스케줄 확인 후 수동 확정" ${editable?'':'disabled'}>${esc(entry.note||'')}</textarea></div></div><div class="help" style="margin-top:9px">${entry.manual?'현재 관리자 수동확정 적용 중 · 자동연결로 되돌리려면 [자동 사용량 복원]을 누르세요.':'현재 스케줄 자동연결 중입니다. [사용량 확정]을 누르면 이 달만 수동확정으로 전환됩니다.'}</div><div class="modalActions"><button class="btn gray" onclick="closeModal()">닫기</button>${editable?`<button class="btn gray" onclick="annualLeaveResetManual(${id},'${ym}')" ${entry.manual?'':'disabled'}>자동 사용량 복원</button><button class="btn" onclick="annualLeaveSaveManual(${id},'${ym}')">사용량 확정</button>`:''}</div>`);
+ modal(`<h2>${esc(e.name)} · ${ym} 연차 사용량</h2><div class="infoBox help">스케줄 자동 연차: <b>${entry.actual.days}개 (${annualLeaveFmt(entry.actual.hours)}h)</b><br>이 달의 실제 사용량을 확정하면 월간·주간 스케줄을 변경하지 않고, 차감 계산에서 해당 월의 스케줄 사용량을 대체합니다.${gate.firstAccrual&&gate.firstAccrual.startsWith(ym)?`<br><b>첫 연차 발생일 ${gate.firstAccrual} 이후 사용분만 입력하세요.</b>`:''}</div><div class="annualFormGrid"><div class="field"><label>해당 월 확정 사용 개수</label><input id="annualManualDays" type="number" min="0" max="31" step="0.1" value="${annualLeaveFmt(entry.days)}" ${editable?'':'disabled'}></div><div class="field"><label>연차 1개당 차감 시간(h)</label><input id="annualManualUnit" type="number" min="0.01" max="24" step="0.1" value="${unit}" ${editable?'':'disabled'}></div><div class="field wide"><label>수정 사유 (선택)</label><textarea id="annualManualNote" style="width:100%" maxlength="300" placeholder="예: 상반기 미입력 스케줄 확인 후 수동 확정" ${editable?'':'disabled'}>${esc(entry.note||'')}</textarea></div></div><div class="help" style="margin-top:9px">${entry.manual?'현재 관리자 수동확정 적용 중 · 자동연결로 되돌리려면 [자동 사용량 복원]을 누르세요.':'현재 스케줄 자동연결 중입니다. [사용량 확정]을 누르면 이 달만 수동확정으로 전환됩니다.'}</div><div class="modalActions"><button class="btn gray" onclick="closeModal()">닫기</button>${editable?`<button class="btn gray" onclick="annualLeaveResetManual(${id},'${ym}')" ${entry.manual?'':'disabled'}>자동 사용량 복원</button><button class="btn" onclick="annualLeaveSaveManual(${id},'${ym}')">사용량 확정</button>`:''}</div>`);
  $('modalBox')?.classList.add('annualLeaveEditModal');
 }
 async function annualLeaveSaveManual(id,ym){
  if(!canEditModule('schedule'))return alert('수정 권한이 없습니다.');
  const targetEmployee=allEmployees().find(e=>Number(e.id)===Number(id));
- if(!targetEmployee||!employedInMonth(targetEmployee,ym))return alert('입사 전·퇴사 후 월은 연차 사용량을 입력할 수 없습니다.');
+ if(!targetEmployee)return alert('직원 정보를 찾을 수 없습니다.');
+ const gate=annualLeaveMonthEligibility(targetEmployee,ym);
+ if(gate.locked)return alert(gate.reason);
  const days=Number($('annualManualDays')?.value),unit=Number($('annualManualUnit')?.value),note=String($('annualManualNote')?.value||'').trim();
  if(!Number.isFinite(days)||days<0||days>31||!Number.isFinite(unit)||unit<=0||unit>24)return alert('연차 개수와 1개당 시간을 확인해 주세요.');
  const hours=annualLeaveRound(days*unit),key=annualLeaveManualSourceKey(id,ym);
@@ -11742,6 +11768,10 @@ async function annualLeaveSaveManual(id,ym){
 }
 async function annualLeaveResetManual(id,ym){
  if(!canEditModule('schedule'))return alert('수정 권한이 없습니다.');
+ const targetEmployee=allEmployees().find(e=>Number(e.id)===Number(id));
+ if(!targetEmployee)return alert('직원 정보를 찾을 수 없습니다.');
+ const gate=annualLeaveMonthEligibility(targetEmployee,ym);
+ if(gate.locked)return alert(gate.reason);
  if(!annualLeaveManualEntry(id,ym)){closeModal();return;}
  if(!confirm(`${ym} 사용량을 스케줄 자동연결로 되돌릴까요?\n스케줄 원본은 변경되지 않습니다.`))return;
  const q=await sb.from('leave_ledger').delete().eq('source_key',annualLeaveManualSourceKey(id,ym));
