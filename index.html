@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>직원관리 대시보드 V9.1.54</title>
+<title>직원관리 대시보드 V9.1.56</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
@@ -1819,6 +1819,13 @@ body.commerceStoreMode #commerceSideNav .commerceNavGroupTitle{display:none!impo
 .empBonusCheck:has(input:checked){color:#13724d}
 .empBonusCheck:has(input:disabled){opacity:.72;cursor:default}
 .empBonusModalCheck{justify-content:flex-start;align-items:flex-start;white-space:normal;padding:10px;border:1px solid #d4e6da;background:#f4fbf6;border-radius:8px;line-height:1.4}
+
+/* V9.1.55: 직원관리 이름 칸에도 월간·주간 스케줄의 직원별 출력색을 동일하게 적용한다.
+   체크 선택 강조는 기존 주황색 규칙을 우선하고, 퇴사자도 같은 저장 색상을 보여준다. */
+#employeesPage #employeeBody tr:not(.employeeSelectedRow)>td.employeePrintNameCell{
+ background:var(--employee-print-bg,#fff)!important;
+ color:#202b3c;
+}
 </style>
 </head>
 <body>
@@ -2118,7 +2125,7 @@ body.commerceStoreMode #commerceSideNav .commerceNavGroupTitle{display:none!impo
  </div>
  <div id="hoursSummaryView">
   <div class="row laborExportRow" style="margin-top:12px;align-items:center;gap:12px">
-   <div class="help" id="laborExportPeriodHint">노무사용 1시트 Excel: 선택월은 <b>급여 지급월</b>입니다. 전월 근로시간과 전전월 인센(대상 직원만, 세후 3만 원/일)을 표시합니다.</div>
+   <div class="help" id="laborExportPeriodHint">노무사용 1시트 Excel: 선택월 근로시간과 <b>전월</b> 주말·공휴일 인센(대상 직원만, 세후 3만 원/일)을 표시합니다. 예: 11월 선택 = 11월 근로시간 + 10월 인센.</div>
    <button type="button" id="laborExcelExportBtn" class="btn green" onclick="exportLaborHoursWorkbook()">↓ 노무사용 근로시간 Excel 다운로드</button>
   </div>
   <div class="card hoursSummaryCard" style="margin-top:13px">
@@ -5705,13 +5712,13 @@ function laborSpecialDescription(row){
 }
 function renderLaborBonusPreview(visible){
  const body=$('laborBonusBody');if(!body)return;
- const ym=$('monthSelect').value;
- if($('laborBonusPreviewPeriod'))$('laborBonusPreviewPeriod').textContent=`${monthLabel(ym)} 근무분 → ${monthLabel(shiftMonth(ym,2))} 급여에 지급 (지급월 기준 엑셀에는 전전월 근무분을 표시)`;
+ const selectedYm=$('monthSelect').value,ym=shiftMonth(selectedYm,-1);
+ if($('laborBonusPreviewPeriod'))$('laborBonusPreviewPeriod').textContent=`${monthLabel(selectedYm)} 노무사용 자료 · 인센은 전월 ${monthLabel(ym)} 주말·공휴일 실제 근무분 (지급 예정: ${monthLabel(shiftMonth(ym,2))})`;
  let entries=(visible||[]).map(e=>({e,rows:laborEmployeeDayRows(e,ym).filter(r=>r.eligible)})).filter(x=>x.rows.length);
  body.innerHTML=entries.map(({e,rows})=>{
   let note=rows.map(r=>r.warnings).filter(Boolean).join(' / ');
   return `<tr><td class="name hoursPrintNameCell" style="--employee-print-bg:${employeeColor(e)}"><b>${esc(e.name)}</b></td><td class="dateDetailCell">${rows.map(r=>`${Number(r.date.slice(8))}일(${r.kind==='holiday'?'공휴일':'주말'})`).join(', ')}</td><td>${rows.length}회</td><td>${LABOR_NET_HOLIDAY_BONUS.toLocaleString('ko-KR')}원</td><td class="hoursStrong"><b>${(rows.length*LABOR_NET_HOLIDAY_BONUS).toLocaleString('ko-KR')}원</b></td><td class="laborBonusNote">${esc(note||'세후 기준 · 급여 반영 전 확인')}</td></tr>`;
- }).join('')||'<tr><td colspan="6" class="help" style="text-align:center;padding:18px">선택 월의 주말·공휴일 실제 근무 추가지급 대상이 없습니다.</td></tr>';
+ }).join('')||'<tr><td colspan="6" class="help" style="text-align:center;padding:18px">전월 주말·공휴일 실제 근무 추가지급 대상이 없습니다.</td></tr>';
 }
 function laborWorkFormula(bucket){
  let counts=new Map();(bucket?.dates||[]).forEach(x=>{let h=hour2(x.hours);counts.set(h,(counts.get(h)||0)+1)});
@@ -5746,34 +5753,61 @@ async function laborDownloadFormattedWorkbook(book,filename,dates,employeeCount)
  const make=(doc,tag,attrs={})=>{let e=doc.createElementNS(ns,tag);Object.entries(attrs).forEach(([k,v])=>e.setAttribute(k,String(v)));return e};
  const fills=get(styles,'fills'),xfs=get(styles,'cellXfs');
  if(!fills||!xfs||!xfs.firstElementChild)throw new Error('엑셀 기본 서식을 찾지 못했습니다.');
+ // 셀의 기존 숫자 표시 형식(실근로 h, 상여 원)을 유지하면서 배경색만 바꾼다.
  const addSolid=(rgb)=>{
-  let id=[...fills.children].length;
+  const id=[...fills.children].length;
   const fill=make(styles,'fill'),pat=make(styles,'patternFill',{patternType:'solid'});
   pat.appendChild(make(styles,'fgColor',{rgb}));pat.appendChild(make(styles,'bgColor',{indexed:64}));
   fill.appendChild(pat);fills.appendChild(fill);fills.setAttribute('count',String([...fills.children].length));
-  const xf=xfs.firstElementChild.cloneNode(true);xf.setAttribute('fillId',String(id));xf.setAttribute('applyFill','1');
-  xfs.appendChild(xf);xfs.setAttribute('count',String([...xfs.children].length));
-  return [...xfs.children].length-1;
+  return id;
  };
- const weekendStyle=addSolid('FFFFEEEE'),holidayStyle=addSolid('FFFFDDDD');
+ const styleCache=new Map();
+ const applyFill=(cell,fillId)=>{
+  const base=Number(cell.getAttribute('s')||0),key=`${base}:${fillId}`;
+  if(!styleCache.has(key)){
+   const xf=([ ...xfs.children ][base]||xfs.firstElementChild).cloneNode(true);
+   xf.setAttribute('fillId',String(fillId));xf.setAttribute('applyFill','1');
+   const id=[...xfs.children].length;xfs.appendChild(xf);xfs.setAttribute('count',String(id+1));
+   styleCache.set(key,id);
+  }
+  cell.setAttribute('s',String(styleCache.get(key)));
+ };
+ const paintCell=(row,column,fillId)=>{
+  const ref=XLSX.utils.encode_cell({r:Number(row.getAttribute('r'))-1,c:column});
+  let cell=[...row.children].find(el=>el.localName==='c'&&el.getAttribute('r')===ref);
+  if(!cell){
+   // 빈칸도 색칠하면서 Excel 열 순서를 유지한다.
+   cell=make(sheet,'c',{r:ref});
+   const next=[...row.children].find(el=>el.localName==='c'&&XLSX.utils.decode_cell(el.getAttribute('r')).c>column);
+   row.insertBefore(cell,next||null);
+  }
+  applyFill(cell,fillId);
+ };
+ const weekendFill=addSolid('FFFFEEEE'),holidayFill=addSolid('FFFFDDDD');
+ const actualWorkFill=addSolid('FFE5F5E9'); // 실근로: 연한 녹색
+ const leaveFill=addSolid('FFE9F2FF');      // 연차: 연한 파랑
+ const ceremonyFill=addSolid('FFF2EAFF');   // 유급 경조: 연한 보라
+ const absenceFill=addSolid('FFFFE7E7');   // 결근: 연한 빨강
  const days=dates.map((date,i)=>({column:3+i,kind:classifyDate(date)})).filter(x=>x.kind==='weekend'||x.kind==='holiday');
+ const summaryStart=3+dates.length; // 근무월 일수에 따라 AL/AN/AO/AP의 실제 열은 달라질 수 있다.
+ const summaryFills=[
+  {column:summaryStart+3,fill:actualWorkFill},
+  {column:summaryStart+5,fill:leaveFill},
+  {column:summaryStart+6,fill:ceremonyFill},
+  {column:summaryStart+7,fill:absenceFill}
+ ];
  const allRows=[...sheet.getElementsByTagNameNS(ns,'row')];
  for(const row of allRows){
   const r=Number(row.getAttribute('r'));
-  if(r<4||r>4+employeeCount)continue;
-  for(const {column,kind} of days){
-   const ref=XLSX.utils.encode_cell({r:r-1,c:column});
-   const style=kind==='holiday'?holidayStyle:weekendStyle;
-   let cell=[...row.children].find(el=>el.localName==='c'&&el.getAttribute('r')===ref);
-   if(!cell){
-    // 공란도 색을 표시하기 위해 빈 셀을 만들고 Excel A1 열 순서를 지킨다.
-    cell=make(sheet,'c',{r:ref});
-    const next=[...row.children].find(el=>el.localName==='c'&&XLSX.utils.decode_cell(el.getAttribute('r')).c>column);
-    row.insertBefore(cell,next||null);
-   }
-   cell.setAttribute('s',String(style));
+  if(r<4||r>5+employeeCount)continue;
+  if(r<=4+employeeCount){
+   for(const {column,kind} of days)paintCell(row,column,kind==='holiday'?holidayFill:weekendFill);
   }
+  // 제목(4행)부터 직원별 행, 마지막 합계 행까지 상태별로 일관되게 칠한다.
+  for(const {column,fill} of summaryFills)paintCell(row,column,fill);
  }
+ // 4행 자동필터의 드롭다운 화살표는 필요 없으므로 완전히 제거한다.
+ [...sheet.getElementsByTagNameNS(ns,'autoFilter')].forEach(el=>el.parentNode?.removeChild(el));
  // 1~4행(제목/안내/날짜헤더), A~B열(순번/직원명)을 고정한다.
  let views=get(sheet,'sheetViews');
  if(!views){
@@ -5803,9 +5837,10 @@ async function exportLaborHoursWorkbook(){
   if(!canViewModule('hours'))throw new Error('근로시간 조회 권한이 필요합니다.');
   if(!await persistScheduleEdits())throw new Error('스케줄 저장을 먼저 완료해 주세요.');
   const payYm=$('monthSelect').value,sid=storeId();
-  // 사용자가 선택한 월 = 노무사에게 전달할 급여 지급월.
-  // 예) 2026-11 급여: 2026-10 근로시간 + 2026-09 휴일 인센.
-  const workYm=shiftMonth(payYm,-1),bonusYm=shiftMonth(payYm,-2);
+  // 노무사용 엑셀의 선택월 = 실제 근로시간 조회월.
+  // 예) 2026-11 선택: 2026-11 근로시간 + 2026-10 휴일 인센.
+  // 급여지급관리의 기본급/인센 지급시차(각 1개월/2개월)는 별도로 유지한다.
+  const workYm=payYm,bonusYm=shiftMonth(payYm,-1);
   if(lastLoadedScheduleStoreId!==sid||lastLoadedScheduleMonth!==payYm){
    await refreshAll();
    if(lastLoadedScheduleStoreId!==sid||lastLoadedScheduleMonth!==payYm)throw new Error('선택월 직원 자료가 아직 준비되지 않았습니다.');
@@ -5815,7 +5850,7 @@ async function exportLaborHoursWorkbook(){
   }
   const emps=sortEmployeesForSchedule(workTimeEmployees(workYm));
   const employeeIds=emps.map(e=>e.id);
-  // 원본을 덮거나 날짜를 바꾸지 않고 이전 월들을 읽기 전용으로 조회한다.
+  // 원본을 덮거나 날짜를 바꾸지 않고 당월 근무분과 전월 인센 근무분을 읽기 전용으로 조회한다.
   const [workScheduleRows,bonusScheduleRows]=await Promise.all([
     workRowsForMonth(employeeIds,workYm),
     workRowsForMonth(emps.filter(incentiveEnabled).map(e=>e.id),bonusYm)
@@ -5827,15 +5862,12 @@ async function exportLaborHoursWorkbook(){
   const dates=Array.from({length:new Date(Number(year),Number(month),0).getDate()},(_,i)=>`${workYm}-${String(i+1).padStart(2,'0')}`);
   const units=LABOR_NET_HOLIDAY_BONUS;
   const summaryHeads=['평일(h)','주말(h)','공휴일(h)','실근로(h)','연장(h)','연차(h)','유급경조(h)','결근(일)','병가(일)','인센대상',`인센근무일(${Number(bonusYm.slice(5))}월)`,`인센근무날짜 (${Number(bonusYm.slice(5))}월)`,'추가상여 계산(세후)','추가상여(세후원)','특이사항 · 근태사유'];
-  const headers=['순번','직원','근무형태',...dates.map(d=>{
-    let t=classifyDate(d),day=laborWorkdayName(d).slice(0,1);
-    return `${Number(d.slice(-2))}(${day})${t==='holiday'?'★':(t==='weekend'?'*':'')}`;
-   }),...summaryHeads];
+  const headers=['순번','직원','근무형태',...dates.map(d=>`${Number(d.slice(-2))}(${laborWorkdayName(d).slice(0,1)})`),...summaryHeads];
   const firstSummary=3+dates.length,bonusCountColumn=firstSummary+10,bonusAmountColumn=firstSummary+13;
   const sheetRows=[
-   [`${monthLabel(payYm)} 급여 지급용 · ${store} · 근로시간 및 휴일 추가상여`],
-   [`근로시간: ${monthLabel(workYm)} 근무분 / 휴일 인센: ${monthLabel(bonusYm)} 근무분 → ${monthLabel(payYm)} 급여 반영 · ★ 공휴일 / * 주말`],
-   ['상·경=유급 경조휴가(결근 아님), 연=연차, 결=결근, 병=병가 / 인센 대상만 전전월 주말·공휴일 실제 근무 1일당 세후 30,000원 / 노무사 세전 환산·기지급 여부 확인'],
+   [`${monthLabel(workYm)} 노무사용 근무자료 · ${store} · 근로시간 및 휴일 추가상여`],
+   [`근로시간: ${monthLabel(workYm)} 근무분 / 휴일 인센: 전월 ${monthLabel(bonusYm)} 근무분 · 주말·공휴일은 연한 빨강 배경`],
+   ['상·경=유급 경조휴가(결근 아님), 연=연차, 결=결근, 병=병가 / 인센 대상만 전월 주말·공휴일 실제 근무 1일당 세후 30,000원 / 노무사 세전 환산·기지급 여부 확인'],
    headers
   ];
   const sums=new Map(),detail=[];
@@ -5880,12 +5912,11 @@ async function exportLaborHoursWorkbook(){
   for(const [col,n] of sums){total[col]=col===bonusAmountColumn?Math.round(n):round2(n)}
   const footerRow=sheetRows.length;sheetRows.push(total);
   sheetRows.push(['※ 수기 미입력 근무일은 자동 생성하지 않습니다. 휴무/미입력과 실제 0시간을 구별하여 원본 스케줄을 확인하세요.']);
-  sheetRows.push([`※ 인센은 근무월 기준 2개월 뒤 급여 지급: ${monthLabel(bonusYm)} 근무분 → ${monthLabel(payYm)} 급여. 직원관리에서 체크한 인센 대상만 세후 30,000원/일, 중복일 제외.`]);
+  sheetRows.push([`※ 이번 자료는 ${monthLabel(workYm)} 근로시간 + ${monthLabel(bonusYm)} 인센 대상일. 인센 실제 지급은 근무월 기준 2개월 뒤이므로 지급관리에서 확인하세요. 대상자만 세후 30,000원/일, 중복일 제외.`]);
   sheetRows.push(['※ 상(상례)·경(결혼)은 회사규정 유급 경조휴가이며 실제 근무시간·결근으로 계산하지 않습니다. 병가는 유급/무급 여부를 노무사가 확인하세요.']);
   const ws=XLSX.utils.aoa_to_sheet(sheetRows);
-  ws['!cols']=headers.map((h,i)=>({wch:i===0?6:i===1?15:i===2?15:i<firstSummary?7:i===firstSummary+12?43:i===firstSummary+14?76:i===firstSummary+11?29:i===firstSummary+9?11:i===firstSummary+10?11:i===firstSummary+13?19:12}));
-  ws['!rows']=[{hpt:30},{hpt:24},{hpt:24},{hpt:29},...emps.map(()=>({hpt:23})),{hpt:27}];
-  ws['!autofilter']={ref:XLSX.utils.encode_range({s:{r:3,c:0},e:{r:3+emps.length,c:headers.length-1}})};
+  ws['!cols']=headers.map((h,i)=>({wch:i===0?6:i===1?15:i===2?15:i<firstSummary?5.8:i===firstSummary+12?43:i===firstSummary+14?76:i===firstSummary+11?29:i===firstSummary+9?11:i===firstSummary+10?11:i===firstSummary+13?19:12}));
+  ws['!rows']=[{hpt:30},{hpt:24},{hpt:24},{hpt:22},...emps.map(()=>({hpt:21})),{hpt:25}];
   ws['!freeze']={xSplit:2,ySplit:4,topLeftCell:'C5',activePane:'bottomRight',state:'frozen'};
   ws['!merges']=[0,1,2].map(r=>({s:{r,c:0},e:{r,c:Math.min(25,headers.length-1)}}));
   const formulaCols=[firstSummary+0,firstSummary+1,firstSummary+2,firstSummary+3,firstSummary+4,firstSummary+5,firstSummary+6];
@@ -5911,7 +5942,7 @@ async function exportLaborHoursWorkbook(){
 function renderHours(){
  const workYm=$('monthSelect').value;
  const laborHint=$('laborExportPeriodHint');
- if(laborHint)laborHint.textContent=`노무사용 Excel: ${monthLabel(workYm)} 급여 지급분 = ${monthLabel(shiftMonth(workYm,-1))} 근로시간 + ${monthLabel(shiftMonth(workYm,-2))} 주말·공휴일 인센(대상 직원만, 세후 3만원/일). 스케줄 원본은 수정하지 않습니다.`;
+ if(laborHint)laborHint.textContent=`노무사용 Excel: ${monthLabel(workYm)} 선택 = ${monthLabel(workYm)} 근로시간 + ${monthLabel(shiftMonth(workYm,-1))} 주말·공휴일 인센(대상 직원만, 세후 3만원/일). 스케줄 원본은 수정하지 않습니다.`;
  let visible=workTimeEmployees(workYm);
  $('hoursBody').innerHTML=visible.map(e=>{
   let x=calc(e),c=classifyWork(e),wh=expectedWeeklyHolidayHours(e),p=payrollFor(e),ph=Number(p?.scheduled_hours||0),
@@ -7001,7 +7032,7 @@ function renderEmployees(){
    <td style="text-align:center"><input type="checkbox" class="empDeleteCheck" data-id="${e.id}" ${delChecked?'checked':''} onchange="toggleEmployeeDeleteSelection(${e.id},this.checked)"></td>
    <td><span class="empDragHandle" draggable="${dragEnabled?'true':'false'}" data-emp-id="${e.id}" title="${dragEnabled?'이 손잡이만 잡아서 순서 이동':'연번순 보기에서만 순서 이동 가능'}">☰</span> <span class="seqBadge">${idx+1}</span></td>
 
-   <td class="name empInlineCell">${employeeView==='active'?employeeInlineText(e,'name','empInlineName'):`<b>${esc(e.name)}</b>`}</td>
+   <td class="name empInlineCell employeePrintNameCell" style="--employee-print-bg:${employeeColor(e)}">${employeeView==='active'?employeeInlineText(e,'name','empInlineName'):`<b>${esc(e.name)}</b>`}</td>
    <td class="empInlineCell">${employeeView==='active'?employeeInlineSensitiveText(e,'resident_number','주민번호'):(esc(e.resident_number||'')||'-')}</td>
    <td class="empInlineCell">${employeeView==='active'?employeeInlineSensitiveText(e,'bank_account','계좌번호'):(esc(e.bank_account||'')||'-')}</td>
    <td class="empInlineCell">${employeeView==='active'?employeeInlineText(e,'role'):esc(e.role||'')}</td>
