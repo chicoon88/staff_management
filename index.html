@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>직원관리 대시보드 V9.1.56</title>
+<title>직원관리 대시보드 V9.1.57</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
@@ -2135,8 +2135,8 @@ body.commerceStoreMode #commerceSideNav .commerceNavGroupTitle{display:none!impo
   <div class="help" style="margin-top:7px">※ 평일·주말·공휴일 시간은 대시보드의 실제 worked_hours 기준입니다.</div>
   <div class="card" style="margin-top:10px"><h3>직원별 출근 날짜</h3><div class="tablewrap" style="margin-top:10px"><table class="workDateTable"><thead><tr><th class="name">직원</th><th class="weekdayHead">평일 근무일</th><th class="weekendHead">주말 근무일</th><th class="holidayHead">공휴일 근무일</th></tr></thead><tbody id="workDateBody"></tbody></table></div></div>
   <div class="card" style="margin-top:10px">
-   <div class="row" style="align-items:center;gap:10px"><h3 style="margin:0">선택월 발생한 주말·공휴일 인센</h3><span class="help">직원관리 체크 대상만 · 실제 근무일 1일 1회 · 세후 30,000원 · 지급은 다다음달 급여</span></div><div class="help" id="laborBonusPreviewPeriod" style="margin-top:7px"></div>
-   <div class="tablewrap" style="margin-top:10px"><table class="laborBonusTable"><thead><tr><th class="name">직원</th><th>해당 근무날짜</th><th>지급 횟수</th><th>1회 세후금액</th><th>합계(세후)</th><th>특이사항</th></tr></thead><tbody id="laborBonusBody"></tbody></table></div>
+   <div class="row" style="align-items:center;gap:10px"><h3 style="margin:0">선택월 발생한 주말·공휴일 인센</h3><span class="help">선택월 실제 근무 기준 · 직원관리 체크 대상만 · 근무일 1일 1회 · 세후 30,000원 · 지급은 다다음달 급여</span></div><div class="help" id="laborBonusPreviewPeriod" style="margin-top:7px"></div>
+   <div class="tablewrap" style="margin-top:10px"><table class="laborBonusTable"><thead><tr><th class="name">직원</th><th>해당 근무날짜</th><th>발생 일수</th><th>1회 세후금액</th><th>발생 합계(세후)</th><th>특이사항</th></tr></thead><tbody id="laborBonusBody"></tbody></table></div>
   </div>
  </div>
  <div id="attendanceView" class="hidden">
@@ -5712,13 +5712,13 @@ function laborSpecialDescription(row){
 }
 function renderLaborBonusPreview(visible){
  const body=$('laborBonusBody');if(!body)return;
- const selectedYm=$('monthSelect').value,ym=shiftMonth(selectedYm,-1);
- if($('laborBonusPreviewPeriod'))$('laborBonusPreviewPeriod').textContent=`${monthLabel(selectedYm)} 노무사용 자료 · 인센은 전월 ${monthLabel(ym)} 주말·공휴일 실제 근무분 (지급 예정: ${monthLabel(shiftMonth(ym,2))})`;
+ const selectedYm=$('monthSelect').value,ym=selectedYm;
+ if($('laborBonusPreviewPeriod'))$('laborBonusPreviewPeriod').textContent=`${monthLabel(ym)} 주말·공휴일 실제 근무로 발생한 인센 · 지급 예정: ${monthLabel(shiftMonth(ym,2))} 급여 (노무사용 Excel의 인센 기준월은 전월 별도 적용)`;
  let entries=(visible||[]).map(e=>({e,rows:laborEmployeeDayRows(e,ym).filter(r=>r.eligible)})).filter(x=>x.rows.length);
  body.innerHTML=entries.map(({e,rows})=>{
   let note=rows.map(r=>r.warnings).filter(Boolean).join(' / ');
   return `<tr><td class="name hoursPrintNameCell" style="--employee-print-bg:${employeeColor(e)}"><b>${esc(e.name)}</b></td><td class="dateDetailCell">${rows.map(r=>`${Number(r.date.slice(8))}일(${r.kind==='holiday'?'공휴일':'주말'})`).join(', ')}</td><td>${rows.length}회</td><td>${LABOR_NET_HOLIDAY_BONUS.toLocaleString('ko-KR')}원</td><td class="hoursStrong"><b>${(rows.length*LABOR_NET_HOLIDAY_BONUS).toLocaleString('ko-KR')}원</b></td><td class="laborBonusNote">${esc(note||'세후 기준 · 급여 반영 전 확인')}</td></tr>`;
- }).join('')||'<tr><td colspan="6" class="help" style="text-align:center;padding:18px">전월 주말·공휴일 실제 근무 추가지급 대상이 없습니다.</td></tr>';
+ }).join('')||'<tr><td colspan="6" class="help" style="text-align:center;padding:18px">선택월 주말·공휴일 실제 근무 인센 대상이 없습니다.</td></tr>';
 }
 function laborWorkFormula(bucket){
  let counts=new Map();(bucket?.dates||[]).forEach(x=>{let h=hour2(x.hours);counts.set(h,(counts.get(h)||0)+1)});
