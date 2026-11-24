@@ -1610,6 +1610,19 @@ body.resizingEmployeeColumn *{
 #schedulePage .annualLeaveTable tbody td.annualLeavePartialCell .annualLeaveCell small{color:#9a5215;font-weight:900}
 #schedulePage .annualLeaveTag.outside{border:1px solid #cbd5e1;background-color:#e8edf3;background-image:repeating-linear-gradient(135deg,transparent 0,transparent 7px,#c7d1dd 7px,#c7d1dd 9px,transparent 9px,transparent 16px);color:#334155}
 #schedulePage .annualLeaveTag.color{background:#f0f6ff;color:#2348bd}
+
+/* V9.1.46 · 연차관리 월 머리글: 월간/주간과 동일한 단일 페이지 스크롤 추적 */
+#schedulePage .annualLeaveGridScroll thead{position:relative;z-index:27}
+#schedulePage .annualLeaveGridScroll thead th{position:relative;top:auto!important;z-index:5;box-shadow:0 2px 5px rgba(15,23,42,.10)}
+#schedulePage .annualLeaveGridScroll thead th.annualLeavePinned{z-index:12}
+#schedulePage .annualLeaveTable tbody tr.annualLeaveRetiredFirst>td{border-top:3px solid #718096!important}
+#schedulePage .annualLeaveTable tbody tr.annualLeaveRetiredRow:not(.annualLeaveSettledRow)>td:not(.annualLeavePinned):not(.annualLeaveOutsideCell){background:#f3f5f8}
+#schedulePage .annualLeaveTable tbody tr.annualLeaveSettledRow>td:not(.annualLeaveOutsideCell){opacity:.77;background:#eef1f5!important}
+#schedulePage .annualLeaveTable tbody tr.annualLeaveSettledRow>td.annualLeavePinned{background:#dfe5ed!important}
+#schedulePage .annualLeaveTable .annualLeaveRetiredBadge{display:inline-block;font-size:9px;font-weight:900;color:#596579;background:#e9edf3;padding:2px 5px;border-radius:5px;margin-top:3px}
+#schedulePage .annualLeaveTable .annualLeaveSettledBadge{display:inline-block;font-size:10px;font-weight:900;color:#06603f;background:#d9f3e6;padding:3px 6px;border-radius:5px;margin-top:4px}
+#schedulePage .annualLeaveTable .annualLeaveSettledRow .annualLeaveActions .btn{opacity:1}
+#schedulePage #annualLeaveSettledToggle{white-space:nowrap}
 </style>
 </head>
 <body>
@@ -1776,7 +1789,7 @@ body.resizingEmployeeColumn *{
     <div class="card annualLeavePanel">
       <div class="row annualLeavePanelHead">
         <div><h3 style="margin:0">직원별 연차관리 <span class="pill">입사일 기준</span></h3><div class="help" style="margin-top:5px">월간·주간 스케줄의 ‘연’은 자동 반영됩니다. 과거 미입력 월은 해당 칸에서 실제 사용량을 수동 확정할 수 있습니다.</div></div>
-        <div class="toolbar"><select id="annualLeaveYear" aria-label="연차관리 연도" onchange="annualLeaveChangeYear()"></select><button type="button" class="btn gray small" onclick="refreshAnnualLeaveData(true)">새로고침</button><span id="annualLeaveLoadState" class="saveState">준비</span></div>
+        <div class="toolbar"><select id="annualLeaveYear" aria-label="연차관리 연도" onchange="annualLeaveChangeYear()"></select><button type="button" id="annualLeaveSettledToggle" class="btn gray small" aria-pressed="false" onclick="annualLeaveToggleSettled()">정산완료 보기 (0)</button><button type="button" class="btn gray small" onclick="refreshAnnualLeaveData(true)">새로고침</button><span id="annualLeaveLoadState" class="saveState">준비</span></div>
       </div>
       <div id="annualLeaveSummaryTiles" class="annualLeaveSummaryTiles"></div>
       <div class="annualLeaveLegend"><span class="annualLeaveTag">숫자 = 사용한 연차 일수</span><span class="annualLeaveTag auto">스케줄 자동</span><span class="annualLeaveTag manual">관리자 확정</span><span class="annualLeaveTag warning">과거 근태 미확인 → 발생 보류</span><span class="annualLeaveTag">셀 클릭 = 사용량 직접 입력·수정</span><span class="annualLeaveTag outside">회색 사선 = 첫 연차 발생 전 또는 재직기간 밖 (입력 불가)</span><span class="annualLeaveTag color">직원 이름 색상 = 월간 스케줄 출력색</span></div>
@@ -4392,6 +4405,7 @@ async function setScheduleView(v){
  if(v==='monthly')renderSchedule();
  else if(v==='weekly')renderWeeklyPlanner();
  else await refreshAnnualLeaveData(false);
+ scheduleViewportHeaderRequest();
 }
 
 /* V9.1.23: date navigation works without opening a modal. Only entered onsite work counts. */
@@ -4500,7 +4514,7 @@ function refreshScheduleViewportHeaders(){
  const nav=document.querySelector('.mobileNav');
  if(nav&&getComputedStyle(nav).display!=='none')pinTop=Math.max(pinTop,nav.getBoundingClientRect().bottom);
  pinTop+=2;
- page.querySelectorAll('.scheduleGridScroll').forEach(wrap=>{
+ page.querySelectorAll('.scheduleGridScroll,.annualLeaveGridScroll').forEach(wrap=>{
    const head=wrap.querySelector('thead');
    if(!head||!wrap.getClientRects().length)return;
    const rect=wrap.getBoundingClientRect(),height=head.offsetHeight;
@@ -11602,6 +11616,29 @@ boot();
 // === V9.1.42 직원별 연차관리 (기존 연차원장 활용 / 스케줄값 덮어쓰기 없음) ===
 let annualLeaveYear=Number(($('monthSelect')?.value||isoToday()).slice(0,4))||new Date().getFullYear();
 let annualLeaveScheduleRows=[],annualLeaveLoadedStore=null,annualLeaveLoadedYear=null,annualLeaveLoadingSeq=0;
+// A zero-hour ledger marker records only the display state; it never modifies annual leave balances.
+let annualLeaveShowSettled=false;
+const annualLeaveSettlementKey=id=>`annual-settlement:${Number(id)}`;
+const annualLeaveIsRetired=e=>!!(e?.resign_date&&String(e.resign_date)<=isoToday());
+function annualLeaveSettledRow(id){return leaveLedger.find(x=>Number(x.employee_id)===Number(id)&&x.source_key===annualLeaveSettlementKey(id)&&x.source==='annual_settlement')||null;}
+function annualLeaveToggleSettled(){annualLeaveShowSettled=!annualLeaveShowSettled;renderAnnualLeaveTable();scheduleViewportHeaderRequest();}
+async function annualLeaveSetSettlement(id,completed){
+ if(!canEditModule('schedule'))return alert('연차관리 수정 권한이 없습니다.');
+ const e=allEmployees().find(x=>Number(x.id)===Number(id));
+ if(!e||!annualLeaveIsRetired(e))return alert('퇴사한 직원만 정산완료 처리할 수 있습니다.');
+ const old=annualLeaveSettledRow(id);
+ if(completed&&old)return;
+ if(!completed&&!old){renderAnnualLeaveTable();return;}
+ const msg=completed?`${e.name}님의 연차 정산을 완료로 표시하시겠습니까?\n연차 원장과 스케줄은 삭제되지 않고, 이 표에서만 숨겨집니다.`:`${e.name}님의 정산완료 표시를 해제하고 연차관리 표에 복구하시겠습니까?`;
+ if(!confirm(msg))return;
+ let q;
+ if(completed){
+  const payload={employee_id:Number(id),event_date:e.resign_date,event_type:'adjust',hours:0,source:'annual_settlement',source_key:annualLeaveSettlementKey(id),memo:JSON.stringify({settledAt:new Date().toISOString(),note:'연차관리 목록 숨김 · 정산완료'})};
+  q=await sb.from('leave_ledger').upsert(payload,{onConflict:'source_key'});
+ }else q=await sb.from('leave_ledger').delete().eq('source_key',annualLeaveSettlementKey(id)).eq('employee_id',Number(id));
+ if(q.error)return alert('정산완료 상태 저장 오류: '+q.error.message);
+ await loadLeaveLedger();renderAnnualLeaveTable();scheduleViewportHeaderRequest();
+}
 const annualLeaveRound=n=>Math.round(Number(n||0)*100)/100;
 const annualLeaveFmt=n=>String(annualLeaveRound(n));
 const annualLeaveYm=(year,month)=>`${year}-${String(month).padStart(2,'0')}`;
@@ -11617,7 +11654,10 @@ function annualLeaveAttendanceVerification(id,type,start){
 }
 function annualLeaveEmployeeList(year=annualLeaveYear){
  const first=year+'-01-01',last=year+'-12-31';
- return sortEmployeesForSchedule(allEmployees().filter(e=>e.hide_monthly_schedule!==true&&employedInRange(e,first,last)));
+ const available=allEmployees().filter(e=>e.hide_monthly_schedule!==true&&employedInRange(e,first,last));
+ const active=sortEmployeesForSchedule(available.filter(e=>!annualLeaveIsRetired(e)));
+ const retired=available.filter(annualLeaveIsRetired).sort((a,b)=>String(a.resign_date||'').localeCompare(String(b.resign_date||''))||(scheduleEmployeeOrderValue(a)-scheduleEmployeeOrderValue(b))||String(a.name||'').localeCompare(String(b.name||''),'ko'));
+ return [...active,...retired];
 }
 function annualLeaveMonthSchedule(e,ym){
  const rows=annualLeaveScheduleRows.filter(s=>Number(s.employee_id)===Number(e.id)&&String(s.work_date||'').startsWith(ym));
@@ -11720,9 +11760,15 @@ async function refreshAnnualLeaveData(force=false){
 function renderAnnualLeaveTable(){
  const body=$('annualLeaveBody'),tiles=$('annualLeaveSummaryTiles');if(!body)return;
  const year=annualLeaveYear,today=isoToday(),cutoff=year===Number(today.slice(0,4))?today:(year<Number(today.slice(0,4))?year+'-12-31':null);
- const editable=canEditModule('schedule'),list=annualLeaveEmployeeList(year);
- let grandAccrual=0,grandUsed=0,grandBalance=0,missing=0;
+ const editable=canEditModule('schedule'),allList=annualLeaveEmployeeList(year);
+ const settledCount=allList.filter(e=>!!annualLeaveSettledRow(e.id)).length;
+ const toggle=$('annualLeaveSettledToggle');
+ if(toggle){toggle.textContent=annualLeaveShowSettled?`정산완료 숨기기 (${settledCount})`:`정산완료 보기 (${settledCount})`;toggle.setAttribute('aria-pressed',String(annualLeaveShowSettled));toggle.disabled=!settledCount&&!annualLeaveShowSettled;}
+ const list=allList.filter(e=>annualLeaveShowSettled||!annualLeaveSettledRow(e.id));
+ let grandAccrual=0,grandUsed=0,grandBalance=0,missing=0,retiredSeen=false;
  body.innerHTML=list.length?list.map(e=>{
+  const retired=annualLeaveIsRetired(e),settled=!!annualLeaveSettledRow(e.id),firstRetired=retired&&!retiredSeen;
+  if(retired)retiredSeen=true;
   const ann=cutoff?annualLeaveAccrualCount(e,year,cutoff):{days:0,hours:0};
   let sumUsed=0,monthCells='';
   for(let m=1;m<=12;m++){
@@ -11738,8 +11784,9 @@ function renderAnnualLeaveTable(){
   grandAccrual+=ann.days;grandUsed+=sumUsed;grandBalance+=balance;
   const next=cutoff?nextMonthlyAccrualStatus(e,cutoff,leaveAttendanceSchedules):null;
   if(next&&['pending','review'].includes(next.status))missing++;
-  return `<tr data-annual-employee="${e.id}"><td class="annualLeavePinned" style="--employee-print-bg:${employeeColor(e)}"><b>${esc(e.name)}</b><small>입사 ${esc(e.hire_date||'미등록')}</small><small>${esc(workTypeForDate(e,year+'-12-31'))}</small></td>${monthCells}<td class="annualLeaveStat">${annualLeaveFmt(ann.days)}개<small>${annualLeaveFmt(ann.hours)}h</small></td><td class="annualLeaveStat">${annualLeaveFmt(sumUsed)}개</td><td class="annualLeaveStat balance ${balance<0?'negative':''}">${cutoff?annualLeaveFmt(balance)+'h':'예정'}<small>${cutoff?'원장 기준':'아직 미도래'}</small></td><td><div class="annualLeaveActions"><button class="btn gray small" onclick="openAnnualLeaveAttendance(${e.id})">출근확인</button>${editable?`<button class="btn gray small" onclick="adjustLeave(${e.id})">잔여조정</button>`:''}</div></td></tr>`;
- }).join(''):'<tr><td colspan="17" style="padding:24px">해당 연도에 재직한 직원이 없습니다.</td></tr>';
+  return `<tr data-annual-employee="${e.id}" class="${retired?'annualLeaveRetiredRow':''} ${firstRetired?'annualLeaveRetiredFirst':''} ${settled?'annualLeaveSettledRow':''}"><td class="annualLeavePinned" style="--employee-print-bg:${employeeColor(e)}"><b>${esc(e.name)}</b><small>입사 ${esc(e.hire_date||'미등록')}</small>${retired?`<span class="annualLeaveRetiredBadge">퇴사 ${esc(e.resign_date)}</span>`:`<small>${esc(workTypeForDate(e,year+'-12-31'))}</small>`}${settled?'<span class="annualLeaveSettledBadge">정산완료</span>':''}</td>${monthCells}<td class="annualLeaveStat">${annualLeaveFmt(ann.days)}개<small>${annualLeaveFmt(ann.hours)}h</small></td><td class="annualLeaveStat">${annualLeaveFmt(sumUsed)}개</td><td class="annualLeaveStat balance ${balance<0?'negative':''}">${cutoff?annualLeaveFmt(balance)+'h':'예정'}<small>${cutoff?'원장 기준':'아직 미도래'}</small></td><td><div class="annualLeaveActions"><button class="btn gray small" onclick="openAnnualLeaveAttendance(${e.id})">출근확인</button>${editable?`<button class="btn gray small" onclick="adjustLeave(${e.id})">잔여조정</button>`:''}${retired&&editable?(settled?`<button type="button" class="btn green small" onclick="annualLeaveSetSettlement(${e.id},false)">정산 복구</button>`:`<button type="button" class="btn gray small" onclick="annualLeaveSetSettlement(${e.id},true)">정산완료</button>`):''}</div></td></tr>`;
+ }).join(''):`<tr><td colspan="17" style="padding:24px">${settledCount&&!annualLeaveShowSettled?'정산완료로 숨긴 직원만 있습니다. 위 [정산완료 보기]에서 복구할 수 있습니다.':'해당 연도에 재직한 직원이 없습니다.'}</td></tr>`;
+ scheduleViewportHeaderRequest();
  if(tiles)tiles.innerHTML=`<div class="annualLeaveTile"><small>${year}년 발생 합계</small><b>${annualLeaveFmt(grandAccrual)}개</b></div><div class="annualLeaveTile"><small>${year}년 사용 합계</small><b>${annualLeaveFmt(grandUsed)}개</b></div><div class="annualLeaveTile"><small>현재·연도말 잔여 합계</small><b>${cutoff?annualLeaveFmt(grandBalance)+'h':'예정 연도'}</b></div><div class="annualLeaveTile"><small>1년 미만 개근 확인 필요</small><b>${missing}명</b></div>`;
 }
 function openAnnualLeaveMonth(id,ym){
