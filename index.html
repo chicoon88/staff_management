@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>직원관리 대시보드 V9.1.48</title>
+<title>직원관리 대시보드 V9.1.49</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
@@ -1753,6 +1753,57 @@ body:not(.commerceAccessAllowed) .mobileNav .commerceOnlyNav{display:none!import
 .hoursIncidentDetailTable td{white-space:normal!important;text-align:left;vertical-align:top;line-height:1.5;overflow-wrap:anywhere}
 .hoursIncidentDetailTable th{text-align:left}
 .hoursIncidentDetailTable .incCode{font-weight:900;color:#ad3c29}
+
+/* V9.1.49 — 완전 분리된 업무 메뉴와 개인별 메뉴 순서 */
+.navWorkspaceHead{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:5px;padding:5px;background:#eef2f7;border:1px solid #e1e7ef;border-radius:12px}
+#mainSidebar .navWorkspaceTab{border:0;border-radius:9px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-width:0;min-height:52px;padding:7px 4px;background:transparent;color:#627084;cursor:pointer;font-size:12px;font-weight:900;white-space:nowrap}
+#mainSidebar .navWorkspaceTab.active{background:#fff;color:#1e4592;box-shadow:0 1px 5px #19263b1a}
+#mainSidebar #navWorkspaceCommerce.active{background:#183f65;color:#fff}
+.navWorkspaceSymbol{font-size:18px;line-height:1.05}
+.navWorkspaceTools{display:flex;justify-content:flex-end;margin:8px 0 4px}
+.navOrderOpenBtn{font-size:11px;font-weight:850;background:#f5f7fb;border:1px solid #dfe5ef;border-radius:7px;color:#3c4c63;padding:6px 9px;cursor:pointer}
+.navOrderOpenBtn:hover{background:#eaf0fb}
+.sideNavGroup{display:flex;flex-direction:column;gap:1px}
+.sideNavGroup .navWorkspaceSectionName{font-size:10px;color:#8490a2;letter-spacing:.03em;font-weight:950;padding:12px 12px 4px}
+/* The commerce/staff workspace is an exclusive switch: no mixed or duplicated menus. */
+body:not(.commerceStoreMode) #commerceSideNav{display:none!important}
+body.commerceStoreMode #staffSideNav{display:none!important}
+body:not(.commerceAccessAllowed) #commerceSideNav{display:none!important}
+body.commerceAccessAllowed.commerceStoreMode #commerceSideNav{display:flex!important}
+body.commerceStoreMode #commerceSideNav .commerceOnlyNav:not(.hidden){display:flex!important}
+body.commerceStoreMode #commerceSideNav .commerceNavGroupTitle{display:none!important}
+#mainSidebar .sideNavGroup>.nav{display:flex;align-items:center;gap:9px;min-height:42px;text-align:left;cursor:pointer}
+#mainSidebar .sideNavGroup>.nav .navIcon{flex:0 0 24px;width:24px;height:24px;display:inline-grid;place-items:center}
+#mainSidebar .sideNavGroup>.nav .navIcon svg{width:20px;height:20px}
+#mainSidebar .sideNavGroup>.nav .navText{min-width:0;flex:1;white-space:nowrap}
+#mainSidebar .sideNavGroup>.nav:hover:not(.active){background:#f3f6fa}
+#mainSidebar #commerceSideNav>.nav.active{background:#e7f1ff!important;color:#1654a3!important}
+#mainSidebar .sideNavGroup .sideDivider{margin:9px 8px}
+/* Order editor, independent of schedule and table scrolling */
+.navOrderModal{max-width:760px!important;width:min(760px,100%)!important}
+.navOrderDialogHelp{padding:9px 11px;background:#f5f8fd;border-radius:9px;color:#607086;font-size:12px;margin:7px 0 14px}
+.navOrderGroups{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px}
+.navOrderGroup{padding:11px;border:1px solid #e1e6ee;border-radius:12px;background:#fafbfe;min-width:0}
+.navOrderGroup h3{font-size:14px;margin:1px 0 11px;color:#1c2f49}
+.navOrderList{display:grid;gap:5px}
+.navOrderItem{display:flex;align-items:center;gap:6px;padding:7px 8px;min-height:43px;border:1px solid #e1e7ee;background:#fff;border-radius:8px;cursor:grab;user-select:none}
+.navOrderItem.dragging{opacity:.45}
+.navOrderItem.dropTarget{outline:2px solid #4a85e6}
+.navOrderGrip{color:#8190a4;font-size:15px;flex:none}
+.navOrderLabel{flex:1;min-width:0;font-size:12px;font-weight:850;color:#2c3f59;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.navOrderItem button{font-size:11px;font-weight:900;cursor:pointer;background:#edf2f9;color:#334e72;border:0;padding:6px 8px;border-radius:6px;flex:none}
+.navOrderItem button:disabled{opacity:.32;cursor:default}
+.mobileWorkspaceSwitch{display:none}
+@media(max-width:900px){
+ .mobileWorkspaceSwitch{display:flex;gap:4px;align-items:center;flex:none;border-right:1px solid #dee5ee;padding-right:8px}
+ .mobileWorkspaceTab,.mobileNavOrderBtn{border:1px solid #e0e5ed;background:#f3f5f9;color:#344054;font-size:12px;font-weight:850;border-radius:8px;padding:8px 9px;white-space:nowrap;cursor:pointer}
+ .mobileWorkspaceTab.active{background:#18477a;color:#fff;border-color:#18477a}
+ body.commerceStoreMode .mobileNav .nav:not(.commerceOnlyNav){display:none!important}
+ body:not(.commerceStoreMode) .mobileNav .commerceOnlyNav{display:none!important}
+ .navOrderGroups{grid-template-columns:minmax(0,1fr)}
+}
+@media print{.navWorkspaceHead,.navWorkspaceTools,.mobileWorkspaceSwitch{display:none!important}}
+
 </style>
 </head>
 <body>
@@ -1765,11 +1816,19 @@ body:not(.commerceAccessAllowed) .mobileNav .commerceOnlyNav{display:none!import
 <div id="storeMemoNotice" class="storeMemoNotice" style="display:none" role="status" aria-live="polite"></div>
 <div id="storeMemoAlertPopup" class="storeMemoAlertPopup" role="alertdialog" aria-label="미확인 메모 알림" aria-live="polite" style="display:none"></div>
 <div class="mobileNav">
+ <div class="mobileWorkspaceSwitch" aria-label="업무 메뉴 전환"><button type="button" id="mobileWorkspaceStaff" class="mobileWorkspaceTab active" onclick="switchNavWorkspace('staff')">직원관리</button><button type="button" id="mobileWorkspaceCommerce" class="mobileWorkspaceTab" onclick="switchNavWorkspace('commerce')">88커머스</button><button type="button" class="mobileNavOrderBtn" onclick="openNavOrderEditor()" aria-label="메뉴 순서 변경">↕</button></div>
  <button class="nav commerceOnlyNav" data-page="commerce">88커머스</button>
  <button class="nav active" data-page="home">현황</button><button class="nav" data-page="homeshop">홈쇼핑</button><button class="nav" data-page="schedule">스케줄</button><button class="nav" data-page="hours">근로</button><button class="nav" data-page="payroll">급여</button><button class="nav" data-page="employees">직원</button><button class="nav" data-page="stores">업장</button>
 </div>
 <div class="layout">
-<aside class="side">
+<aside class="side" id="mainSidebar">
+<div class="navWorkspaceHead" id="navWorkspaceSwitch" role="group" aria-label="업무 메뉴 구분">
+  <button type="button" class="navWorkspaceTab active" id="navWorkspaceStaff" onclick="switchNavWorkspace('staff')"><span class="navWorkspaceSymbol">▦</span>직원관리</button>
+  <button type="button" class="navWorkspaceTab" id="navWorkspaceCommerce" onclick="switchNavWorkspace('commerce')"><span class="navWorkspaceSymbol">▤</span>88커머스</button>
+</div>
+<div class="navWorkspaceTools"><button type="button" class="navOrderOpenBtn" id="navOrderOpen" onclick="openNavOrderEditor()" title="왼쪽 메뉴 순서 바꾸기">↕ 메뉴 순서 변경</button></div>
+<div class="sideNavGroup" id="commerceSideNav" aria-label="88커머스 메뉴">
+<div class="navWorkspaceSectionName">88커머스 자료 관리</div>
 <div class="commerceOnlyNav commerceNavGroupTitle">88커머스</div>
 <button class="nav commerceOnlyNav commerceNavBtn" data-commerce-sheet="비용지출" onclick="openCommerceSheet('비용지출')"><span class="navIcon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><rect x="3" y="5" width="18" height="15" rx="2"/><path d="M3 9h18M16 13h5v5h-5a2.5 2.5 0 0 1 0-5Z"/></svg></span><span class="navText">비용지출</span></button>
 <button class="nav commerceOnlyNav commerceNavBtn" data-commerce-sheet="통장관리" onclick="openCommerceSheet('통장관리')"><span class="navIcon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><path d="M2 9 12 3l10 6M4 9v11M9 9v11M15 9v11M20 9v11M2 21h20"/></svg></span><span class="navText">통장관리</span></button>
@@ -1777,6 +1836,9 @@ body:not(.commerceAccessAllowed) .mobileNav .commerceOnlyNav{display:none!import
 <button class="nav commerceOnlyNav commerceNavBtn" data-commerce-sheet="매입입력" onclick="openCommerceSheet('매입입력')"><span class="navIcon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><path d="M12 3v15m-5-5 5 5 5-5M3 21h18"/></svg></span><span class="navText">매입입력</span></button>
 <button class="nav commerceOnlyNav commerceNavBtn" data-commerce-sheet="매출입력" onclick="openCommerceSheet('매출입력')"><span class="navIcon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><path d="M12 21V6m-5 5 5-5 5 5M3 3h18"/></svg></span><span class="navText">매출입력</span></button>
 <button class="nav commerceOnlyNav commerceNavBtn commerceReportNavBtn" data-commerce-group="reports" onclick="openCommerceReportHub()"><span class="navIcon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M7 17v-4M12 17V7M17 17v-7"/></svg></span><span class="navText">자료조회</span></button>
+</div>
+<div class="sideNavGroup" id="staffSideNav" aria-label="직원관리 메뉴">
+<div class="navWorkspaceSectionName">직원 · 매장 관리</div>
  <button class="nav active" data-page="home"><span class="navIcon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg></span><span class="navText">전체 현황</span></button>
  <button class="nav" data-page="homeshop"><span class="navIcon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><rect x="2" y="5" width="20" height="14" rx="3"/><path d="M7 22h10M12 19v3M8 2l4 3 4-3"/></svg></span><span class="navText">홈쇼핑 건기식</span></button>
  <button class="nav" data-page="schedule"><span class="navIcon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/><path d="m9 16 2 2 4-4"/></svg></span><span class="navText">월간 스케줄</span></button>
@@ -1788,6 +1850,7 @@ body:not(.commerceAccessAllowed) .mobileNav .commerceOnlyNav{display:none!import
  <div id="adminNavDivider" class="sideDivider"></div>
  <button class="nav" data-page="users"><span class="navIcon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/><circle cx="12" cy="10" r="2"/><path d="M8.5 16a4 4 0 0 1 7 0"/></svg></span><span class="navText">사용자 / 권한</span></button>
  <button class="nav" data-page="audit"><span class="navIcon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><path d="M3 12a9 9 0 1 0 3-6.7M3 3v6h6M12 7v5l3 2"/></svg></span><span class="navText">접속 / 수정이력</span></button>
+</div>
 </aside>
 <main class="main">
 <div id="globalContextToolbar" class="toolbar" style="margin-bottom:12px">
@@ -13166,5 +13229,134 @@ document.querySelectorAll('.mobileNav [data-page="commerce"]').forEach(btn=>{
 });
 window.COMMERCE_BUILD='V9.1.48_STAFF_V9.1.46_PLUS_COMMERCE_V34_DISCOVERABLE';
 
+</script>
+
+<script id="workspaceNavV9149">
+/* V9.1.49: independent workspaces + per-account saved navigation order.
+   No data, payroll, leave, commerce workbook or ledger tables are touched. */
+const navV49Defaults={};
+const navV49Groups={staff:'staffSideNav',commerce:'commerceSideNav'};
+function navV49Group(group){return document.getElementById(navV49Groups[group]||'')}
+function navV49Buttons(group){return [...(navV49Group(group)?.children||[])].filter(el=>el.matches('button.nav'))}
+function navV49Key(btn){return btn.dataset.page?'page:'+btn.dataset.page:(btn.dataset.commerceSheet?'sheet:'+btn.dataset.commerceSheet:'group:'+btn.dataset.commerceGroup)}
+function navV49OrderKey(group){return 'dash_v9149_navorder_'+(currentSessionUser?.id||'local')+'_'+group}
+function navV49MoveNodes(group,keys){
+ const holder=navV49Group(group);if(!holder)return;
+ const all=navV49Buttons(group),map=new Map(all.map(el=>[navV49Key(el),el]));
+ const ordered=[...new Set((keys||[]).map(String))].map(k=>map.get(k)).filter(Boolean);
+ for(const el of all){if(!ordered.includes(el))ordered.push(el)}
+ for(const el of ordered)holder.appendChild(el);
+ // Keep original permission separator before the first management button.
+ if(group==='staff'){
+  const divider=document.getElementById('adminNavDivider');
+  const admin=ordered.find(el=>['users','audit'].includes(el.dataset.page));
+  if(divider&&admin)holder.insertBefore(divider,admin);
+ }
+}
+function navV49ReadOrder(group){try{let value=JSON.parse(localStorage.getItem(navV49OrderKey(group))||'null');return Array.isArray(value)?value:null}catch(_){return null}}
+function navV49RestoreOrder(){for(const group of Object.keys(navV49Groups)){const saved=navV49ReadOrder(group);if(saved)navV49MoveNodes(group,saved)}}
+function navV49SaveOrder(group){try{localStorage.setItem(navV49OrderKey(group),JSON.stringify(navV49Buttons(group).map(navV49Key)))}catch(e){console.warn('메뉴 순서 저장 실패',e)}}
+function navV49ResetOrder(){for(const group of Object.keys(navV49Groups)){navV49MoveNodes(group,navV49Defaults[group]);try{localStorage.removeItem(navV49OrderKey(group))}catch(_){}}navV49RenderEditor()}
+function navV49SyncUI(){
+ const commerce=isCommerceStore()&&canAccessCommerce();
+ const allowed=canAccessCommerce();
+ for(const [group,id] of [['staff','navWorkspaceStaff'],['commerce','navWorkspaceCommerce'],['staff','mobileWorkspaceStaff'],['commerce','mobileWorkspaceCommerce']]){
+  const btn=document.getElementById(id);if(!btn)continue;
+  btn.classList.toggle('active',group==='commerce'?commerce:!commerce);
+  btn.setAttribute('aria-pressed',String(group==='commerce'?commerce:!commerce));
+  if(group==='commerce')btn.style.display=allowed?'':'none';
+ }
+ const switcher=document.getElementById('navWorkspaceSwitch');if(switcher)switcher.classList.toggle('singleWorkspace',!allowed);
+}
+async function switchNavWorkspace(group){
+ if(group==='commerce'){
+  if(!canAccessCommerce())return alert('88커머스 접근 권한이 없습니다.');
+  if(!isCommerceStore())try{localStorage.setItem('dash_v9149_last_staff_store',String(storeId()))}catch(_){ }
+  if(isCommerceStore()){
+   // Already in commerce: switch to its page without reloading or resetting user data.
+   document.querySelectorAll('.page').forEach(el=>el.classList.remove('active'));
+   document.getElementById('commercePage')?.classList.add('active');
+   if(typeof openCommerceSheet==='function')window.openCommerceSheet(COMMERCE_V98_SHEETS.includes(commerceCurrentSheet)?commerceCurrentSheet:'매출입력');
+  }else{
+   await window.openCommerceSheet(COMMERCE_V98_SHEETS.includes(commerceCurrentSheet)?commerceCurrentSheet:'매출입력');
+  }
+ }else{
+  if(isCommerceStore()){
+   let stored=0;try{stored=Number(localStorage.getItem('dash_v9149_last_staff_store')||0)}catch(_){ }
+   const target=stores.find(s=>Number(s.id)===stored&&!commerceStoreIds.has(Number(s.id)))||stores.find(s=>!commerceStoreIds.has(Number(s.id)));
+   if(!target)return alert('접근 가능한 직원관리 업장이 없습니다.');
+   document.getElementById('storeSelect').value=String(target.id);
+   await switchStore(); // writes scheduled edits before changing stores
+  }else{
+   const active=document.querySelector('.page.active');if(active?.id==='commercePage')selectInitialPermittedPage();
+  }
+ }
+ navV49SyncUI();
+}
+function navV49EditorHtml(group){
+ const title=group==='staff'?'직원관리':'88커머스';
+ const items=navV49Buttons(group);
+ return `<section class="navOrderGroup" aria-label="${title} 순서"><h3>${title}</h3><div class="navOrderList" data-order-list="${group}">${items.map((el,i)=>{
+  const label=el.querySelector('.navText')?.textContent?.trim()||el.textContent.trim();
+  return `<div class="navOrderItem" draggable="true" data-order-group="${group}" data-order-key="${esc(navV49Key(el))}"><span class="navOrderGrip">⠿</span><span class="navOrderLabel">${esc(label)}</span><button type="button" data-order-action="up" ${i===0?'disabled':''} aria-label="${esc(label)} 위로">▲</button><button type="button" data-order-action="down" ${i===items.length-1?'disabled':''} aria-label="${esc(label)} 아래로">▼</button></div>`;
+ }).join('')}</div></section>`
+}
+function navV49RenderEditor(){
+ const box=document.getElementById('navOrderEditor');if(!box)return;
+ box.innerHTML=`<div class="navOrderGroups">${navV49EditorHtml('staff')}${navV49EditorHtml('commerce')}</div>`;
+}
+function navV49Reposition(group,key,relativeKey,after=false){
+ const holder=navV49Group(group);if(!holder||key===relativeKey)return;
+ const nodes=navV49Buttons(group),dragged=nodes.find(el=>navV49Key(el)===key),other=nodes.find(el=>navV49Key(el)===relativeKey);
+ if(!dragged||!other)return;
+ const desired=nodes.filter(el=>el!==dragged),index=desired.indexOf(other);
+ desired.splice(index+(after?1:0),0,dragged);
+ navV49MoveNodes(group,desired.map(navV49Key));navV49SaveOrder(group);navV49RenderEditor();
+}
+function navV49ReorderStep(group,key,direction){
+ const nodes=navV49Buttons(group),index=nodes.findIndex(el=>navV49Key(el)===key),target=index+direction;
+ if(index<0||target<0||target>=nodes.length)return;
+ navV49Reposition(group,key,navV49Key(nodes[target]),direction>0);
+}
+let navV49Drag=null;
+function navV49WireEditor(){
+ const area=document.getElementById('navOrderEditor');if(!area||area.dataset.wired)return;
+ area.dataset.wired='1';
+ area.addEventListener('click',ev=>{
+  const btn=ev.target.closest('[data-order-action]');if(!btn)return;
+  const item=btn.closest('.navOrderItem');if(!item)return;
+  navV49ReorderStep(item.dataset.orderGroup,item.dataset.orderKey,btn.dataset.orderAction==='up'?-1:1);
+ });
+ area.addEventListener('dragstart',ev=>{
+  const item=ev.target.closest('.navOrderItem');if(!item)return;
+  navV49Drag={group:item.dataset.orderGroup,key:item.dataset.orderKey};item.classList.add('dragging');
+  if(ev.dataTransfer){ev.dataTransfer.effectAllowed='move';ev.dataTransfer.setData('text/plain',navV49Drag.group+':'+navV49Drag.key)}
+ });
+ area.addEventListener('dragover',ev=>{
+  const item=ev.target.closest('.navOrderItem');if(!item||!navV49Drag||item.dataset.orderGroup!==navV49Drag.group)return;
+  ev.preventDefault();if(ev.dataTransfer)ev.dataTransfer.dropEffect='move';
+ });
+ area.addEventListener('drop',ev=>{
+  const item=ev.target.closest('.navOrderItem');if(!item||!navV49Drag||item.dataset.orderGroup!==navV49Drag.group)return;
+  ev.preventDefault();const after=ev.clientY>item.getBoundingClientRect().top+item.getBoundingClientRect().height/2;
+  navV49Reposition(navV49Drag.group,navV49Drag.key,item.dataset.orderKey,after);navV49Drag=null;
+ });
+ area.addEventListener('dragend',()=>{navV49Drag=null;area.querySelectorAll('.dragging').forEach(el=>el.classList.remove('dragging'))});
+}
+function openNavOrderEditor(){
+ modal(`<h2>메뉴 순서 변경</h2><div class="navOrderDialogHelp">직원관리와 88커머스의 순서를 따로 지정합니다. 항목을 드래그하거나 ▲ ▼ 버튼으로 이동하세요. 변경 즉시 저장되며 새로고침해도 유지됩니다.</div><div id="navOrderEditor"></div><div class="modalActions"><button type="button" class="btn gray" onclick="if(confirm('두 메뉴를 최초 순서로 되돌릴까요?'))navV49ResetOrder()">기본 순서 복원</button><button type="button" class="btn" onclick="closeModal()">완료</button></div>`);
+ document.getElementById('modalBox')?.classList.add('navOrderModal');navV49RenderEditor();navV49WireEditor();
+}
+for(const group of Object.keys(navV49Groups))navV49Defaults[group]=navV49Buttons(group).map(navV49Key);
+navV49RestoreOrder();
+// Re-apply after user-specific session is initialized; no server schema or table changes.
+const navV49PreviousLoadStores=loadStores;
+loadStores=async function(...args){const result=await navV49PreviousLoadStores(...args);navV49RestoreOrder();navV49SyncUI();return result};
+const navV49PreviousPermissionUI=applyPermissionUI;
+applyPermissionUI=function(...args){const result=navV49PreviousPermissionUI(...args);navV49SyncUI();return result};
+const navV49PreviousSwitchStore=switchStore;
+switchStore=async function(...args){const result=await navV49PreviousSwitchStore(...args);if(!isCommerceStore()&&storeId())try{localStorage.setItem('dash_v9149_last_staff_store',String(storeId()))}catch(_){ }navV49SyncUI();return result};
+navV49SyncUI();
+window.COMMERCE_BUILD='V9.1.49_NAV_WORKSPACES_AND_ORDER';
 </script>
 </body></html>
