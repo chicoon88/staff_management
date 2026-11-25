@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>직원관리 대시보드 V9.1.49</title>
+<title>직원관리 대시보드 2026.11.25_2</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
@@ -1780,6 +1780,51 @@ body.commerceStoreMode .mobileNav .nav:not(.commerceOnlyNav){display:none!import
 body:not(.commerceStoreMode) #commercePage{display:none!important}
 body.commerceStoreMode .commerceOnlyNav:not(.hidden){display:flex}
 
+\n/* V9.1.51 · 모든 업장별 노무사 제출용 원본 엑셀 편집 (개인정보: 관리자 전용) */
+.laborToolbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.laborIntro{font-size:12px;line-height:1.7;color:#667085;margin:6px 0 14px}
+.laborInfo{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:10px 12px;border:1px solid #e0e6f0;background:#f7f9fc;border-radius:9px;margin:10px 0;font-size:12px}
+.laborGridWrap{max-height:calc(100vh - 340px);min-height:240px;overflow:auto;border:1px solid #dce3ed;border-radius:10px;background:#fff;overscroll-behavior:contain}
+.laborGrid{border-collapse:separate;border-spacing:0;font-size:12px;min-width:max-content;width:max-content;background:#fff}
+.laborGrid thead th{position:sticky;top:0;z-index:5;background:#e8eef8;color:#263654;padding:8px 7px;white-space:nowrap;border-right:1px solid #d5deec;border-bottom:1px solid #c7d3e3;min-width:120px;text-align:center}
+.laborGrid thead tr:nth-child(2) th{top:34px;background:#dbe6f7;max-width:220px;overflow:hidden;text-overflow:ellipsis}
+.laborGrid thead th:first-child,.laborGrid tbody th{position:sticky;left:0;z-index:6;min-width:50px;width:50px;max-width:50px;background:#eff3f8}
+.laborGrid tbody th{padding:7px;text-align:center;color:#58677e;border-right:1px solid #d8e1ee;border-bottom:1px solid #e2e7f0}
+.laborGrid tbody td{padding:2px;border-bottom:1px solid #e3e9f2;border-right:1px solid #e3e9f2;background:#fff}
+.laborGrid tbody tr:nth-child(even) td{background:#fafcff}
+.laborGrid input{width:100%;min-width:114px;max-width:250px;height:34px;padding:6px 7px;border:1px solid transparent;border-radius:5px;font-size:12px;background:transparent;color:#1c293c;box-sizing:border-box}
+.laborGrid input:focus{outline:2px solid #86aaff;background:#fff;border-color:#adc5fd}
+.laborGrid input.changed{background:#fff5d7;border-color:#e8ca72}
+.laborGrid input:disabled{opacity:.68;background:#f3f4f7;cursor:not-allowed}
+.laborEmpty{border:1px dashed #cbd5e1;border-radius:9px;padding:35px 16px;text-align:center;color:#64748b;background:#f8fafc}
+@media(max-width:650px){.laborGridWrap{max-height:65vh}.laborToolbar button{font-size:12px}.laborGrid input{min-width:104px}}
+
+/* 2026.11.25_2: 날짜별 ZIP 빌드 정보 + 스케줄 업장/월 선택 고정. */
+.homeBuildTitle{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.homeBuildTitle .title{margin:0}
+.buildVersionBadge{display:inline-flex;align-items:center;padding:5px 9px;background:#eef3ff;border:1px solid #d5e1fb;color:#244f95;border-radius:8px;font-size:12px;font-weight:800;white-space:nowrap}
+.commerceBuildVersion{display:inline-block;font-size:12px;font-weight:700;opacity:.8;vertical-align:middle}
+.scheduleStickyContextLabel{display:none;font-size:12px;font-weight:800;color:#365274;white-space:nowrap;margin-left:auto;padding:6px 9px;border:1px solid #dce4f0;background:#f4f7fb;border-radius:8px}
+#app:has(#schedulePage.active) #globalContextToolbar{
+ position:sticky;top:var(--schedule-context-offset,66px);z-index:28;
+ background:rgba(255,255,255,.98);padding:9px 11px;
+ border:1px solid #dce3ee;border-radius:11px;
+ box-shadow:0 4px 13px rgba(20,35,56,.1);
+}
+#app:has(#schedulePage.active) .scheduleStickyContextLabel{display:inline-flex}
+@media(max-width:900px){
+ #app:has(#schedulePage.active) #globalContextToolbar{padding:8px 9px;row-gap:6px}
+ #app:has(#schedulePage.active) .scheduleStickyContextLabel{margin-left:0}
+}
+@media print{#globalContextToolbar{position:static!important;box-shadow:none!important}}
+
+/* 2026-11-25_2: 근로시간 엑셀 다운로드를 탭 전환과 분리해 명확하게 표시. */
+#hoursPage .workHoursExcelExportBar{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin:13px 0 3px;padding:13px 15px;background:#f5f9ff;border:1px solid #cfdff7;border-radius:12px}
+#hoursPage .workHoursExcelExportInfo{display:flex;flex-direction:column;gap:3px;min-width:0}
+#hoursPage .workHoursExcelExportInfo strong{font-size:14px;color:#1f334a}
+#hoursPage .workHoursExcelExportInfo span{font-size:12px;color:#53657d;line-height:1.4}
+#hoursPage .workHoursExcelDownloadBtn{display:inline-flex;align-items:center;justify-content:center;min-height:42px;padding:9px 17px;font-size:14px;font-weight:800;white-space:nowrap;box-shadow:0 2px 7px rgba(26,114,77,.18)}
+@media(max-width:640px){#hoursPage .workHoursExcelExportBar{padding:12px}#hoursPage .workHoursExcelDownloadBtn{width:100%}}
 </style>
 </head>
 <body>
@@ -1793,7 +1838,7 @@ body.commerceStoreMode .commerceOnlyNav:not(.hidden){display:flex}
 <div id="storeMemoAlertPopup" class="storeMemoAlertPopup" role="alertdialog" aria-label="미확인 메모 알림" aria-live="polite" style="display:none"></div>
 <div class="mobileNav">
  <button class="nav commerceOnlyNav" data-page="commerce">88커머스</button>
- <button class="nav active" data-page="home">현황</button><button class="nav" data-page="homeshop">홈쇼핑</button><button class="nav" data-page="schedule">스케줄</button><button class="nav" data-page="hours">근로</button><button class="nav" data-page="payroll">급여</button><button class="nav" data-page="employees">직원</button><button class="nav" data-page="stores">업장</button>
+ <button class="nav active" data-page="home">현황</button><button class="nav" data-page="homeshop">홈쇼핑</button><button class="nav" data-page="schedule">스케줄</button><button class="nav" data-page="hours">근로</button><button class="nav" data-page="labor">노무사</button><button class="nav commerceOnlyNav" data-page="labor">노무사</button><button class="nav" data-page="payroll">급여</button><button class="nav" data-page="employees">직원</button><button class="nav" data-page="stores">업장</button>
 </div>
 <div class="layout">
 <aside class="side">
@@ -1808,23 +1853,26 @@ body.commerceStoreMode .commerceOnlyNav:not(.hidden){display:flex}
  <button class="nav" data-page="homeshop"><span class="navIcon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><rect x="2" y="5" width="20" height="14" rx="3"/><path d="M7 22h10M12 19v3M8 2l4 3 4-3"/></svg></span><span class="navText">홈쇼핑 건기식</span></button>
  <button class="nav" data-page="schedule"><span class="navIcon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/><path d="m9 16 2 2 4-4"/></svg></span><span class="navText">월간 스케줄</span></button>
  <button class="nav" data-page="hours"><span class="navIcon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span><span class="navText">근로시간</span></button>
- <button class="nav" data-page="payroll"><span class="navIcon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9h18M16 13h5v5h-5a2.5 2.5 0 0 1 0-5Z"/></svg></span><span class="navText">급여관리</span></button>
+ <button class="nav staffOnlyNav" data-page="labor"><span class="navIcon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M8 7h8M8 11h8M8 15h8"/></svg></span><span class="navText">노무사 제출자료</span></button>
+  <button class="nav" data-page="payroll"><span class="navIcon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9h18M16 13h5v5h-5a2.5 2.5 0 0 1 0-5Z"/></svg></span><span class="navText">급여관리</span></button>
  <button class="nav" data-page="employees"><span class="navIcon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><circle cx="9" cy="8" r="3"/><path d="M3 21v-2a6 6 0 0 1 12 0v2M17 5.5a3 3 0 0 1 0 5.8M18 15a5 5 0 0 1 3 4.5V21"/></svg></span><span class="navText">직원관리</span></button>
  <button class="nav" data-page="stores"><span class="navIcon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><path d="M3 21h18M5 21V7l7-4 7 4v14M9 21v-6h6v6M9 10h.01M15 10h.01"/></svg></span><span class="navText">업장관리</span></button>
  <button class="nav" data-page="holidays"><span class="navIcon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><path d="m12 2 3.1 6.3 7 .9-5 4.9 1.2 7L12 17.8l-6.3 3.3 1.2-7-5-4.9 7-.9Z"/></svg></span><span class="navText">공휴일관리</span></button>
  <div id="adminNavDivider" class="sideDivider"></div>
  <button class="nav" data-page="users"><span class="navIcon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/><circle cx="12" cy="10" r="2"/><path d="M8.5 16a4 4 0 0 1 7 0"/></svg></span><span class="navText">사용자 / 권한</span></button>
  <button class="nav" data-page="audit"><span class="navIcon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><path d="M3 12a9 9 0 1 0 3-6.7M3 3v6h6M12 7v5l3 2"/></svg></span><span class="navText">접속 / 수정이력</span></button>
-</aside>
+
+ <button class="nav commerceOnlyNav" data-page="labor"><span class="navIcon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M8 7h8M8 11h8M8 15h8"/></svg></span><span class="navText">노무사 제출자료</span></button></aside>
 <main class="main">
 <div id="globalContextToolbar" class="toolbar" style="margin-bottom:12px">
  <select id="storeSelect" onchange="switchStore()"></select>
  <button id="renameStoreBtn" class="btn gray small" onclick="renameCurrentStore()">업장명 수정</button>
  <input id="monthSelect" type="month" onchange="switchMonth()">
+ <span id="scheduleStickyContextLabel" class="scheduleStickyContextLabel" aria-label="현재 스케줄 업장 및 월"></span>
 </div>
 
 <section id="commercePage" class="page">
- <div class="commerceHero"><h1 class="title">88커머스 <span style="font-size:12px;opacity:.8">V9.1.49</span></h1><div class="sub">대시보드에서 직접 입력·수정하고 자동 계산하며, 카페24 반영과 원본 Excel 형식 다운로드까지 한곳에서 관리합니다.</div></div>
+ <div class="commerceHero"><h1 class="title">88커머스 <span class="commerceBuildVersion">버전 2026.11.25_2</span></h1><div class="sub">대시보드에서 직접 입력·수정하고 자동 계산하며, 카페24 반영과 원본 Excel 형식 다운로드까지 한곳에서 관리합니다.</div></div>
 
  <div id="commerceGroupBar" class="commerceGroupBar hidden">
   <div><div id="commerceGroupTitle" class="groupTitle">-</div><div id="commerceGroupSub" class="help" style="margin-top:3px">-</div></div>
@@ -1907,7 +1955,7 @@ body.commerceStoreMode .commerceOnlyNav:not(.hidden){display:flex}
 </section>
 
 <section id="homePage" class="page active">
- <div class="row"><div><h1 class="title" id="homeTitle">현황</h1><div class="sub">업장과 월을 선택하면 모든 정보가 같이 바뀝니다.</div></div></div>
+ <div class="row"><div><div class="homeBuildTitle"><h1 class="title" id="homeTitle">현황</h1><span class="buildVersionBadge" id="homeBuildVersion">버전 2026.11.25_2</span></div><div class="sub">업장과 월을 선택하면 모든 정보가 같이 바뀝니다.</div></div></div>
  <div class="cards">
   <div class="card"><div class="k">재직 직원</div><div class="v" id="kEmp">0명</div></div>
   <div class="card"><div class="k">이번 달 연차 발생</div><div class="v" id="kLeaveDue">0명</div></div>
@@ -2041,9 +2089,9 @@ body.commerceStoreMode .commerceOnlyNav:not(.hidden){display:flex}
       </div>
       <div id="annualLeaveSummaryTiles" class="annualLeaveSummaryTiles"></div>
       <div id="annualLeaveWorkAudit" class="help hidden" role="status" style="margin:4px 0 9px;padding:9px 12px;border:1px solid #ebd8aa;border-radius:8px;background:#fffaf0;color:#684718"></div>
-      <div class="annualLeaveLegend"><span class="annualLeaveTag">숫자 = 사용한 연차 일수</span><span class="annualLeaveTag auto">스케줄 자동</span><span class="annualLeaveTag manual">관리자 확정</span><span class="annualLeaveTag warning">과거 근태 미확인 → 발생 보류</span><span class="annualLeaveTag">셀 클릭 = 사용량 직접 입력·수정</span><span class="annualLeaveTag outside">회색 사선 = 첫 연차 발생 전 또는 재직기간 밖 (입력 불가)</span><span class="annualLeaveTag color">직원 이름 색상 = 월간 스케줄 출력색</span></div>
-      <div class="tablewrap annualLeaveGridScroll"><table id="annualLeaveTable" class="annualLeaveTable"><thead><tr><th class="annualLeavePinned">직원 / 입사일</th><th>1월</th><th>2월</th><th>3월</th><th>4월</th><th>5월</th><th>6월</th><th>7월</th><th>8월</th><th>9월</th><th>10월</th><th>11월</th><th>12월</th><th>연도 발생</th><th>연도 사용</th><th>잔여 연차</th><th>관리</th></tr></thead><tbody id="annualLeaveBody"><tr><td colspan="17" class="help">연차 자료를 불러오는 중입니다.</td></tr></tbody></table></div>
-      <div class="help" style="margin-top:10px;line-height:1.65">잔여는 기존 연차원장의 발생·사용·조정 기록을 시간(h) 기준으로 계산합니다. 연차관리에서 월 사용량을 확정하면 스케줄에 입력된 그 달 연차와 <b>중복 차감하지 않습니다.</b> 근무조건이 바뀐 직원은 일수와 시간을 함께 확인하세요. 스케줄이 없는 기간은 자동으로 개근 처리하지 않으며, ‘출근확인’에서 실제 출근 사실을 확인한 후 발생에 반영합니다.</div>
+      <div class="annualLeaveLegend"><span class="annualLeaveTag">숫자 = 스케줄 연차 일수 (미래는 예정)</span><span class="annualLeaveTag auto">스케줄 자동</span><span class="annualLeaveTag manual">관리자 확정</span><span class="annualLeaveTag warning">과거 근태 미확인 → 발생 보류</span><span class="annualLeaveTag">셀 클릭 = 사용량 직접 입력·수정</span><span class="annualLeaveTag outside">회색 사선 = 첫 연차 발생 전 또는 재직기간 밖 (입력 불가)</span><span class="annualLeaveTag color">직원 이름 색상 = 월간 스케줄 출력색</span></div>
+      <div class="tablewrap annualLeaveGridScroll"><table id="annualLeaveTable" class="annualLeaveTable"><thead><tr><th class="annualLeavePinned">직원 / 입사일</th><th>1월</th><th>2월</th><th>3월</th><th>4월</th><th>5월</th><th>6월</th><th>7월</th><th>8월</th><th>9월</th><th>10월</th><th>11월</th><th>12월</th><th>연도 발생</th><th>사용 완료 / 예정</th><th>잔여 연차</th><th>관리</th></tr></thead><tbody id="annualLeaveBody"><tr><td colspan="17" class="help">연차 자료를 불러오는 중입니다.</td></tr></tbody></table></div>
+      <div class="help" style="margin-top:10px;line-height:1.65"><b>사용 완료와 미래 사용 예정은 구분합니다.</b> 잔여는 오늘까지 실제 발생·사용한 기록만 반영하며, 미래의 '연'은 아직 차감하지 않습니다. 미래 월 연차가 추가 발생할 수도 있습니다. 잔여는 기존 연차원장의 발생·사용·조정 기록을 시간(h) 기준으로 계산합니다. <b>잔여확정</b>을 하면 그 날짜의 잔여를 새 기준으로 삼고, 그 이후 연차 발생·사용은 입사일 기준으로 계속 누적합니다. 기존 기록은 삭제되지 않습니다. 연차관리에서 월 사용량을 확정하면 스케줄에 입력된 그 달 연차와 <b>중복 차감하지 않습니다.</b> 근무조건이 바뀐 직원은 일수와 시간을 함께 확인하세요. 스케줄이 없는 기간은 자동으로 개근 처리하지 않으며, ‘출근확인’에서 실제 출근 사실을 확인한 후 발생에 반영합니다.</div>
     </div>
   </div>
 
@@ -2060,10 +2108,16 @@ body.commerceStoreMode .commerceOnlyNav:not(.hidden){display:flex}
 <section id="hoursPage" class="page">
  <div class="row">
   <div><h1 class="title" id="hoursPageTitle">근로시간</h1><div class="sub" id="hoursPageSub">선택월 스케줄을 기준으로 근로시간을 확인합니다.</div></div>
-  <div class="simpleTabs">
+  <div class="toolbar hoursPageTabs" style="gap:8px;flex-wrap:wrap;justify-content:flex-end">
+   <div class="simpleTabs">
    <button id="hoursSummaryTabBtn" class="simpleTab active" onclick="setHoursView('summary')">근로시간</button>
    <button id="attendanceTabBtn" class="simpleTab" onclick="setHoursView('attendance')">근태 확인 <span id="attendanceNeedBadge" class="attendanceBadge" style="display:none">0</span></button>
+   </div>
   </div>
+ </div>
+ <div class="workHoursExcelExportBar" aria-label="월간 근로시간 엑셀 다운로드">
+  <div class="workHoursExcelExportInfo"><strong>근로시간엑셀파일</strong><span>현재 선택한 업장·월의 스케줄 및 근로시간을 Excel로 다운로드합니다.</span></div>
+  <button type="button" class="btn green workHoursExcelDownloadBtn" id="workHoursExcelBtn" onclick="exportSchedule()" title="근로시간 Excel 파일 다운로드">📥 근로시간엑셀파일 다운로드</button>
  </div>
  <div id="hoursSummaryView">
   <div class="card hoursSummaryCard" style="margin-top:13px">
@@ -2100,6 +2154,35 @@ body.commerceStoreMode .commerceOnlyNav:not(.hidden){display:flex}
   <div class="tablewrap"><table class="attendanceTable"><thead><tr><th style="width:42px">선택</th><th>직원</th><th>날짜</th><th>스케줄</th><th>텔레캅</th><th>상태</th><th>처리</th></tr></thead><tbody id="attendanceBody"><tr><td colspan="7" class="attEmpty">텔레캅 파일을 불러오면 확인할 기록만 표시합니다.</td></tr></tbody></table></div>
  </div>
 </section>
+
+
+ <section id="laborPage" class="page">
+  <div class="row" style="flex-wrap:wrap;gap:10px">
+   <div><h1 class="title">노무사 제출자료</h1><div class="sub">현재 선택한 업장과 월의 <b>근로자현황파악.xlsx</b> 원본을 웹에서 수정합니다.</div></div>
+   <span id="laborScopeBadge" class="saveState">업장·월 선택</span>
+  </div>
+  <div class="card" style="margin-top:14px">
+   <div class="laborToolbar">
+    <input id="laborWorkbookInput" type="file" accept=".xlsx" style="display:none" onchange="laborUploadOriginal(this.files?.[0]);this.value=''">
+    <button class="btn" id="laborUploadBtn" onclick="$('laborWorkbookInput').click()">원본 Excel 등록 / 교체</button>
+    <button class="btn gray" id="laborCopyBtn" onclick="laborCopyPriorMonth()">이전월 자료 복사</button>
+    <button class="btn gray" onclick="laborReloadMonth()">저장본 다시 불러오기</button>
+    <span id="laborSaveState" class="saveState">대기</span>
+   </div>
+   <p class="laborIntro"><b>업장별 2개 파일</b> · 기존 <b>근로시간엑셀파일</b>과 이곳의 <b>근로자현황파악.xlsx</b>를 각각 내려받아 전달합니다. 같은 파일명이라도 업장·월별로 별도 보관하며 직원관리·급여대장의 원본 데이터는 변경하지 않습니다. 주민번호·급여 정보가 포함되어 이 화면은 <b>최고관리자만</b> 볼 수 있습니다.</p>
+   <div id="laborWorkbookInfo" class="laborInfo">아직 파일을 불러오지 않았습니다.</div>
+   <div class="laborToolbar" style="margin:10px 0">
+    <label for="laborSheetSelect" style="font-size:12px;font-weight:800">시트</label>
+    <select id="laborSheetSelect" onchange="laborRenderSheet()" style="max-width:210px"></select>
+    <span style="flex:1"></span>
+    <button id="laborUndoBtn" class="btn gray" onclick="laborUndoDraft()">미저장 수정 취소</button>
+    <button id="laborSaveBtn" class="btn green" onclick="laborSaveMonth()">웹 수정 저장</button>
+    <button id="laborExportBtn" class="btn" onclick="laborDownloadPreservingOriginal()">원본 양식 그대로 다운로드</button>
+   </div>
+   <div id="laborWorkbookGrid" class="laborEmpty">현재 업장·월에 등록된 Excel이 없습니다. 원본을 업로드하거나 이전월 자료를 복사하세요.</div>
+   <div class="help" style="margin-top:9px">노란색 셀 = 웹에서 수정한 값 · 수식 셀/병합된 칸은 임의로 덮어쓰지 않습니다. 다운로드 전 변경사항을 저장하세요. 출력 시 원본 셀 서식·열 너비·인쇄 설정·시트 구조를 유지합니다.</div>
+  </div>
+ </section>
 
 <section id="payrollPage" class="page">
  <div class="row">
@@ -2633,7 +2716,7 @@ const APP_PERMISSION_MODULES=[
 function isPermissionTableMissing(err){let m=String(err?.message||'')+' '+String(err?.details||'')+' '+String(err?.code||'');return /app_users|user_permissions|user_store_access|audit_logs|access_logs|relation .* does not exist|42P01|schema cache/i.test(m)}
 function isAppAdmin(){return permissionSystemAvailable===false||currentAppUser?.is_admin===true}
 function permissionFor(module){if(isAppAdmin())return {can_view:true,can_edit:true};return currentPermissions.get(module)||{can_view:false,can_edit:false}}
-function canViewModule(module){if(module==='users'||module==='audit')return isAppAdmin()&&permissionSystemAvailable!==false;return !!permissionFor(module).can_view}
+function canViewModule(module){if(module==='labor')return isAppAdmin()&&permissionSystemAvailable!==false;if(module==='users'||module==='audit')return isAppAdmin()&&permissionSystemAvailable!==false;return !!permissionFor(module).can_view}
 function canEditModule(module){if(module==='users'||module==='audit')return isAppAdmin()&&permissionSystemAvailable!==false;return !!permissionFor(module).can_edit}
 function requireModuleEdit(module,msg='이 계정에는 수정 권한이 없습니다.'){if(canEditModule(module))return true;alert(msg);return false}
 function userDeviceLabel(){let ua=navigator.userAgent||'',mobile=/iPhone|iPad|Android|Mobile/i.test(ua);return `${mobile?'모바일':'PC'} · ${navigator.platform||'기기'}`.slice(0,120)}
@@ -3170,6 +3253,7 @@ document.querySelectorAll('.nav[data-page]').forEach(b=>b.onclick=async()=>{
  if(b.dataset.page==='schedule'){if(scheduleView==='weekly')renderWeeklyPlanner();else if(scheduleView==='leave')await refreshAnnualLeaveData(false);else renderSchedule();applyScheduleEditState()}
  else if(b.dataset.page==='employees'){employeeView='active';$('activeEmpTab')?.classList.add('active');$('retiredEmpTab')?.classList.remove('active');loadEmployeesPageData()}
  else if(b.dataset.page==='hours'){setHoursView(isAppAdmin()?(localStorage.getItem('staff_hours_view')||'summary'):'attendance');loadHoursPageData();}
+ else if(b.dataset.page==='labor')await laborLoadSelectedMonth();
  else if(b.dataset.page==='payroll'){applyPayrollColumnWidths();loadPayrollSimple()}
  else if(b.dataset.page==='holidays')loadHolidayManagementYear();
  else if(b.dataset.page==='home')loadHomePageData();
@@ -3781,9 +3865,24 @@ async function loadLeaveLedger(){
    leaveLedger.sort((a,b)=>String(a.event_date||'').localeCompare(String(b.event_date||''))||(Number(a.id||0)-Number(b.id||0)));
  }catch(err){console.warn(err?.message||err);leaveLedger=[]}
 }
+// V9.1.52: 잔여연차 '확정'은 과거 원장 삭제/수정이 아니라, 확정일 기준 잔여의 새 출발점이다.
+// 발생·사용 이력은 그대로 표시하고, 확정일 이후 입사일 기준 신규 발생/실제 사용은 정상 반영한다.
+function leaveBalanceResetInfo(e,asOf=isoToday()){
+ const markers=leaveLedger.filter(x=>Number(x.employee_id)===Number(e.id)&&x.event_type==='adjust'&&x.source==='balance_reset'&&String(x.event_date||'')<=asOf)
+   .sort((a,b)=>String(a.event_date||'').localeCompare(String(b.event_date||''))||Number(a.id||0)-Number(b.id||0));
+ for(let i=markers.length-1;i>=0;i--){
+   const row=markers[i];try{
+     const data=JSON.parse(row.memo||'{}'),balance=Number(data.balance);
+     if(data.balance!==null&&data.balance!==undefined&&Number.isFinite(balance))return {row,balance,confirmedAt:data.confirmedAt||''};
+   }catch(_){}
+ }
+ return null;
+}
 function leaveSummary(e,asOf=monthRange().last){
- let rows=leaveLedger.filter(x=>Number(x.employee_id)===Number(e.id)&&String(x.event_date||'')<=asOf);
- // 월 확정사용량이 있으면 같은 달의 스케줄 연차원장과 중복 차감하지 않는다.
+ let rows=leaveLedger.filter(x=>Number(x.employee_id)===Number(e.id)&&String(x.event_date||'')<=asOf &&
+   // 타 업장에서 전입한 직원의 과거 연차 스케줄을 임의 삭제하지 않고, 새 업장 재직기간 외에는 잔여 계산에서만 제외한다.
+   (x.source!=='schedule'||employedOn(e,String(x.event_date||''))));
+ // 월 확정사용량이 있으면 같은 달 스케줄 연차원장과 중복 차감하지 않는다.
  let confirmedMonths=new Set(rows.filter(x=>x.source==='annual_use_override'&&x.event_type==='use').map(x=>String(x.event_date).slice(0,7)));
  rows=rows.filter(x=>!(x.event_type==='use'&&x.source==='schedule'&&confirmedMonths.has(String(x.event_date).slice(0,7))));
  let accrued=0,used=0,adjust=0,total=0;
@@ -3793,6 +3892,29 @@ function leaveSummary(e,asOf=monthRange().last){
    else if(x.event_type==='use')used+=Math.abs(Math.min(0,h));
    else if(x.event_type==='adjust')adjust+=h;
  });
+ let reset=leaveBalanceResetInfo(e,asOf);
+ if(reset){
+   const date=String(reset.row.event_date||''),resetId=Number(reset.row.id||0);
+   // '확정' 이전의 발생·사용·조정은 원장에 남기되 잔여에 다시 더하지 않는다.
+   // 같은 날짜에는 확정 이후 새로 입력된 행(id가 더 큰 행)만 반영한다.
+   const ym=date.slice(0,7);
+   const after=rows.filter(x=>
+     // 월 사용량 수동확정은 실제 저장일과 무관하게 해당 월 1일로 기록된다.
+     // 확정월의 수동 사용량만은 아래 월 누적 차액으로 계산해 확정 뒤 수정해도 빠지지 않게 한다.
+     !(x.source==='annual_use_override'&&String(x.event_date||'').slice(0,7)===ym) &&
+     (String(x.event_date||'')>date || (String(x.event_date||'')===date && Number(x.id||0)>resetId)));
+   let net=after.reduce((sum,x)=>sum+Number(x.hours||0),0);
+   const monthOverride=rows.find(x=>x.source==='annual_use_override'&&x.event_type==='use'&&String(x.event_date||'').slice(0,7)===ym);
+   if(monthOverride){
+     // 확정일 시점의 당월 사용량과 달라진 부분만 새 잔여에 반영한다 (기존 사용분 중복 차감 방지).
+     let base=0;try{base=Number(JSON.parse(reset.row.memo||'{}').monthUsageAtReset||0)}catch(_){}
+     net+=Number(monthOverride.hours||0)+base;
+   }
+   const balance=Math.round((reset.balance+net)*100)/100;
+   // 누적 발생/사용 숫자는 이력 전체를 보여주되, 조정란은 잔여와 맞도록 순조정액을 보여준다.
+   adjust=Math.round((balance-accrued+used)*100)/100;
+   return {accrued,used,adjust,balance,confirmedDate:date,confirmedBalance:reset.balance};
+ }
  return {accrued,used,adjust,balance:Math.round(total*100)/100};
 }
 function liveLeaveSummary(e,asOf=monthRange().last){
@@ -3842,17 +3964,30 @@ function selectedMonthAccruals(e){
  return leaveLedger.filter(x=>x.employee_id===e.id&&x.event_type==='accrual'&&x.event_date>=r.first&&x.event_date<=r.last);
 }
 async function adjustLeave(id){
- let e=employees.find(x=>x.id===id),cur=leaveSummary(e,isoToday()).balance;
- let raw=prompt(`${e.name} 연차 조정\n현재 잔여: ${cur}h\n\n추가할 시간은 +숫자, 차감은 -숫자로 입력하세요.`, '0');
+ if(!canEditModule('schedule')&&!canEditModule('employees'))return alert('연차 확정 권한이 없습니다.');
+ const e=allEmployees().find(x=>Number(x.id)===Number(id));if(!e)return;
+ // 확정 전에 현재 저장된 연차 원장을 다시 조회해 오래된 화면값 사용을 피한다.
+ try{await loadLeaveLedger();}catch(err){return alert('연차 원장 조회 실패: '+(err?.message||err));}
+ const date=isoToday(),cur=leaveSummary(e,date).balance;
+ const raw=prompt(`${e.name} 잔여연차 확정 (${date})\n현재 잔여: ${cur}시간\n\n이 날짜에 남겨둘 잔여시간을 직접 입력하세요.\n예: 0 입력 → 오늘 0시간으로 확정, 향후 연차 발생 시 자동으로 추가됩니다.\n\n이전 발생·사용 기록은 삭제하거나 수정하지 않습니다.`,String(cur));
  if(raw===null)return;
- let h=Number(raw);
- if(!isFinite(h)||h===0)return alert('0이 아닌 숫자를 입력하세요.');
- let key=`manual:${id}:${Date.now()}`;
- let q=await sb.from('leave_ledger').insert({employee_id:id,event_date:isoToday(),event_type:'adjust',hours:h,source:'manual',source_key:key,memo:'관리자 수동 조정'});
- if(q.error)return alert(q.error.message);
- await refreshAll();
+ const target=Number(String(raw).replace(/,/g,'').trim());
+ if(!Number.isFinite(target)||Math.abs(target)>100000)return alert('확정할 잔여시간을 숫자로 입력하세요. 0도 입력 가능합니다.');
+ const balance=Math.round(target*100)/100;
+ if(!confirm(`${e.name}님의 ${date} 잔여연차를 ${balance}시간으로 확정할까요?\n\n기존 원장·스케줄은 유지하며, ${date} 이후 새로 발생한 연차와 사용한 연차만 이 잔여에 가감됩니다.`))return;
+ const key=`balance-reset:${id}:${Date.now()}:${Math.random().toString(36).slice(2,9)}`;
+ const ym=date.slice(0,7),override=leaveLedger.find(x=>Number(x.employee_id)===Number(id)&&x.source==='annual_use_override'&&x.event_type==='use'&&String(x.event_date||'').slice(0,7)===ym);
+ const monthUsageAtReset=override?Math.abs(Number(override.hours||0)):leaveLedger.filter(x=>Number(x.employee_id)===Number(id)&&x.source==='schedule'&&x.event_type==='use'&&String(x.event_date||'')>=ym+'-01'&&String(x.event_date||'')<=date&&employedOn(e,String(x.event_date||''))).reduce((sum,x)=>sum+Math.abs(Number(x.hours||0)),0);
+ const memo=JSON.stringify({balance,priorBalance:cur,monthUsageAtReset:Math.round(monthUsageAtReset*100)/100,confirmedAt:new Date().toISOString(),note:'관리자 잔여연차 기준값 확정 (기존 원장 보존)'});
+ const q=await sb.from('leave_ledger').insert({employee_id:id,event_date:date,event_type:'adjust',hours:0,source:'balance_reset',source_key:key,memo});
+ if(q.error)return alert('잔여연차 확정 저장 실패: '+q.error.message);
+ await loadLeaveLedger();
+ if($('employeesPage')?.classList.contains('active'))renderEmployees();
+ if($('homePage')?.classList.contains('active'))renderHome();
+ if($('annualLeaveWrap')&&!$('annualLeaveWrap').classList.contains('hidden'))renderAnnualLeaveTable();
+ refreshLiveLeaveUI(id);
+ alert(`${e.name}님 ${date} 잔여연차 ${balance}시간 확정 완료.\n이후 발생하는 월·연차는 기존 입사일을 기준으로 정상 누적됩니다.`);
 }
-
 async function loadPayroll(){
  payroll=[];
  const sid=storeId(),ym=$('monthSelect').value,t0=performance.now();
@@ -4777,6 +4912,17 @@ function showScheduleDateTooltip(event,date){
    날짜 머리글 thead를 복제하지 않아 기존 날짜 툴팁·입력·가로스크롤이 유지된다.
    각 주간표의 마지막 직원행을 넘지 않게 한 주 범위 안에서만 고정한다. */
 let schedulePageHeaderFrame=0;
+function syncScheduleStickyContext(){
+ const el=document.getElementById('scheduleStickyContextLabel');
+ if(!el)return;
+ const select=document.getElementById('storeSelect');
+ const storeName=(select?.selectedOptions?.[0]?.textContent||'선택 업장').trim();
+ const month=document.getElementById('monthSelect')?.value||'';
+ const match=/^(\d{4})-(\d{2})$/.exec(month);
+ const monthText=match?`${match[1]}년 ${Number(match[2])}월`:(month||'선택 월');
+ const newText=`${storeName} · ${monthText}`;
+ if(el.textContent!==newText)el.textContent=newText;
+}
 function refreshScheduleViewportHeaders(){
  schedulePageHeaderFrame=0;
  const page=document.getElementById('schedulePage');
@@ -4785,6 +4931,15 @@ function refreshScheduleViewportHeaders(){
  let pinTop=bar?bar.getBoundingClientRect().bottom:0;
  const nav=document.querySelector('.mobileNav');
  if(nav&&getComputedStyle(nav).display!=='none')pinTop=Math.max(pinTop,nav.getBoundingClientRect().bottom);
+ // 업장·선택월 도구막대를 헤더/모바일 메뉴 바로 밑에 고정한다.
+ const context=document.getElementById('globalContextToolbar');
+ if(context&&getComputedStyle(context).position==='sticky'){
+   const offset=Math.max(0,Math.round(pinTop))+'px';
+   if(context.style.getPropertyValue('--schedule-context-offset')!==offset)context.style.setProperty('--schedule-context-offset',offset);
+   syncScheduleStickyContext();
+   // 기존 스케줄 날짜행 헤더는 도구막대 아래에 고정해서 겹침을 방지한다.
+   pinTop=Math.max(pinTop,context.getBoundingClientRect().bottom);
+ }
  pinTop+=2;
  page.querySelectorAll('.scheduleGridScroll,.annualLeaveGridScroll').forEach(wrap=>{
    const head=wrap.querySelector('thead');
@@ -4801,6 +4956,9 @@ function scheduleViewportHeaderRequest(){
 }
 window.addEventListener('scroll',scheduleViewportHeaderRequest,{passive:true});
 window.addEventListener('resize',scheduleViewportHeaderRequest,{passive:true});
+document.getElementById('storeSelect')?.addEventListener('change',()=>{syncScheduleStickyContext();scheduleViewportHeaderRequest();});
+document.getElementById('monthSelect')?.addEventListener('change',()=>{syncScheduleStickyContext();scheduleViewportHeaderRequest();});
+
 
 
 function renderWeeklyPlanner(){
@@ -6664,7 +6822,7 @@ function renderEmployees(){
    <!-- 연차기준: 원래 compact 표시 -->
    <td>주 ${leaveWeeklyHoursAt(e,employeeRefDate)}h<br><span class="help">월 +${leaveMonthlyHoursAt(e,employeeRefDate)}h / 1일 -${leaveUseHoursDisplay(e,employeeRefDate)}</span>${monthlyAccrualEmployeeBadge(e,isoToday())}</td>
 
-   <td>${employeeView==='active'?`<b data-leave-balance="${e.id}">${ls.balance}h</b><br><button class="btn gray small" onclick="adjustLeave(${e.id})">조정</button>`:'-'}</td>
+   <td>${employeeView==='active'?`<b data-leave-balance="${e.id}">${ls.balance}h</b><br><button class="btn gray small" onclick="adjustLeave(${e.id})">잔여확정</button>${ls.confirmedDate?`<br><small class="help" title="${esc(ls.confirmedDate)} 잔여 ${ls.confirmedBalance}h 확정, 이후 발생·사용분 누적">${esc(ls.confirmedDate.slice(5))} 확정</small>`:``}`:'-'}</td>
 
    <!-- 급여 지급규칙 대신 비고 -->
    <td class="empInlineCell">${employeeView==='active'
@@ -10015,7 +10173,7 @@ function num(v){return typeof v==='number'?v:(Number(String(v||'').replace(/,/g,
 
 function openScheduleOutput(){
  let list=monthlyScheduleEmployees($('monthSelect').value);scheduleOutputMode='all';scheduleOutputSelected=new Set(list.map(e=>e.id));let items=list.map(e=>`<label class="outputEmployeeItem" title="${esc(e.name)}"><input type="checkbox" class="scheduleOutputCheck" value="${e.id}" checked onchange="toggleScheduleOutputEmployee(${e.id},this.checked)"><span>${esc(e.name)}</span></label>`).join('');
- modal(`<h2>스케줄 출력</h2><div class="outputModeRow"><button id="outAllBtn" class="outputModeBtn active" onclick="setScheduleOutputMode('all')">전체 직원</button><button id="outPickBtn" class="outputModeBtn" onclick="setScheduleOutputMode('selected')">직원 선택</button></div><div id="scheduleOutputPicker" class="hidden"><div class="outputPickerTop"><div class="outputPickerActions"><button class="btn gray small" onclick="toggleScheduleOutputAll(true)">전체선택</button><button class="btn gray small" onclick="toggleScheduleOutputAll(false)">전체해제</button></div><span id="scheduleOutputCount" class="outputSelectedCount">선택 ${list.length}명</span></div><div class="outputEmployeeList">${items||'<div class="attEmpty">출력할 직원이 없습니다.</div>'}</div></div><div class="modalActions"><button class="btn gray" onclick="closeModal()">취소</button><button class="btn green" onclick="runSchedulePrint()">인쇄/PDF</button><button class="btn" onclick="runScheduleExcel()">Excel</button></div>`);
+ modal(`<h2>스케줄 출력</h2><div class="outputModeRow"><button id="outAllBtn" class="outputModeBtn active" onclick="setScheduleOutputMode('all')">전체 직원</button><button id="outPickBtn" class="outputModeBtn" onclick="setScheduleOutputMode('selected')">직원 선택</button></div><div id="scheduleOutputPicker" class="hidden"><div class="outputPickerTop"><div class="outputPickerActions"><button class="btn gray small" onclick="toggleScheduleOutputAll(true)">전체선택</button><button class="btn gray small" onclick="toggleScheduleOutputAll(false)">전체해제</button></div><span id="scheduleOutputCount" class="outputSelectedCount">선택 ${list.length}명</span></div><div class="outputEmployeeList">${items||'<div class="attEmpty">출력할 직원이 없습니다.</div>'}</div></div><div class="modalActions"><button class="btn gray" onclick="closeModal()">취소</button><button class="btn green" onclick="runSchedulePrint()">인쇄/PDF</button><button class="btn" onclick="runScheduleExcel()">근로시간엑셀파일</button></div>`);
  $('modalBox')?.classList.add('scheduleOutputModal');updateScheduleOutputCount();
 }
 function setScheduleOutputMode(mode){scheduleOutputMode=mode==='selected'?'selected':'all';$('outAllBtn')?.classList.toggle('active',scheduleOutputMode==='all');$('outPickBtn')?.classList.toggle('active',scheduleOutputMode==='selected');$('scheduleOutputPicker')?.classList.toggle('hidden',scheduleOutputMode!=='selected');updateScheduleOutputCount()}
@@ -11964,7 +12122,7 @@ function annualLeaveEmployeeList(year=annualLeaveYear){
  return [...active,...retired];
 }
 function annualLeaveMonthSchedule(e,ym){
- const rows=annualLeaveScheduleRows.filter(s=>Number(s.employee_id)===Number(e.id)&&String(s.work_date||'').startsWith(ym));
+ const rows=annualLeaveScheduleRows.filter(s=>Number(s.employee_id)===Number(e.id)&&String(s.work_date||'').startsWith(ym)&&employedOn(e,String(s.work_date||'')));
  return {days:rows.length,hours:annualLeaveRound(rows.reduce((sum,s)=>{
     const decision=leaveUseHoursDecision(e,s.work_date,s);
     return sum+(decision.source==='weekly32-seven-hour-policy'?decision.hours:(Number(s.scheduled_hours)>0?Number(s.scheduled_hours):Number(decision.hours||0)));
@@ -12083,7 +12241,13 @@ function renderAnnualLeaveTable(){
  const editable=canEditModule('schedule'),allList=annualLeaveEmployeeList(year);
  const audit=$('annualLeaveWorkAudit');
  if(audit){
-  const issues=allList.map(e=>{const reason=annualLeaveWorkScheduleCheck(e,cutoff||isoToday());return reason?`${esc(e.name)} (${esc(reason)})`:'';}).filter(Boolean);
+  const issues=allList.flatMap(e=>{
+   const found=[],reason=annualLeaveWorkScheduleCheck(e,cutoff||isoToday());
+   if(reason)found.push(`${esc(e.name)} (${esc(reason)})`);
+   const out=leaveLedger.filter(x=>Number(x.employee_id)===Number(e.id)&&x.source==='schedule'&&!employedOn(e,String(x.event_date||'')));
+   if(out.length)found.push(`${esc(e.name)} (재직기간 밖 연차 ${out.length}건 · 잔여에서 제외됨 · 원장 확인 필요)`);
+   return found;
+  });
   audit.classList.toggle('hidden',!issues.length);
   audit.innerHTML=issues.length?`<b>주 소정근로시간 확인 필요 ${issues.length}명</b> · ${issues.join(' · ')}<br>근로계약·근무요일과 시간이 다르므로 임의 수정하지 않았습니다. 직원관리에서 실제 계약조건 확인 후 수정하세요.`:'';
  }
@@ -12091,29 +12255,37 @@ function renderAnnualLeaveTable(){
  const toggle=$('annualLeaveSettledToggle');
  if(toggle){toggle.textContent=annualLeaveShowSettled?`정산완료 숨기기 (${settledCount})`:`정산완료 보기 (${settledCount})`;toggle.setAttribute('aria-pressed',String(annualLeaveShowSettled));toggle.disabled=!settledCount&&!annualLeaveShowSettled;}
  const list=allList.filter(e=>annualLeaveShowSettled||!annualLeaveSettledRow(e.id));
- let grandAccrual=0,grandUsed=0,grandBalance=0,missing=0,retiredSeen=false;
+ let grandAccrual=0,grandUsed=0,grandFuture=0,grandBalance=0,missing=0,retiredSeen=false;
  body.innerHTML=list.length?list.map(e=>{
   const retired=annualLeaveIsRetired(e),settled=!!annualLeaveSettledRow(e.id),firstRetired=retired&&!retiredSeen;
   if(retired)retiredSeen=true;
   const ann=cutoff?annualLeaveAccrualCount(e,year,cutoff):{days:0,hours:0};
-  let sumUsed=0,monthCells='';
+  let completedUsed=0,futureUsed=0,futureHours=0,monthCells='';
   for(let m=1;m<=12;m++){
    const ym=annualLeaveYm(year,m),entry=annualLeaveMonthUsage(e,ym),gate=annualLeaveMonthEligibility(e,ym);
-   sumUsed+=entry.days;
+   // '연도 사용'과 '현재 잔여'는 같은 기준일로 비교한다.
+   // 미래 월의 수동확정은 예정으로 분류하고, 스케줄은 날짜별로 완료/예정을 분리.
+   const used=entry.manual?(cutoff&&ym<=cutoff.slice(0,7)?entry.days:0):
+      entry.actual.rows.filter(r=>cutoff&&String(r.work_date||'')<=cutoff).length;
+   const usedHours=entry.manual?(cutoff&&ym<=cutoff.slice(0,7)?entry.hours:0):
+      entry.actual.rows.filter(r=>cutoff&&String(r.work_date||'')<=cutoff).reduce((a,r)=>a+Number(leaveUseHoursDecision(e,r.work_date,r).source==='weekly32-seven-hour-policy'?leaveUseHoursDecision(e,r.work_date,r).hours:(Number(r.scheduled_hours)>0?r.scheduled_hours:leaveUseHoursDecision(e,r.work_date,r).hours)),0);
+   completedUsed+=used;
+   futureUsed+=Math.max(0,entry.days-used);
+   futureHours+=Math.max(0,entry.hours-usedHours);
    const cls=entry.manual?'manual':(entry.days?'auto used':'empty');
-   const short=gate.locked?gate.label:gate.label|| (entry.manual?'수동확정':entry.days?'스케줄':'-');
+   const short=gate.locked?gate.label:(entry.days>used&&used===0?'사용예정':entry.days>used?'일부 예정':gate.label|| (entry.manual?'수동확정':entry.days?'스케줄':'-'));
    const desc=entry.manual?`수동확정 ${entry.days}개 · ${annualLeaveFmt(entry.hours)}h · 스케줄 ${entry.actual.days}개`:entry.days?`스케줄 연차 ${entry.days}개 · ${annualLeaveFmt(entry.hours)}h`:'사용기록 없음';
    const tooltip=gate.reason?`${gate.reason}${gate.locked?'':' · '+desc}`:desc;
    monthCells+=`<td class="${gate.locked?'annualLeaveOutsideCell':gate.partial?'annualLeavePartialCell':''}"><button type="button" class="annualLeaveCell ${cls}" ${gate.locked?'disabled':''} onclick="openAnnualLeaveMonth(${e.id},'${ym}')" title="${esc(tooltip)}" aria-label="${ym} ${esc(e.name)} ${esc(tooltip)}">${entry.days?annualLeaveFmt(entry.days):gate.locked?'—':'-'}<small>${esc(short)}</small></button></td>`;
   }
-  let balance=cutoff?leaveSummary(e,cutoff).balance:0;
-  grandAccrual+=ann.days;grandUsed+=sumUsed;grandBalance+=balance;
+  let summary=cutoff?leaveSummary(e,cutoff):null,balance=summary?summary.balance:0;
+  grandAccrual+=ann.days;grandUsed+=completedUsed;grandFuture+=futureUsed;grandBalance+=balance;
   const next=cutoff?nextMonthlyAccrualStatus(e,cutoff,leaveAttendanceSchedules):null;
   if(next&&['pending','review'].includes(next.status))missing++;
-  return `<tr data-annual-employee="${e.id}" class="${retired?'annualLeaveRetiredRow':''} ${firstRetired?'annualLeaveRetiredFirst':''} ${settled?'annualLeaveSettledRow':''}"><td class="annualLeavePinned" style="--employee-print-bg:${employeeColor(e)}"><b>${esc(e.name)}</b><small>입사 ${esc(e.hire_date||'미등록')}</small>${retired?`<span class="annualLeaveRetiredBadge">퇴사 ${esc(e.resign_date)}</span>`:`<small>${esc(workTypeForDate(e,year+'-12-31'))}</small>`}${settled?'<span class="annualLeaveSettledBadge">정산완료</span>':''}</td>${monthCells}<td class="annualLeaveStat">${annualLeaveFmt(ann.days)}개<small>${annualLeaveFmt(ann.hours)}h</small></td><td class="annualLeaveStat">${annualLeaveFmt(sumUsed)}개</td><td class="annualLeaveStat balance ${balance<0?'negative':''}">${cutoff?annualLeaveFmt(balance)+'h':'예정'}<small>${cutoff?'원장 기준':'아직 미도래'}</small></td><td><div class="annualLeaveActions"><button class="btn gray small" onclick="openAnnualLeaveAttendance(${e.id})">출근확인</button>${editable?`<button class="btn gray small" onclick="adjustLeave(${e.id})">잔여조정</button>`:''}${retired&&editable?(settled?`<button type="button" class="btn green small" onclick="annualLeaveSetSettlement(${e.id},false)">정산 복구</button>`:`<button type="button" class="btn gray small" onclick="annualLeaveSetSettlement(${e.id},true)">정산완료</button>`):''}</div></td></tr>`;
+  return `<tr data-annual-employee="${e.id}" class="${retired?'annualLeaveRetiredRow':''} ${firstRetired?'annualLeaveRetiredFirst':''} ${settled?'annualLeaveSettledRow':''}"><td class="annualLeavePinned" style="--employee-print-bg:${employeeColor(e)}"><b>${esc(e.name)}</b><small>입사 ${esc(e.hire_date||'미등록')}</small>${retired?`<span class="annualLeaveRetiredBadge">퇴사 ${esc(e.resign_date)}</span>`:`<small>${esc(workTypeForDate(e,year+'-12-31'))}</small>`}${settled?'<span class="annualLeaveSettledBadge">정산완료</span>':''}</td>${monthCells}<td class="annualLeaveStat">${annualLeaveFmt(ann.days)}개<small>${annualLeaveFmt(ann.hours)}h</small></td><td class="annualLeaveStat">${annualLeaveFmt(completedUsed)}개<small>${futureUsed?'사용예정 '+annualLeaveFmt(futureUsed)+'개':'완료 기준'}</small></td><td class="annualLeaveStat balance ${balance<0?'negative':''}">${cutoff?annualLeaveFmt(balance)+'h':'예정'}<small>${cutoff?(futureHours>0?'예정 사용 -'+annualLeaveFmt(futureHours)+'h (미차감)':(summary?.confirmedDate?`${summary.confirmedDate.slice(5)} 잔여확정 이후 누적`:'오늘 기준 원장')):'아직 미도래'}</small></td><td><div class="annualLeaveActions"><button class="btn gray small" onclick="openAnnualLeaveAttendance(${e.id})">출근확인</button>${editable?`<button class="btn gray small" onclick="adjustLeave(${e.id})">잔여확정</button>`:''}${retired&&editable?(settled?`<button type="button" class="btn green small" onclick="annualLeaveSetSettlement(${e.id},false)">정산 복구</button>`:`<button type="button" class="btn gray small" onclick="annualLeaveSetSettlement(${e.id},true)">정산완료</button>`):''}</div></td></tr>`;
  }).join(''):`<tr><td colspan="17" style="padding:24px">${settledCount&&!annualLeaveShowSettled?'정산완료로 숨긴 직원만 있습니다. 위 [정산완료 보기]에서 복구할 수 있습니다.':'해당 연도에 재직한 직원이 없습니다.'}</td></tr>`;
  scheduleViewportHeaderRequest();
- if(tiles)tiles.innerHTML=`<div class="annualLeaveTile"><small>${year}년 발생 합계</small><b>${annualLeaveFmt(grandAccrual)}개</b></div><div class="annualLeaveTile"><small>${year}년 사용 합계</small><b>${annualLeaveFmt(grandUsed)}개</b></div><div class="annualLeaveTile"><small>현재·연도말 잔여 합계</small><b>${cutoff?annualLeaveFmt(grandBalance)+'h':'예정 연도'}</b></div><div class="annualLeaveTile"><small>1년 미만 개근 확인 필요</small><b>${missing}명</b></div>`;
+ if(tiles)tiles.innerHTML=`<div class="annualLeaveTile"><small>${year}년 발생 합계</small><b>${annualLeaveFmt(grandAccrual)}개</b></div><div class="annualLeaveTile"><small>${year}년 사용 완료 / 예정</small><b>${annualLeaveFmt(grandUsed)}개<small style="font-size:12px;font-weight:500"> / 예정 ${annualLeaveFmt(grandFuture)}개</small></b></div><div class="annualLeaveTile"><small>현재·연도말 잔여 합계</small><b>${cutoff?annualLeaveFmt(grandBalance)+'h':'예정 연도'}</b></div><div class="annualLeaveTile"><small>1년 미만 개근 확인 필요</small><b>${missing}명</b></div>`;
 }
 function openAnnualLeaveMonth(id,ym){
  const e=allEmployees().find(x=>Number(x.id)===Number(id));if(!e)return;
@@ -13180,5 +13352,62 @@ switchMonth=async function(...args){
  return result;
 };
 window.COMMERCE_BUILD='V9.1.47_STAFF_V9.1.46_PLUS_COMMERCE_V34';
+</script>
+<script id="laborV9151">
+/* V9.1.51 · private per-store, per-month labor consultant workbook.
+   Original OOXML is never rewritten wholesale: only edited non-formula worksheet cells change.
+   PDF/contracts, schedule, 88 commerce, and payroll code stay untouched. */
+let laborDraft=null, laborBusy=false, laborFetchToken=0;
+function laborScope(){return {sid:Number(storeId()),ym:String($('monthSelect')?.value||'')}}
+function laborNotify(message,error=false){let x=$('laborSaveState');if(x){x.textContent=message;x.className='saveState '+(error?'error':'saved')}}
+function laborAllowed(){if(!isAppAdmin()||permissionSystemAvailable===false){alert('주민번호·급여가 포함된 노무사 제출 파일은 최고관리자만 열 수 있습니다.');return false}return true}
+function laborByteHex(bytes){let pieces=[];for(let i=0;i<bytes.length;i+=2048)pieces.push(Array.from(bytes.subarray(i,i+2048),v=>v.toString(16).padStart(2,'0')).join(''));return '\\x'+pieces.join('')}
+function laborFromHex(raw){let s=String(raw||'').replace(/^\\x/i,'');if(!s||s.length%2||!/^[0-9a-f]+$/i.test(s))throw new Error('서버의 원본 Excel 바이트 형식이 올바르지 않습니다.');let a=new Uint8Array(s.length/2);for(let i=0;i<a.length;i++)a[i]=parseInt(s.slice(i*2,i*2+2),16);return a}
+function laborReadWorkbook(bytes){if(!window.XLSX||!window.JSZip)throw new Error('Excel 구성 요소를 불러오지 못했습니다. 인터넷 연결을 확인하세요.');let wb=XLSX.read(bytes,{type:'array',cellFormula:true,cellNF:true,cellStyles:true,bookVBA:true});if(!wb.SheetNames?.length)throw new Error('원본 Excel 시트가 없습니다.');for(const name of wb.SheetNames){let ws=wb.Sheets[name];if(ws['!ref']){let box=XLSX.utils.decode_range(ws['!ref']);if(box.e.r>500||box.e.c>35)throw new Error('파일에 500행 또는 36열을 초과하는 시트가 있습니다. 이 화면에서 안전하게 편집할 수 없습니다.')}}return wb}
+function laborDraftFromRow(row,forMonth){let bytes=laborFromHex(row.file_bytes),wb=laborReadWorkbook(bytes);return {sid:Number(row.store_id),ym:forMonth||row.report_month,fileName:row.file_name,bytes,wb,edits:structuredClone(row.edits||{}),savedEdits:structuredClone(row.edits||{}),sourceMonth:row.report_month,loadedMonth:row.report_month===forMonth?forMonth:null,fromTemplate:row.report_month==='0000-00',dirty:false,stamp:row.updated_at||null}}
+function laborSetInfo(){let d=laborDraft,sid=storeId(),ym=$('monthSelect')?.value||'',storeName=stores.find(x=>Number(x.id)===Number(sid))?.name||`업장 ${sid}`;if($('laborScopeBadge'))$('laborScopeBadge').textContent=`${storeName} · ${ym}`;if(!d){$('laborWorkbookInfo').textContent='이 업장·월의 원본 Excel이 등록되지 않았습니다. 업로드하거나 이전월 자료를 복사하세요.';return}let raw=d.fromTemplate?'업장 기본 양식 · 아직 선택월에 저장되지 않음':d.loadedMonth===ym?'선택월 저장본':`이전 ${d.sourceMonth} 자료 복사 · 아직 선택월에 저장되지 않음`;let edits=Object.values(d.edits||{}).reduce((n,o)=>n+Object.keys(o||{}).length,0);$('laborWorkbookInfo').textContent=`${storeName}  |  ${ym}  |  ${d.fileName}  |  ${raw}  |  수정 셀 ${edits}개${d.dirty?' · 미저장 변경 있음':''}`}
+function laborEscapeXmlText(s){return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+function laborMergedCovered(ws,ri,ci){return (ws['!merges']||[]).some(m=>ri>=m.s.r&&ri<=m.e.r&&ci>=m.s.c&&ci<=m.e.c&&(ri!==m.s.r||ci!==m.s.c))}
+function laborOldValue(ws,ref){let x=ws[ref];return x?.f?String(x?.w??x.v??''):x?.t==='e'?String(x.w??''):x?.v===undefined?'':(typeof x.v==='number'&&String(x.z||'').match(/(?:y{2,4}|d{1,2}|m{1,4}\/|\/m{1,4})/i)&&Number(x.v)>1?String(x.w??x.v):String(x.v))}
+function laborCellOverride(sheet,ref){return laborDraft?.edits?.[sheet]?.[ref]}
+function laborEditedValue(sheet,ref){let val=laborCellOverride(sheet,ref);return val!==undefined?String(val):laborOldValue(laborDraft.wb.Sheets[sheet],ref)}
+function laborSetValue(sheet,ref,value){let d=laborDraft;if(!d)return;let original=laborOldValue(d.wb.Sheets[sheet],ref);if(!d.edits[sheet])d.edits[sheet]={};if(String(value)===String(original)){delete d.edits[sheet][ref];if(!Object.keys(d.edits[sheet]).length)delete d.edits[sheet]}else d.edits[sheet][ref]=String(value);d.dirty=true;laborSetInfo();let control=document.querySelector(`.laborGrid input[data-cell="${ref}"]`);if(control)control.classList.toggle('changed',!!laborCellOverride(sheet,ref));laborNotify('수정 중 · 저장 필요')}
+function laborCellChange(input){if(!laborDraft||!input)return;let sheet=$('laborSheetSelect')?.value,ref=input.dataset.cell;if(!sheet||!ref||input.disabled)return;laborSetValue(sheet,ref,input.value)}
+function laborRenderSheet(){let d=laborDraft,box=$('laborWorkbookGrid');if(!box)return;laborSetInfo();if(!d){box.className='laborEmpty';box.textContent='파일이 없습니다. 이 업장·월의 원본을 업로드하거나 이전월 파일을 복사하세요.';$('laborSheetSelect').innerHTML='';return}let sel=$('laborSheetSelect'),keep=sel.value,shs=d.wb.SheetNames;sel.innerHTML=shs.map(n=>`<option value="${esc(n)}">${esc(n)}</option>`).join('');if(shs.includes(keep))sel.value=keep;let name=sel.value,ws=d.wb.Sheets[name],range=XLSX.utils.decode_range(ws['!ref']||'A1:A1');let minCol=range.s.c,maxCol=range.e.c,minRow=0,maxRow=Math.min(Math.max(range.e.r,3),500);if(maxCol-minCol>60)throw new Error('열 수가 너무 많습니다.');let cols=Array.from({length:maxCol-minCol+1},(_,i)=>minCol+i);let h='<div class="laborGridWrap"><table class="laborGrid"><thead><tr><th>행</th>';
+ for(const c of cols)h+=`<th>${XLSX.utils.encode_col(c)}</th>`;
+ h+='</tr><tr><th>항목</th>';
+ for(const c of cols){let ref=XLSX.utils.encode_cell({r:2,c});let cap=ws[ref]?.w??ws[ref]?.v??'';h+=`<th title="${esc(String(cap))}">${esc(String(cap)).slice(0,80)}</th>`}h+='</tr></thead><tbody>';
+ for(let r=minRow;r<=maxRow;r++){
+  h+=`<tr><th>${r+1}</th>`;
+  for(const c of cols){if(laborMergedCovered(ws,r,c)){h+='<td class="laborMergedCell" style="background:#f5f7fb"></td>';continue}
+   let ref=XLSX.utils.encode_cell({r,c}),orig=ws[ref]||{},formula=orig.f!==undefined,headerLocked=name==='인원현황'&&r<3,over=laborCellOverride(name,ref),v=laborEditedValue(name,ref),disabled=formula?'disabled title="수식은 변경 불가"':headerLocked?'disabled title="원본 제목/항목은 편집 불가"':'',changed=over!==undefined?' changed':'';
+   h+=`<td><input data-cell="${ref}" class="${changed}" type="text" value="${esc(v)}" onchange="laborCellChange(this)" ${disabled} title="${esc(name+'!'+ref+(formula?' (수식)':''))}"></td>`
+  }h+='</tr>'
+ }
+ h+='</tbody></table></div>';box.className='';box.innerHTML=h;
+ $('laborUploadBtn').disabled=!isAppAdmin();$('laborCopyBtn').disabled=!isAppAdmin();$('laborSaveBtn').disabled=!isAppAdmin();$('laborExportBtn').disabled=false;
+}
+async function laborFetchMonth(sid,ym){const q=await sb.from('labor_workbook_files').select('*').eq('store_id',sid).eq('report_month',ym).maybeSingle();if(q.error)throw q.error;return q.data}
+async function laborLoadSelectedMonth(){let {sid,ym}=laborScope(),seq=++laborFetchToken;if(!sid||!/^(20\d\d)-(0[1-9]|1[0-2])$/.test(ym))return;if(!isAppAdmin()||permissionSystemAvailable===false){laborDraft=null;laborRenderSheet();return}laborNotify('자료 불러오는 중');try{let row=await laborFetchMonth(sid,ym);if(!row)row=await laborFetchMonth(sid,'0000-00');if(seq!==laborFetchToken||sid!==storeId()||ym!==$('monthSelect')?.value)return;laborDraft=row?laborDraftFromRow(row,ym):null;laborRenderSheet();laborNotify(row?row.report_month===ym?'저장본 불러옴':'업장 기본양식 불러옴':'해당 월 자료 없음')}catch(e){if(seq!==laborFetchToken)return;laborDraft=null;laborRenderSheet();laborNotify('불러오기 실패: '+(e?.message||e),true)}}
+async function laborReloadMonth(){if(laborDraft?.dirty&&!confirm('저장하지 않은 수정 내용을 취소하고 다시 불러오시겠습니까?'))return;await laborLoadSelectedMonth()}
+function laborUndoDraft(){let d=laborDraft;if(!d)return;if(d.dirty&&!confirm('현재 수정 중인 내용을 모두 취소합니까?'))return;d.edits=structuredClone(d.savedEdits);d.dirty=false;laborRenderSheet();laborNotify('저장된 값으로 복구')}
+async function laborUploadOriginal(file){if(!file||!laborAllowed())return;let {sid,ym}=laborScope();if(!/\.xlsx$/i.test(file.name))return alert('원본 서식 보존을 위해 .xlsx 파일만 등록할 수 있습니다.');if(file.size>5242880)return alert('원본 Excel은 5MB 이하여야 합니다.');if(laborBusy)return;try{let exists=await laborFetchMonth(sid,ym);if(exists&&!confirm(`${ym}에 이미 등록된 파일이 있습니다. 원본과 해당 월 수정 내용을 교체할까요?`))return;if(laborDraft?.dirty&&!confirm('저장하지 않은 수정을 버리고 원본 Excel로 교체할까요?'))return;laborBusy=true;laborNotify('Excel 원본 검증 중');let bytes=new Uint8Array(await file.arrayBuffer()),wb=laborReadWorkbook(bytes);if(!wb.SheetNames.length)throw new Error('시트가 없습니다.');let storeName=stores.find(x=>Number(x.id)===Number(sid))?.name||String(sid);if(!confirm(`등록할 업장: ${storeName}\n자료 월: ${ym}\n파일명: ${file.name}\n\n이 업장·월에만 저장합니다. 맞습니까?`))return;let payload={store_id:sid,report_month:ym,file_name:file.name,file_bytes:laborByteHex(bytes),edits:{},updated_at:new Date().toISOString(),updated_by:currentSessionUser?.id||null};laborNotify('원본을 업장·월별 비공개 저장 중');let q=await sb.from('labor_workbook_files').upsert(payload,{onConflict:'store_id,report_month'});if(q.error)throw q.error;await laborLoadSelectedMonth();laborNotify(`${ym} 원본 저장 완료`)}catch(e){laborNotify('등록 실패: '+(e?.message||e),true);alert('등록 실패: '+(e?.message||e))}finally{laborBusy=false}}
+async function laborCopyPriorMonth(){if(!laborAllowed()||laborBusy)return;let {sid,ym}=laborScope();try{let existing=await laborFetchMonth(sid,ym);if(existing&&!confirm('선택월에는 저장된 자료가 있습니다. 이전월 복사로 교체할까요?'))return;let q=await sb.from('labor_workbook_files').select('*').eq('store_id',sid).lt('report_month',ym).neq('report_month','0000-00').order('report_month',{ascending:false}).limit(1);if(q.error)throw q.error;let row=q.data?.[0]||await laborFetchMonth(sid,'0000-00');if(!row)return alert('이 업장에는 복사할 이전월 Excel이 없습니다. 먼저 원본을 등록하세요.');if(!confirm(`${row.report_month==='0000-00'?'기본 양식':row.report_month+' 자료'}을 ${ym}으로 복사하시겠습니까? 직원 명단과 수치가 그대로 복사되므로 수정 후 저장하세요.`))return;laborDraft=laborDraftFromRow(row,ym);
+// 선택월의 기존 저장본을 교체하기로 확인한 경우 버전검증을 유지하며 UPDATE로 저장.
+if(existing){laborDraft.loadedMonth=ym;laborDraft.stamp=existing.updated_at;}
+laborDraft.dirty=true;laborRenderSheet();laborNotify('이전월 복사됨 · 선택월에 저장 필요')}catch(e){laborNotify('복사 실패: '+e.message,true)}}
+async function laborSaveMonth(){if(!laborAllowed()||!laborDraft||laborBusy)return;let d=laborDraft,{sid,ym}=laborScope();if(sid!==d.sid||ym!==d.ym)return alert('다른 업장 또는 월의 자료입니다. 새로 불러오세요.');laborBusy=true;laborNotify('수정 내용 저장 중');try{let payload={store_id:sid,report_month:ym,file_name:d.fileName,file_bytes:laborByteHex(d.bytes),edits:d.edits,updated_at:new Date().toISOString(),updated_by:currentSessionUser?.id||null};let q;if(d.loadedMonth===ym){q=await sb.from('labor_workbook_files').update({edits:d.edits,updated_at:payload.updated_at,updated_by:payload.updated_by}).eq('store_id',sid).eq('report_month',ym).eq('updated_at',d.stamp).select('updated_at');if(q.error)throw q.error;if(!q.data?.length)throw new Error('다른 사용자가 수정했거나 자료가 바뀌었습니다. 새로고침 후 비교해 주세요.')}else{q=await sb.from('labor_workbook_files').insert(payload).select('updated_at');if(q.error)throw q.error}d.savedEdits=structuredClone(d.edits);d.dirty=false;d.loadedMonth=ym;d.sourceMonth=ym;d.fromTemplate=false;d.stamp=q.data?.[0]?.updated_at||payload.updated_at;laborSetInfo();laborNotify('업장·월별 수정 저장 완료')}catch(e){laborNotify('저장 실패: '+(e?.message||e),true);alert('저장 실패: '+(e?.message||e))}finally{laborBusy=false}}
+function laborExcelNumericFormat(cell){let fmt=String(cell?.z||'');return /(?:[ymd]{2,4}[-\/]|[-\/][ymd]{1,4})/i.test(fmt)&&cell?.t==='n'}
+function laborExcelDateSerial(s){let m=String(s||'').match(/^(20\d{2})[-./](\d{1,2})[-./](\d{1,2})$/);if(!m)return null;let d=Date.UTC(Number(m[1]),Number(m[2])-1,Number(m[3])),dt=new Date(d);if(dt.getUTCFullYear()!==Number(m[1])||dt.getUTCMonth()!==Number(m[2])-1||dt.getUTCDate()!==Number(m[3]))return null;return (d-Date.UTC(1899,11,30))/86400000}
+function laborCellMod(sheet,ref,value){let cell=laborDraft.wb.Sheets[sheet][ref]||{},s=String(value??'');if(s==='')return {value:'',type:'text'};if(laborExcelNumericFormat(cell)){let n=laborExcelDateSerial(s);if(n!=null)return {value:n,type:'number'}}if(cell.t==='n'&&/^[-+]?\d+(?:\.\d+)?$/.test(s.replace(/,/g,'')))return {value:Number(s.replace(/,/g,'')),type:'number'};if(!cell.t&&/^[-+]?\d+(?:\.\d+)?$/.test(s.replace(/,/g,''))&&!/^0\d+/.test(s))return {value:Number(s.replace(/,/g,'')),type:'number'};return {value:s,type:'text'}}
+function laborWorksheetPaths(wbXml,relXml){let rels=new Map(),paths=new Map();for(const m of relXml.matchAll(/<Relationship\b[^>]*Id="([^"]+)"[^>]*Target="([^"]+)"[^>]*\/?>/g))rels.set(m[1],m[2]);for(const m of wbXml.matchAll(/<sheet\b[^>]*name="([^"]+)"[^>]*r:id="([^"]+)"[^>]*\/?>/g)){let r=rels.get(m[2]);if(!r)continue;let path=r.startsWith('/')?r.slice(1):r.startsWith('xl/')?r:'xl/'+r;paths.set(m[1],path)}return paths}
+async function laborBuildPreservedXlsx(){let d=laborDraft;if(!d)throw new Error('원본 파일이 없습니다.');let zip=await JSZip.loadAsync(d.bytes),expected={},originalPaths=Object.keys(zip.files).filter(path=>!zip.files[path].dir).sort(),wbFile=zip.file('xl/workbook.xml'),relFile=zip.file('xl/_rels/workbook.xml.rels');if(!wbFile||!relFile)throw new Error('Excel 원본 구조가 없습니다.');let mapping=laborWorksheetPaths(await wbFile.async('string'),await relFile.async('string'));let changedPaths=new Set();for(const [sheet,cellUpdates] of Object.entries(d.edits||{})){if(!d.wb.SheetNames.includes(sheet))throw new Error('존재하지 않는 시트: '+sheet);let path=mapping.get(sheet),f=path&&zip.file(path);if(!f)throw new Error(sheet+' 시트의 원본 XML 경로를 찾지 못했습니다.');let ws=d.wb.Sheets[sheet],xml=await f.async('string'),checks=new Map();for(const [ref,value] of Object.entries(cellUpdates)){if(!/^\$?[A-Z]{1,3}\$?[1-9]\d*$/.test(ref))throw new Error('잘못된 셀 좌표: '+ref);let cell=XLSX.utils.decode_cell(ref);if(laborMergedCovered(ws,cell.r,cell.c)||ws[ref]?.f!==undefined)throw new Error('수식/병합 셀을 변경할 수 없습니다: '+sheet+'!'+ref);let mod=laborCellMod(sheet,ref,value);xml=commerceV20PatchCell(xml,ref,mod);checks.set(ref,mod)}commerceV20AssertExpectedCells(xml,checks,sheet);zip.file(path,xml);expected[sheet]=checks;changedPaths.add(path)}let out=await zip.generateAsync({type:'uint8array',compression:'DEFLATE',compressionOptions:{level:6}}),reloaded=await JSZip.loadAsync(out);for(const path of originalPaths){let a=zip.file(path),b=reloaded.file(path);if(!b)throw new Error('원본 파일 구성요소가 누락되었습니다: '+path);if(!changedPaths.has(path)&&a&&!commerceV20SameBytes(await a.async('uint8array'),await b.async('uint8array')))throw new Error('원본의 시트 이외 파일이 변경되었습니다: '+path)}for(const [sheet,checks] of Object.entries(expected))commerceV20AssertExpectedCells(await reloaded.file(mapping.get(sheet)).async('string'),checks,sheet);let finalWb=XLSX.read(out,{type:'array',cellFormula:true});if(JSON.stringify(finalWb.SheetNames)!==JSON.stringify(d.wb.SheetNames))throw new Error('시트 목록이 변경되었습니다.');return out}
+async function laborDownloadPreservingOriginal(){if(!laborAllowed()||!laborDraft||laborBusy)return;let {sid,ym}=laborScope(),d=laborDraft;if(d.sid!==sid||d.ym!==ym)return alert('업장·월을 다시 선택해 주세요.');if(d.dirty||d.loadedMonth!==ym){alert('다운로드하기 전에 [웹 수정 저장]을 먼저 눌러주세요.');return}try{laborBusy=true;laborNotify('원본 서식 검증·Excel 생성 중');let out=await laborBuildPreservedXlsx(),blob=new Blob([out],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}),a=document.createElement('a'),url=URL.createObjectURL(blob);a.href=url;a.download=d.fileName;a.style.display='none';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),30000);laborNotify(`원본 서식 유지 다운로드 완료 · ${ym}`)}catch(e){laborNotify('다운로드 실패: '+(e?.message||e),true);alert('원본 서식을 보존하지 못해 파일 생성을 중단했습니다.\n'+(e?.message||e))}finally{laborBusy=false}}
+// Keep the new page selected while switching between any store type, including 88 commerce.
+const laborV9150SwitchStore=switchStore;
+switchStore=async function(...args){let was=$('laborPage')?.classList.contains('active'),oldId=lastLoadedScheduleStoreId;if(was&&laborDraft?.dirty&&!confirm('저장하지 않은 노무사 자료를 취소하고 업장을 변경할까요?')){$('storeSelect').value=String(oldId||storeId());return}++laborFetchToken;laborDraft=null;let res=await laborV9150SwitchStore(...args);if(was&&storeId()!==Number(oldId)){document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));$('laborPage').classList.add('active');document.querySelectorAll('.nav').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.nav[data-page="labor"]').forEach(x=>x.classList.add('active'));await laborLoadSelectedMonth()}return res};
+const laborV9150SwitchMonth=switchMonth;
+switchMonth=async function(...args){let was=$('laborPage')?.classList.contains('active'),old=$('monthSelect')?.value;if(was&&laborDraft?.dirty&&!confirm('저장하지 않은 노무사 자료를 취소하고 월을 변경할까요?')){$('monthSelect').value=laborDraft.ym;return}++laborFetchToken;laborDraft=null;let res=await laborV9150SwitchMonth(...args);if(was)await laborLoadSelectedMonth();return res};
+
 </script>
 </body></html>
