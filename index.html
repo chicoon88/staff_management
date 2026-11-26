@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>직원관리 대시보드 2026.11.26_7</title>
+<title>직원관리 대시보드 2026.11.26_8</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
@@ -740,36 +740,36 @@ tr[draggable="true"]:active,.empDragHandle:active{cursor:grabbing}
 
 /* 선택 / 연번 / 이름 / 주민번호 / 계좌번호 / 직책 / 업무 / 입사 / 퇴사 */
 #employeesPage th:nth-child(1),#employeesPage td:nth-child(1){width:42px}
-#employeesPage th:nth-child(2),#employeesPage td:nth-child(2){width:58px}
-#employeesPage th:nth-child(3),#employeesPage td:nth-child(3){width:82px}
-#employeesPage th:nth-child(4),#employeesPage td:nth-child(4){width:122px}
-#employeesPage th:nth-child(5),#employeesPage td:nth-child(5){width:150px}
-#employeesPage th:nth-child(6),#employeesPage td:nth-child(6){width:76px}
-#employeesPage th:nth-child(7),#employeesPage td:nth-child(7){width:78px}
+#employeesPage th:nth-child(1),#employeesPage td:nth-child(1){width:58px}
+#employeesPage th:nth-child(2),#employeesPage td:nth-child(2){width:82px}
+#employeesPage th:nth-child(3),#employeesPage td:nth-child(3){width:122px}
+#employeesPage th:nth-child(4),#employeesPage td:nth-child(4){width:150px}
+#employeesPage th:nth-child(5),#employeesPage td:nth-child(5){width:76px}
+#employeesPage th:nth-child(6),#employeesPage td:nth-child(6){width:78px}
+#employeesPage th:nth-child(7),#employeesPage td:nth-child(7){width:82px}
 #employeesPage th:nth-child(8),#employeesPage td:nth-child(8){width:82px}
-#employeesPage th:nth-child(9),#employeesPage td:nth-child(9){width:82px}
 
 /* 근무형태 / 기본시간 / 휴게시간 / 스케줄 / 급여형태 */
-#employeesPage th:nth-child(10),#employeesPage td:nth-child(10){width:108px}
-#employeesPage th:nth-child(11),#employeesPage td:nth-child(11){width:94px}
-#employeesPage th:nth-child(12),#employeesPage td:nth-child(12){width:82px}
-#employeesPage th:nth-child(13),#employeesPage td:nth-child(13){width:94px}
-#employeesPage th:nth-child(14),#employeesPage td:nth-child(14){width:96px}
+#employeesPage th:nth-child(9),#employeesPage td:nth-child(9){width:108px}
+#employeesPage th:nth-child(10),#employeesPage td:nth-child(10){width:94px}
+#employeesPage th:nth-child(11),#employeesPage td:nth-child(11){width:82px}
+#employeesPage th:nth-child(12),#employeesPage td:nth-child(12){width:94px}
+#employeesPage th:nth-child(13),#employeesPage td:nth-child(13){width:96px}
 
 /* 연차 기준 / 잔여 */
-#employeesPage th:nth-child(15),#employeesPage td:nth-child(15){width:112px}
-#employeesPage th:nth-child(16),#employeesPage td:nth-child(16){width:72px}
+#employeesPage th:nth-child(14),#employeesPage td:nth-child(14){width:112px}
+#employeesPage th:nth-child(15),#employeesPage td:nth-child(15){width:72px}
 
 /* 비고를 넓게 */
-#employeesPage th:nth-child(17),#employeesPage td:nth-child(17){
+#employeesPage th:nth-child(16),#employeesPage td:nth-child(16){
   width:240px;
   min-width:240px;
 }
 
 /* 출력색 / 문서 / 관리 */
-#employeesPage th:nth-child(18),#employeesPage td:nth-child(18){width:86px}
-#employeesPage th:nth-child(19),#employeesPage td:nth-child(19){width:265px}
-#employeesPage th:nth-child(20),#employeesPage td:nth-child(20){width:210px}
+#employeesPage th:nth-child(17),#employeesPage td:nth-child(17){width:86px}
+#employeesPage th:nth-child(18),#employeesPage td:nth-child(18){width:265px}
+#employeesPage th:nth-child(19),#employeesPage td:nth-child(19){width:210px}
 #employeesPage .empManageActions{display:flex;gap:4px;flex-wrap:wrap;align-items:center;justify-content:center}
 
 #employeesPage .empDragHandle{
@@ -836,8 +836,8 @@ body.resizingEmployeeColumn *{
 }
 
 /* 비고는 기본값도 더 넓게 */
-#employeesPage th:nth-child(17),
-#employeesPage td:nth-child(17){
+#employeesPage th:nth-child(16),
+#employeesPage td:nth-child(16){
   width:240px;
   min-width:240px;
 }
@@ -865,8 +865,8 @@ body.resizingEmployeeColumn *{
 #employeesPage .renewalBox .due{color:#b42318}.renewalBox .soon{color:#b54708}.renewalBox .ok{color:#067647}
 #employeesPage .scheduleHideToggle{display:flex;gap:4px;align-items:center;justify-content:center;margin-top:3px;font-size:10px;color:#475467;white-space:normal}
 #employeesPage .scheduleHideToggle input{margin:0}
-#employeesPage th:nth-child(19),
-#employeesPage td:nth-child(19){
+#employeesPage th:nth-child(18),
+#employeesPage td:nth-child(18){
   width:265px;
 }
 
@@ -1856,23 +1856,23 @@ body.commerceStoreMode .commerceOnlyNav:not(.hidden){display:flex}
 .auditHelpDisclosure>summary{cursor:pointer;color:#334155;font-weight:700;font-size:12px}
 .auditHelpDisclosure[open]>summary{margin-bottom:9px}
 #employeeCompactBtn[aria-pressed="true"],#payrollCompactBtn[aria-pressed="true"]{background:#e0efff;color:#1d4ed8;border-color:#a6c7f3}
+#employeesPage.employeeCompact .tablewrap table th:nth-child(3),#employeesPage.employeeCompact .tablewrap table td:nth-child(3),
 #employeesPage.employeeCompact .tablewrap table th:nth-child(4),#employeesPage.employeeCompact .tablewrap table td:nth-child(4),
 #employeesPage.employeeCompact .tablewrap table th:nth-child(5),#employeesPage.employeeCompact .tablewrap table td:nth-child(5),
 #employeesPage.employeeCompact .tablewrap table th:nth-child(6),#employeesPage.employeeCompact .tablewrap table td:nth-child(6),
-#employeesPage.employeeCompact .tablewrap table th:nth-child(7),#employeesPage.employeeCompact .tablewrap table td:nth-child(7),
-#employeesPage.employeeCompact .tablewrap table th:nth-child(9),#employeesPage.employeeCompact .tablewrap table td:nth-child(9),
-#employeesPage.employeeCompact .tablewrap table th:nth-child(12),#employeesPage.employeeCompact .tablewrap table td:nth-child(12),
-#employeesPage.employeeCompact .tablewrap table th:nth-child(18),#employeesPage.employeeCompact .tablewrap table td:nth-child(18){display:none!important}
+#employeesPage.employeeCompact .tablewrap table th:nth-child(8),#employeesPage.employeeCompact .tablewrap table td:nth-child(8),
+#employeesPage.employeeCompact .tablewrap table th:nth-child(11),#employeesPage.employeeCompact .tablewrap table td:nth-child(11),
+#employeesPage.employeeCompact .tablewrap table th:nth-child(17),#employeesPage.employeeCompact .tablewrap table td:nth-child(17){display:none!important}
 #payrollMainTable.payrollCompact tr>*:nth-child(3),#payrollMainTable.payrollCompact tr>*:nth-child(4),#payrollMainTable.payrollCompact tr>*:nth-child(5),
 #payrollMainTable.payrollCompact tr>*:nth-child(6),#payrollMainTable.payrollCompact tr>*:nth-child(7),#payrollMainTable.payrollCompact tr>*:nth-child(9),
 #payrollMainTable.payrollCompact tr>*:nth-child(10),#payrollMainTable.payrollCompact tr>*:nth-child(11),#payrollMainTable.payrollCompact tr>*:nth-child(12),
 #payrollMainTable.payrollCompact tr>*:nth-child(13),#payrollMainTable.payrollCompact tr>*:nth-child(15),#payrollMainTable.payrollCompact tr>*:nth-child(16),
 #payrollMainTable.payrollCompact tr>*:nth-child(17),#payrollMainTable.payrollCompact tr>*:nth-child(18),#payrollMainTable.payrollCompact tr>*:nth-child(19),
 #payrollMainTable.payrollCompact tr>*:nth-child(20),#payrollMainTable.payrollCompact tr>*:nth-child(22){display:none!important}
+#employeesPage.auditMaskSensitive #employeeBody td:nth-child(3) input:not(:focus),
 #employeesPage.auditMaskSensitive #employeeBody td:nth-child(4) input:not(:focus),
-#employeesPage.auditMaskSensitive #employeeBody td:nth-child(5) input:not(:focus),
-#employeesPage.auditMaskSensitive #employeeBody td:nth-child(4):not(:focus-within),
-#employeesPage.auditMaskSensitive #employeeBody td:nth-child(5):not(:focus-within){filter:blur(6px)}
+#employeesPage.auditMaskSensitive #employeeBody td:nth-child(3):not(:focus-within),
+#employeesPage.auditMaskSensitive #employeeBody td:nth-child(4):not(:focus-within){filter:blur(6px)}
 .auditCommercePreview{margin-top:10px;border-radius:8px;line-height:1.7}
 .auditCommercePreview:not(:empty){border:1px solid #d3e2f1;background:#f8fbff;padding:10px}
 .auditCommercePreview>div{margin:5px 0;padding:6px 0;border-bottom:1px solid #e2e8f0}
@@ -1934,7 +1934,7 @@ body.commerceStoreMode .commerceOnlyNav:not(.hidden){display:flex}
 </div>
 
 <section id="commercePage" class="page">
- <div class="commerceHero"><h1 class="title">88커머스 <span class="commerceBuildVersion">버전 2026.11.26_7</span></h1><div class="sub">대시보드에서 직접 입력·수정하고 자동 계산하며, 카페24 반영과 원본 Excel 형식 다운로드까지 한곳에서 관리합니다.</div></div>
+ <div class="commerceHero"><h1 class="title">88커머스 <span class="commerceBuildVersion">버전 2026.11.26_8</span></h1><div class="sub">대시보드에서 직접 입력·수정하고 자동 계산하며, 카페24 반영과 원본 Excel 형식 다운로드까지 한곳에서 관리합니다.</div></div>
 
  <div id="commerceGroupBar" class="commerceGroupBar hidden">
   <div><div id="commerceGroupTitle" class="groupTitle">-</div><div id="commerceGroupSub" class="help" style="margin-top:3px">-</div></div>
@@ -2018,7 +2018,7 @@ body.commerceStoreMode .commerceOnlyNav:not(.hidden){display:flex}
 </section>
 
 <section id="homePage" class="page active">
- <div class="row"><div><div class="homeBuildTitle"><h1 class="title" id="homeTitle">현황</h1><span class="buildVersionBadge" id="homeBuildVersion">버전 2026.11.26_7</span></div><div class="sub">업장과 월을 선택하면 모든 정보가 같이 바뀝니다.</div></div></div>
+ <div class="row"><div><div class="homeBuildTitle"><h1 class="title" id="homeTitle">현황</h1><span class="buildVersionBadge" id="homeBuildVersion">버전 2026.11.26_8</span></div><div class="sub">업장과 월을 선택하면 모든 정보가 같이 바뀝니다.</div></div></div>
  <div class="cards">
   <div class="card"><div class="k">재직 직원</div><div class="v" id="kEmp">0명</div></div>
   <div class="card"><div class="k">이번 달 연차 발생</div><div class="v" id="kLeaveDue">0명</div></div>
@@ -2255,7 +2255,7 @@ body.commerceStoreMode .commerceOnlyNav:not(.hidden){display:flex}
 
  <section id="payrollPage" class="page">
  <div class="row">
-  <div><h1 class="title">급여관리 <span style="font-size:12px;color:#315efb;background:#eef3ff;border-radius:999px;padding:4px 8px;vertical-align:middle">2026.11.26_7</span></h1><div class="sub">월별 급여대장을 검산하고, 기간별·직원별 누적 급여도 조회합니다.</div></div>
+  <div><h1 class="title">급여관리 <span style="font-size:12px;color:#315efb;background:#eef3ff;border-radius:999px;padding:4px 8px;vertical-align:middle">2026.11.26_8</span></h1><div class="sub">월별 급여대장을 검산하고, 기간별·직원별 누적 급여도 조회합니다.</div></div>
   <div class="toolbar">
    <input type="file" id="payrollFile" accept=".xlsx,.xls,.xlsm" multiple style="display:none" onchange="importPayrollFiles(this.files);this.value=''">
    <button id="payrollBatchImportBtn" class="btn" onclick="$('payrollFile').click()">급여대장 여러개 불러오기</button>
@@ -2338,7 +2338,7 @@ body.commerceStoreMode .commerceOnlyNav:not(.hidden){display:flex}
   </div>
   <details class="auditHelpDisclosure"><summary>직원관리 사용방법 보기</summary><div class="help" style="margin-bottom:8px">이름·주민등록번호·계좌번호·직책·업무·입사일·근무형태·휴게·급여형태·비고는 표에서 바로 수정할 수 있습니다. <b>재직자는 기본적으로 내가 정한 연번순</b>이며 필요할 때만 입사일 오름차순으로 볼 수 있습니다. <b>퇴사자는 퇴사일 오름차순으로 자동 정렬</b>됩니다. <b>“스케줄·근로 제외”를 체크하면 재직·급여자료는 그대로 두고 월간스케줄·주간편성·근로시간에서 숨깁니다.</b> 문서 칸에서는 근로계약서의 계약 종료일을 기준으로 재계약 D-day와 근로·연봉계약서 등록 여부를 바로 확인합니다. 연봉계약서는 별도 기간을 관리하지 않고 근로계약기간을 따르는 원본 보관 문서로 취급합니다. 퇴사자 화면에서는 사직서 PDF 보관 여부도 확인할 수 있습니다. 근무형태가 날짜별로 바뀌는 직원은 우측 “근무조건”에서 적용 시작일별 이력을 등록합니다. 표 머리글의 오른쪽 경계선을 좌우로 끌면 열 폭을 직접 조절할 수 있고 자동 저장됩니다. 비고는 여러 줄로 입력할 수 있습니다.</div></details>
   <datalist id="employeeWorkTypeSuggestions"><option value="주5일 스케줄근무"></option><option value="주4일 스케줄근무"></option><option value="기타"></option></datalist>
-  <div class="tablewrap"><table><thead><tr><th style="width:44px">선택</th><th>연번</th><th class="name">이름</th><th>주민등록번호</th><th>계좌번호</th><th>직책</th><th>업무</th><th>입사일</th><th>퇴사일</th><th>근무형태</th><th>기본시간</th><th>휴게시간(분)</th><th>스케줄방식</th><th>급여형태</th><th>연차 기준</th><th>연차 잔여</th><th>비고</th><th>출력색</th><th>문서 / 재계약</th><th></th></tr></thead><tbody id="employeeBody"></tbody></table></div>
+  <div class="tablewrap"><table><thead><tr><th>연번</th><th class="name">성명</th><th>주민등록번호</th><th>계좌번호</th><th>직책</th><th>업무</th><th>입사일</th><th>퇴사일</th><th>근무형태</th><th>기본시간</th><th>휴게시간(분)</th><th>스케줄방식</th><th>급여형태</th><th>연차 기준</th><th>연차 잔여</th><th>비고</th><th>출력색</th><th>문서 / 재계약</th><th></th></tr></thead><tbody id="employeeBody"></tbody></table></div>
  </div>
 </section>
 
@@ -3364,7 +3364,7 @@ function clearStoreScopedUI(){
  selectedEmployees.clear();
  hideScheduleDateTooltip();
  if($('schBody'))$('schBody').innerHTML='<tr><td colspan="40" style="padding:20px;text-align:center">직원·스케줄 불러오는 중...</td></tr>';
- if($('employeeBody'))$('employeeBody').innerHTML='<tr><td colspan="20" style="padding:20px;text-align:center">직원 불러오는 중...</td></tr>';
+ if($('employeeBody'))$('employeeBody').innerHTML='<tr><td colspan="19" style="padding:20px;text-align:center">직원 불러오는 중...</td></tr>';
  if($('hoursBody'))$('hoursBody').innerHTML='<tr><td colspan="13" style="padding:20px;text-align:center">근로자료는 근로 탭에서 불러옵니다.</td></tr>';
  if($('attendanceBody'))$('attendanceBody').innerHTML='<tr><td colspan="7" class="attEmpty">텔레캅 자료를 불러오는 중...</td></tr>';attendanceActiveImport=null;attendanceRecords=[];attendanceReviews=[];attendanceSelected.clear();
  if($('payrollBody'))$('payrollBody').innerHTML='<tr><td colspan="23" style="padding:20px;text-align:center">급여자료는 급여 탭에서 불러옵니다.</td></tr>';
@@ -6629,13 +6629,25 @@ async function moveEmployeeToPosition(dragId,targetId,after){
 }
 
 
-const EMPLOYEE_COL_WIDTH_KEY='staff_dashboard_employee_col_widths_v2';
+const EMPLOYEE_COL_WIDTH_KEY='staff_dashboard_employee_col_widths_v3';
 
 function getEmployeeTable(){
  return document.querySelector('#employeesPage .tablewrap table');
 }
 function loadEmployeeColumnWidths(){
- try{return JSON.parse(localStorage.getItem(EMPLOYEE_COL_WIDTH_KEY)||'{}')||{}}catch(e){return {}}
+ try{
+  const existing=localStorage.getItem(EMPLOYEE_COL_WIDTH_KEY);
+  if(existing!==null)return JSON.parse(existing)||{};
+  // v2 table had a separate Select column. Preserve the user's other widths.
+  const old=JSON.parse(localStorage.getItem('staff_dashboard_employee_col_widths_v2')||'{}')||{};
+  const migrated={};
+  for(const [key,val] of Object.entries(old)){
+   const oldIndex=Number(key);
+   if(Number.isInteger(oldIndex)&&oldIndex>=1&&Number.isFinite(Number(val)))migrated[oldIndex-1]=Number(val);
+  }
+  if(Object.keys(migrated).length){migrated[0]=Math.max(92,Number(migrated[0]||92));localStorage.setItem(EMPLOYEE_COL_WIDTH_KEY,JSON.stringify(migrated));}
+  return migrated;
+ }catch(e){return {}}
 }
 function saveEmployeeColumnWidths(widths){
  localStorage.setItem(EMPLOYEE_COL_WIDTH_KEY,JSON.stringify(widths||{}));
@@ -6799,6 +6811,17 @@ function employeeDocBadge(employeeId,type,isActive){
  if(emp&&employeeDocWarningExcluded(emp,type))return `<span class="docStatusBadge neutral" title="대시보드 문서 경고에서 제외된 직원입니다.">${label} 경고제외</span>`;
  return `<span class="docStatusBadge missing">${label} 없음</span>`;
 }
+/* 2026.11.26_8: 계약서 업로드 유무는 별도 행 대신 문서 버튼 색상으로 표시. */
+function employeeDocumentButtonState(employeeId,type){
+ if(employeeDocumentStatusReadyStoreId!==storeId())return 'empDocFilePending';
+ return Number(documentStatusForEmployee(employeeId)[type]?.count||0)>0?'empDocFilePresent':'empDocFileMissing';
+}
+function employeeDocumentButtonTitle(employeeId,type){
+ const label=type==='salary_contract'?'연봉계약서':'근로계약서';
+ if(employeeDocumentStatusReadyStoreId!==storeId())return label+' 등록 상태 확인 중';
+ const st=documentStatusForEmployee(employeeId)[type],count=Number(st?.count||0);
+ return count?label+' 등록 완료 · '+count+'건'+(st.latestDate?' · 최근 등록 '+st.latestDate:''):label+' 미등록 · 클릭하여 업로드';
+}
 function dayDiffIso(from,to){
  if(!from||!to)return null;
  let a=new Date(from+'T00:00:00'),b=new Date(to+'T00:00:00');
@@ -6806,7 +6829,7 @@ function dayDiffIso(from,to){
  return Math.round((b-a)/86400000);
 }
 function employeeRenewalHtml(e){
- if(e?.active===false)return '<div class="renewalBox"><b>퇴사 · 재계약 대상 아님</b></div>';
+ if(e?.active===false)return ''; // 퇴사자는 회색 행만 표시
  if(employeeDocumentStatusReadyStoreId!==storeId())return '<div class="renewalBox"><b>재계약 확인중</b></div>';
  let docs=documentStatusForEmployee(e.id),work=docs.work_contract;
  if(employeeDocWarningExcluded(e,'work_contract'))return '<div class="renewalBox"><b>재계약 경고 제외</b><br><span class="help">문서관리 설정</span></div>';
@@ -6895,8 +6918,7 @@ function renderEmployees(){
      :(e.pay_type==='hourly'?'시급/파트타임':e.pay_type==='daily'?'일당':e.pay_type==='business'?'사업소득':'월급');
 
    return `<tr class="${employeeView==='retired'?'retiredRow ':''}${delChecked?'employeeSelectedRow':''}" style="--employee-print-bg:${employeeColor(e)}" ${employeeView==='active'?'data-emp-id="'+e.id+'"':''}>
-   <td style="text-align:center"><input type="checkbox" class="empDeleteCheck" data-id="${e.id}" ${delChecked?'checked':''} onchange="toggleEmployeeDeleteSelection(${e.id},this.checked)"></td>
-   <td><span class="empDragHandle" draggable="${dragEnabled?'true':'false'}" data-emp-id="${e.id}" title="${dragEnabled?'이 손잡이만 잡아서 순서 이동':'연번순 보기에서만 순서 이동 가능'}">☰</span> <span class="seqBadge">${idx+1}</span></td>
+   <td class="empSeqCell"><div class="empSeqControls"><input type="checkbox" class="empDeleteCheck" data-id="${e.id}" ${delChecked?'checked':''} onchange="toggleEmployeeDeleteSelection(${e.id},this.checked)" aria-label="${esc(e.name)} 선택" title="삭제할 직원 선택"><span class="empDragHandle" draggable="${dragEnabled?'true':'false'}" data-emp-id="${e.id}" title="${dragEnabled?'손잡이로 직원 순서 이동':'연번순에서 순서 이동 가능'}">☰</span><span class="seqBadge">${idx+1}</span></div></td>
 
    <td class="name empInlineCell empPrintNameCell"><div class="empColoredName"><span class="empNameSwatch" style="background:${employeeColor(e)}" aria-label="직원 출력색" title="직원별 출력색"></span>${employeeView==='active'?employeeInlineText(e,'name','empInlineName'):`<b class="empRetiredName">${esc(e.name)}</b>`}</div></td>
    <td class="empInlineCell">${employeeView==='active'?employeeInlineSensitiveText(e,'resident_number','주민번호'):(esc(e.resident_number||'')||'-')}</td>
@@ -6932,16 +6954,16 @@ function renderEmployees(){
 
    <td><select onchange="setPrintColor(${e.id},this.value)" style="padding:5px 7px" title="재직·퇴사자 모두 과거 스케줄 출력색 수정 가능">${colors}</select><span style="display:inline-block;width:18px;height:18px;border-radius:5px;vertical-align:middle;margin-left:4px;background:${employeeColor(e)};border:1px solid #bbb"></span></td>
 
-   <td>${employeeRenewalHtml(e)}<div class="docStatusLine">${employeeDocBadge(e.id,'work_contract',employeeView==='active')}${employeeDocBadge(e.id,'salary_contract',employeeView==='active')}${employeeView==='retired'?employeeDocBadge(e.id,'resignation',false):''}</div><div class="docActions">
+   <td>${employeeRenewalHtml(e)}<div class="docActions">
 <button class="btn green small" onclick="printEmploymentCertificate(${e.id})">재직증명서</button>
 <button class="btn gray small" onclick="printResignation(${e.id})" title="사직서 양식을 열어 인쇄하거나 PDF로 저장합니다.">사직서 출력/PDF</button>
-<button class="btn small" onclick="openEmployeeDocuments(${e.id},'salary_contract')">연봉계약서</button>
-<button class="btn small" onclick="openEmployeeDocuments(${e.id},'work_contract')">근로계약서</button>
+<button class="btn small ${employeeDocumentButtonState(e.id,'salary_contract')}" title="${esc(employeeDocumentButtonTitle(e.id,'salary_contract'))}" onclick="openEmployeeDocuments(${e.id},'salary_contract')">연봉계약서</button>
+<button class="btn small ${employeeDocumentButtonState(e.id,'work_contract')}" title="${esc(employeeDocumentButtonTitle(e.id,'work_contract'))}" onclick="openEmployeeDocuments(${e.id},'work_contract')">근로계약서</button>
 ${employeeView==='retired'?`<button class="btn gray small" onclick="openEmployeeDocuments(${e.id},'resignation')">사직서 PDF</button>`:''}
 <button class="btn gray small docManageBtn ${employeeDocWarningExclusionCount(e)?'hasExclusions':''}" onclick="openDocumentWarningSettings(${e.id})" title="대시보드 문서 없음 경고를 직원별로 제외 설정합니다.">문서관리${employeeDocWarningExclusionCount(e)?` ${employeeDocWarningExclusionCount(e)}`:''}</button>
 </div></td>
    <td><div class="empManageActions">${action}</div></td></tr>`;
- }).join('')||`<tr><td colspan="20">${employeeView==='active'?'재직자가':'퇴사자가'} 없습니다.</td></tr>`;
+ }).join('')||`<tr><td colspan="19">${employeeView==='active'?'재직자가':'퇴사자가'} 없습니다.</td></tr>`;
 
  if(dragEnabled)setupEmployeeDragDrop();
  requestAnimationFrame(()=>{
@@ -12563,7 +12585,7 @@ function renderAnnualLeaveTable(){
   grandAccrual+=ann.days;grandUsed+=completedUsed;grandFuture+=futureUsed;grandBalance+=balance;
   const next=cutoff?nextMonthlyAccrualStatus(e,cutoff,leaveAttendanceSchedules):null;
   if(next&&['pending','review'].includes(next.status))missing++;
-  return `<tr data-annual-employee="${e.id}" class="${retired?'annualLeaveRetiredRow':''} ${firstRetired?'annualLeaveRetiredFirst':''} ${settled?'annualLeaveSettledRow':''}"><td class="annualLeavePinned" style="--employee-print-bg:${employeeColor(e)}"><b>${esc(e.name)}</b><small>입사 ${esc(e.hire_date||'미등록')}</small>${retired?`<span class="annualLeaveRetiredBadge">퇴사 ${esc(e.resign_date)}</span>`:`<small>${esc(workTypeForDate(e,year+'-12-31'))}</small>`}${settled?'<span class="annualLeaveSettledBadge">정산완료</span>':''}</td>${monthCells}<td class="annualLeaveStat">${annualLeaveFmt(ann.days)}개<small>${annualLeaveFmt(ann.hours)}h</small>${sickMissedLabel}</td><td class="annualLeaveStat">${annualLeaveFmt(completedUsed)}개<small>${futureUsed?'사용예정 '+annualLeaveFmt(futureUsed)+'개':'완료 기준'}</small></td><td class="annualLeaveStat balance ${balance<0?'negative':''}">${cutoff?annualLeaveFmt(balance)+'h':'예정'}<small>${cutoff?(futureHours>0?'예정 사용 -'+annualLeaveFmt(futureHours)+'h (미차감)':(summary?.confirmedDate?`${summary.confirmedDate.slice(5)} 잔여확정 이후 누적`:'오늘 기준 원장')):'아직 미도래'}</small></td><td><div class="annualLeaveActions"><button class="btn gray small" onclick="openAnnualLeaveAttendance(${e.id})">출근확인</button>${editable?`<button class="btn gray small" onclick="adjustLeave(${e.id})">잔여확정</button>`:''}${retired&&editable?(settled?`<button type="button" class="btn green small" onclick="annualLeaveSetSettlement(${e.id},false)">정산 복구</button>`:`<button type="button" class="btn gray small" onclick="annualLeaveSetSettlement(${e.id},true)">정산완료</button>`):''}</div></td></tr>`;
+  return `<tr data-annual-employee="${e.id}" class="${retired?'annualLeaveRetiredRow':''} ${firstRetired?'annualLeaveRetiredFirst':''} ${settled?'annualLeaveSettledRow':''}"><td class="annualLeavePinned" style="--employee-print-bg:${employeeColor(e)}"><b>${esc(e.name)}</b><small>입사 ${esc(e.hire_date||'미등록')}</small>${retired?``:`<small>${esc(workTypeForDate(e,year+'-12-31'))}</small>`}${settled?'<span class="annualLeaveSettledBadge">정산완료</span>':''}</td>${monthCells}<td class="annualLeaveStat">${annualLeaveFmt(ann.days)}개<small>${annualLeaveFmt(ann.hours)}h</small>${sickMissedLabel}</td><td class="annualLeaveStat">${annualLeaveFmt(completedUsed)}개<small>${futureUsed?'사용예정 '+annualLeaveFmt(futureUsed)+'개':'완료 기준'}</small></td><td class="annualLeaveStat balance ${balance<0?'negative':''}">${cutoff?annualLeaveFmt(balance)+'h':'예정'}<small>${cutoff?(futureHours>0?'예정 사용 -'+annualLeaveFmt(futureHours)+'h (미차감)':'오늘 기준 원장'):'아직 미도래'}</small>${summary?.confirmedDate?`<small class="annualLeaveConfirmedMark" title="직원관리와 연동된 잔여확정">잔여확정 ${esc(summary.confirmedDate)} · 기준 ${annualLeaveFmt(summary.confirmedBalance)}h</small>`:''}</td><td><div class="annualLeaveActions"><button class="btn gray small" onclick="openAnnualLeaveAttendance(${e.id})">출근확인</button>${editable?`<button class="btn gray small" onclick="adjustLeave(${e.id})">잔여확정</button>`:''}${retired&&editable?(settled?`<button type="button" class="btn green small" onclick="annualLeaveSetSettlement(${e.id},false)">정산 복구</button>`:`<button type="button" class="btn gray small" onclick="annualLeaveSetSettlement(${e.id},true)">정산완료</button>`):''}</div></td></tr>`;
  }).join(''):`<tr><td colspan="17" style="padding:24px">${settledCount&&!annualLeaveShowSettled?'정산완료로 숨긴 직원만 있습니다. 위 [정산완료 보기]에서 복구할 수 있습니다.':'해당 연도에 재직한 직원이 없습니다.'}</td></tr>`;
  scheduleViewportHeaderRequest();
  if(tiles)tiles.innerHTML=`<div class="annualLeaveTile"><small>${year}년 발생 합계</small><b>${annualLeaveFmt(grandAccrual)}개</b></div><div class="annualLeaveTile"><small>${year}년 사용 완료 / 예정</small><b>${annualLeaveFmt(grandUsed)}개<small style="font-size:12px;font-weight:500"> / 예정 ${annualLeaveFmt(grandFuture)}개</small></b></div><div class="annualLeaveTile"><small>현재·연도말 잔여 합계</small><b>${cutoff?annualLeaveFmt(grandBalance)+'h':'예정 연도'}</b></div><div class="annualLeaveTile"><small>1년 미만 개근 확인 필요</small><b>${missing}명</b></div>`;
@@ -13924,7 +13946,7 @@ function laborRenderSheet(){const d=laborDraft,box=$('laborWorkbookGrid'),sel=$(
  html+='</tr></thead><tbody>';
  for(let idx=0;idx<rows.length;idx++){const r=rows[idx],isData=r>=3&&valid.has(r),retired=isData&&laborRetiredOnRow(ws,r),e=isData?laborEmployeeOnRow(ws,r):null,color=e?employeeColor(e):'#e8eff9';
   const orderPos=order.indexOf(r)+1,checked=isData&&Array.isArray(view.checkedRows)&&view.checkedRows.includes(r);html+=`<tr class="${retired?'laborRetired':''} ${checked?'laborDone':''}" style="--labor-row-color:${esc(color)}"><th class="laborRowActions">`;
-  if(isData)html+=`<input class="laborOrderInput" type="number" min="1" max="${order.length}" value="${orderPos}" data-r="${r}" onchange="laborChangeOrder(this)" title="화면에서만 순서 변경">${retired?'<span class="laborRetiredBadge">퇴사</span>':''}`;
+  if(isData)html+=`<input class="laborOrderInput" type="number" min="1" max="${order.length}" value="${orderPos}" data-r="${r}" onchange="laborChangeOrder(this)" title="화면에서만 순서 변경">`;
   else html+=(r+1);html+='</th>';
   for(const c of cols){let col=XLSX.utils.encode_col(c),ref=col+(r+1);
    if(laborMergedCovered(ws,r,c)){html+='<td class="laborMergedCell"></td>';continue;}
@@ -14174,7 +14196,7 @@ function laborRenderSheet(){const d=laborDraft,box=$('laborWorkbookGrid'),sel=$(
     if(data&&c===1){h+=`<div class="laborNameBox"><input class="laborNameCheck" type="checkbox" ${checked?'checked':''} onchange="laborToggleChecked(${r},this.checked)" title="이번 작업 완료 표시" aria-label="${esc(String(value))} 작업 완료"><span class="laborDragGrip" draggable="true" ondragstart="laborRowDragStart(event,${r})" ondragend="laborRowDragEnd()" title="이름을 잡고 위아래로 움직여 직원 순서 변경">☰</span>${element}</div>`}
     else h+=element;
    }
-   if(data&&c===1&&retired)h+='<span class="laborRetiredBadge">퇴사</span>';
+   
    h+='</td>';
   }
   h+='</tr>';
@@ -14478,8 +14500,8 @@ $('storeSelect')?.addEventListener('change',laborUpdateStickyOffsets);
 #employeesPage #employeeBody tr>td,
 #employeesPage #employeeBody tr>td>*:not(.empDocPopover){word-break:normal!important;overflow-wrap:normal!important}
 #employeesPage #employeeBody tr>td{white-space:nowrap!important;overflow:hidden!important;text-overflow:clip!important;padding:3px 3px!important}
-#employeesPage #employeeBody tr>td:nth-child(17),
-#employeesPage thead tr>th:nth-child(17){min-width:0!important}
+#employeesPage #employeeBody tr>td:nth-child(16),
+#employeesPage thead tr>th:nth-child(16){min-width:0!important}
 #employeesPage #employeeBody .empNoteInput{
  box-sizing:border-box!important;width:100%!important;min-width:0!important;
  min-height:27px!important;height:var(--employee-note-height,27px)!important;
@@ -14508,6 +14530,30 @@ $('storeSelect')?.addEventListener('change',laborUpdateStickyOffsets);
 #employeesPage #employeeBody .docStatusBadge{font-size:9px!important;padding:2px 4px!important;line-height:1.1!important}
 #employeesPage #employeeBody .scheduleHideToggle{margin-top:2px;font-size:9px}
 #employeesPage #employeeBody .scheduleHideToggle input{margin:0 3px 0 0}
+
+/* ===== 2026.11.26_8 · 직원관리 2열 연번/성명, 문서 버튼 등록상태 ===== */
+#schedulePage .annualLeaveConfirmedMark{font-size:10px!important;color:#235aaa!important;font-weight:800!important;white-space:nowrap!important}
+#employeesPage .tablewrap table{min-width:1640px}
+#employeesPage .tablewrap table th:first-child,
+#employeesPage .tablewrap table td:first-child{width:95px;min-width:95px;max-width:95px}
+#employeesPage .tablewrap table th:nth-child(2),
+#employeesPage .tablewrap table td:nth-child(2){width:92px;min-width:92px;max-width:92px}
+#employeesPage #employeeBody td.empSeqCell{padding:2px 3px!important;text-align:left!important}
+#employeesPage #employeeBody .empSeqControls{display:flex;align-items:center;justify-content:flex-start;gap:3px;width:100%;white-space:nowrap;overflow:hidden}
+#employeesPage #employeeBody .empSeqControls .empDeleteCheck{width:16px!important;height:16px!important;min-width:16px!important;flex:0 0 16px!important;margin:0!important;padding:0!important}
+#employeesPage #employeeBody .empSeqControls .empDragHandle{width:19px;height:20px;min-width:19px;flex:0 0 19px}
+#employeesPage #employeeBody .empSeqControls .seqBadge{min-width:22px;flex:0 0 auto;padding:0 3px}
+/* 직원별 색상은 성명칸에 남기고 퇴사자는 회색으로 구분. */
+#employeesPage #employeeBody tr.retiredRow>td.empPrintNameCell{background:#eeeeee!important;color:#666!important}
+#schedulePage .annualLeaveTable tbody tr.annualLeaveRetiredRow>td.annualLeavePinned{background:#e5e7eb!important;border-left-color:#94a3b8!important;color:#596579!important}
+/* 계약서 미등록=연한 빨강, 등록=연한 녹색, 조회 중=중립. */
+#employeesPage #employeeBody .docActions button.empDocFilePresent{background:#e5f7eb!important;color:#116539!important;border:1px solid #afdcc1!important}
+#employeesPage #employeeBody .docActions button.empDocFileMissing{background:#ffecec!important;color:#af2931!important;border:1px solid #f4c2c5!important}
+#employeesPage #employeeBody .docActions button.empDocFilePending{background:#edf0f5!important;color:#596579!important;border:1px solid #dce1e8!important}
+#employeesPage #employeeBody .docActions button.empDocFilePresent:hover{background:#d3f0dc!important}
+#employeesPage #employeeBody .docActions button.empDocFileMissing:hover{background:#ffdddd!important}
+#employeesPage #employeeBody .docActions{gap:3px!important}
+#employeesPage #employeeBody .docActions .btn{white-space:nowrap!important}
 </style>
 <script id="employeeLabor20261126_7AutoRowHeight">
 /* No server schema or save-path changes: only element height reacts to explicit line breaks. */
