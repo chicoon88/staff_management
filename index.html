@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>직원관리 대시보드 2026.11.26_14</title>
-<meta name="dashboard-build-version" content="2026.11.26_14">
+<title>직원관리 대시보드 2026.11.26_15</title>
+<meta name="dashboard-build-version" content="2026.11.26_15">
 <script id="dashboardBuildInfoJS">
 document.addEventListener('DOMContentLoaded',()=>{
  const version=document.querySelector('meta[name="dashboard-build-version"]')?.getAttribute('content');
@@ -1945,7 +1945,7 @@ body.commerceStoreMode .commerceOnlyNav:not(.hidden){display:flex}
 </div>
 
 <section id="commercePage" class="page">
- <div class="commerceHero"><h1 class="title">88커머스 <span class="commerceBuildVersion" data-dashboard-version="true">버전 2026.11.26_14</span></h1><div class="sub">대시보드에서 직접 입력·수정하고 자동 계산하며, 카페24 반영과 원본 Excel 형식 다운로드까지 한곳에서 관리합니다.</div></div>
+ <div class="commerceHero"><h1 class="title">88커머스 <span class="commerceBuildVersion" data-dashboard-version="true">버전 2026.11.26_15</span></h1><div class="sub">대시보드에서 직접 입력·수정하고 자동 계산하며, 카페24 반영과 원본 Excel 형식 다운로드까지 한곳에서 관리합니다.</div></div>
 
  <div id="commerceGroupBar" class="commerceGroupBar hidden">
   <div><div id="commerceGroupTitle" class="groupTitle">-</div><div id="commerceGroupSub" class="help" style="margin-top:3px">-</div></div>
@@ -2029,7 +2029,7 @@ body.commerceStoreMode .commerceOnlyNav:not(.hidden){display:flex}
 </section>
 
 <section id="homePage" class="page active">
- <div class="row"><div><div class="homeBuildTitle"><h1 class="title" id="homeTitle">현황</h1><span class="buildVersionBadge" id="homeBuildVersion" data-dashboard-version="true">버전 2026.11.26_14</span></div><div class="sub">업장과 월을 선택하면 모든 정보가 같이 바뀝니다.</div></div></div>
+ <div class="row"><div><div class="homeBuildTitle"><h1 class="title" id="homeTitle">현황</h1><span class="buildVersionBadge" id="homeBuildVersion" data-dashboard-version="true">버전 2026.11.26_15</span></div><div class="sub">업장과 월을 선택하면 모든 정보가 같이 바뀝니다.</div></div></div>
  <div class="cards">
   <div class="card"><div class="k">재직 직원</div><div class="v" id="kEmp">0명</div></div>
   <div class="card"><div class="k">이번 달 연차 발생</div><div class="v" id="kLeaveDue">0명</div></div>
@@ -2271,7 +2271,7 @@ body.commerceStoreMode .commerceOnlyNav:not(.hidden){display:flex}
 
  <section id="payrollPage" class="page">
  <div class="row">
-  <div><h1 class="title">급여관리 <span data-dashboard-version="true" data-version-no-prefix="true" style="font-size:12px;color:#315efb;background:#eef3ff;border-radius:999px;padding:4px 8px;vertical-align:middle">2026.11.26_14</span></h1><div class="sub">월별 급여대장을 검산하고, 기간별·직원별 누적 급여도 조회합니다.</div></div>
+  <div><h1 class="title">급여관리 <span data-dashboard-version="true" data-version-no-prefix="true" style="font-size:12px;color:#315efb;background:#eef3ff;border-radius:999px;padding:4px 8px;vertical-align:middle">2026.11.26_15</span></h1><div class="sub">월별 급여대장을 검산하고, 기간별·직원별 누적 급여도 조회합니다.</div></div>
   <div class="toolbar">
    <input type="file" id="payrollFile" accept=".xlsx,.xls,.xlsm" multiple style="display:none" onchange="importPayrollFiles(this.files);this.value=''">
    <button id="payrollBatchImportBtn" class="btn" onclick="$('payrollFile').click()">급여대장 여러개 불러오기</button>
@@ -6441,6 +6441,7 @@ async function saveEmployeeInline(id,field,value){
  // 재직자에서 퇴사일을 입력해도 현재 작업 탭은 유지한다.
  // 해당 직원은 재직 목록에서는 빠지지만 다른 직원 수정을 바로 이어갈 수 있다.
  setEmployeeView(returnEmployeeView);
+ if(field==='holiday_bonus_eligible'&&$('hoursPage')?.classList.contains('active')&&typeof laborSpecialLoad==='function')await laborSpecialLoad(true);
 }
 
 async function saveEmployeeInlineQuick(id,field,value,input){
@@ -6952,7 +6953,7 @@ function renderEmployees(){
 
    <td>${currentCond.work_type==='36'?'주4일':currentCond.work_type==='40'?'주5일':'기타'}<br><span class="help">${conditionScheduleMode(currentCond)==='auto'?'고정요일 자동채우기':'스케줄 직접입력'}</span>${employeeView==='active'?`<label class="scheduleHideToggle" title="직원관리·급여관리에는 그대로 두고 월간스케줄·주간편성·근로시간에서만 숨깁니다."><input type="checkbox" ${employeeMonthlyScheduleHidden(e)?'checked':''} onchange="saveMonthlyScheduleVisibility(${e.id},this.checked,this)">스케줄·근로 제외</label>`:''}</td>
 
-   <td class="empInlineCell">${payTypeCell}</td>
+   <td class="empInlineCell empBonusCell">${payTypeCell}<label class="empBonusToggle" title="회사 별도상여 대상자 · 체크된 직원만 노무사 O열 상여 자동검산에 포함됩니다. 공휴일 인센 사용과는 별개입니다."><input type="checkbox" ${e.holiday_bonus_eligible===true?'checked':''} onchange="saveEmployeeInline(${e.id},'holiday_bonus_eligible',this.checked)">상여대상</label></td>
 
    <!-- 연차기준: 원래 compact 표시 -->
    <td>주 ${leaveWeeklyHoursAt(e,employeeRefDate)}h<br><span class="help">월 +${leaveMonthlyHoursAt(e,employeeRefDate)}h / 1일 -${leaveUseHoursDisplay(e,employeeRefDate)}</span>${monthlyAccrualEmployeeBadge(e,isoToday())}</td>
@@ -7474,6 +7475,7 @@ async function openEmployee(id,isRetired=false){
  <div class="field"><label>급여 지급일</label><select id="ePayDay"><option value="10">10일</option><option value="month_end">말일</option><option value="25">25일</option></select></div>
  <div class="field"><label>공휴일 인센 반영시차(개월)</label><input id="eIncentiveDelay" type="number" min="0" max="12" value="${incentiveDelay(e)}"></div>
  <div class="field"><label>인센 1회 단가</label><input id="eIncentiveUnit" type="number" step="1000" value="${incentiveUnit(e)}"></div>
+ <div class="field"><label>회사 별도상여 대상 여부</label><label class="empBonusModalToggle"><input type="checkbox" id="eBonusEligible" ${e.holiday_bonus_eligible===true?'checked':''}> 별도상여 대상 (명시적으로 체크한 직원만)</label><small class="help">노무사 O열 추가상여 산정 기준 · 공휴일 인센 설정과 분리</small></div>
  <div class="field"><label>공휴일 인센 사용</label><select id="eIncentiveOn"><option value="1">사용</option><option value="0">사용 안함</option></select></div>
  <div class="field"><label>연차 산정 주 소정시간</label><input id="eLeaveWeekly" type="number" step=".5" value="${leaveWeeklyHours(e)}"></div>
  <div class="field"><label>1년 미만 월 발생(h)</label><input id="eLeaveMonthly" type="number" step="1" value="${leaveMonthlyHours(e)}"></div>
@@ -7527,6 +7529,7 @@ async function saveEmployee(id){
    incentive_delay_months:Number($('eIncentiveDelay').value||0),
    holiday_incentive_unit:Number($('eIncentiveUnit').value||0),
    holiday_incentive_enabled:$('eIncentiveOn').value==='1',
+   holiday_bonus_eligible:$('eBonusEligible')?.checked===true,
    leave_weekly_hours:Number($('eLeaveWeekly').value||40),
    leave_monthly_hours:Number($('eLeaveMonthly').value||8),
    leave_day_hours:Number($('eLeaveDay').value||8)
@@ -14260,7 +14263,17 @@ function laborInstallStickyHeader(box){
  mirror.style.width=table.style.width;mirror.style.minWidth=table.style.minWidth;mirror.style.maxWidth=table.style.maxWidth;
  mirror.innerHTML=table.querySelector('colgroup').outerHTML+table.tHead.outerHTML;
  shell.appendChild(mirror);box.insertBefore(shell,wrap);
- const sync=()=>{mirror.style.transform=`translate3d(${-wrap.scrollLeft}px,0,0)`};wrap.addEventListener('scroll',sync,{passive:true});sync();
+ const labels=[...table.tHead.rows].slice(0,2).map(row=>[...row.cells].slice(0,2).map(th=>th.textContent||''));
+ const pinned=document.createElement('div');pinned.className='laborPinnedHeading';
+ for(const line of labels){const row=document.createElement('div');row.className='laborPinnedHeadRow';
+  for(const label of line){const cell=document.createElement('span');cell.className='laborPinnedHeadCell';cell.textContent=label;row.appendChild(cell)}pinned.appendChild(row)}
+ shell.appendChild(pinned);
+ const sync=()=>{mirror.style.transform=`translate3d(${-wrap.scrollLeft}px,0,0)`;const col=table.querySelectorAll('col[data-col]');
+  if(col.length>=2){const a=parseFloat(col[0].style.width)||45,b=parseFloat(col[1].style.width)||124;
+   wrap.style.setProperty('--labor-fixed-a-width',a+'px');pinned.style.width=(a+b)+'px';
+   for(const row of pinned.children){if(row.children[0])row.children[0].style.width=a+'px';if(row.children[1])row.children[1].style.width=b+'px';}
+  }};
+ wrap.addEventListener('scroll',sync,{passive:true});sync();
  laborUpdateStickyOffsets();
 }
 function laborResizeSetLive(col,width){
@@ -14272,6 +14285,12 @@ function laborResizeSetLive(col,width){
  for(const table of root.querySelectorAll('table.laborGrid')){
   const total=[...table.querySelectorAll('col[data-col]')].reduce((sum,el)=>sum+(parseFloat(el.style.width)||24),0);
   table.style.width=total+'px';table.style.minWidth=total+'px';table.style.maxWidth=total+'px';
+ }
+ const first=root.querySelector('.laborGridWrap col[data-col="A"]'),second=root.querySelector('.laborGridWrap col[data-col="B"]');
+ const pinned=root.querySelector('.laborPinnedHeading');
+ if(first&&second){const a=parseFloat(first.style.width)||45,b=parseFloat(second.style.width)||124;
+  root.querySelector('.laborGridWrap')?.style.setProperty('--labor-fixed-a-width',a+'px');
+  if(pinned){pinned.style.width=(a+b)+'px';for(const row of pinned.children){if(row.children[0])row.children[0].style.width=a+'px';if(row.children[1])row.children[1].style.width=b+'px'}}
  }
 }
 function laborResizeStart(ev,col){if(!laborDraft||ev.button!==0)return;ev.preventDefault();ev.stopPropagation();
@@ -14689,28 +14708,112 @@ laborLoadSelectedMonth=async function(){
   if(typeof laborSpecialLoad==='function'&&$('hoursPage')?.classList.contains('active'))laborSpecialLoad(true);
  }catch(e){if(seq!==laborFetchToken)return;laborDraft=null;laborRenderSheet();laborNotify('선택월 불러오기 오류: '+(e?.message||e),true);}
 };
-laborSaveMonth=async function(){
- const d=laborDraft;if(!d||!d.dirty||laborBusy)return laborAutoTask||null;
- // The selection may already have changed when onchange fires; save the old draft
- // under its OWN store+month, never under the new visible selector values.
- const sid=Number(d.sid),ym=String(d.ym);
- if(!sid||!/^20\d\d-(0[1-9]|1[0-2])$/.test(ym)||!isAppAdmin())return false;
- laborBusy=true;laborAutoLastError=null;
- const edits=structuredClone(d.edits),revision=d.revision||0,updated=new Date().toISOString();laborNotify(`${ym} 저장 중…`);
- const task=(async()=>{try{
-  let q;
-  if(d.loadedMonth===ym){q=await sb.from('labor_workbook_files').update({edits,updated_at:updated,updated_by:currentSessionUser?.id||null}).eq('store_id',sid).eq('report_month',ym).eq('updated_at',d.stamp).select('updated_at');
-   if(q.error)throw q.error;if(!q.data?.length)throw new Error('다른 사용자가 선택월 내용을 먼저 변경했습니다. 다시 불러온 후 확인하세요.');
-  }else{
-   q=await sb.from('labor_workbook_files').insert({store_id:sid,report_month:ym,file_name:d.fileName,file_bytes:laborByteHex(d.bytes),edits,updated_at:updated,updated_by:currentSessionUser?.id||null}).select('updated_at');if(q.error)throw q.error;
+/* V15: robust month-owned save, safe rebase for concurrent edits, no silent success. */
+function laborMonthIsPlain(x){return !!x&&typeof x==='object'&&!Array.isArray(x)}
+function laborMonthGet(obj,path){return path.reduce((cur,key)=>cur?.[key],obj)}
+function laborMonthChanges(before,after,prefix=[],out=[]){
+ if(laborMonthIsPlain(before)&&laborMonthIsPlain(after)){
+  const keys=new Set([...Object.keys(before),...Object.keys(after)]);
+  for(const key of keys)laborMonthChanges(before[key],after[key],[...prefix,key],out);
+ }else if(JSON.stringify(before)!==JSON.stringify(after))out.push({path:prefix,old:before,next:after});
+ return out;
+}
+function laborMonthRebase(before,local,remote){
+ const copy=structuredClone(remote||{}),updates=laborMonthChanges(before||{},local||{});
+ for(const part of updates){
+  const serverValue=laborMonthGet(remote,part.path);
+  if(JSON.stringify(serverValue)!==JSON.stringify(part.old)&&JSON.stringify(serverValue)!==JSON.stringify(part.next))
+   throw new Error('다른 사용자와 동일 항목을 동시에 수정했습니다: '+part.path.join('.')+' · 자동 덮어쓰지 않습니다. 원본과 비교해 다시 입력하세요.');
+  let target=copy;
+  for(const key of part.path.slice(0,-1)){
+   if(!laborMonthIsPlain(target[key]))target[key]={};target=target[key];
   }
-  if(laborDraft===d){const before=d.savedEdits||{};d.loadedMonth=ym;d.sourceMonth=ym;d.stamp=q.data?.[0]?.updated_at||updated;d.savedEdits=edits;d.dirty=(d.revision||0)!==revision;
-   try{await laborAuditDiff(before,edits,sid)}catch(error){console.warn('편집 이력 저장 실패',error)}
-   laborSetInfo();laborNotify(d.dirty?'추가 수정중 · 이어서 저장':`${ym} 자동 저장 완료`);
-  }return true;
- }catch(e){laborAutoLastError=e;if(laborDraft===d){d.dirty=true;laborNotify(`${ym} 저장 실패: ${e?.message||e}`,true)}return false;
- }finally{laborBusy=false;if(laborDraft===d&&d.dirty&&!laborAutoLastError)laborScheduleAutoSave()}})();
- laborAutoTask=task;try{return await task}finally{if(laborAutoTask===task)laborAutoTask=null}
+  const leaf=part.path[part.path.length-1];
+  if(part.next===undefined)delete target[leaf];else target[leaf]=structuredClone(part.next);
+ }
+ return copy;
+}
+function laborMonthBytesEqual(a,b){
+ if(a.length!==b.length)return false;
+ for(let i=0;i<a.length;i++)if(a[i]!==b[i])return false;
+ return true;
+}
+laborSaveMonth=async function(){
+ const d=laborDraft;
+ if(!d)return false;
+ if(laborBusy){
+  if(laborAutoTask)return await laborAutoTask;
+  if(d.dirty){laborNotify('다른 작업 중이라 월별 저장이 보류됐습니다. 저장 재시도를 누르세요.',true);return false}
+  return true;
+ }
+ if(!d.dirty)return true;
+ const sid=Number(d.sid),ym=String(d.ym);
+ if(!sid||!/^20\d\d-(0[1-9]|1[0-2])$/.test(ym)||!isAppAdmin()){
+  laborNotify('저장 권한이나 업장·월이 유효하지 않습니다. 내용을 유지하고 중단했습니다.',true);return false;
+ }
+ laborBusy=true;laborAutoLastError=null;
+ const nextEdits=structuredClone(d.edits),revision=d.revision||0;
+ laborNotify(`${ym} O열·수기 입력 저장 중…`);
+ const task=(async()=>{
+  try{
+   let result=null,persisted=nextEdits;
+   for(let attempt=0;attempt<3;attempt++){
+    // Read the current month first. This differentiates a new month from a
+    // stale timestamp without ever writing to the shared 0000-00 template.
+    const current=await laborFetchMonth(sid,ym);
+    if(current){
+     if(!laborMonthBytesEqual(laborFromHex(current.file_bytes),d.bytes))
+      throw new Error('해당 월의 엑셀 원본이 다른 파일로 교체됐습니다. 기존 입력은 보존하며 자동 병합하지 않습니다.');
+     persisted=laborMonthRebase(d.savedEdits||{},nextEdits,current.edits||{});
+     const now=new Date().toISOString();
+     const q=await sb.from('labor_workbook_files').update({edits:persisted,updated_at:now,updated_by:currentSessionUser?.id||null})
+      .eq('store_id',sid).eq('report_month',ym).eq('updated_at',current.updated_at).select('updated_at');
+     if(q.error)throw q.error;
+     if(q.data?.length){result={updated_at:q.data[0].updated_at,edits:persisted};break;}
+     // An intervening write occurred. Re-read and perform a 3-way merge.
+     continue;
+    }
+    const now=new Date().toISOString();
+    const q=await sb.from('labor_workbook_files').insert({store_id:sid,report_month:ym,file_name:d.fileName,
+     file_bytes:laborByteHex(d.bytes),edits:persisted,updated_at:now,updated_by:currentSessionUser?.id||null}).select('updated_at');
+    if(q.error){if(q.error.code==='23505')continue;throw q.error}
+    if(q.data?.length){result={updated_at:q.data[0].updated_at,edits:persisted};break}
+   }
+   if(!result)throw new Error('동시 저장 충돌이 계속 발생합니다. 1개 브라우저 창에서 다시 시도하세요.');
+   if(laborDraft===d){
+    const before=d.savedEdits||{};
+    // Changes added during the request must remain dirty for the next save.
+    const inFlightChanges=laborMonthChanges(nextEdits,d.edits||{});
+    d.edits=structuredClone(result.edits);
+    for(const delta of inFlightChanges){
+     let obj=d.edits;
+     for(const key of delta.path.slice(0,-1)){if(!laborMonthIsPlain(obj[key]))obj[key]={};obj=obj[key]}
+     const last=delta.path.at(-1);
+     if(delta.next===undefined)delete obj[last];else obj[last]=structuredClone(delta.next);
+    }
+    d.loadedMonth=ym;d.sourceMonth=ym;d.stamp=result.updated_at;d.savedEdits=structuredClone(result.edits);
+    d.dirty=(d.revision||0)!==revision||inFlightChanges.length>0;
+    try{await laborAuditDiff(before,result.edits,sid)}catch(auditError){console.warn('월별 입력 변경이력 기록 오류',auditError)}
+    laborSetInfo();laborNotify(d.dirty?`${ym} 추가 수정 중 · 다시 저장 예정`:`${ym} 서버 저장 완료`);
+   }
+   return true;
+  }catch(error){
+   laborAutoLastError=error;
+   if(laborDraft===d){
+    d.dirty=true;
+    const msg=error?.message||String(error);
+    laborNotify(`${ym} 저장 실패${error?.code?' ['+error.code+']':''}: ${msg}`,true);
+    if(typeof laborInlineStatus==='function')laborInlineStatus(`${ym} 저장 실패: ${msg} · 입력값은 화면에 유지됩니다. '저장 재시도'를 누르세요.`,'error');
+   }
+   console.error('Labor workbook month save failed',sid,ym,error);
+   return false;
+  }finally{
+   laborBusy=false;
+   if(laborDraft===d&&d.dirty&&!laborAutoLastError)laborScheduleAutoSave();
+  }
+ })();
+ laborAutoTask=task;
+ try{return await task}finally{if(laborAutoTask===task)laborAutoTask=null}
 };
 // Store shared template upload remains the existing function, independent of monthly records.
 // The next reload selects the correct month's snapshot, never another shop's workbook.
@@ -14725,7 +14828,7 @@ const LABOR_SPECIAL_IGNORE_CODES=new Set(['0','연','병','결','법','예','상
 function laborSpecialRange(ym){let [y,m]=String(ym).split('-').map(Number);if(!Number.isInteger(y)||m<1||m>12)return null;return {first:`${ym}-01`,last:`${ym}-${String(new Date(y,m,0).getDate()).padStart(2,'0')}`}}
 function laborSpecialDateLabel(v){return String(v||'').slice(5).replace('-','/');}
 function laborSpecialNumber(n){return Math.round(Number(n)||0).toLocaleString('ko-KR')}
-function laborSpecialEligible(e){return e?.holiday_incentive_enabled===true && Number.isFinite(Number(e?.holiday_incentive_unit))&&Number(e?.holiday_incentive_unit)>0}
+function laborSpecialEligible(e){return e?.holiday_bonus_eligible===true && Number.isFinite(Number(e?.holiday_incentive_unit))&&Number(e?.holiday_incentive_unit)>0}
 function laborSpecialExitInMonth(e,month){return !!e?.resign_date&&String(e.resign_date).slice(0,7)===month;}
 function laborSpecialIsWorked(row){const code=String(row?.work_code||'').trim();return !!code&&!LABOR_SPECIAL_IGNORE_CODES.has(code)&&(Number(row?.worked_hours||0)>0 || (/^\d+(?:\.\d+)?$/.test(code)&&Number(code)>0))}
 function laborSpecialHolidaySet(all,ym){return new Set((all||[]).filter(x=>String(x.holiday_date||'').startsWith(ym+'-')).map(x=>x.holiday_date))}
@@ -14919,7 +15022,7 @@ laborQuickExport=async function(){return laborDownloadPreservingOriginal()};
 const laborMonthlyPreviousPreset=paymentRulePreset;
 paymentRulePreset=function(...args){const p=laborMonthlyPreviousPreset(...args);return {...p,holiday_incentive_enabled:false}};
 </script>
-<style id="annualLeaveOrderV10CSS">/* 2026.11.26_14: annual-leave rows drag by name, like monthly schedule; order remains independent per store. */
+<style id="annualLeaveOrderV10CSS">/* 2026.11.26_15: annual-leave rows drag by name, like monthly schedule; order remains independent per store. */
 #schedulePage .annualLeaveTable th.annualLeavePinned,
 #schedulePage .annualLeaveTable td.annualLeavePinned{width:166px!important;min-width:166px!important;max-width:166px!important}
 #schedulePage .annualLeaveNameRow{display:flex;align-items:center;min-width:0}
@@ -15213,17 +15316,21 @@ const LABOR_O_AUTO_START=ym=>`【${ym} 자동 특이사항】`;
 const LABOR_O_AUTO_END='【자동 특이사항 종료】';
 const LABOR_O_AUTO_BLOCK_RE=/\n?【20\d{2}-(?:0[1-9]|1[0-2]) 자동 특이사항】[\s\S]*?【자동 특이사항 종료】\n?/g;
 let laborInlineSyncActive=false;
-function laborInlineCleanManual(value){
- return String(value??'').replace(/\r\n?/g,'\n').replace(LABOR_O_AUTO_BLOCK_RE,'\n').replace(/^\n+|\n+$/g,'');
+/* Legacy 14번 파일의 괄호 구분은 읽기만 하고, 신규 저장/다운로드에는 절대 출력하지 않는다.
+   이전 자동 생성행 목록은 해당 업장·월의 edits.__autoSpecialO[ym][O셀]에만 보관한다.
+   O셀 자체는 일반 문장만 남겨 노무사가 읽기 쉽도록 한다. */
+function laborInlineCleanManual(value,previousAutoLines=[]){
+ const withoutLegacy=String(value??'').replace(/\r\n?/g,'\n').replace(LABOR_O_AUTO_BLOCK_RE,'\n');
+ const known=new Set((Array.isArray(previousAutoLines)?previousAutoLines:[]).map(x=>String(x).trim()).filter(Boolean));
+ return withoutLegacy.split('\n').filter(line=>!known.has(line.trim())).join('\n').replace(/^\n+|\n+$/g,'');
 }
-function laborInlineBuildOText(manual,entry,ym){
- const pre=laborInlineCleanManual(manual);
- if(!entry)return pre;
+function laborInlineBuildOText(value,entry,ym,previousAutoLines=[]){
+ const pre=laborInlineCleanManual(value,previousAutoLines);
+ if(!entry)return {text:pre,generated:[]};
  const items=entry.items.filter(x=>!pre.includes(x.text)&&laborSpecialMentioned(pre,x)!=='covered').map(x=>x.text);
  const extra=laborSpecialSupplement(entry.employeeId,ym);
  if(extra&&!pre.includes(extra))items.push('별도 전달사항: '+extra);
- if(!items.length)return pre;
- return [pre,LABOR_O_AUTO_START(ym),...items,LABOR_O_AUTO_END].filter(Boolean).join('\n');
+ return {text:[pre,...items].filter(Boolean).join('\n'),generated:items};
 }
 function laborInlineStatus(message,style='normal'){
  const node=$('laborInlineAutoStatus');if(!node)return;
@@ -15281,27 +15388,37 @@ function laborInlineSyncO(){
    matched.set(idx,entry);
   }
   const named=laborNamedRows(ws,'인원현황');
-  let changed=0,noted=0;
+  let changed=0,noted=0,metadataChanged=false;
   const edits=d.edits['인원현황']||(d.edits['인원현황']={});
+  const autoRoot=d.edits.__autoSpecialO||(d.edits.__autoSpecialO={});
+  const autoMonth=autoRoot[sc.ym]||(autoRoot[sc.ym]={});
   for(const row of named){
    const ref='O'+(row+1);if(ws[ref]?.f!==undefined||laborMergedCovered(ws,row,14)){
     if(matched.has(row))unmatched.push(`${matched.get(row).name} (${ref} 수식·병합)`);
     continue;
    }
    const entry=matched.get(row)||null;
-   const manual=laborDisplayValue('인원현황',ref);
-   const next=laborInlineBuildOText(manual,entry,sc.ym);
-   if(next.includes(LABOR_O_AUTO_START(sc.ym)))noted++;
-   if(next===String(manual??'').replace(/\r\n?/g,'\n'))continue;
+   const value=laborDisplayValue('인원현황',ref);
+   const oldAuto=autoMonth[ref]||[];
+   const result=laborInlineBuildOText(value,entry,sc.ym,oldAuto);
+   if(result.generated.length)noted++;
+   if(JSON.stringify(oldAuto)!==JSON.stringify(result.generated)){
+    if(result.generated.length)autoMonth[ref]=result.generated;
+    else delete autoMonth[ref];
+    metadataChanged=true;
+   }
+   if(result.text===String(value??'').replace(/\r\n?/g,'\n'))continue;
    const original=String(laborOriginalDisplay('인원현황',ref)).replace(/\r\n?/g,'\n');
-   if(next===original)delete edits[ref];else edits[ref]=next;
+   if(result.text===original)delete edits[ref];else edits[ref]=result.text;
    changed++;
   }
   if(!Object.keys(edits).length)delete d.edits['인원현황'];
+  if(!Object.keys(autoMonth).length)delete autoRoot[sc.ym];
+  if(!Object.keys(autoRoot).length)delete d.edits.__autoSpecialO;
   s.inlineUnmatched=[...new Set(unmatched)];
-  if(changed){d.revision=(d.revision||0)+1;d.dirty=true;
+  if(changed||metadataChanged){d.revision=(d.revision||0)+1;d.dirty=true;
    laborScheduleAutoSave();
-   if($('laborSheetSelect')?.value==='인원현황')laborRenderSheet();
+   if(changed&&$('laborSheetSelect')?.value==='인원현황')laborRenderSheet();
   }
   if(s.inlineUnmatched.length)laborInlineStatus(`${sc.ym} O열 ${noted}명 반영 · 원본 직원 미매칭 ${s.inlineUnmatched.join(', ')} · 다운로드 전 확인`,'warn');
   else laborInlineStatus(`${sc.ym} O열 자동검산 ${noted}명 ${changed?'반영·자동저장 중':'확인 완료'} · 스케줄·근로 제외 직원은 기존 내용 유지`,'ready');
@@ -15324,5 +15441,97 @@ laborSpecialExportAppend=async function(bytes){
 };
 // A direct edit in the O cell remains editable and is persisted by the existing
 // normal per-month save handler. Auto sections are fully regenerated on recheck.
+</script>
+
+<style id="bonusAndLaborFixedName20261126_15CSS">
+/* Staff management explicit special bonus. Not the legacy holiday incentive flag. */
+#employeesPage .empBonusCell{white-space:nowrap!important;text-align:center;overflow:hidden!important}
+#employeesPage .empBonusToggle{display:inline-flex;align-items:center;gap:4px;white-space:nowrap;cursor:pointer;margin-top:2px;padding:2px 3px;border-radius:5px;background:#fff7e8;color:#845000;font-size:10px;font-weight:900}
+#employeesPage .empBonusToggle input{width:14px;height:14px;min-width:14px;margin:0;accent-color:#d68b25}
+.employeeEditModal .empBonusModalToggle{display:inline-flex;align-items:center;gap:7px;font-size:12px;font-weight:800;white-space:normal}
+.employeeEditModal .empBonusModalToggle input{width:18px;height:18px;flex:0 0 18px;margin:0;accent-color:#d68b25}
+/* Fixed A (sequence) and B (employee name) while scrolling to O remarks. */
+#hoursPage #laborWorkbookGrid .laborGridWrap table.laborGrid tbody td:nth-child(1){
+ position:sticky!important;left:0!important;z-index:15!important;background:#eef3f9!important;
+}
+#hoursPage #laborWorkbookGrid .laborGridWrap table.laborGrid tbody td:nth-child(2){
+ position:sticky!important;left:var(--labor-fixed-a-width,45px)!important;z-index:14!important;
+ background:var(--labor-row-color,#fff)!important;box-shadow:2px 0 5px #1f293726!important;
+}
+#hoursPage #laborWorkbookGrid .laborGridWrap tr.laborRetired td:nth-child(2){background:#edeff2!important}
+#hoursPage #laborWorkbookGrid .laborGridWrap tr.laborRetiring td:nth-child(2){background:#fff0f2!important}
+#hoursPage #laborWorkbookGrid .laborGridWrap tr.laborDone:not(.laborRetired) td:nth-child(2){background:#e7f7eb!important}
+#hoursPage #laborWorkbookGrid .laborStickyHead{isolation:isolate}
+#hoursPage #laborWorkbookGrid .laborPinnedHeading{position:absolute;left:0;top:0;z-index:40;display:flex;flex-direction:column;pointer-events:none;background:#e8eef8;box-shadow:3px 0 6px #1f293722}
+#hoursPage #laborWorkbookGrid .laborPinnedHeadRow{display:flex;height:28px;line-height:28px}
+#hoursPage #laborWorkbookGrid .laborPinnedHeadRow:nth-child(2){height:29px;line-height:29px}
+#hoursPage #laborWorkbookGrid .laborPinnedHeadCell{display:block;box-sizing:border-box;min-width:0;overflow:hidden;white-space:nowrap;text-overflow:clip;font-size:12px;font-weight:900;text-align:center;color:#263654;border-right:1px solid #cbd7e9;border-bottom:1px solid #cbd7e9;background:#e8eef8}
+#hoursPage #laborWorkbookGrid .laborPinnedHeadRow:nth-child(2) .laborPinnedHeadCell{background:#dbe6f7}
+@media print{#hoursPage #laborWorkbookGrid .laborPinnedHeading{display:none!important}}
+</style>
+
+<script id="laborMonthSelectionGuard20261126_15">
+/* No previous-month visual state after month/store changes. Save the old draft
+   first, await the selected month's workbook and O audit, and show failures. */
+let laborMonthlyNavigationPending=false;
+const laborMonthGuardOldSwitch=switchMonth;
+switchMonth=async function(...args){
+ if(laborMonthlyNavigationPending)return;
+ const selector=$('monthSelect'),requested=selector?.value||'',old=laborDraft;
+ if(old?.dirty){
+  const okay=await laborFlushSave();
+  if(!okay){if(selector)selector.value=old.ym;laborNotify(`${old.ym} 저장 실패 · 월 변경을 취소했습니다. 저장 재시도를 눌러주세요.`,true);return false;}
+ }
+ laborMonthlyNavigationPending=true;
+ const arrows=document.querySelectorAll('.auditMonthButton');
+ if(selector)selector.disabled=true;
+ arrows.forEach(b=>b.disabled=true);
+ laborSpecialState=null;
+ ++laborSpecialFetchToken;
+ laborInlineStatus(`${requested} 자료를 불러오는 중…`,'normal');
+ try{
+  const outcome=await laborMonthGuardOldSwitch(...args);
+  if(selector?.value!==requested)return outcome;
+  if($('hoursPage')?.classList.contains('active')&&$('laborPage')?.classList.contains('active')&&isAppAdmin()){
+   const sid=Number(storeId());
+   if(!laborDraft||Number(laborDraft.sid)!==sid||laborDraft.ym!==requested)await laborLoadSelectedMonth();
+   if(!laborDraft||Number(laborDraft.sid)!==sid||laborDraft.ym!==requested)
+    throw new Error('요청한 업장·월 자료를 화면에 표시하지 못했습니다.');
+   await laborSpecialLoad(true);
+   const state=laborSpecialState;
+   if(!state||state.loadError||Number(state.sid)!==sid||state.ym!==requested)
+    throw new Error('선택월 특이사항 자동검산에 실패했습니다: '+(state?.loadError||'대상월이 일치하지 않음'));
+   if(laborDraft.dirty){
+    const saved=await laborFlushSave();
+    if(!saved)throw new Error(`${requested} 특이사항 저장이 완료되지 않았습니다. 원본 입력은 유지됩니다.`);
+   }
+   laborNotify(`${requested} 월별 자료·O열 서버 저장 완료`);
+   laborInlineStatus(`${requested} O열 자동반영 완료 · 재조회 및 저장 확인됨`,'ready');
+  }
+  return outcome;
+ }catch(error){
+  laborNotify(`${requested} 월별 자료 오류: ${error?.message||error}`,true);
+  laborInlineStatus(`${requested} 월 변경 오류: ${error?.message||error}`,'error');
+  return false;
+ }finally{
+  laborMonthlyNavigationPending=false;
+  if(selector)selector.disabled=false;
+  arrows.forEach(b=>b.disabled=false);
+ }
+};
+/* On a direct tab open we must refresh stale month data as well. */
+const laborMonthGuardOldToggle=toggleLaborInlineEditor;
+toggleLaborInlineEditor=async function(...args){
+ const result=await laborMonthGuardOldToggle(...args);
+ if($('laborPage')?.classList.contains('active')&&isAppAdmin()){
+  const scope=laborMonthlyScope();
+  if(!laborDraft||laborDraft.ym!==scope.ym||Number(laborDraft.sid)!==scope.sid)
+   await laborLoadSelectedMonth();
+  if(laborDraft?.ym===scope.ym&&Number(laborDraft.sid)===scope.sid){
+   await laborSpecialLoad(true);
+  }
+ }
+ return result;
+};
 </script>
 </body></html>
