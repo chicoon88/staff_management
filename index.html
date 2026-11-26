@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>직원관리 대시보드 2026.11.26_6</title>
+<title>직원관리 대시보드 2026.11.26_7</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
@@ -1934,7 +1934,7 @@ body.commerceStoreMode .commerceOnlyNav:not(.hidden){display:flex}
 </div>
 
 <section id="commercePage" class="page">
- <div class="commerceHero"><h1 class="title">88커머스 <span class="commerceBuildVersion">버전 2026.11.26_6</span></h1><div class="sub">대시보드에서 직접 입력·수정하고 자동 계산하며, 카페24 반영과 원본 Excel 형식 다운로드까지 한곳에서 관리합니다.</div></div>
+ <div class="commerceHero"><h1 class="title">88커머스 <span class="commerceBuildVersion">버전 2026.11.26_7</span></h1><div class="sub">대시보드에서 직접 입력·수정하고 자동 계산하며, 카페24 반영과 원본 Excel 형식 다운로드까지 한곳에서 관리합니다.</div></div>
 
  <div id="commerceGroupBar" class="commerceGroupBar hidden">
   <div><div id="commerceGroupTitle" class="groupTitle">-</div><div id="commerceGroupSub" class="help" style="margin-top:3px">-</div></div>
@@ -2018,7 +2018,7 @@ body.commerceStoreMode .commerceOnlyNav:not(.hidden){display:flex}
 </section>
 
 <section id="homePage" class="page active">
- <div class="row"><div><div class="homeBuildTitle"><h1 class="title" id="homeTitle">현황</h1><span class="buildVersionBadge" id="homeBuildVersion">버전 2026.11.26_6</span></div><div class="sub">업장과 월을 선택하면 모든 정보가 같이 바뀝니다.</div></div></div>
+ <div class="row"><div><div class="homeBuildTitle"><h1 class="title" id="homeTitle">현황</h1><span class="buildVersionBadge" id="homeBuildVersion">버전 2026.11.26_7</span></div><div class="sub">업장과 월을 선택하면 모든 정보가 같이 바뀝니다.</div></div></div>
  <div class="cards">
   <div class="card"><div class="k">재직 직원</div><div class="v" id="kEmp">0명</div></div>
   <div class="card"><div class="k">이번 달 연차 발생</div><div class="v" id="kLeaveDue">0명</div></div>
@@ -2255,7 +2255,7 @@ body.commerceStoreMode .commerceOnlyNav:not(.hidden){display:flex}
 
  <section id="payrollPage" class="page">
  <div class="row">
-  <div><h1 class="title">급여관리 <span style="font-size:12px;color:#315efb;background:#eef3ff;border-radius:999px;padding:4px 8px;vertical-align:middle">2026.11.26_6</span></h1><div class="sub">월별 급여대장을 검산하고, 기간별·직원별 누적 급여도 조회합니다.</div></div>
+  <div><h1 class="title">급여관리 <span style="font-size:12px;color:#315efb;background:#eef3ff;border-radius:999px;padding:4px 8px;vertical-align:middle">2026.11.26_7</span></h1><div class="sub">월별 급여대장을 검산하고, 기간별·직원별 누적 급여도 조회합니다.</div></div>
   <div class="toolbar">
    <input type="file" id="payrollFile" accept=".xlsx,.xls,.xlsm" multiple style="display:none" onchange="importPayrollFiles(this.files);this.value=''">
    <button id="payrollBatchImportBtn" class="btn" onclick="$('payrollFile').click()">급여대장 여러개 불러오기</button>
@@ -6524,8 +6524,16 @@ function employeeInlineTime(e,field){
 
 function autoGrowEmployeeNote(el){
  if(!el)return;
- el.style.height='auto';
- el.style.height=Math.min(Math.max(el.scrollHeight,44),120)+'px';
+ const editing=document.activeElement===el;
+ const lines=String(el.value||'').replace(/\r\n?/g,'\n').split('\n').length;
+ const height=editing?Math.max(27,lines*17+9):27;
+ el.style.setProperty('--employee-note-height',height+'px');
+ el.title=el.value||''; // Full note remains accessible without altering the saved text.
+}
+function collapseEmployeeNote(el){
+ if(!el)return;
+ el.style.setProperty('--employee-note-height','27px');
+ el.title=el.value||'';
 }
 
 async function saveEmployeeNote(id,value){
@@ -6886,11 +6894,11 @@ function renderEmployees(){
      ?`<select class="empInline" onchange="saveEmployeeInline(${e.id},'pay_type',this.value)">${employeePayTypeOptions(e)}</select>`
      :(e.pay_type==='hourly'?'시급/파트타임':e.pay_type==='daily'?'일당':e.pay_type==='business'?'사업소득':'월급');
 
-   return `<tr class="${employeeView==='retired'?'retiredRow ':''}${delChecked?'employeeSelectedRow':''}" ${employeeView==='active'?'data-emp-id="'+e.id+'"':''}>
+   return `<tr class="${employeeView==='retired'?'retiredRow ':''}${delChecked?'employeeSelectedRow':''}" style="--employee-print-bg:${employeeColor(e)}" ${employeeView==='active'?'data-emp-id="'+e.id+'"':''}>
    <td style="text-align:center"><input type="checkbox" class="empDeleteCheck" data-id="${e.id}" ${delChecked?'checked':''} onchange="toggleEmployeeDeleteSelection(${e.id},this.checked)"></td>
    <td><span class="empDragHandle" draggable="${dragEnabled?'true':'false'}" data-emp-id="${e.id}" title="${dragEnabled?'이 손잡이만 잡아서 순서 이동':'연번순 보기에서만 순서 이동 가능'}">☰</span> <span class="seqBadge">${idx+1}</span></td>
 
-   <td class="name empInlineCell">${employeeView==='active'?employeeInlineText(e,'name','empInlineName'):`<b>${esc(e.name)}</b>`}</td>
+   <td class="name empInlineCell empPrintNameCell"><div class="empColoredName"><span class="empNameSwatch" style="background:${employeeColor(e)}" aria-label="직원 출력색" title="직원별 출력색"></span>${employeeView==='active'?employeeInlineText(e,'name','empInlineName'):`<b class="empRetiredName">${esc(e.name)}</b>`}</div></td>
    <td class="empInlineCell">${employeeView==='active'?employeeInlineSensitiveText(e,'resident_number','주민번호'):(esc(e.resident_number||'')||'-')}</td>
    <td class="empInlineCell">${employeeView==='active'?employeeInlineSensitiveText(e,'bank_account','계좌번호'):(esc(e.bank_account||'')||'-')}</td>
    <td class="empInlineCell">${employeeView==='active'?employeeInlineText(e,'role'):esc(e.role||'')}</td>
@@ -6916,10 +6924,11 @@ function renderEmployees(){
 
    <!-- 급여 지급규칙 대신 비고 -->
    <td class="empInlineCell">${employeeView==='active'
-     ?`<textarea class="empInline empNoteInput" draggable="false" ondragstart="event.preventDefault()" ondrop="event.preventDefault()" placeholder="비고 입력" rows="2"
+     ?`<textarea class="empInline empNoteInput" draggable="false" wrap="off" ondragstart="event.preventDefault()" ondrop="event.preventDefault()" placeholder="비고 입력" rows="1"
+       onfocus="autoGrowEmployeeNote(this)"
        oninput="autoGrowEmployeeNote(this)"
-       onblur="saveEmployeeNote(${e.id},this.value)">${esc(e.memo||'')}</textarea>`
-     :`<div class="empNoteRead">${esc(e.memo||'').replace(/\n/g,'<br>')}</div>`}</td>
+       onblur="collapseEmployeeNote(this);saveEmployeeNote(${e.id},this.value)">${esc(e.memo||'')}</textarea>`
+     :`<div class="empNoteRead" title="${esc(e.memo||'')}">${esc(e.memo||'').replace(/\r?\n/g,' ⏎ ')}</div>`}</td>
 
    <td><select onchange="setPrintColor(${e.id},this.value)" style="padding:5px 7px" title="재직·퇴사자 모두 과거 스케줄 출력색 수정 가능">${colors}</select><span style="display:inline-block;width:18px;height:18px;border-radius:5px;vertical-align:middle;margin-left:4px;background:${employeeColor(e)};border:1px solid #bbb"></span></td>
 
@@ -14160,8 +14169,8 @@ function laborRenderSheet(){const d=laborDraft,box=$('laborWorkbookGrid'),sel=$(
    if(data&&c===0){h+=`<span class="laborSerial">${ordinal}</span>`}
    else if(r<3||c===0||ws[ref]?.f!==undefined){h+=`<div class="laborReadValue">${esc(String(value))}</div>`}
    else{
-    const edited=!!(d.edits?.[sheet]&&Object.prototype.hasOwnProperty.call(d.edits[sheet],ref)),multi=c===8||c===14,control=multi?`<textarea class="laborCellInput laborMulti${edited?' changed':''}"`:`<input type="text" class="laborCellInput${edited?' changed':''}"`,attrs=` data-cell="${ref}" draggable="false" spellcheck="false" oninput="laborQueueEdit(this)" onchange="laborCellChange(this)" onblur="laborFlushSave()" title="${esc(sheet+'!'+ref)} · 수정 후 자동 저장"`;
-    let element=multi?`${control}${attrs}>${esc(String(value))}</textarea>`:`${control}${attrs} value="${esc(String(value))}">`;
+    const edited=!!(d.edits?.[sheet]&&Object.prototype.hasOwnProperty.call(d.edits[sheet],ref)),multi=c===8||c===14;
+    const element=`<textarea class="laborCellInput laborAutoHeight${multi?' laborMulti':''}${edited?' changed':''}" wrap="off" rows="1" data-cell="${ref}" draggable="false" spellcheck="false" oninput="laborQueueEdit(this);laborAutoFitInput(this)" onchange="laborCellChange(this)" onblur="laborFlushSave()" title="${esc(sheet+'!'+ref)} · Enter 줄바꿈 · 수정 후 자동 저장">${esc(String(value))}</textarea>`;
     if(data&&c===1){h+=`<div class="laborNameBox"><input class="laborNameCheck" type="checkbox" ${checked?'checked':''} onchange="laborToggleChecked(${r},this.checked)" title="이번 작업 완료 표시" aria-label="${esc(String(value))} 작업 완료"><span class="laborDragGrip" draggable="true" ondragstart="laborRowDragStart(event,${r})" ondragend="laborRowDragEnd()" title="이름을 잡고 위아래로 움직여 직원 순서 변경">☰</span>${element}</div>`}
     else h+=element;
    }
@@ -14175,6 +14184,7 @@ function laborRenderSheet(){const d=laborDraft,box=$('laborWorkbookGrid'),sel=$(
  // The independent sticky header is outside that overflow-x container, so it
  // follows the document scroll instead of getting trapped by the worksheet.
  laborInstallStickyHeader(box);
+ laborAutoFitAllCells(box);
  if($('laborUploadBtn'))$('laborUploadBtn').disabled=!isAppAdmin();
 }
 function laborSetValue(sheet,ref,value){const d=laborDraft;if(!d||!/^[A-Z]{1,2}[1-9]\d*$/.test(ref))return;
@@ -14426,5 +14436,91 @@ window.addEventListener('scroll',laborUpdateStickyOffsets,{passive:true});
 window.addEventListener('resize',laborUpdateStickyOffsets,{passive:true});
 $('monthSelect')?.addEventListener('change',laborUpdateStickyOffsets);
 $('storeSelect')?.addEventListener('change',laborUpdateStickyOffsets);
+</script>
+
+<style id="employeeLabor20261126_7VisualFix">
+/* 근로시간: 줄바꿈은 반드시 표시, 열 축소로 인한 자동 줄바꿈은 금지. */
+#hoursPage #laborWorkbookGrid table.laborGrid tbody tr{height:auto!important;max-height:none!important}
+#hoursPage #laborWorkbookGrid table.laborGrid tbody td{
+ height:auto!important;max-height:none!important;vertical-align:middle;
+}
+#hoursPage #laborWorkbookGrid table.laborGrid .laborReadValue{
+ white-space:pre!important;overflow:hidden!important;
+ height:auto!important;max-height:none!important;text-overflow:clip!important;
+}
+#hoursPage #laborWorkbookGrid table.laborGrid textarea.laborCellInput.laborAutoHeight,
+#hoursPage #laborWorkbookGrid table.laborGrid textarea.laborCellInput.laborAutoHeight.laborMulti,
+#hoursPage #laborWorkbookGrid table.laborGrid textarea.laborCellInput.laborAutoHeight.laborMulti:not(:focus),
+#hoursPage #laborWorkbookGrid table.laborGrid textarea.laborCellInput.laborAutoHeight:focus{
+ display:block;box-sizing:border-box;width:100%!important;min-width:0!important;
+ min-height:26px!important;height:var(--labor-cell-height,26px)!important;
+ max-height:none!important;resize:none!important;
+ white-space:pre!important;overflow-x:hidden!important;overflow-y:hidden!important;
+ overflow-wrap:normal!important;word-break:normal!important;
+ text-overflow:clip!important;line-height:17px!important;
+ padding:4px 4px!important;margin:0!important;
+}
+#hoursPage #laborWorkbookGrid table.laborGrid textarea.laborAutoHeight:focus{
+ overflow-x:auto!important;background:#fff!important;
+}
+#hoursPage #laborWorkbookGrid table.laborGrid .laborNameBox{
+ height:auto!important;min-height:26px!important;align-items:center;
+}
+/* 직원관리: 직원별 색상은 이름 칸에서 바로 구분, 선택 행 강조는 종전과 동일. */
+#employeesPage #employeeBody tr:not(.employeeSelectedRow)>td.empPrintNameCell{
+ background:var(--employee-print-bg,#fff)!important;
+}
+#employeesPage #employeeBody .empColoredName{display:flex;align-items:center;gap:5px;min-width:0;width:100%;overflow:hidden}
+#employeesPage #employeeBody .empNameSwatch{width:7px;min-width:7px;height:21px;border-radius:3px;flex-shrink:0;border:1px solid #0002}
+#employeesPage #employeeBody .empColoredName input{min-width:0!important;flex:1 1 0!important;width:0!important}
+#employeesPage #employeeBody .empRetiredName{display:block;min-width:0;overflow:hidden;text-overflow:clip;white-space:nowrap}
+/* 직원관리: 열을 좁히더라도 글자가 아래로 접히지 않고 칸에서 잘리게 한다. */
+#employeesPage #employeeBody tr>td,
+#employeesPage #employeeBody tr>td>*:not(.empDocPopover){word-break:normal!important;overflow-wrap:normal!important}
+#employeesPage #employeeBody tr>td{white-space:nowrap!important;overflow:hidden!important;text-overflow:clip!important;padding:3px 3px!important}
+#employeesPage #employeeBody tr>td:nth-child(17),
+#employeesPage thead tr>th:nth-child(17){min-width:0!important}
+#employeesPage #employeeBody .empNoteInput{
+ box-sizing:border-box!important;width:100%!important;min-width:0!important;
+ min-height:27px!important;height:var(--employee-note-height,27px)!important;
+ max-height:none!important;resize:none!important;
+ white-space:pre!important;word-break:normal!important;overflow-wrap:normal!important;
+ overflow-x:hidden!important;overflow-y:hidden!important;text-overflow:clip!important;
+ line-height:17px!important;padding:4px 5px!important;
+}
+#employeesPage #employeeBody .empNoteInput:focus{overflow-x:auto!important;overflow-y:auto!important;resize:vertical!important;background:#fff!important}
+#employeesPage #employeeBody .empNoteRead{
+ display:block;white-space:nowrap!important;overflow:hidden!important;text-overflow:clip!important;
+ word-break:normal!important;overflow-wrap:normal!important;max-width:100%;min-width:0;
+}
+/* 기존 버튼은 보존하고 직원 목록의 불필요한 위아래 여백을 줄인다. */
+#employeesPage #employeeBody .empInline{min-height:26px!important;padding:3px 4px!important;font-size:11px!important;line-height:18px!important}
+#employeesPage #employeeBody .empInlineCell{padding:2px 3px!important}
+#employeesPage #employeeBody .seqBadge{height:22px;min-width:22px;font-size:10px}
+#employeesPage #employeeBody .empDragHandle{height:20px;width:20px;font-size:13px}
+#employeesPage #employeeBody .empManageActions{gap:3px!important;align-items:center}
+#employeesPage #employeeBody .empManageActions .btn.small,
+#employeesPage #employeeBody .docActions .btn.small{font-size:10px!important;padding:4px 5px!important;line-height:1.2!important;min-height:23px!important;white-space:nowrap!important}
+#employeesPage #employeeBody .docActions{gap:3px!important;align-items:center}
+#employeesPage #employeeBody .renewalBox{padding:3px 4px!important;margin-bottom:3px!important;font-size:10px;line-height:1.16!important}
+#employeesPage #employeeBody .renewalBox .help{font-size:9px;line-height:1.15}
+#employeesPage #employeeBody .docStatusLine{gap:2px!important;margin-bottom:2px!important}
+#employeesPage #employeeBody .docStatusBadge{font-size:9px!important;padding:2px 4px!important;line-height:1.1!important}
+#employeesPage #employeeBody .scheduleHideToggle{margin-top:2px;font-size:9px}
+#employeesPage #employeeBody .scheduleHideToggle input{margin:0 3px 0 0}
+</style>
+<script id="employeeLabor20261126_7AutoRowHeight">
+/* No server schema or save-path changes: only element height reacts to explicit line breaks. */
+function laborAutoFitInput(el){
+ if(!el||!el.classList?.contains('laborAutoHeight'))return;
+ const lines=String(el.value||'').replace(/\r\n?/g,'\n').split('\n').length;
+ const pixelHeight=Math.max(26,lines*17+8);
+ el.style.setProperty('--labor-cell-height',pixelHeight+'px');
+ el.title=(el.dataset.cell||'')+' · Enter 줄바꿈 가능 · 전체 내용: '+String(el.value||'').slice(0,600);
+}
+function laborAutoFitAllCells(root){
+ if(!root)return;
+ root.querySelectorAll('textarea.laborCellInput.laborAutoHeight').forEach(laborAutoFitInput);
+}
 </script>
 </body></html>
