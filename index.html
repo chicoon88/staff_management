@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>직원관리 대시보드 2026.11.26_8</title>
+<title>직원관리 대시보드 2026.11.26_12</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
@@ -2152,7 +2152,7 @@ body.commerceStoreMode .commerceOnlyNav:not(.hidden){display:flex}
       </div>
       <div id="annualLeaveSummaryTiles" class="annualLeaveSummaryTiles"></div>
       <div id="annualLeaveWorkAudit" class="help hidden" role="status" style="margin:4px 0 9px;padding:9px 12px;border:1px solid #ebd8aa;border-radius:8px;background:#fffaf0;color:#684718"></div>
-      <div class="annualLeaveLegend"><span class="annualLeaveTag">숫자 = 스케줄 연차 일수 (미래는 예정)</span><span class="annualLeaveTag auto">스케줄 자동</span><span class="annualLeaveTag manual">관리자 확정</span><span class="annualLeaveTag warning">과거 근태 미확인 → 발생 보류</span><span class="annualLeaveTag">셀 클릭 = 사용량 직접 입력·수정</span><span class="annualLeaveTag outside">회색 사선 = 첫 연차 발생 전 또는 재직기간 밖 (입력 불가)</span><span class="annualLeaveTag color">직원 이름 색상 = 월간 스케줄 출력색</span></div>
+      <div class="annualLeaveLegend"><span class="annualLeaveTag">숫자 = 스케줄 연차 일수 (미래는 예정)</span><span class="annualLeaveTag auto">스케줄 자동</span><span class="annualLeaveTag manual">관리자 확정</span><span class="annualLeaveTag warning">과거 근태 미확인 → 발생 보류</span><span class="annualLeaveTag">셀 클릭 = 사용량 직접 입력·수정</span><span class="annualLeaveTag outside">회색 사선 = 첫 연차 발생 전 또는 재직기간 밖 (입력 불가)</span><span class="annualLeaveTag color">직원 이름 색상 = 월간 스케줄 출력색</span><span class="annualLeaveTag annualLeaveOrderHint">↕ 연차관리 순서만 개별 조정 (월간 스케줄 순서 유지)</span><span id="annualLeaveOrderState" class="saveState">순서 조회 준비</span></div>
       <div class="tablewrap annualLeaveGridScroll"><table id="annualLeaveTable" class="annualLeaveTable"><thead><tr><th class="annualLeavePinned">직원 / 입사일</th><th>1월</th><th>2월</th><th>3월</th><th>4월</th><th>5월</th><th>6월</th><th>7월</th><th>8월</th><th>9월</th><th>10월</th><th>11월</th><th>12월</th><th>연도 발생</th><th>사용 완료 / 예정</th><th>잔여 연차</th><th>관리</th></tr></thead><tbody id="annualLeaveBody"><tr><td colspan="17" class="help">연차 자료를 불러오는 중입니다.</td></tr></tbody></table></div>
       <div class="help" style="margin-top:10px;line-height:1.65"><b>사용 완료와 미래 사용 예정은 구분합니다.</b> 잔여는 오늘까지 실제 발생·사용한 기록만 반영하며, 미래의 '연'은 아직 차감하지 않습니다. 미래 월 연차가 추가 발생할 수도 있습니다. 잔여는 기존 연차원장의 발생·사용·조정 기록을 시간(h) 기준으로 계산합니다. <b>잔여확정</b>을 하면 그 날짜의 잔여를 새 기준으로 삼고, 그 이후 연차 발생·사용은 입사일 기준으로 계속 누적합니다. 기존 기록은 삭제되지 않습니다. 연차관리에서 월 사용량을 확정하면 스케줄에 입력된 그 달 연차와 <b>중복 차감하지 않습니다.</b> 근무조건이 바뀐 직원은 일수와 시간을 함께 확인하세요. 스케줄이 없는 기간은 자동으로 개근 처리하지 않으며, ‘출근확인’에서 실제 출근 사실을 확인한 후 발생에 반영합니다.</div>
     </div>
@@ -2188,7 +2188,7 @@ body.commerceStoreMode .commerceOnlyNav:not(.hidden){display:flex}
  </div>
 <section id="laborPage" class="page laborInlinePage">
   <div class="row" style="flex-wrap:wrap;gap:10px">
-   <div><h1 class="title">노무사 제출자료</h1><div class="sub">한 업장당 원본 하나를 등록합니다. <b>직원 자료 B~O열은 바로 수정·자동 저장</b>되며, 이름 옆 손잡이로 순서를 바꾸면 엑셀 연번과 직원 행도 함께 정렬됩니다.</div></div>
+   <div><h1 class="title">노무사 제출자료</h1><div class="sub">공통 원본은 업장별 1개를 보존하고, <b>선택한 급여월마다 수정 내용과 특이사항을 따로 저장</b>합니다. <b>직원 자료 B~O열은 바로 수정·자동 저장</b>되며, 이름 옆 손잡이로 순서를 바꾸면 엑셀 연번과 직원 행도 함께 정렬됩니다.</div></div>
    <span id="laborScopeBadge" class="saveState">업장·월 선택</span>
   </div>
   <div class="card" style="margin-top:14px">
@@ -2199,8 +2199,13 @@ body.commerceStoreMode .commerceOnlyNav:not(.hidden){display:flex}
 
     <span id="laborSaveState" class="saveState" role="status" aria-live="polite">자동 저장 준비</span><button id="laborRetryBtn" type="button" class="btn gray small" style="display:none" onclick="laborFlushSave()">저장 재시도</button>
    </div>
-   <p class="laborIntro">업장별 원본 Excel 한 개를 계속 편집합니다. <b>직원 데이터 전체 열(B~O) 수정 및 자동저장, 이름 옆 드래그로 순서 변경</b>을 지원합니다. Excel 다운로드에는 수정값·직원 순서·연번이 반영되고 <b>작업 체크·웹 열 너비는 반영되지 않습니다.</b> 퇴사자는 회색으로 구분합니다. 주민번호·급여가 있어 최고관리자 전용입니다.</p>
+   <p class="laborIntro">업장별 공통 원본을 보존하면서 <b>선택 업장·급여월별 입력값을 별도 자동저장</b>합니다. <b>직원 데이터 전체 열(B~O) 수정 및 자동저장, 이름 옆 드래그로 순서 변경</b>을 지원합니다. Excel 다운로드에는 수정값·직원 순서·연번이 반영되고 <b>작업 체크·웹 열 너비는 반영되지 않습니다.</b> 퇴사자는 회색으로 구분합니다. 주민번호·급여가 있어 최고관리자 전용입니다.</p>
    <div id="laborWorkbookInfo" class="laborInfo">아직 파일을 불러오지 않았습니다.</div>
+   <section id="laborSpecialPanel" class="laborSpecialPanel" aria-label="선택월 특이사항 자동검산">
+    <div class="laborSpecialHeader"><div><strong>선택월 급여 특이사항 자동검산</strong><div class="help">업장·월별로 병가·경조휴가를 확인하고, 전월 주말·공휴일 상여 및 퇴사자 지급제외를 계산합니다. 기존 원본은 보존합니다.</div></div><div class="laborSpecialToolbar"><button type="button" class="btn gray small" onclick="laborSpecialLoad(true)">재검사</button><button type="button" class="btn gray small" onclick="laborSpecialCopy()">노무사 전달문구 복사</button></div></div>
+    <div id="laborSpecialStatus" class="laborSpecialStatus" role="status" aria-live="polite">선택 업장·급여월을 불러오면 자동으로 확인합니다.</div>
+    <div id="laborSpecialBody" class="laborSpecialBody"><div class="laborSpecialEmpty">스케줄·원본 대조 전입니다. [재검사]를 누르세요.</div></div>
+   </section>
    <div class="laborToolbar" style="margin:10px 0">
     <label for="laborSheetSelect" style="font-size:12px;font-weight:800">시트</label>
     <select id="laborSheetSelect" onchange="laborRenderSheet()" style="max-width:210px"></select>
@@ -2210,7 +2215,8 @@ body.commerceStoreMode .commerceOnlyNav:not(.hidden){display:flex}
     <button id="laborSaveBtn" class="btn green" style="display:none" onclick="laborSaveMonth()">웹 수정 저장</button>
     <button id="laborExportBtn" class="btn" style="display:none" onclick="laborDownloadPreservingOriginal()">원본 양식 그대로 다운로드</button>
    </div>
-   <div id="laborWorkbookGrid" class="laborEmpty">현재 업장·월에 등록된 Excel이 없습니다. 원본을 업로드하거나 이전월 자료를 복사하세요.</div>
+   <div id="laborRetirementMonthlyHint" role="status" aria-live="polite">선택한 업장·월의 퇴사자 표시를 확인합니다.</div>
+    <div id="laborWorkbookGrid" class="laborEmpty">현재 업장·월에 등록된 Excel이 없습니다. 원본을 업로드하거나 이전월 자료를 복사하세요.</div>
    <div class="help" style="margin-top:9px">연한 녹색 = 작업 체크 · 회색 = 퇴사자 · 이름 옆 ☰ 손잡이 드래그 = 직원 순서 변경 · 머리글 경계 드래그 = 웹 열 너비 조절. <b>직원 자료 B~O 수정, I/O열 줄바꿈, 행 순서 및 A열 연번은 Excel에 반영됩니다. 작업 체크와 웹 열 너비는 Excel에 반영되지 않습니다.</b></div>
   </div>
  </section>
@@ -2469,13 +2475,13 @@ function leaveDayHours(e){return leaveDayHoursAt(e,isoToday())}
 function salaryDelay(e){return Number(e.salary_delay_months ?? (e.pay_type==='monthly'?1:0))}
 function incentiveDelay(e){return Number(e.incentive_delay_months ?? 2)}
 function incentiveUnit(e){return Number(e.holiday_incentive_unit ?? 30000)}
-function incentiveEnabled(e){return e.holiday_incentive_enabled!==false && incentiveUnit(e)>0}
+function incentiveEnabled(e){return e.holiday_incentive_enabled===true && incentiveUnit(e)>0}
 function payDayRule(e){return e.salary_pay_day || (e.pay_type==='monthly'?'10':'month_end')}
 function payRuleLabel(e){let sd=salaryDelay(e),pd=payDayRule(e),id=incentiveDelay(e);return `${sd===0?'당월':sd+'개월 후'} ${pd==='month_end'?'말일':pd+'일'} / 인센 ${id}개월 후`}
 function shiftMonth(ym,delta){let [y,m]=ym.split('-').map(Number),d=new Date(y,m-1+delta,1);return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`}
 function monthLabel(ym){let [y,m]=ym.split('-').map(Number);return `${y}년 ${m}월`}
 function payDateFor(e,payMonth){let [y,m]=payMonth.split('-').map(Number);if(payDayRule(e)==='month_end'){let d=new Date(y,m,0).getDate();return `${payMonth}-${String(d).padStart(2,'0')}`}return `${payMonth}-${String(Number(payDayRule(e))||10).padStart(2,'0')}`}
-function paymentRulePreset(t){if(t==='monthly')return {salary_delay_months:1,salary_pay_day:'10',incentive_delay_months:2,holiday_incentive_unit:30000,holiday_incentive_enabled:true};return {salary_delay_months:0,salary_pay_day:'month_end',incentive_delay_months:2,holiday_incentive_unit:30000,holiday_incentive_enabled:true}}
+function paymentRulePreset(t){if(t==='monthly')return {salary_delay_months:1,salary_pay_day:'10',incentive_delay_months:2,holiday_incentive_unit:30000,holiday_incentive_enabled:false};return {salary_delay_months:0,salary_pay_day:'month_end',incentive_delay_months:2,holiday_incentive_unit:30000,holiday_incentive_enabled:true}}
 
 const PRINT_COLORS=[
  ['#DCEBFF','하늘'],['#E4F6E8','민트'],['#FFF0D8','살구'],['#F0E4FF','보라'],
@@ -7214,7 +7220,7 @@ function buildWorkerEmployee(t,row){
    break_minutes:minutesBetweenClock(bt.start,bt.end)||60,
    work_days:wd.days,pay_type:payType,
    salary_delay_months:pr.delay,salary_pay_day:pr.day,
-   incentive_delay_months:2,holiday_incentive_unit:30000,holiday_incentive_enabled:true,
+   incentive_delay_months:2,holiday_incentive_unit:30000,holiday_incentive_enabled:false,
    leave_weekly_hours:leaveWeekly,
    leave_monthly_hours:leaveWeekly<15?0:legalRoundLeaveHours(Math.min(leaveWeekly,40)/40*8),leave_day_hours:leaveWeekly===32?7:Number(wr.daily||8),
    memo:[task&&`담당:${task}`,employment&&`고용:${employment}`,ins&&`4대보험:${ins}`,note&&`특이:${note}`].filter(Boolean).join(' / '),
@@ -7239,7 +7245,7 @@ function buildPharmacyEmployee(t,row){
    work_type:'custom',daily_hours:8,default_start_time:null,default_end_time:null,
    break_minutes:60,work_days:[],pay_type:payType,
    salary_delay_months:pr.salary_delay_months,salary_pay_day:pr.salary_pay_day,
-   incentive_delay_months:pr.incentive_delay_months,holiday_incentive_unit:30000,holiday_incentive_enabled:true,
+   incentive_delay_months:pr.incentive_delay_months,holiday_incentive_unit:30000,holiday_incentive_enabled:false,
    leave_weekly_hours:40,leave_monthly_hours:8,leave_day_hours:8,
    memo:`약국급여표 등록${job?` / 직무:${job}`:''}`,review
  };
@@ -7386,7 +7392,7 @@ async function commitEmployeeImport(){
      salary_pay_day:x.salary_pay_day||'10',
      incentive_delay_months:Number(x.incentive_delay_months??2),
      holiday_incentive_unit:Number(x.holiday_incentive_unit??30000),
-     holiday_incentive_enabled:x.holiday_incentive_enabled!==false,
+     holiday_incentive_enabled:x.holiday_incentive_enabled===true,
      leave_weekly_hours:Number(x.leave_weekly_hours??40),
      leave_monthly_hours:Number(x.leave_monthly_hours??8),
      leave_day_hours:Number(x.leave_day_hours??8),
@@ -7433,7 +7439,7 @@ async function openEmployee(id,isRetired=false){
    e=q.data;
  }
  if(id&&!e)return alert('직원정보를 찾지 못했습니다.');
- if(!id)e={work_type:'40',daily_hours:8,break_minutes:60,work_days:[1,2,3,4,5],pay_type:'monthly',leave_weekly_hours:40,leave_monthly_hours:8,leave_day_hours:8,salary_delay_months:1,salary_pay_day:'10',incentive_delay_months:2,holiday_incentive_unit:30000,holiday_incentive_enabled:true};
+ if(!id)e={work_type:'40',daily_hours:8,break_minutes:60,work_days:[1,2,3,4,5],pay_type:'monthly',leave_weekly_hours:40,leave_monthly_hours:8,leave_day_hours:8,salary_delay_months:1,salary_pay_day:'10',incentive_delay_months:2,holiday_incentive_unit:30000,holiday_incentive_enabled:false};
  let currentCond=workConditionForDate(e,isoToday());
  let birthCompact=employeeBirthDate(e).replace(/-/g,'');
  let checks=[0,1,2,3,4,5,6].map(d=>`<label><input type="checkbox" class="wd" value="${d}" ${normalizedWorkDays(currentCond.work_days).includes(d)?'checked':''}><span>${'일월화수목금토'[d]}</span></label>`).join('');
@@ -8506,7 +8512,7 @@ ${names}
      salary_pay_day:'10',
      incentive_delay_months:2,
      holiday_incentive_unit:30000,
-     holiday_incentive_enabled:true,
+     holiday_incentive_enabled:false,
      leave_weekly_hours:40,
      leave_monthly_hours:8,
      leave_day_hours:8,
@@ -12381,9 +12387,13 @@ function annualLeaveAttendanceVerification(id,type,start){
 function annualLeaveEmployeeList(year=annualLeaveYear){
  const first=year+'-01-01',last=year+'-12-31';
  const available=allEmployees().filter(e=>e.hide_monthly_schedule!==true&&employedInRange(e,first,last));
+ // No saved annual-leave order: preserve legacy active/retired schedule ordering.
  const active=sortEmployeesForSchedule(available.filter(e=>!annualLeaveIsRetired(e)));
  const retired=available.filter(annualLeaveIsRetired).sort((a,b)=>String(a.resign_date||'').localeCompare(String(b.resign_date||''))||(scheduleEmployeeOrderValue(a)-scheduleEmployeeOrderValue(b))||String(a.name||'').localeCompare(String(b.name||''),'ko'));
- return [...active,...retired];
+ const initial=[...active,...retired];
+ if(!annualLeaveOrderMap.size)return initial;
+ // Annual leave ordering is store-wide and independent of the monthly/weekly schedule.
+ return initial.sort((a,b)=>annualLeaveOrderValue(a)-annualLeaveOrderValue(b));
 }
 function annualLeaveMonthSchedule(e,ym){
  const rows=annualLeaveScheduleRows.filter(s=>Number(s.employee_id)===Number(e.id)&&String(s.work_date||'').startsWith(ym)&&employedOn(e,String(s.work_date||'')));
@@ -12500,6 +12510,8 @@ async function refreshAnnualLeaveData(force=false){
  try{
   // 장부는 월간·주간 편성과 공유하지만, 스케줄 전체 과거 데이터는 연도별로 페이지 조회한다.
   if(!await persistScheduleEdits())return;
+  await annualLeaveOrderLoad(sid);
+  if(seq!==annualLeaveLoadingSeq||sid!==storeId())return;
   await loadLeaveLedger();
   if(seq!==annualLeaveLoadingSeq||sid!==storeId())return;
   if(!leaveAttendanceSchedules.length){
@@ -12585,7 +12597,7 @@ function renderAnnualLeaveTable(){
   grandAccrual+=ann.days;grandUsed+=completedUsed;grandFuture+=futureUsed;grandBalance+=balance;
   const next=cutoff?nextMonthlyAccrualStatus(e,cutoff,leaveAttendanceSchedules):null;
   if(next&&['pending','review'].includes(next.status))missing++;
-  return `<tr data-annual-employee="${e.id}" class="${retired?'annualLeaveRetiredRow':''} ${firstRetired?'annualLeaveRetiredFirst':''} ${settled?'annualLeaveSettledRow':''}"><td class="annualLeavePinned" style="--employee-print-bg:${employeeColor(e)}"><b>${esc(e.name)}</b><small>입사 ${esc(e.hire_date||'미등록')}</small>${retired?``:`<small>${esc(workTypeForDate(e,year+'-12-31'))}</small>`}${settled?'<span class="annualLeaveSettledBadge">정산완료</span>':''}</td>${monthCells}<td class="annualLeaveStat">${annualLeaveFmt(ann.days)}개<small>${annualLeaveFmt(ann.hours)}h</small>${sickMissedLabel}</td><td class="annualLeaveStat">${annualLeaveFmt(completedUsed)}개<small>${futureUsed?'사용예정 '+annualLeaveFmt(futureUsed)+'개':'완료 기준'}</small></td><td class="annualLeaveStat balance ${balance<0?'negative':''}">${cutoff?annualLeaveFmt(balance)+'h':'예정'}<small>${cutoff?(futureHours>0?'예정 사용 -'+annualLeaveFmt(futureHours)+'h (미차감)':'오늘 기준 원장'):'아직 미도래'}</small>${summary?.confirmedDate?`<small class="annualLeaveConfirmedMark" title="직원관리와 연동된 잔여확정">잔여확정 ${esc(summary.confirmedDate)} · 기준 ${annualLeaveFmt(summary.confirmedBalance)}h</small>`:''}</td><td><div class="annualLeaveActions"><button class="btn gray small" onclick="openAnnualLeaveAttendance(${e.id})">출근확인</button>${editable?`<button class="btn gray small" onclick="adjustLeave(${e.id})">잔여확정</button>`:''}${retired&&editable?(settled?`<button type="button" class="btn green small" onclick="annualLeaveSetSettlement(${e.id},false)">정산 복구</button>`:`<button type="button" class="btn gray small" onclick="annualLeaveSetSettlement(${e.id},true)">정산완료</button>`):''}</div></td></tr>`;
+  return `<tr data-annual-employee="${e.id}" class="${retired?'annualLeaveRetiredRow':''} ${firstRetired?'annualLeaveRetiredFirst':''} ${settled?'annualLeaveSettledRow':''}" ondragover="annualLeaveOrderDragOver(event,${e.id})" ondrop="annualLeaveOrderDrop(event,${e.id})"><td class="annualLeavePinned" style="--employee-print-bg:${employeeColor(e)}"><div class="annualLeaveNameRow">${editable?`<div class="annualLeaveMoveTools"><span class="annualLeaveOrderGrip" draggable="${annualLeaveOrderAvailable===true?'true':'false'}" ondragstart="annualLeaveOrderDragStart(event,${e.id})" ondragend="annualLeaveOrderDragEnd()" title="잡아서 연차관리 직원순서만 이동" aria-label="${esc(e.name)} 순서 끌기">⋮⋮</span><span class="annualLeaveMoveButtons"><button type="button" title="위로 이동" aria-label="${esc(e.name)} 위로 이동" onclick="annualLeaveOrderMove(${e.id},-1)" ${annualLeaveOrderAvailable!==true?'disabled':''}>▲</button><button type="button" title="아래로 이동" aria-label="${esc(e.name)} 아래로 이동" onclick="annualLeaveOrderMove(${e.id},1)" ${annualLeaveOrderAvailable!==true?'disabled':''}>▼</button></span></div>`:''}<div class="annualLeaveNameInfo"><b>${esc(e.name)}</b><small>입사 ${esc(e.hire_date||'미등록')}</small>${retired?``:`<small>${esc(workTypeForDate(e,year+'-12-31'))}</small>`}${settled?'<span class="annualLeaveSettledBadge">정산완료</span>':''}</div></div></td>${monthCells}<td class="annualLeaveStat">${annualLeaveFmt(ann.days)}개<small>${annualLeaveFmt(ann.hours)}h</small>${sickMissedLabel}</td><td class="annualLeaveStat">${annualLeaveFmt(completedUsed)}개<small>${futureUsed?'사용예정 '+annualLeaveFmt(futureUsed)+'개':'완료 기준'}</small></td><td class="annualLeaveStat balance ${balance<0?'negative':''}">${cutoff?annualLeaveFmt(balance)+'h':'예정'}<small>${cutoff?(futureHours>0?'예정 사용 -'+annualLeaveFmt(futureHours)+'h (미차감)':'오늘 기준 원장'):'아직 미도래'}</small>${summary?.confirmedDate?`<small class="annualLeaveConfirmedMark" title="직원관리와 연동된 잔여확정">잔여확정 ${esc(summary.confirmedDate)} · 기준 ${annualLeaveFmt(summary.confirmedBalance)}h</small>`:''}</td><td><div class="annualLeaveActions"><button class="btn gray small" onclick="openAnnualLeaveAttendance(${e.id})">출근확인</button>${editable?`<button class="btn gray small" onclick="adjustLeave(${e.id})">잔여확정</button>`:''}${retired&&editable?(settled?`<button type="button" class="btn green small" onclick="annualLeaveSetSettlement(${e.id},false)">정산 복구</button>`:`<button type="button" class="btn gray small" onclick="annualLeaveSetSettlement(${e.id},true)">정산완료</button>`):''}</div></td></tr>`;
  }).join(''):`<tr><td colspan="17" style="padding:24px">${settledCount&&!annualLeaveShowSettled?'정산완료로 숨긴 직원만 있습니다. 위 [정산완료 보기]에서 복구할 수 있습니다.':'해당 연도에 재직한 직원이 없습니다.'}</td></tr>`;
  scheduleViewportHeaderRequest();
  if(tiles)tiles.innerHTML=`<div class="annualLeaveTile"><small>${year}년 발생 합계</small><b>${annualLeaveFmt(grandAccrual)}개</b></div><div class="annualLeaveTile"><small>${year}년 사용 완료 / 예정</small><b>${annualLeaveFmt(grandUsed)}개<small style="font-size:12px;font-weight:500"> / 예정 ${annualLeaveFmt(grandFuture)}개</small></b></div><div class="annualLeaveTile"><small>현재·연도말 잔여 합계</small><b>${cutoff?annualLeaveFmt(grandBalance)+'h':'예정 연도'}</b></div><div class="annualLeaveTile"><small>1년 미만 개근 확인 필요</small><b>${missing}명</b></div>`;
@@ -14568,5 +14580,612 @@ function laborAutoFitAllCells(root){
  if(!root)return;
  root.querySelectorAll('textarea.laborCellInput.laborAutoHeight').forEach(laborAutoFitInput);
 }
+</script>
+<style id="laborMonthlySpecialV9CSS">
+/* 2026.11.26_9 업장별·급여월별 검산 상태. 원본 파일과 월별 수정값은 별도로 관리. */
+#hoursPage .laborSpecialPanel{margin:12px 0 15px;padding:12px;background:#fbfdff;border:1px solid #d5e4f5;border-radius:11px}
+#hoursPage .laborSpecialHeader{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
+#hoursPage .laborSpecialHeader strong{font-size:14px;color:#223b59}
+#hoursPage .laborSpecialHeader .help{margin-top:4px;max-width:780px}
+#hoursPage .laborSpecialToolbar{display:flex;gap:6px;flex-wrap:wrap}
+#hoursPage .laborSpecialStatus{font-weight:800;font-size:12px;margin:11px 0 7px;color:#23538d}
+#hoursPage .laborSpecialBody{font-size:11px}
+#hoursPage .laborSpecialSub{padding:8px 10px;background:#eff6ff;border-radius:8px;color:#35516d;line-height:1.6;margin-bottom:7px}
+#hoursPage .laborSpecialTableWrap{max-width:100%;overflow-x:auto;border:1px solid #e2e8f0;border-radius:8px}
+#hoursPage .laborSpecialTable{table-layout:auto;width:100%;min-width:800px}
+#hoursPage .laborSpecialTable th,#hoursPage .laborSpecialTable td{padding:8px 9px;font-size:11px;line-height:1.45;vertical-align:top;white-space:normal!important}
+#hoursPage .laborSpecialTable th{background:#eef3fa;white-space:nowrap!important}
+#hoursPage .laborSpecialTable .laborSpecialName{text-align:left;min-width:110px;white-space:nowrap!important}
+#hoursPage .laborSpecialTable .laborSpecialName small{display:block;font-weight:500;color:#64748b;font-size:10px}
+#hoursPage .laborSpecialTable .laborSpecialNotes{min-width:290px;text-align:left}
+#hoursPage .laborSpecialLine{padding:3px 0;border-bottom:1px dashed #e3e7ee}
+#hoursPage .laborSpecialLine:last-child{border-bottom:0}
+#hoursPage .laborSpecialExtra{color:#9a5215;font-weight:800;margin-top:6px;white-space:pre-wrap}
+#hoursPage .laborSpecialTag{display:inline-block;border-radius:6px;padding:3px 6px;font-weight:800;font-size:10px;white-space:nowrap}
+#hoursPage .laborSpecialTag.bad{background:#fee2e2;color:#a82121}
+#hoursPage .laborSpecialTag.warn{background:#fff0d2;color:#93580d}
+#hoursPage .laborSpecialTag.done{background:#e1f6e8;color:#176a47}
+#hoursPage .laborSpecialSmall{display:block;color:#64748b;margin-top:5px;font-size:10px}
+#hoursPage .laborSpecialActions{min-width:160px;text-align:center;white-space:nowrap!important}
+#hoursPage .laborSpecialActions button{margin:2px}
+#hoursPage .laborSpecialEmpty,#hoursPage .laborSpecialError{padding:13px;background:#fff;color:#65758a;border:1px dashed #d4deeb;border-radius:8px}
+#hoursPage .laborSpecialError{color:#b42318;background:#fff6f6}
+#hoursPage .laborSpecialFoot{font-size:10px;color:#65758a;line-height:1.65;margin-top:8px}
+@media(max-width:760px){#hoursPage .laborSpecialPanel{padding:9px}#hoursPage .laborSpecialToolbar{width:100%}}
+</style>
+<script id="laborMonthly20261126_9">/* 2026.11.26_9: store + salary-month scoped consultant workbook overlays.
+ * Keep the single store template (report_month=0000-00) immutable on monthly edits.
+ * Each real YYYY-MM record is a separately stored snapshot using the existing table/unique key.
+ */
+const LABOR_MONTHLY_VERSION='2026.11.26_9';
+function laborMonthlyScope(){return {sid:Number(storeId()),ym:String($('monthSelect')?.value||'')}}
+laborScope=laborMonthlyScope;
+function laborMonthlyDraftFromBase(row,ym){
+ const d=laborDraftFromRow(row,ym),base=structuredClone(row.edits||{}),edits={};
+ for(const [sheet,cells] of Object.entries(base)){
+  if(sheet.startsWith('__'))continue;
+  if(!cells||typeof cells!=='object')continue;
+  const copied={};
+  for(const [ref,value] of Object.entries(cells)){
+   // Previous month details must never leak into a new month's remarks.
+   if(sheet==='인원현황'&&/^O\d+$/.test(ref))continue;
+   if(/^[A-Z]{1,2}[4-9]\d*$/.test(ref))copied[ref]=value;
+  }
+  if(Object.keys(copied).length)edits[sheet]=copied;
+ }
+ // Carry user preference for row order and column widths, but reset completion flags.
+ if(base.__view){edits.__view=structuredClone(base.__view);for(const view of Object.values(edits.__view))if(view&&typeof view==='object')view.checkedRows=[];}
+ // The global template can contain last month's O values; visually clear all such
+ // entries in a new month without altering the uploaded template itself.
+ const ws=d.wb.Sheets['인원현황'];if(ws){
+  for(let r=3;r<=Math.min(500,XLSX.utils.decode_range(ws['!ref']||'A1:A1').e.r);r++){
+   if(!String(laborOldValue(ws,'B'+(r+1))||'').trim())continue;
+   const ref='O'+(r+1),raw=laborOldValue(ws,ref);
+   if(String(raw||'').trim())(edits['인원현황']??={})[ref]='';
+  }
+ }
+ d.edits=edits;d.savedEdits=structuredClone(edits);d.ym=ym;d.loadedMonth=null;d.sourceMonth=row.report_month;d.revision=0;d.dirty=false;
+ return d;
+}
+laborSetInfo=function(){const d=laborDraft,{sid,ym}=laborMonthlyScope(),name=stores.find(x=>Number(x.id)===sid)?.name||`업장 ${sid}`;
+ const badge=$('laborScopeBadge');if(badge)badge.textContent=`${name} · ${ym} 급여 / ${/^20\d\d-\d\d$/.test(ym)?shiftMonth(ym,-1):'-'} 상여`;
+ const info=$('laborWorkbookInfo');if(!info)return;
+ if(!d){info.textContent=`${name} · ${ym} · 원본이 없습니다. 원본 파일을 먼저 업로드해 주세요.`;return;}
+ const editCount=Object.values(d.edits?.['인원현황']||{}).filter(v=>v!==undefined).length;
+ const origin=d.loadedMonth===ym?'선택월 저장본':`업장 공통 원본(${d.sourceMonth})에서 생성한 선택월 작업본`;
+ info.textContent=`${name} | ${ym} 급여 | ${origin} | ${d.fileName} | 편집값 ${editCount}건${d.dirty?' · 저장 대기':''}`;
+};
+laborLoadSelectedMonth=async function(){
+ const {sid,ym}=laborMonthlyScope(),seq=++laborFetchToken;
+ if(!sid||!/^20\d\d-(0[1-9]|1[0-2])$/.test(ym)||!isAppAdmin()||permissionSystemAvailable===false){laborDraft=null;laborRenderSheet();return;}
+ laborNotify(`${ym} 선택월 자료 불러오는 중…`);
+ try{
+  let monthRow=await laborFetchMonth(sid,ym),source=monthRow;
+  if(!source){source=await laborFetchMonth(sid,'0000-00');}
+  if(!source){const prior=await sb.from('labor_workbook_files').select('*').eq('store_id',sid).lt('report_month',ym).neq('report_month','0000-00').order('report_month',{ascending:false}).limit(1);if(prior.error)throw prior.error;source=prior.data?.[0]||null;}
+  if(seq!==laborFetchToken||Number(storeId())!==sid||$('monthSelect')?.value!==ym)return;
+  const d=source?(monthRow?laborDraftFromRow(monthRow,ym):laborMonthlyDraftFromBase(source,ym)):null;
+  laborDraft=d;if(d){d.revision=0;d.loadedMonth=monthRow?ym:null;
+   try{d.originalGrayRows=await laborReadSourceGrayRows(d)}catch(e){console.warn('원본 회색행 확인 실패',e)}
+  }
+  if(seq!==laborFetchToken||Number(storeId())!==sid||$('monthSelect')?.value!==ym)return;
+  laborRenderSheet();laborNotify(d?(monthRow?'선택월 저장본 불러옴':'공통 원본으로 선택월 생성 · 자동 저장 가능'):'업장 원본 없음');
+  if(typeof laborSpecialLoad==='function'&&$('hoursPage')?.classList.contains('active'))laborSpecialLoad(true);
+ }catch(e){if(seq!==laborFetchToken)return;laborDraft=null;laborRenderSheet();laborNotify('선택월 불러오기 오류: '+(e?.message||e),true);}
+};
+laborSaveMonth=async function(){
+ const d=laborDraft;if(!d||!d.dirty||laborBusy)return laborAutoTask||null;
+ // The selection may already have changed when onchange fires; save the old draft
+ // under its OWN store+month, never under the new visible selector values.
+ const sid=Number(d.sid),ym=String(d.ym);
+ if(!sid||!/^20\d\d-(0[1-9]|1[0-2])$/.test(ym)||!isAppAdmin())return false;
+ laborBusy=true;laborAutoLastError=null;
+ const edits=structuredClone(d.edits),revision=d.revision||0,updated=new Date().toISOString();laborNotify(`${ym} 저장 중…`);
+ const task=(async()=>{try{
+  let q;
+  if(d.loadedMonth===ym){q=await sb.from('labor_workbook_files').update({edits,updated_at:updated,updated_by:currentSessionUser?.id||null}).eq('store_id',sid).eq('report_month',ym).eq('updated_at',d.stamp).select('updated_at');
+   if(q.error)throw q.error;if(!q.data?.length)throw new Error('다른 사용자가 선택월 내용을 먼저 변경했습니다. 다시 불러온 후 확인하세요.');
+  }else{
+   q=await sb.from('labor_workbook_files').insert({store_id:sid,report_month:ym,file_name:d.fileName,file_bytes:laborByteHex(d.bytes),edits,updated_at:updated,updated_by:currentSessionUser?.id||null}).select('updated_at');if(q.error)throw q.error;
+  }
+  if(laborDraft===d){const before=d.savedEdits||{};d.loadedMonth=ym;d.sourceMonth=ym;d.stamp=q.data?.[0]?.updated_at||updated;d.savedEdits=edits;d.dirty=(d.revision||0)!==revision;
+   try{await laborAuditDiff(before,edits,sid)}catch(error){console.warn('편집 이력 저장 실패',error)}
+   laborSetInfo();laborNotify(d.dirty?'추가 수정중 · 이어서 저장':`${ym} 자동 저장 완료`);
+  }return true;
+ }catch(e){laborAutoLastError=e;if(laborDraft===d){d.dirty=true;laborNotify(`${ym} 저장 실패: ${e?.message||e}`,true)}return false;
+ }finally{laborBusy=false;if(laborDraft===d&&d.dirty&&!laborAutoLastError)laborScheduleAutoSave()}})();
+ laborAutoTask=task;try{return await task}finally{if(laborAutoTask===task)laborAutoTask=null}
+};
+// Store shared template upload remains the existing function, independent of monthly records.
+// The next reload selects the correct month's snapshot, never another shop's workbook.
+function laborMonthSafeName(v){return String(v||'업장').replace(/[\\/:*?"<>|\x00-\x1f]/g,'_').trim().slice(0,60)}
+</script>
+<script id="laborSpecial20261126_9">/* 2026.11.26_9 · 월별 노무사 특이사항 자동검산 (원본 불변)
+   근거: 실제 스케줄 코드 / 명시적인 직원 상여대상 / 입퇴사일 / 공휴일 원장.
+   파일 원본 O셀이나 급여·스케줄 테이블을 자동 수정하지 않는다.
+   해당월 제출용 Excel을 만들 때만 O셀의 자동 특이사항을 합성한다. */
+const LABOR_SPECIAL_VERSION='2026.11.26_9';
+let laborSpecialState=null,laborSpecialFetchToken=0,laborSpecialBusy=false;
+const LABOR_SPECIAL_IGNORE_CODES=new Set(['0','연','병','결','법','예','상','경']);
+function laborSpecialRange(ym){let [y,m]=String(ym).split('-').map(Number);if(!Number.isInteger(y)||m<1||m>12)return null;return {first:`${ym}-01`,last:`${ym}-${String(new Date(y,m,0).getDate()).padStart(2,'0')}`}}
+function laborSpecialDateLabel(v){return String(v||'').slice(5).replace('-','/');}
+function laborSpecialNumber(n){return Math.round(Number(n)||0).toLocaleString('ko-KR')}
+function laborSpecialEligible(e){return e?.holiday_incentive_enabled===true && Number.isFinite(Number(e?.holiday_incentive_unit))&&Number(e?.holiday_incentive_unit)>0}
+function laborSpecialExitInMonth(e,month){return !!e?.resign_date&&String(e.resign_date).slice(0,7)===month;}
+function laborSpecialIsWorked(row){const code=String(row?.work_code||'').trim();return !!code&&!LABOR_SPECIAL_IGNORE_CODES.has(code)&&(Number(row?.worked_hours||0)>0 || (/^\d+(?:\.\d+)?$/.test(code)&&Number(code)>0))}
+function laborSpecialHolidaySet(all,ym){return new Set((all||[]).filter(x=>String(x.holiday_date||'').startsWith(ym+'-')).map(x=>x.holiday_date))}
+function laborSpecialBuild(e,payMonth,curRows,prevRows,holidayDates,opts={}){
+ const previous=shiftMonth(payMonth,-1),today=opts.today||isoToday();
+ const now=(curRows||[]).filter(s=>Number(s.employee_id)===Number(e.id)&&s.work_date>=payMonth+'-01'&&s.work_date<=today&&employedOn(e,s.work_date));
+ const past=(prevRows||[]).filter(s=>Number(s.employee_id)===Number(e.id)&&s.work_date?.startsWith(previous)&&employedOn(e,s.work_date));
+ const uniq=rows=>[...new Map(rows.map(s=>[s.work_date,s])).values()].sort((a,b)=>a.work_date.localeCompare(b.work_date));
+ const sick=uniq(now.filter(s=>String(s.work_code||'').trim()==='병')).map(s=>s.work_date);
+ const ceremony=uniq(now.filter(s=>['상','경'].includes(String(s.work_code||'').trim()))).map(s=>({date:s.work_date,code:String(s.work_code||'').trim(),kind:typeof ceremonyMeta==='function'?(ceremonyMeta(s)?.label||''):''}));
+ const worked=uniq(past.filter(laborSpecialIsWorked)).filter(s=>{const wd=new Date(s.work_date+'T12:00:00').getDay();return wd===0||wd===6||(holidayDates||new Set()).has(s.work_date)}).map(s=>s.work_date);
+ const unit=Number(e.holiday_incentive_unit||0),enabled=laborSpecialEligible(e),exit=laborSpecialExitInMonth(e,previous);
+ const full=!!opts.prevScheduleReady&&!!opts.holidayReady;
+ const items=[];
+ if(sick.length)items.push({kind:'sick',dates:sick,text:`${payMonth} 무급병가 ${sick.length}일 (${sick.map(laborSpecialDateLabel).join(', ')}) · 연차사용 차감 없음`});
+ if(ceremony.length){const types=[...new Set(ceremony.map(x=>x.code==='경'?'본인결혼':(x.kind||'상례')))];items.push({kind:'ceremony',dates:ceremony.map(x=>x.date),text:`${payMonth} 유급 경조휴가 ${ceremony.length}일 (${ceremony.map(x=>laborSpecialDateLabel(x.date)+(x.code==='경'?' 경':' 상')).join(', ')}) · ${types.join('/')} · 실근로 0시간/연차차감 없음`});}
+ if(enabled && full && worked.length){
+  items.push(exit?{kind:'bonusExcluded',dates:worked,text:`전월(${previous}) 주말·공휴일 출근기록 ${worked.length}일 · ${previous} 퇴사로 회사 별도상여 미지급 0원`}:{kind:'bonus',dates:worked,text:`전월(${previous}) 주말·공휴일 출근기록 ${worked.length}일 × ${laborSpecialNumber(unit)}원 = 세후 별도상여 지급요청 ${laborSpecialNumber(worked.length*unit)}원`});
+ }
+ return {employeeId:Number(e.id),name:e.name,payMonth,previous,sick,ceremony,worked,enabled,unit,exit,bonus:enabled&&full&&!exit?worked.length*unit:0,items,ready:full,notes:items.map(x=>x.text),dataRows:now.length,priorRows:past.length};
+}
+function laborSpecialMentioned(original,item){const v=String(original||'');if(!v.trim())return 'missing';
+ if(item.kind==='sick'||item.kind==='ceremony'){
+  const regex=item.kind==='sick'?/병가|무급병|\b병\b/:/경조|유급|부모상|조부모상|본인결혼|상례|\b상\b/;
+  if(!regex.test(v))return 'missing';
+  const listed=(item.dates||[]).every(d=>v.includes(d)||v.includes(d.slice(5).replace('-','/'))||v.includes(d.slice(5).replace('-','.')));
+  return listed?'covered':'uncertain';
+ }
+ if(item.kind==='bonusExcluded')return /(퇴사|미지급|지급제외|제외)/.test(v)&&/(상여|주말|휴일)/.test(v)?'covered':'missing';
+ if(item.kind==='bonus'){
+  if(!/(상여|주말|휴일|공휴일)/.test(v))return 'missing';
+  const x=item.text.match(/지급요청\s*([\d,]+)원/),amount=x?Number(x[1].replace(/,/g,'')):0;
+  if(amount&&v.replace(/[,\s]/g,'').includes(String(amount)))return 'covered';
+  return 'uncertain';
+ }
+ return 'uncertain';
+}
+function laborSpecialFindSource(e){const ws=laborDraft?.wb?.Sheets?.['인원현황'];if(!ws)return null;
+ const rows=laborNamedRows(ws,'인원현황').filter(r=>normalizeName(laborDisplayValue('인원현황','B'+(r+1)))===normalizeName(e.name));
+ return rows.length===1?rows[0]:null;
+}
+function laborSpecialAuditSave(){const d=laborDraft;if(!d)return;
+ d.revision=(d.revision||0)+1;d.dirty=true;laborNotify('특이사항 검토기록 저장 대기');laborScheduleAutoSave();
+}
+function laborSpecialRecords(){const d=laborDraft,ym=$('monthSelect')?.value||'';if(!d||d.sid!==storeId()||d.ym!==ym)return {};
+ d.edits.__specialAudit=d.edits.__specialAudit||{};
+ d.edits.__specialAudit[ym]=d.edits.__specialAudit[ym]||{};
+ return d.edits.__specialAudit[ym];
+}
+function laborSpecialFingerprint(entry){return JSON.stringify(entry.items.map(x=>[x.kind,x.text]))}
+function laborSpecialMarkSent(employeeId){const data=laborSpecialState;if(!data||!laborDraft||data.sid!==storeId()||data.ym!==$('monthSelect').value)return;
+ const item=data.entries.find(x=>x.employeeId===Number(employeeId));if(!item)return;
+ const records=laborSpecialRecords(),old=records[item.employeeId],fingerprint=laborSpecialFingerprint(item);
+ if(old?.fingerprint===fingerprint&&old?.sentAt){delete records[item.employeeId]}
+ else records[item.employeeId]={fingerprint,sentAt:new Date().toISOString(),sentBy:currentAppUser?.display_name||currentSessionUser?.id||'관리자'};
+ laborSpecialAuditSave();laborSpecialRender();
+}
+function laborSpecialExtraNote(employeeId){if(!laborDraft)return alert('노무사 원본을 먼저 등록해 주세요.');const records=laborSpecialRecords(),ym=$('monthSelect').value;
+ const prev=String(laborDraft.edits.__specialExtra?.[ym]?.[employeeId]||'');
+ const value=prompt(`${ym} 추가 전달 내용 (스케줄에 입력되지 않은 병가는 반드시 스케줄에도 '병'으로 기록해 주세요.)\n기존 추가전달 내용을 덮어쓰지 않으려면 취소`,prev);
+ if(value===null)return;
+ laborDraft.edits.__specialExtra=laborDraft.edits.__specialExtra||{};
+ laborDraft.edits.__specialExtra[ym]=laborDraft.edits.__specialExtra[ym]||{};
+ if(value.trim())laborDraft.edits.__specialExtra[ym][employeeId]=value.trim();else delete laborDraft.edits.__specialExtra[ym][employeeId];
+ // A changed manual correction requires re-acknowledgement.
+ delete records[employeeId];laborSpecialAuditSave();laborSpecialRender();
+}
+function laborSpecialSupplement(eid,ym){return String(laborDraft?.edits?.__specialExtra?.[ym]?.[eid]||'').trim()}
+async function laborSpecialLoad(force=false){const panel=$('laborSpecialPanel'),sid=storeId(),ym=$('monthSelect')?.value;
+ if(!panel||!sid||!/^(20\d\d)-(0[1-9]|1[0-2])$/.test(ym||'')||!isAppAdmin())return;
+ if(laborSpecialBusy&&!force)return;
+ const token=++laborSpecialFetchToken,previous=shiftMonth(ym,-1),range=laborSpecialRange(ym),past=laborSpecialRange(previous);
+ const status=$('laborSpecialStatus');if(status)status.textContent='스케줄·공휴일·원본 대조 중…';
+ laborSpecialBusy=true;
+ try{
+  const list=allEmployees().filter(e=>Number(e.store_id)===sid);const ids=list.map(e=>Number(e.id));
+  // Always read committed schedule rows: do not infer from initially populated calendar cells.
+  const [current,prior]=await Promise.all([fetchScheduleRowsComplete(ids,range.first,range.last),fetchScheduleRowsComplete(ids,past.first,past.last)]);
+  const year=Number(previous.slice(0,4));let holidaySet=new Set(),holidayReady=false;
+  try{
+   if(!holidayYearData[year]?.merged?.length)await loadHolidayYear(year);
+   const h=holidayYearData[year]?.merged||[];
+   holidaySet=laborSpecialHolidaySet(h,previous);holidayReady=h.length>0;
+  }catch(err){console.warn('전월 공휴일 확인 실패',err)}
+  if(token!==laborSpecialFetchToken||sid!==storeId()||ym!==$('monthSelect').value)return;
+  let entries=list.map(e=>laborSpecialBuild(e,ym,current,prior,holidaySet,{holidayReady,prevScheduleReady:true}));
+  // Show only affected/eligible people, plus any manual supplementary memo.
+  entries=entries.filter(e=>e.items.length||laborSpecialSupplement(e.employeeId,ym)).sort((a,b)=>a.name.localeCompare(b.name,'ko'));
+  laborSpecialState={sid,ym,previous,entries,holidayReady,loadedAt:Date.now(),currentCount:current.length,priorCount:prior.length,loadError:null};
+  laborSpecialRender();
+ }catch(err){if(token!==laborSpecialFetchToken)return;
+  laborSpecialState={sid,ym,entries:[],loadError:err?.message||String(err)};laborSpecialRender();
+ }finally{if(token===laborSpecialFetchToken)laborSpecialBusy=false;}
+}
+function laborSpecialRender(){const host=$('laborSpecialBody'),status=$('laborSpecialStatus'),s=laborSpecialState;
+ if(!host||!status||!s)return;
+ if(s.loadError){status.textContent='자동검산 실패';host.innerHTML=`<div class="laborSpecialError">스케줄 조회 오류: ${esc(s.loadError)} · 누락을 임의로 0건 처리하지 않았습니다.</div>`;return}
+ const complete=s.holidayReady,records=laborDraft?laborSpecialRecords():{};
+  let count=0,checked=0,unmatched=0;
+ const tableRows=s.entries.map(x=>{
+  const src=laborSpecialFindSource(x),o=src===null?'':laborDisplayValue('인원현황','O'+(src+1)),extra=laborSpecialSupplement(x.employeeId,s.ym);
+  const items=x.items.map(it=>({ ...it,check:laborSpecialMentioned(o,it)}));
+  const fp=laborSpecialFingerprint(x),sent=!!records?.[x.employeeId]?.sentAt&&records[x.employeeId].fingerprint===fp;
+  count+=items.filter(x=>x.check==='missing').length;
+  if(sent)checked++;if(src===null)unmatched++;
+  const notable=items.filter(x=>x.check!=='covered');
+  const statusBadge=sent?'<span class="laborSpecialTag done">별도전달 확인</span>':src===null?'<span class="laborSpecialTag bad">원본 직원 미매칭</span>':notable.some(y=>y.check==='missing')?'<span class="laborSpecialTag bad">원본 O열 누락 위험</span>':notable.length?'<span class="laborSpecialTag warn">기존 O열 내용 확인</span>':'<span class="laborSpecialTag done">원본 O열 기재 확인</span>';
+  return `<tr><td class="laborSpecialName" style="border-left:4px solid ${esc((allEmployees().find(e=>Number(e.id)===x.employeeId))?.print_color||'#e2e8f0')}"><b>${esc(x.name)}</b><small>${src===null?'원본 B열 직원 매칭 필요':'원본 '+(src+1)+'행'}</small></td><td class="laborSpecialNotes">${x.items.map(it=>`<div class="laborSpecialLine">${esc(it.text)}</div>`).join('')}${extra?`<div class="laborSpecialExtra">수기 보완: ${esc(extra)}</div>`:''}</td><td>${statusBadge}<small class="laborSpecialSmall">${src===null?'엑셀 자동반영 불가':x.items.every(it=>laborSpecialMentioned(o,it)==='covered')?'기존 기재내용과 대조':`기존 O열과 대조 · ${sent?'카톡 등 별도 전달 확인':'전달여부 확인 필요'}`}</small></td><td class="laborSpecialActions"><button type="button" class="btn gray small" onclick="laborSpecialExtraNote(${x.employeeId})">보완메모</button><button type="button" class="btn ${sent?'green':'gray'} small" onclick="laborSpecialMarkSent(${x.employeeId})" ${!laborDraft?'disabled':''}>${sent?'전달확인 취소':'별도전달 완료'}</button></td></tr>`;
+ }).join('');
+ status.textContent=`${s.ym} 급여 특이사항 · 전월 ${s.previous} 상여 · 관련 직원 ${s.entries.length}명 / O열 누락 검토 ${count}건 / 별도 전달 확인 ${checked}명${unmatched?' / 원본 직원 미매칭 '+unmatched+'명':''}`;
+ host.innerHTML=`<div class="laborSpecialSub">${esc(s.ym)} 급여: 당월 병가·유급 경조사 + ${esc(s.previous)} 주말·공휴일 근무기록 기준 상여 (실제 출근 여부 최종 확인 필요). <b>지급액은 회사 설정의 1회 단가를 세후 지급요청액으로 표기</b>하며 급여대장 세전 금액을 자동 수정하지 않습니다. ${!complete?'<strong>전월 공휴일 자료가 없어 상여 계산을 보류했습니다.</strong>':''} 실제 카카오톡 전송 여부는 자동 확인할 수 없어 별도전달 완료로 기록합니다.</div>${s.entries.length?`<div class="laborSpecialTableWrap"><table class="laborSpecialTable"><thead><tr><th>직원</th><th>자동 산정 · 제출용 특이사항</th><th>기존 원본 O열 검산</th><th>검토</th></tr></thead><tbody>${tableRows}</tbody></table></div>`:'<div class="laborSpecialEmpty">조회된 스케줄에서 병가·유급 경조사 또는 별도상여 대상 실적이 발견되지 않았습니다. 스케줄 자체에 입력되지 않은 병가는 자동으로 감지할 수 없습니다.</div>'}<div class="laborSpecialFoot">※ 원본 ` + 'O열은 업장별 공통 자료입니다. 월별 자동 문구는 **Excel 다운로드 결과에만** 합쳐지고 원본·급여대장에는 저장되지 않습니다. 노무사 제출 전 확인하세요.' + `</div>`;
+}
+function laborSpecialCopy(){const s=laborSpecialState;if(!s||s.loadError)return alert('검산 결과가 없습니다. 먼저 재검사하세요.');
+ const lines=[`${s.ym} 급여 특이사항 (전월 상여 산정: ${s.previous})`];for(const e of s.entries){lines.push(`\n${e.name}`,...e.notes.map(x=>'· '+x));const supplement=laborSpecialSupplement(e.employeeId,s.ym);if(supplement)lines.push('· 관리자 보완메모: '+supplement);}
+ const text=lines.join('\n');if(navigator.clipboard?.writeText){navigator.clipboard.writeText(text).then(()=>alert('노무사 전달용 검산 문구를 복사했습니다. 실제 카카오톡 발송은 직접 확인해 주세요.'),()=>prompt('복사할 문구',text));}else prompt('복사할 문구',text);
+}
+async function laborSpecialExportAppend(bytes){const state=laborSpecialState,month=$('monthSelect')?.value,workbook=laborDraft;
+ if(!workbook||workbook.sid!==storeId()||workbook.ym!==month||!state||state.sid!==storeId()||state.ym!==month||state.loadError)throw new Error('선택월 자동검산이 완료되지 않았습니다. [재검사] 후 다시 다운로드하세요.');
+ if(!state.holidayReady&&allEmployees().some(e=>Number(e.store_id)===storeId()&&laborSpecialEligible(e)))throw new Error('전월 공휴일 정보가 확인되지 않아 상여 누락 위험이 있습니다. 공휴일 확인 후 다운로드하세요.');
+ const entries=state.entries.filter(e=>e.notes.length||laborSpecialSupplement(e.employeeId,month));if(!entries.length)return bytes;
+ const ws=workbook.wb.Sheets['인원현황'];if(!ws)throw new Error('인원현황 시트가 없어 자동 특이사항을 반영할 수 없습니다.');
+ const order=laborOrderedRows(ws,'인원현황'),destMap=new Map(order.order.map((source,i)=>[source,order.physical[i]]));
+ const zip=await JSZip.loadAsync(bytes),rel=zip.file('xl/_rels/workbook.xml.rels'),wb=zip.file('xl/workbook.xml');if(!rel||!wb)throw new Error('기준 Excel 내부 구조를 찾지 못했습니다.');
+ const mapping=laborWorksheetPaths(await wb.async('string'),await rel.async('string')),path=mapping.get('인원현황');if(!path||!zip.file(path))throw new Error('인원현황 시트 XML을 찾지 못했습니다.');
+ let xml=await zip.file(path).async('string'),expected=new Map(),wrap=await laborSourceWrapStyle(zip);
+ for(const entry of entries){const src=laborSpecialFindSource(entry),manual=laborSpecialSupplement(entry.employeeId,month);if(src===null)throw new Error(`${entry.name}: 인원현황 직원명이 없거나 중복되어 특이사항을 안전하게 연결할 수 없습니다.`);
+  const origRef='O'+(src+1),origCell=ws[origRef]||{};if(origCell.f!==undefined||laborMergedCovered(ws,src,14))throw new Error(`${entry.name}: ${origRef}이 수식/병합 셀이라 자동 문구를 넣지 않았습니다.`);
+  const base=String(laborDisplayValue('인원현황',origRef)||'').trim();
+  const unmentioned=entry.items.filter(it=>laborSpecialMentioned(base,it)!=='covered');
+  const parts=[...unmentioned.map(it=>it.text)];if(manual)parts.push('관리자 추가전달 기록: '+manual);
+  if(!parts.length)continue;
+  const newNote=[base,`[${month} 급여 자동검산]`,...parts].filter(Boolean).join('\n');
+  const dest=destMap.get(src)??src,ref='O'+(dest+1),mod={type:'text',value:newNote};
+  xml=commerceV20PatchCell(xml,ref,mod);expected.set(ref,mod);
+  const style=xml.match(new RegExp('<c\\b[^>]*\\br="'+ref+'"[^>]*\\bs="(\\d+)"'));
+  if(style){const next=wrap.wrapFor(Number(style[1]));if(next!==null)xml=laborApplyWrapToCell(xml,ref,next)}
+  const height=Math.min(320,Math.max(28,newNote.split('\n').length*15+12));
+  const rowRx=new RegExp('<row\\b[^>]*\\br="'+(dest+1)+'"[^>]*>');
+  xml=xml.replace(rowRx,(tag)=>{const existing=Number(tag.match(/\bht="([\d.]+)"/)?.[1]||0),h=Math.max(height,existing);return tag.replace(/\sht="[^"]*"/,'').replace(/\scustomHeight="[^"]*"/,'').replace(/>$/,` ht="${h}" customHeight="1">`)});
+ }
+ if(!expected.size)return bytes;
+ zip.file(path,xml);wrap.finish?.();commerceV20AssertExpectedCells(xml,expected,'인원현황 자동 특이사항');
+ const out=await zip.generateAsync({type:'uint8array',compression:'DEFLATE',compressionOptions:{level:6}});
+ const read=XLSX.read(out,{type:'array',cellFormula:true,cellNF:true,cellStyles:true});
+ for(const [ref,mod] of expected){if(String(read.Sheets['인원현황']?.[ref]?.v??'')!==mod.value)throw new Error('자동 특이사항 검증 실패: '+ref)}
+ return out;
+}
+// One export path (including the top quick-download button), preserving the original workbook save flow.
+const laborSpecialPreviousBuildXlsx=laborBuildPreservedXlsx;
+laborBuildPreservedXlsx=async function(){
+ const sid=storeId(),month=$('monthSelect')?.value;
+ // Always compare against the latest committed schedule before generating an accountant workbook.
+ await laborSpecialLoad(true);
+ if(!laborSpecialState||laborSpecialState.sid!==sid||laborSpecialState.ym!==month||laborSpecialState.loadError)throw new Error('특이사항 자동검산 실패. 먼저 검산 오류를 확인해 주세요.');
+ const original=await laborSpecialPreviousBuildXlsx();return laborSpecialExportAppend(original);
+};
+// Monthly checks refresh when opening the labor/work-hours view or changing the current store/month.
+function laborSpecialScheduleRefresh(){if($('hoursPage')?.classList.contains('active')&&isAppAdmin())laborSpecialLoad(true)}
+for(const b of document.querySelectorAll('.nav[data-page="hours"]'))b.addEventListener('click',()=>setTimeout(laborSpecialScheduleRefresh,180));
+const laborSpecialPrevSwitchMonth=switchMonth;
+switchMonth=async function(...args){const result=await laborSpecialPrevSwitchMonth(...args);laborSpecialState=null;laborSpecialScheduleRefresh();return result};
+const laborSpecialPrevSwitchStore=switchStore;
+switchStore=async function(...args){const result=await laborSpecialPrevSwitchStore(...args);laborSpecialState=null;laborSpecialScheduleRefresh();return result};
+</script>
+<script id="laborFinal20261126_9">
+/* Final monthly export: verify shop/month before file generation and name the file explicitly. */
+laborDownloadPreservingOriginal=async function(){
+ if(!laborAllowed())return;
+ const wanted=laborMonthlyScope();
+ if(!laborDraft||Number(laborDraft.sid)!==wanted.sid||laborDraft.ym!==wanted.ym)await laborLoadSelectedMonth();
+ const d=laborDraft;
+ if(!d||Number(d.sid)!==wanted.sid||d.ym!==wanted.ym)return alert('선택한 업장·월의 원본을 불러오지 못했습니다. 재확인하세요.');
+ if(!await laborFlushSave())return alert('선택월 저장에 실패했습니다. 다운로드를 중단합니다.');
+ if(laborBusy)return;
+ try{
+  laborNotify(`${wanted.ym} 자동 특이사항 검산·다운로드 중…`);
+  const bytes=await laborBuildPreservedXlsx();
+  if(wanted.sid!==Number(storeId())||wanted.ym!==$('monthSelect')?.value||d!==laborDraft)throw new Error('다운로드 중 업장·월이 변경됐습니다. 새 월을 다시 조회해 주세요.');
+  const shop=stores.find(x=>Number(x.id)===wanted.sid)?.name||`업장${wanted.sid}`;
+  const name=`${laborMonthSafeName(shop)}_${wanted.ym.slice(0,4)}년${Number(wanted.ym.slice(5))}월_근로자현황파악.xlsx`;
+  const blob=new Blob([bytes],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}),url=URL.createObjectURL(blob),a=document.createElement('a');
+  a.href=url;a.download=name;a.style.display='none';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),30000);
+  laborNotify(`${shop} · ${wanted.ym} 자료 다운로드 완료`);
+  laborActivityLog('labor_workbook_download',{store_id:wanted.sid,report_month:wanted.ym,file_name:name,month_scoped:true}).catch(err=>console.warn('다운로드 이력 기록 실패',err));
+ }catch(e){laborNotify('다운로드 중단: '+(e?.message||e),true);alert('선택 업장·월 자동검산 또는 원본 엑셀 확인 실패: '+(e?.message||e))}
+};
+laborQuickExport=async function(){return laborDownloadPreservingOriginal()};
+// Since every newly created employee must be explicitly checked for the special bonus,
+// do not silently check new employees by default. Existing employee flags stay intact.
+const laborMonthlyPreviousPreset=paymentRulePreset;
+paymentRulePreset=function(...args){const p=laborMonthlyPreviousPreset(...args);return {...p,holiday_incentive_enabled:false}};
+</script>
+<style id="annualLeaveOrderV10CSS">/* 2026.11.26_10: annual leave employee order independent of schedule; one-line compact move controls. */
+#schedulePage .annualLeaveTable th.annualLeavePinned,
+#schedulePage .annualLeaveTable td.annualLeavePinned{
+  width:186px!important;min-width:186px!important;max-width:186px!important;
+}
+#schedulePage .annualLeaveNameRow{display:flex;align-items:center;gap:5px;min-width:0}
+#schedulePage .annualLeaveMoveTools{display:inline-flex;align-items:center;gap:1px;flex:0 0 auto}
+#schedulePage .annualLeaveOrderGrip{display:inline-flex;align-items:center;justify-content:center;width:17px;height:27px;border-radius:5px;border:1px solid #c9d4e4;background:#f7fafc;font-size:11px;letter-spacing:-2px;color:#52657e;cursor:grab;user-select:none;touch-action:none}
+#schedulePage .annualLeaveOrderGrip:hover{border-color:#6594d8;color:#2357a8;background:#eff5ff}
+#schedulePage .annualLeaveOrderGrip:active{cursor:grabbing}
+#schedulePage .annualLeaveMoveButtons{display:flex;flex-direction:column;gap:1px}
+#schedulePage .annualLeaveMoveButtons button{border:1px solid #dbe3ee;border-radius:3px;background:#fff;color:#56708e;cursor:pointer;padding:0;width:16px;height:13px;font-size:8px;line-height:11px}
+#schedulePage .annualLeaveMoveButtons button:hover{background:#eaf2ff;border-color:#b0c6e9}
+#schedulePage .annualLeaveMoveButtons button:disabled{opacity:.4;cursor:not-allowed}
+#schedulePage .annualLeaveNameInfo{min-width:0;overflow:hidden;text-overflow:ellipsis}
+#schedulePage .annualLeaveNameInfo>b,#schedulePage .annualLeaveNameInfo>small{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#schedulePage .annualLeaveTable tr.annualOrderDragging{opacity:.53}
+#schedulePage .annualLeaveTable tr.annualOrderDropBefore>td{border-top:3px solid #315efb!important}
+#schedulePage .annualLeaveTable tr.annualOrderDropAfter>td{border-bottom:3px solid #315efb!important}
+#schedulePage .annualLeaveOrderHint{background:#eaf3ff;color:#2457a6}
+</style>
+<script id="annualLeaveOrderV10JS">/* 2026.11.26_12: verified persisted annual-leave ordering per store. No changes to schedules, leave accrual, or payroll. */
+let annualLeaveOrderMap=new Map(), annualLeaveOrderLoadedStore=null,annualLeaveOrderAvailable=null;
+let annualLeaveOrderDragId=null,annualLeaveOrderDragPosition='before',annualLeaveOrderSaving=false;
+function annualLeaveOrderStatus(text,type='normal'){
+ const node=$('annualLeaveOrderState');if(!node)return;
+ node.className='saveState'+(type==='error'?' error':type==='saved'?' saved':type==='saving'?' saving':'');node.textContent=text;
+}
+async function annualLeaveOrderLoad(sid){
+ if(annualLeaveOrderLoadedStore===Number(sid)&&annualLeaveOrderAvailable===true)return;
+ annualLeaveOrderLoadedStore=Number(sid);annualLeaveOrderMap=new Map();annualLeaveOrderAvailable=null;
+ annualLeaveOrderStatus('연차 순서 불러오는 중','saving');
+ const q=await sb.from('annual_leave_employee_orders').select('employee_id,order_no').eq('store_id',sid).order('order_no');
+ if(Number(storeId())!==Number(sid))return;
+ if(q.error){annualLeaveOrderAvailable=false;annualLeaveOrderStatus('연차 순서 조회 오류: '+(q.error.message||'서버 확인 필요'),'error');console.warn('연차관리 전용 순서 조회 실패:',q.error.message);return;}
+ for(const r of q.data||[])annualLeaveOrderMap.set(Number(r.employee_id),Number(r.order_no));
+ annualLeaveOrderAvailable=true;annualLeaveOrderStatus('연차 순서 개별저장 가능','saved');
+}
+function annualLeaveOrderValue(e){const order=annualLeaveOrderMap.get(Number(e?.id));return Number.isFinite(order)?order:100000+scheduleEmployeeOrderValue(e)}
+function annualLeaveOrderCleanMarks(){document.querySelectorAll('#annualLeaveBody tr.annualOrderDragging,#annualLeaveBody tr.annualOrderDropBefore,#annualLeaveBody tr.annualOrderDropAfter').forEach(el=>el.classList.remove('annualOrderDragging','annualOrderDropBefore','annualOrderDropAfter'));}
+function annualLeaveOrderDragStart(ev,id){
+ if(!canEditModule('schedule')||annualLeaveOrderAvailable!==true||annualLeaveOrderSaving){ev.preventDefault();return}
+ annualLeaveOrderDragId=Number(id);annualLeaveOrderDragPosition='before';
+ try{ev.dataTransfer.effectAllowed='move';ev.dataTransfer.setData('text/plain',String(id))}catch(_){ }
+ ev.currentTarget.closest('tr')?.classList.add('annualOrderDragging');
+}
+function annualLeaveOrderDragOver(ev,id){
+ if(!annualLeaveOrderDragId||annualLeaveOrderSaving||Number(id)===annualLeaveOrderDragId)return;
+ ev.preventDefault();try{ev.dataTransfer.dropEffect='move'}catch(_){ }
+ const row=ev.currentTarget.closest('tr');if(!row)return;
+ annualLeaveOrderCleanMarks();row.classList.add(ev.clientY>row.getBoundingClientRect().top+row.getBoundingClientRect().height/2?'annualOrderDropAfter':'annualOrderDropBefore');
+ annualLeaveOrderDragPosition=row.classList.contains('annualOrderDropAfter')?'after':'before';
+}
+function annualLeaveOrderDragEnd(){annualLeaveOrderDragId=null;annualLeaveOrderCleanMarks()}
+function annualLeaveOrderVisibleList(){return annualLeaveEmployeeList(annualLeaveYear).filter(e=>annualLeaveShowSettled||!annualLeaveSettledRow(e.id))}
+async function annualLeaveOrderCommit(visibleIds){
+ if(annualLeaveOrderSaving||annualLeaveOrderAvailable!==true||!canEditModule('schedule'))return;
+ const sid=Number(storeId()),previous=new Map(annualLeaveOrderMap);
+ // Hidden employees retain their slots, and employees absent in the selected year remain present.
+ let full=allEmployees().filter(e=>Number(e.store_id)===sid);
+ const visibleSet=new Set(visibleIds),ordered=annualLeaveEmployeeList(annualLeaveYear);
+ const unseen=sortEmployeesForSchedule(full.filter(e=>!ordered.some(x=>Number(x.id)===Number(e.id))));
+ full=[...ordered,...unseen];
+ // Replace each *visible slot* once, preserving all hidden/other-year employees.
+ // (Legacy .find(x => x.id === visibleIds[p++]) advanced p for every candidate! )
+ const empById=new Map(full.map(e=>[Number(e.id),e]));
+ if(visibleIds.length!==visibleSet.size || visibleIds.some(id=>!empById.has(Number(id)))){
+  annualLeaveOrderStatus('순서 저장 중단: 직원 목록 불일치','error');
+  alert('연차관리 순서를 확인할 수 없습니다. 목록을 새로 조회해 주세요.');return;
+ }
+ let p=0;
+ const positioned=full.map(e=>visibleSet.has(Number(e.id))?empById.get(Number(visibleIds[p++])):e);
+ const unique=[...new Map(positioned.filter(Boolean).map(e=>[Number(e.id),e])).values()];
+ if(unique.length!==empById.size || p!==visibleIds.length){
+  annualLeaveOrderStatus('순서 저장 중단: 직원 수 오류','error');
+  alert('순서 정렬 과정에서 직원 수가 일치하지 않아 저장하지 않았습니다.');return;
+ }
+ const rows=unique.map((e,i)=>({store_id:sid,employee_id:Number(e.id),order_no:i+1,updated_at:new Date().toISOString(),updated_by:currentSessionUser?.id||null}));
+ annualLeaveOrderMap=new Map(rows.map(r=>[r.employee_id,r.order_no]));
+ annualLeaveOrderSaving=true;annualLeaveOrderStatus('순서 저장 중','saving');renderAnnualLeaveTable();
+ try{
+  const q=await sb.from('annual_leave_employee_orders').upsert(rows,{onConflict:'store_id,employee_id'}).select('employee_id,order_no');
+  if(q.error)throw q.error;
+  const updated=q.data||[];
+  if(updated.length!==rows.length || updated.some(r=>!rows.some(x=>x.employee_id===Number(r.employee_id)&&x.order_no===Number(r.order_no))))
+   throw new Error(`순서 저장 확인 실패: ${rows.length}명 중 ${updated.length}명 응답`);
+  if(sid===Number(storeId())){annualLeaveOrderStatus(`${visibleIds.length}명 순서 저장완료`,'saved');renderAnnualLeaveTable();}
+ }catch(err){
+  if(sid===Number(storeId())){annualLeaveOrderMap=previous;annualLeaveOrderStatus('순서 저장 오류','error');renderAnnualLeaveTable();alert('연차관리 직원순서 저장 실패: '+(err.message||err));}
+ }finally{annualLeaveOrderSaving=false;}
+}
+async function annualLeaveOrderDrop(ev,target){
+ ev.preventDefault();const drag=annualLeaveOrderDragId;const position=annualLeaveOrderDragPosition;
+ annualLeaveOrderDragEnd();if(!drag||Number(target)===drag)return;
+ const ids=annualLeaveOrderVisibleList().map(e=>Number(e.id)),from=ids.indexOf(drag),to=ids.indexOf(Number(target));
+ if(from<0||to<0)return;
+ ids.splice(from,1);
+ const dest=ids.indexOf(Number(target))+(position==='after'?1:0);
+ ids.splice(dest,0,drag);await annualLeaveOrderCommit(ids);
+}
+async function annualLeaveOrderMove(id,delta){
+ if(annualLeaveOrderSaving||annualLeaveOrderAvailable!==true)return;
+ const ids=annualLeaveOrderVisibleList().map(e=>Number(e.id)),from=ids.indexOf(Number(id)),to=from+Number(delta);
+ if(from<0||to<0||to>=ids.length)return;
+ [ids[from],ids[to]]=[ids[to],ids[from]];await annualLeaveOrderCommit(ids);
+}
+</script>
+<style id="laborRetirementV11CSS">/* 2026.11.26_11: month-sensitive accountant-workbook resignation colors, all stores */
+#hoursPage #laborWorkbookGrid .laborGridWrap tr.laborRetiring td,
+#hoursPage #laborWorkbookGrid .laborGridWrap tr.laborRetiring th{background:#fff0f2!important;color:#a82332!important}
+#hoursPage #laborWorkbookGrid .laborGridWrap tr.laborRetiring .laborCellInput{color:#a82332!important;background:transparent!important}
+#hoursPage #laborWorkbookGrid .laborGridWrap tr.laborRetired td,
+#hoursPage #laborWorkbookGrid .laborGridWrap tr.laborRetired th{background:#edeff2!important;color:#707987!important}
+#hoursPage #laborWorkbookGrid .laborGridWrap tr.laborRetired .laborCellInput{color:#707987!important;background:transparent!important}
+#hoursPage #laborWorkbookGrid .laborGridWrap tr.laborRetiring.laborDone td,
+#hoursPage #laborWorkbookGrid .laborGridWrap tr.laborRetired.laborDone td{box-shadow:none!important}
+#laborRetirementMonthlyHint{margin:5px 0 9px;font-size:11px;color:#536a82;line-height:1.5}
+</style>
+<script id="laborRetirementV11JS">/* 2026.11.26_11: identical month-aware resignation treatment for every shop.
+   Payroll month of departure: RED in existing position.
+   Subsequent payroll months: GRAY, under all currently employed / current-month departures.
+   No employee row is removed. Workbook bytes in the database are not modified. */
+const LABOR_RETIREMENT_VERSION='2026.11.26_11';
+function laborRetirementMonth(){
+ const ym=String(laborDraft?.ym||$('monthSelect')?.value||'');
+ return /^20\d{2}-(0[1-9]|1[0-2])$/.test(ym)?ym:null;
+}
+function laborRetirementPerson(ws,r){
+ if(!laborDraft||!ws)return null;
+ const name=normalizeName(String(laborDisplayValue('인원현황','B'+(r+1))||''));
+ if(!name)return null;
+ const matches=allEmployees().filter(e=>Number(e.store_id)===Number(laborDraft.sid)&&normalizeName(e.name)===name);
+ return matches.length===1?matches[0]:null;
+}
+function laborRetirementState(ws,r){
+ if(!ws||!laborDraft||r<3)return 'active';
+ const e=laborRetirementPerson(ws,r),ym=laborRetirementMonth();
+ if(e&&ym){
+  const date=String(e.resign_date||'').slice(0,10),resignMonth=date.slice(0,7);
+  if(/^20\d{2}-(0[1-9]|1[0-2])$/.test(resignMonth)){
+   if(resignMonth<ym)return 'gray';
+   if(resignMonth===ym)return 'red';
+   return 'active';
+  }
+  // A retired record without a usable resignation date needs manual review;
+  // if it was gray in the source, keep it gray rather than silently reviving it.
+  return e.active===false&&laborDraft.originalGrayRows?.has(r)?'gray':'active';
+ }
+ return laborDraft.originalGrayRows?.has(r)?'gray':'active';
+}
+const laborRetirementPriorOrder=laborOrderedRows;
+laborOrderedRows=function(ws,sheet='인원현황'){
+ const prior=laborRetirementPriorOrder(ws,sheet);
+ if(sheet!=='인원현황'||!laborDraft||!laborRetirementMonth())return prior;
+ const index=new Map(prior.order.map((r,i)=>[r,i]));
+ const present=[],retired=[];
+ for(const row of prior.order){
+  if(laborRetirementState(ws,row)==='gray')retired.push(row);else present.push(row);
+ }
+ // Older retirees remain above newer retirees (e.g. Sep exits above Nov exits in Dec).
+ retired.sort((a,b)=>{
+  const x=laborRetirementPerson(ws,a)?.resign_date||'',y=laborRetirementPerson(ws,b)?.resign_date||'';
+  return String(x).localeCompare(String(y))||index.get(a)-index.get(b);
+ });
+ return {...prior,order:[...present,...retired]};
+};
+// Override the legacy 'active=false means gray today' rule with selected payroll month.
+laborRetiredOnRow=function(ws,r){return laborRetirementState(ws,r)==='gray'};
+const laborRetirementPriorRender=laborRenderSheet;
+laborRenderSheet=function(...args){
+ const out=laborRetirementPriorRender(...args),ws=laborDraft?.wb?.Sheets?.['인원현황'];
+ if(!ws||$('laborSheetSelect')?.value!=='인원현황')return out;
+ const grid=$('laborWorkbookGrid');if(!grid)return out;
+ let red=0,gray=0;
+ grid.querySelectorAll('.laborGridWrap tr[data-labor-row]').forEach(tr=>{
+  const row=Number(tr.dataset.laborRow),state=laborRetirementState(ws,row);
+  tr.classList.toggle('laborRetired',state==='gray');
+  tr.classList.toggle('laborRetiring',state==='red');
+  if(state==='red')red++;else if(state==='gray')gray++;
+ });
+ const hint=$('laborRetirementMonthlyHint');
+ if(hint)hint.textContent=`${laborRetirementMonth()||'선택월'} · 당월 퇴사 ${red}명 빨강(기존 위치) / 이전 퇴사 ${gray}명 회색(하단) · 퇴사자 행 삭제 없이 Excel 반영`;
+ return out;
+};
+
+// Create custom cell style variants while preserving number formats, borders,
+// alignment, protection, font sizes and existing sheet structure.
+function laborRetirementColorStyles(xml,statuses){
+ const fontMatch=xml.match(/<fonts\b[^>]*>[\s\S]*?<\/fonts>/),fillMatch=xml.match(/<fills\b[^>]*>[\s\S]*?<\/fills>/),xfMatch=xml.match(/<cellXfs\b[^>]*>[\s\S]*?<\/cellXfs>/);
+ if(!fontMatch||!fillMatch||!xfMatch)throw new Error('퇴사자 Excel 서식 원본(fonts/fills/cellXfs)을 찾을 수 없습니다.');
+ const fonts=[...fontMatch[0].matchAll(/<font\b[^>]*>[\s\S]*?<\/font>/g)].map(m=>m[0]);
+ const oldXfs=[...xfMatch[0].matchAll(/<xf\b[^>]*(?:\/>|>[\s\S]*?<\/xf>)/g)].map(m=>m[0]);
+ const oldFontCount=fonts.length,oldFillCount=Number(fillMatch[0].match(/\bcount="(\d+)"/)?.[1]);
+ if(!oldFontCount||!oldXfs.length||!Number.isInteger(oldFillCount))throw new Error('퇴사자 Excel 서식 개수 확인 실패');
+ const originals=new Map(),newFonts=[],newXfs=[];
+ const wanted={red:{color:'FFB42332',fill:'FFFFEFF1'},gray:{color:'FF777F8D',fill:'FFEDEFF2'}};
+ function withAttr(node,key,value){
+  const attr=new RegExp('\\b'+key+'="[^"]*"');
+  if(attr.test(node))return node.replace(attr,key+'="'+value+'"');
+  return node.replace(/^(<\w+)/,'$1 '+key+'="'+value+'"');
+ }
+ for(const state of statuses){
+  const cfg=wanted[state];if(!cfg)continue;
+  const origFill=fillMatch[0];
+  if(!newFonts.some(x=>x.state===state)){} // variant fonts are per original font ID
+ }
+ function styleFor(origIndex,state){
+  const key=`${origIndex}:${state}`;if(originals.has(key))return originals.get(key);
+  const originalXf=oldXfs[origIndex]||oldXfs[0];
+  const fontId=Number(originalXf.match(/\bfontId="(\d+)"/)?.[1]||0);
+  let font=fonts[fontId]||fonts[0]||'<font><sz val="11"/><name val="Calibri"/></font>';
+  font=font.replace(/<color\b[^>]*(?:\/>|>[\s\S]*?<\/color>)/g,'');
+  font=font.replace('</font>',`<color rgb="${wanted[state].color}"/></font>`);
+  const newFontIndex=oldFontCount+newFonts.length;
+  newFonts.push({state,xml:font});
+  const newFillIndex=oldFillCount+(state==='red'?0:1);
+  let xf=withAttr(originalXf,'fontId',String(newFontIndex));
+  xf=withAttr(xf,'fillId',String(newFillIndex));
+  xf=withAttr(xf,'applyFont','1');xf=withAttr(xf,'applyFill','1');
+  const newIndex=oldXfs.length+newXfs.length;
+  newXfs.push(xf);originals.set(key,newIndex);return newIndex;
+ }
+ return {styleFor,finish(){
+  if(!newXfs.length)return xml;
+  const extraFills=['red','gray'].map(state=>`<fill><patternFill patternType="solid"><fgColor rgb="${wanted[state].fill}"/><bgColor indexed="64"/></patternFill></fill>`).join('');
+  let out=xml.replace(fontMatch[0],fontMatch[0].replace(/<fonts\b[^>]*>/,tag=>withAttr(tag,'count',String(oldFontCount+newFonts.length))).replace('</fonts>',newFonts.map(x=>x.xml).join('')+'</fonts>'));
+  out=out.replace(fillMatch[0],fillMatch[0].replace(/<fills\b[^>]*>/,tag=>withAttr(tag,'count',String(oldFillCount+2))).replace('</fills>',extraFills+'</fills>'));
+  out=out.replace(xfMatch[0],xfMatch[0].replace(/<cellXfs\b[^>]*>/,tag=>withAttr(tag,'count',String(oldXfs.length+newXfs.length))).replace('</cellXfs>',newXfs.join('')+'</cellXfs>'));
+  return out;
+ }};
+}
+async function laborRetirementFormatExport(bytes){
+ const d=laborDraft;if(!d||!laborRetirementMonth())return bytes;
+ const source=d.wb?.Sheets?.['인원현황'];if(!source)return bytes;
+ const rows=laborOrderedRows(source,'인원현황');
+ if(rows.physical.length!==rows.order.length)throw new Error('퇴사자 위치 계산 불일치');
+ const stateByDest=new Map();for(let i=0;i<rows.order.length;i++){
+  const state=laborRetirementState(source,rows.order[i]);
+  if(state==='gray'||state==='red')stateByDest.set(rows.physical[i]+1,state);
+ }
+ if(!stateByDest.size)return bytes;
+ const zip=await JSZip.loadAsync(bytes),styleFile=zip.file('xl/styles.xml'),wbFile=zip.file('xl/workbook.xml'),relFile=zip.file('xl/_rels/workbook.xml.rels');
+ if(!styleFile||!wbFile||!relFile)throw new Error('퇴사자 Excel 서식에 필요한 내부 구성요소가 없습니다.');
+ const mapping=laborWorksheetPaths(await wbFile.async('string'),await relFile.async('string'));
+ const path=mapping.get('인원현황');if(!path||!zip.file(path))throw new Error('인원현황 시트가 없어 퇴사자 서식 반영을 중단합니다.');
+ const css=await styleFile.async('string'),tool=laborRetirementColorStyles(css,new Set(stateByDest.values()));
+ let edited=0;
+ let xml=await zip.file(path).async('string');
+ const rowSeen=new Set();
+ xml=xml.replace(/<row\b[^>]*\br="(\d+)"[^>]*>[\s\S]*?<\/row>/g,(rowMarkup,num)=>{
+  const rowNum=Number(num),state=stateByDest.get(rowNum);if(!state)return rowMarkup;
+  rowSeen.add(rowNum);
+  return rowMarkup.replace(/<c\b[^>]*(?:\/>|>)/g,tag=>{
+   const ref=tag.match(/\br="([A-Z]+)(\d+)"/)?.[1];
+   if(!ref||ref==='P'||ref==='Q'||ref==='R')return tag;
+   const styleId=Number(tag.match(/\bs="(\d+)"/)?.[1]||0),next=tool.styleFor(styleId,state);
+   edited++;
+   return /\bs="\d+"/.test(tag)?tag.replace(/\bs="\d+"/,'s="'+next+'"'):tag.replace(/\s*\/?>$/,ending=>(ending.includes('/')?' s="'+next+'"/>':' s="'+next+'">'));
+  });
+ });
+ if(rowSeen.size!==stateByDest.size)throw new Error('퇴사자 서식 대상 행 수가 실제 Excel과 다릅니다.');
+ if(edited===0)throw new Error('퇴사자 서식을 표시할 Excel 셀이 없습니다.');
+ zip.file(path,xml);zip.file('xl/styles.xml',tool.finish());
+ const out=await zip.generateAsync({type:'uint8array',compression:'DEFLATE',compressionOptions:{level:6}});
+ // Verify names and statuses after actual download byte generation; no lost/silent rows.
+ const check=XLSX.read(out,{type:'array',cellStyles:true,cellFormula:true});
+ const result=check.Sheets['인원현황'];if(!result)throw new Error('퇴사자 다운로드 검증: 인원현황 시트 없음');
+ for(let i=0;i<rows.order.length;i++){
+  const wanted=String(laborDisplayValue('인원현황','B'+(rows.order[i]+1))||'');
+  const cell='B'+(rows.physical[i]+1),found=String(result[cell]?.v??'');
+  if(found!==wanted)throw new Error('퇴사자 다운로드 검증: 직원명 누락·순서 오류 '+cell);
+ }
+ const checkStyles=await JSZip.loadAsync(out),sheetCheck=await checkStyles.file(path).async('string'),styleCheck=await checkStyles.file('xl/styles.xml').async('string');
+ for(const index of rowSeen)if(!new RegExp('<row\\b[^>]*\\br="'+index+'"').test(sheetCheck))throw new Error('퇴사자 다운로드 검증: 행 누락 '+index);
+ if(!/<cellXfs\b[^>]*\bcount="\d+"/.test(styleCheck))throw new Error('퇴사자 다운로드 검증: 서식 목록 누락');
+ return out;
+}
+const laborRetirementBeforeBuild=laborBuildPreservedXlsx;
+laborBuildPreservedXlsx=async function(...args){
+ const expected={sid:Number(storeId()),ym:laborRetirementMonth(),draft:laborDraft};
+ const bytes=await laborRetirementBeforeBuild(...args);
+ if(!expected.draft||expected.sid!==Number(storeId())||expected.ym!==laborRetirementMonth()||expected.draft!==laborDraft)throw new Error('퇴사자 서식 적용 중 업장·월이 변경되었습니다.');
+ return laborRetirementFormatExport(bytes);
+};
 </script>
 </body></html>
