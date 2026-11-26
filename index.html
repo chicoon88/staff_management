@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>직원관리 대시보드 2026.11.26_17</title>
-<meta name="dashboard-build-version" content="2026.11.26_17">
+<title>직원관리 대시보드 2026.11.26_19</title>
+<meta name="dashboard-build-version" content="2026.11.26_19">
 <script id="dashboardBuildInfoJS">
 document.addEventListener('DOMContentLoaded',()=>{
  const version=document.querySelector('meta[name="dashboard-build-version"]')?.getAttribute('content');
@@ -1945,7 +1945,7 @@ body.commerceStoreMode .commerceOnlyNav:not(.hidden){display:flex}
 </div>
 
 <section id="commercePage" class="page">
- <div class="commerceHero"><h1 class="title">88커머스 <span class="commerceBuildVersion" data-dashboard-version="true">버전 2026.11.26_17</span></h1><div class="sub">대시보드에서 직접 입력·수정하고 자동 계산하며, 카페24 반영과 원본 Excel 형식 다운로드까지 한곳에서 관리합니다.</div></div>
+ <div class="commerceHero"><h1 class="title">88커머스 <span class="commerceBuildVersion" data-dashboard-version="true">버전 2026.11.26_19</span></h1><div class="sub">대시보드에서 직접 입력·수정하고 자동 계산하며, 카페24 반영과 원본 Excel 형식 다운로드까지 한곳에서 관리합니다.</div></div>
 
  <div id="commerceGroupBar" class="commerceGroupBar hidden">
   <div><div id="commerceGroupTitle" class="groupTitle">-</div><div id="commerceGroupSub" class="help" style="margin-top:3px">-</div></div>
@@ -2029,7 +2029,7 @@ body.commerceStoreMode .commerceOnlyNav:not(.hidden){display:flex}
 </section>
 
 <section id="homePage" class="page active">
- <div class="row"><div><div class="homeBuildTitle"><h1 class="title" id="homeTitle">현황</h1><span class="buildVersionBadge" id="homeBuildVersion" data-dashboard-version="true">버전 2026.11.26_17</span></div><div class="sub">업장과 월을 선택하면 모든 정보가 같이 바뀝니다.</div></div></div>
+ <div class="row"><div><div class="homeBuildTitle"><h1 class="title" id="homeTitle">현황</h1><span class="buildVersionBadge" id="homeBuildVersion" data-dashboard-version="true">버전 2026.11.26_19</span></div><div class="sub">업장과 월을 선택하면 모든 정보가 같이 바뀝니다.</div></div></div>
  <div class="cards">
   <div class="card"><div class="k">재직 직원</div><div class="v" id="kEmp">0명</div></div>
   <div class="card"><div class="k">이번 달 연차 발생</div><div class="v" id="kLeaveDue">0명</div></div>
@@ -2271,7 +2271,7 @@ body.commerceStoreMode .commerceOnlyNav:not(.hidden){display:flex}
 
  <section id="payrollPage" class="page">
  <div class="row">
-  <div><h1 class="title">급여관리 <span data-dashboard-version="true" data-version-no-prefix="true" style="font-size:12px;color:#315efb;background:#eef3ff;border-radius:999px;padding:4px 8px;vertical-align:middle">2026.11.26_17</span></h1><div class="sub">월별 급여대장을 검산하고, 기간별·직원별 누적 급여도 조회합니다.</div></div>
+  <div><h1 class="title">급여관리 <span data-dashboard-version="true" data-version-no-prefix="true" style="font-size:12px;color:#315efb;background:#eef3ff;border-radius:999px;padding:4px 8px;vertical-align:middle">2026.11.26_19</span></h1><div class="sub">월별 급여대장을 검산하고, 기간별·직원별 누적 급여도 조회합니다.</div></div>
   <div class="toolbar">
    <input type="file" id="payrollFile" accept=".xlsx,.xls,.xlsm" multiple style="display:none" onchange="importPayrollFiles(this.files);this.value=''">
    <button id="payrollBatchImportBtn" class="btn" onclick="$('payrollFile').click()">급여대장 여러개 불러오기</button>
@@ -2352,7 +2352,7 @@ body.commerceStoreMode .commerceOnlyNav:not(.hidden){display:flex}
      <button class="btn gray small" onclick="resetEmployeeColumnWidths()">표 폭 초기화</button>
    </div>
   </div>
-  <details class="auditHelpDisclosure"><summary>직원관리 사용방법 보기</summary><div class="help" style="margin-bottom:8px">이름·주민등록번호·계좌번호·직책·업무·입사일·근무형태·휴게·급여형태·비고는 표에서 바로 수정할 수 있습니다. <b>재직자는 기본적으로 내가 정한 연번순</b>이며 필요할 때만 입사일 오름차순으로 볼 수 있습니다. <b>퇴사자는 퇴사일 오름차순으로 자동 정렬</b>됩니다. <b>“스케줄·근로 제외”를 체크하면 재직·급여자료는 그대로 두고 월간스케줄·주간편성·근로시간에서 숨깁니다.</b> 문서 칸에서는 근로계약서의 계약 종료일을 기준으로 재계약 D-day와 근로·연봉계약서 등록 여부를 바로 확인합니다. 연봉계약서는 별도 기간을 관리하지 않고 근로계약기간을 따르는 원본 보관 문서로 취급합니다. 퇴사자 화면에서는 사직서 PDF 보관 여부도 확인할 수 있습니다. 근무형태가 날짜별로 바뀌는 직원은 우측 “근무조건”에서 적용 시작일별 이력을 등록합니다. 표 머리글의 오른쪽 경계선을 좌우로 끌면 열 폭을 직접 조절할 수 있고 자동 저장됩니다. 비고는 여러 줄로 입력할 수 있습니다.</div></details>
+  <details class="auditHelpDisclosure"><summary>직원관리 사용방법 보기</summary><div class="help" style="margin-bottom:8px">이름·주민등록번호·계좌번호·직책·업무·입사일·근무형태·휴게·급여형태·비고는 표에서 바로 수정할 수 있습니다. <b>재직자는 기본적으로 내가 정한 연번순</b>이며 필요할 때만 입사일 오름차순으로 볼 수 있습니다. <b>퇴사자는 퇴사일 오름차순으로 자동 정렬</b>되며 <b>퇴사자도 표에서 직접 수정</b>할 수 있습니다. 퇴사일·과거 근무조건 변경은 저장 전 영향 경고가 나타납니다. <b>“스케줄·근로 제외”를 체크하면 재직·급여자료는 그대로 두고 월간스케줄·주간편성·근로시간에서 숨깁니다.</b> 문서 칸에서는 근로계약서의 계약 종료일을 기준으로 재계약 D-day와 근로·연봉계약서 등록 여부를 바로 확인합니다. 연봉계약서는 별도 기간을 관리하지 않고 근로계약기간을 따르는 원본 보관 문서로 취급합니다. 퇴사자 화면에서는 사직서 PDF 보관 여부도 확인할 수 있습니다. 근무형태가 날짜별로 바뀌는 직원은 우측 “근무조건”에서 적용 시작일별 이력을 등록합니다. 표 머리글의 오른쪽 경계선을 좌우로 끌면 열 폭을 직접 조절할 수 있고 자동 저장됩니다. 비고는 여러 줄로 입력할 수 있습니다.</div></details>
   <datalist id="employeeWorkTypeSuggestions"><option value="주5일 스케줄근무"></option><option value="주4일 스케줄근무"></option><option value="기타"></option></datalist>
   <div class="tablewrap"><table><thead><tr><th>연번</th><th class="name">성명</th><th>주민등록번호</th><th>계좌번호</th><th>직책</th><th>업무</th><th>입사일</th><th>퇴사일</th><th>근무형태</th><th>기본시간</th><th>휴게시간(분)</th><th>스케줄방식</th><th>급여형태</th><th>연차 기준</th><th>연차 잔여</th><th>비고</th><th>출력색</th><th>문서 / 재계약</th><th></th></tr></thead><tbody id="employeeBody"></tbody></table></div>
  </div>
@@ -6425,7 +6425,7 @@ async function saveEmployeeInline(id,field,value){
  }
 
  if(['work_type','daily_hours','break_minutes','default_start_time','default_end_time','work_days','leave_weekly_hours','leave_monthly_hours','leave_day_hours'].includes(field) && employeeWorkConditionTableAvailable!==false){
-   let activeCond=workConditionForDate(e,isoToday());
+   let activeCond=workConditionForDate(e,e.active===false&&e.resign_date?e.resign_date:isoToday());
    if(activeCond._history_id){
      let wq=await sb.from('employee_work_conditions').update({[field]:val}).eq('id',activeCond._history_id);
      if(wq.error)console.warn('현재 근무조건 이력 인라인 동기화 오류',wq.error.message);
@@ -6923,33 +6923,28 @@ function renderEmployees(){
     ?`<button class="btn gray small" onclick="openEmployee(${e.id})">상세수정</button> <button class="btn gray small" onclick="openWorkConditionHistory(${e.id})">근무조건</button> <button class="btn gray small" onclick="openEmploymentHistory(${e.id})">재직이력</button> <button class="btn red small" onclick="retireEmployee(${e.id},'${esc(e.name).replace(/'/g,"&#39;")}')">퇴사처리</button>`
     :`<button class="btn gray small" onclick="openEmployee(${e.id},true)">상세정보</button> <button class="btn gray small" onclick="openWorkConditionHistory(${e.id})">근무조건</button> <button class="btn gray small" onclick="openEmploymentHistory(${e.id})">재직이력</button> <button class="btn green small" onclick="reactivateEmployee(${e.id},'${esc(e.name).replace(/'/g,"&#39;")}')">복귀</button> <button class="btn gray small" onclick="restoreEmployee(${e.id},'${esc(e.name).replace(/'/g,"&#39;")}')">재입사</button>`;
 
-   let workTypeCell=employeeView==='active'
-     ?`<input class="empInline" list="employeeWorkTypeSuggestions" value="${esc(workType(e))}" draggable="false" ondragstart="event.preventDefault()" ondrop="event.preventDefault()" onfocus="this.select()" onkeydown="if(event.key==='Enter'){this.blur()}" onchange="saveEmployeeInline(${e.id},'work_type',this.value)">`
-     :workType(e);
+   let workTypeCell=`<input class="empInline" list="employeeWorkTypeSuggestions" value="${esc(workTypeForDate(e,employeeRefDate))}" draggable="false" ondragstart="event.preventDefault()" ondrop="event.preventDefault()" onfocus="this.select()" onkeydown="if(event.key==='Enter'){this.blur()}" onchange="saveEmployeeInline(${e.id},'work_type',this.value)">`;
+   let payTypeCell=`<select class="empInline" onchange="saveEmployeeInline(${e.id},'pay_type',this.value)">${employeePayTypeOptions(e)}</select>`;
 
-   let payTypeCell=employeeView==='active'
-     ?`<select class="empInline" onchange="saveEmployeeInline(${e.id},'pay_type',this.value)">${employeePayTypeOptions(e)}</select>`
-     :(e.pay_type==='hourly'?'시급/파트타임':e.pay_type==='daily'?'일당':e.pay_type==='business'?'사업소득':'월급');
-
-   return `<tr class="${employeeView==='retired'?'retiredRow ':''}${delChecked?'employeeSelectedRow':''}" style="--employee-print-bg:${employeeColor(e)}" ${employeeView==='active'?'data-emp-id="'+e.id+'"':''}>
+   return `<tr data-employee-inline="${employeeView}" class="${employeeView==='retired'?'retiredRow ':''}${delChecked?'employeeSelectedRow':''}" style="--employee-print-bg:${employeeColor(e)}" ${employeeView==='active'?'data-emp-id="'+e.id+'"':''}>
    <td class="empSeqCell"><div class="empSeqControls"><input type="checkbox" class="empDeleteCheck" data-id="${e.id}" ${delChecked?'checked':''} onchange="toggleEmployeeDeleteSelection(${e.id},this.checked)" aria-label="${esc(e.name)} 선택" title="삭제할 직원 선택"><span class="empDragHandle" draggable="${dragEnabled?'true':'false'}" data-emp-id="${e.id}" title="${dragEnabled?'손잡이로 직원 순서 이동':'연번순에서 순서 이동 가능'}">☰</span><span class="seqBadge">${idx+1}</span></div></td>
 
-   <td class="name empInlineCell empPrintNameCell"><div class="empColoredName"><span class="empNameSwatch" style="background:${employeeColor(e)}" aria-label="직원 출력색" title="직원별 출력색"></span>${employeeView==='active'?employeeInlineText(e,'name','empInlineName'):`<b class="empRetiredName">${esc(e.name)}</b>`}</div></td>
-   <td class="empInlineCell">${employeeView==='active'?employeeInlineSensitiveText(e,'resident_number','주민번호'):(esc(e.resident_number||'')||'-')}</td>
-   <td class="empInlineCell">${employeeView==='active'?employeeInlineSensitiveText(e,'bank_account','계좌번호'):(esc(e.bank_account||'')||'-')}</td>
-   <td class="empInlineCell">${employeeView==='active'?employeeInlineText(e,'role'):esc(e.role||'')}</td>
-   <td class="empInlineCell">${employeeView==='active'?employeeInlineText(e,'department'):esc(e.department||'')}</td>
-   <td class="empInlineCell">${employeeView==='active'?employeeInlineDate(e,'hire_date'):(e.hire_date||'')}</td>
-   <td class="empInlineCell">${employeeView==='active'?employeeInlineDate(e,'resign_date'):(e.resign_date||'-')}</td>
+   <td class="name empInlineCell empPrintNameCell"><div class="empColoredName"><span class="empNameSwatch" style="background:${employeeColor(e)}" aria-label="직원 출력색" title="직원별 출력색"></span>${employeeInlineText(e,'name','empInlineName')}</div></td>
+   <td class="empInlineCell">${employeeInlineSensitiveText(e,'resident_number','주민번호')}</td>
+   <td class="empInlineCell">${employeeInlineSensitiveText(e,'bank_account','계좌번호')}</td>
+   <td class="empInlineCell">${employeeInlineText(e,'role')}</td>
+   <td class="empInlineCell">${employeeInlineText(e,'department')}</td>
+   <td class="empInlineCell">${employeeInlineDate(e,'hire_date')}</td>
+   <td class="empInlineCell">${employeeInlineDate(e,'resign_date')}</td>
 
    <td class="empInlineCell">${workTypeCell}</td>
 
    <!-- 기본시간: 원래 compact 표시 -->
-   <td>${(currentCond.default_start_time||'').slice(0,5)}~${(currentCond.default_end_time||'').slice(0,5)}<br><span class="help">소정 ${currentCond.daily_hours||8}h${currentCond._history_id?` · ${String(currentCond.effective_from||'').slice(5)}부터`:''}</span></td>
+   <td>${employeeView==='retired'?`<div class="retiredTimeEditor" title="기본시간·소정시간을 셀에서 수정할 수 있습니다. 과거 근무조건 변경 시 확인 창이 표시됩니다."><div class="retiredTimeRange"><label><span>출</span><input type="time" aria-label="${esc(e.name)} 출근시간" class="empInline empInlineTime" value="${esc(String(currentCond.default_start_time||'').slice(0,5))}" onchange="saveEmployeeInline(${e.id},'default_start_time',this.value)"></label><label><span>퇴</span><input type="time" aria-label="${esc(e.name)} 퇴근시간" class="empInline empInlineTime" value="${esc(String(currentCond.default_end_time||'').slice(0,5))}" onchange="saveEmployeeInline(${e.id},'default_end_time',this.value)"></label></div><div class="retiredDailyHour"><span>소정</span>${employeeInlineNumber(e,'daily_hours','0.5','empInlineSmall',currentCond.daily_hours)}<span>시간</span></div></div>`:`${(currentCond.default_start_time||'').slice(0,5)}~${(currentCond.default_end_time||'').slice(0,5)}<br><span class="help">소정 ${currentCond.daily_hours||8}h${currentCond._history_id?` · ${String(currentCond.effective_from||'').slice(5)}부터`:''}</span>`}</td>
 
-   <td class="empInlineCell">${employeeView==='active'?employeeInlineNumber(e,'break_minutes','1','empInlineSmall',currentCond.break_minutes):(currentCond.break_minutes||0)}</td>
+   <td class="empInlineCell">${employeeInlineNumber(e,'break_minutes','1','empInlineSmall',currentCond.break_minutes)}</td>
 
-   <td>${currentCond.work_type==='36'?'주4일':currentCond.work_type==='40'?'주5일':'기타'}<br><span class="help">${conditionScheduleMode(currentCond)==='auto'?'고정요일 자동채우기':'스케줄 직접입력'}</span><div class="empScheduleToggles">${employeeView==='active'?`<label class="scheduleHideToggle" title="직원관리·급여관리에는 그대로 두고 월간스케줄·주간편성·근로시간에서만 숨깁니다."><input type="checkbox" ${employeeMonthlyScheduleHidden(e)?'checked':''} onchange="saveMonthlyScheduleVisibility(${e.id},this.checked,this)">스케줄·근로 제외</label>`:''}<label class="empBonusToggle" title="회사 별도상여 대상자 · 체크값만 노무사 O열 추가상여의 대상 판정에 사용"><input type="checkbox" ${e.holiday_bonus_eligible===true?'checked':''} ${employeeView==='active'?'':'disabled'} onchange="saveEmployeeInline(${e.id},'holiday_bonus_eligible',this.checked)">상여대상</label></div></td>
+   <td>${currentCond.work_type==='36'?'주4일':currentCond.work_type==='40'?'주5일':'기타'}<br><span class="help">${conditionScheduleMode(currentCond)==='auto'?'고정요일 자동채우기':'스케줄 직접입력'}</span><div class="empScheduleToggles">${employeeView==='active'?`<label class="scheduleHideToggle" title="직원관리·급여관리에는 그대로 두고 월간스케줄·주간편성·근로시간에서만 숨깁니다."><input type="checkbox" ${employeeMonthlyScheduleHidden(e)?'checked':''} onchange="saveMonthlyScheduleVisibility(${e.id},this.checked,this)">스케줄·근로 제외</label>`:''}<label class="empBonusToggle" title="회사 별도상여 대상자 · 체크값만 노무사 O열 추가상여의 대상 판정에 사용"><input type="checkbox" ${e.holiday_bonus_eligible===true?'checked':''} onchange="saveEmployeeInline(${e.id},'holiday_bonus_eligible',this.checked)">상여대상</label></div></td>
 
    <td class="empInlineCell">${payTypeCell}</td>
 
@@ -6959,12 +6954,10 @@ function renderEmployees(){
    <td>${employeeView==='active'?`<b data-leave-balance="${e.id}">${ls.balance}h</b><br><button class="btn gray small" onclick="adjustLeave(${e.id})">잔여확정</button>${ls.confirmedDate?`<br><small class="help" title="${esc(ls.confirmedDate)} 잔여 ${ls.confirmedBalance}h 확정, 이후 발생·사용분 누적">${esc(ls.confirmedDate.slice(5))} 확정</small>`:``}`:'-'}</td>
 
    <!-- 급여 지급규칙 대신 비고 -->
-   <td class="empInlineCell">${employeeView==='active'
-     ?`<textarea class="empInline empNoteInput" draggable="false" wrap="off" ondragstart="event.preventDefault()" ondrop="event.preventDefault()" placeholder="비고 입력" rows="1"
+   <td class="empInlineCell"><textarea class="empInline empNoteInput" draggable="false" wrap="off" ondragstart="event.preventDefault()" ondrop="event.preventDefault()" placeholder="비고 입력" rows="1"
        onfocus="autoGrowEmployeeNote(this)"
        oninput="autoGrowEmployeeNote(this)"
-       onblur="collapseEmployeeNote(this);saveEmployeeNote(${e.id},this.value)">${esc(e.memo||'')}</textarea>`
-     :`<div class="empNoteRead" title="${esc(e.memo||'')}">${esc(e.memo||'').replace(/\r?\n/g,' ⏎ ')}</div>`}</td>
+       onblur="collapseEmployeeNote(this);saveEmployeeNote(${e.id},this.value)">${esc(e.memo||'')}</textarea></td>
 
    <td><select onchange="setPrintColor(${e.id},this.value)" style="padding:5px 7px" title="재직·퇴사자 모두 과거 스케줄 출력색 수정 가능">${colors}</select><span style="display:inline-block;width:18px;height:18px;border-radius:5px;vertical-align:middle;margin-left:4px;background:${employeeColor(e)};border:1px solid #bbb"></span></td>
 
@@ -15910,4 +15903,247 @@ laborBuildPreservedXlsx=async function(...args){
 #employeesPage #employeeBody td:nth-child(12){width:265px!important;min-width:265px!important;max-width:265px!important;}
 #employeesPage #employeeBody td:nth-child(12) .empScheduleToggles{overflow:hidden!important;}
 </style>
+<style id="dashboardV18RetiredDirectEdit">
+/* Retired roster: same inline editors as active roster, but neutral grey and compact.
+   Editing preserves employee record and does not reactivate anybody. */
+#employeesPage #employeeBody tr.retiredRow td{background:#eceef1!important;color:#546173!important}
+#employeesPage #employeeBody tr.retiredRow td.empPrintNameCell{background:#e5e7eb!important;color:#374151!important}
+#employeesPage #employeeBody tr.retiredRow .empNameSwatch{background:#aab0b9!important;border-color:#9ca3af!important}
+#employeesPage #employeeBody tr.retiredRow .empInline,
+#employeesPage #employeeBody tr.retiredRow .empInlineTime{background:#f8fafc!important;color:#374151!important;border:1px solid #cbd5e1!important}
+#employeesPage #employeeBody tr.retiredRow .empInline:focus,
+#employeesPage #employeeBody tr.retiredRow .empInlineTime:focus{background:#fff!important;outline:2px solid #93c5fd!important}
+#employeesPage #employeeBody .retiredTimeEditor{display:flex;flex-direction:column;gap:4px;min-width:0;max-width:100%}
+#employeesPage #employeeBody .retiredTimeRange{display:flex;flex-direction:column;align-items:stretch;gap:2px;min-width:0}
+#employeesPage #employeeBody .retiredTimeRange label{display:flex;align-items:center;gap:3px;min-width:0;font-size:10px;line-height:19px}
+#employeesPage #employeeBody .retiredTimeRange label>span{flex:0 0 12px;text-align:center}
+#employeesPage #employeeBody .retiredTimeRange .empInlineTime{font-size:10px!important;min-width:0!important;width:100%!important;max-width:none!important;flex:1 1 auto!important;padding:2px!important}
+#employeesPage #employeeBody .retiredDailyHour{display:flex;align-items:center;gap:5px;min-width:0;font-size:10px;line-height:17px}
+#employeesPage #employeeBody .retiredDailyHour input[type=number]{width:55px!important;max-width:55px!important;min-width:0!important;text-align:center}
+</style>
+<script id="dashboardV18RetiredEditorSafety">
+/* Confirm changes that can affect historic schedules/leave/payroll before saving.
+   No modifications are applied until an actual user edits a cell and confirms. */
+const dashboardV18OriginalInlineSave=saveEmployeeInline;
+saveEmployeeInline=async function(id,field,value){
+ const emp=allEmployees().find(x=>Number(x.id)===Number(id));
+ if(emp&&emp.active===false){
+  const risky=new Set(['hire_date','resign_date','work_type','default_start_time','default_end_time','daily_hours','break_minutes','pay_type','holiday_bonus_eligible']);
+  const conditionFields=new Set(['work_type','default_start_time','default_end_time','daily_hours','break_minutes']);
+  const old=conditionFields.has(field)?workConditionForDate(emp,emp.resign_date||isoToday())[field]:emp[field];
+  const comparable=v=>(v===null||v===undefined?'':String(v).trim());
+  if(risky.has(field)&&comparable(old)!==comparable(value)){
+   const names={hire_date:'입사일',resign_date:'퇴사일',work_type:'근무형태',default_start_time:'출근시간',default_end_time:'퇴근시간',daily_hours:'소정시간',break_minutes:'휴게시간',pay_type:'급여형태',holiday_bonus_eligible:'상여대상'};
+   const notice=`${emp.name} · ${names[field]||field} 변경\n\n기존: ${comparable(old)||'(없음)'}\n변경: ${comparable(value)||'(없음)'}\n\n퇴사자의 과거 근무조건·근로시간·상여/급여 또는 연차 집계에 영향을 줄 수 있습니다. 변경을 저장할까요?`;
+   if(!confirm(notice)){
+    // Prevent an unsaved input from looking committed. No DB changes on Cancel.
+    if(employeeView==='retired')renderEmployees();
+    return false;
+   }
+  }
+ }
+ return dashboardV18OriginalInlineSave(id,field,value);
+};
+</script>
+<script id="dashboardV18ParttimeHoursNotes">
+/* All stores: daily/hourly payroll employees have weekday/weekend/holiday actual work-hour
+   summaries in the selected pay-month O-column. These are HOURS, not new wages.
+   Holiday overrides Saturday/Sunday. No speculative rates, no salary auto-calculation.
+   Existing manual O entries and the original Excel template remain unchanged.
+   Do not silently match a duplicated employee name: require explicit source cleanup. */
+const dashboardV18PriorSpecialBuild=laborSpecialBuild;
+function dashboardV18HoursFmt(n){return Number(Number(n).toFixed(4)).toLocaleString('ko-KR',{maximumFractionDigits:4})}
+function dashboardV18WorkHours(row){
+ if(!laborSpecialIsWorked(row))return 0;
+ const measured=Number(row?.worked_hours);
+ if(Number.isFinite(measured)&&measured>0)return measured;
+ const planned=Number(row?.scheduled_hours);
+ if(Number.isFinite(planned)&&planned>0)return planned;
+ const code=String(row?.work_code||'').trim(),numeric=Number(code);
+ return /^\d+(?:\.\d+)?$/.test(code)&&numeric>0?numeric:0;
+}
+function dashboardV18GroupHoursNote(ym,label,rows){
+ if(!rows?.length)return `${ym} ${label} 출근 0일 = 0시간`;
+ const counts=new Map();let sum=0;
+ for(const row of rows){const hours=dashboardV18WorkHours(row);if(hours<=0)continue;
+  const key=dashboardV18HoursFmt(hours);counts.set(key,(counts.get(key)||0)+1);sum+=hours;}
+ if(!counts.size)return `${ym} ${label} 출근 0일 = 0시간`;
+ const terms=[...counts.entries()].sort((a,b)=>Number(a[0])-Number(b[0])).map(([h,d])=>`${h}시간 × ${d}일`);
+ return `${ym} ${label} 출근 ${rows.length}일 · ${terms.join(' + ')} = ${dashboardV18HoursFmt(sum)}시간`;
+}
+function dashboardV18ParttimeNotes(e,ym,rows,holidaySet,today){
+ if(!['hourly','daily'].includes(String(e?.pay_type||'')))return [];
+ const byDate=new Map();for(const row of rows||[]){
+  const dt=String(row?.work_date||'');
+  if(Number(row?.employee_id)!==Number(e.id)||!dt.startsWith(ym+'-')||dt>today||!employedOn(e,dt)||!laborSpecialIsWorked(row))continue;
+  if(dashboardV18WorkHours(row)<=0)continue;
+  byDate.set(dt,row);
+ }
+ if(!byDate.size)return [];
+ const groups={weekday:[],weekend:[],holiday:[]};
+ for(const row of byDate.values()){
+  const dt=String(row.work_date),day=new Date(dt+'T12:00:00').getDay();
+  const group=holidaySet.has(dt)?'holiday':day===0||day===6?'weekend':'weekday';groups[group].push(row);
+ }
+ const labels={weekday:'평일',weekend:'주말',holiday:'공휴일'};
+ return Object.keys(groups).map(k=>({kind:'parttimeHours',dates:groups[k].map(r=>r.work_date),text:dashboardV18GroupHoursNote(ym,labels[k],groups[k])}));
+}
+laborSpecialBuild=function(e,payMonth,curRows,prevRows,holidayDates,opts={}){
+ const result=dashboardV18PriorSpecialBuild(e,payMonth,curRows,prevRows,holidayDates,opts);
+ if(['daily','hourly'].includes(String(e?.pay_type||''))){
+  const calendar=holidayYearData[Number(payMonth.slice(0,4))]?.merged||[];
+  if(calendar.length){
+   const holidaySet=laborSpecialHolidaySet(calendar,payMonth);
+   result.items.push(...dashboardV18ParttimeNotes(e,payMonth,curRows,holidaySet,opts.today||isoToday()));
+   result.notes=result.items.map(x=>x.text);
+  }
+ }
+ return result;
+};
+const dashboardV18PrevSpecialLoad=laborSpecialLoad;
+laborSpecialLoad=async function(force=false){
+ const ym=$('monthSelect')?.value||'',sid=Number(storeId());
+ if(/^20\d{2}-(?:0[1-9]|1[0-2])$/.test(ym)&&isAppAdmin() &&
+  allEmployees().some(e=>Number(e.store_id)===sid&&!employeeMonthlyScheduleHidden(e)&&['hourly','daily'].includes(String(e.pay_type||'')))){
+  const year=Number(ym.slice(0,4));
+  try{
+   if(!holidayYearData[year]?.merged?.length)await loadHolidayYear(year);
+   if(!holidayYearData[year]?.merged?.length)throw new Error(`${year}년 공휴일 정보를 찾지 못했습니다.`);
+  }catch(err){
+   laborInlineStatus(`${ym} 일당·시급 출근시간 분류 중단: 공휴일 조회 실패 · ${err?.message||err}`,'error');
+   // Never misclassify holiday hours as weekdays/weekends. Existing manual entries survive.
+   return false;
+  }
+ }
+ return dashboardV18PrevSpecialLoad(force);
+};
+</script>
+
+<script id="labor20261126_19ExactDuplicateProtection">
+/* 2026.11.26_19 · Two identical source-template employee rows are one employee.
+   Only identical B:N values with an unambiguous employee ID and safe O-note ownership
+   are suppressed. The original 0000-00 workbook, the monthly edits, and other sheets
+   are preserved; the duplicate is hidden/cleared in the generated Excel only.
+   If values differ or a formula references the duplicate, keep both for manual review. */
+const LABOR_V19_VERSION='2026.11.26_19';
+const laborV19BaseNamedRows=laborNamedRows;
+function laborV19CellText(ws,col,r){
+ const ref=col+(r+1);
+ return String(laborDisplayValue('인원현황',ref)??'').replace(/\r\n?/g,'\n').trim();
+}
+function laborV19FormulaReferences(ws,row){
+ const needle=new RegExp('(?:^|[^A-Za-z0-9_])\\$?[A-Z]{1,3}\\$?'+(row+1)+'(?!\\d)','i');
+ const book=laborDraft?.wb;
+ if(!book)return false;
+ for(const sheet of book.SheetNames||[]){
+  const sht=book.Sheets[sheet]||{};
+  for(const [cell,val] of Object.entries(sht)){
+   if(!/^[A-Z]{1,3}[1-9]\d*$/.test(cell)||!val?.f)continue;
+   // Deleting an employee row must not invalidate formulas elsewhere.
+   if(sheet==='인원현황'&&Number(cell.match(/\d+/)?.[0])===row+1)continue;
+   if(needle.test(String(val.f)))return true;
+  }
+ }
+ return false;
+}
+function laborV19DuplicateRows(ws,sheet='인원현황'){
+ const d=laborDraft,removed=new Map();
+ if(!d||!ws||ws!==d.wb?.Sheets?.['인원현황']||sheet!=='인원현황')return removed;
+ const original=laborV19BaseNamedRows(ws,sheet),groups=new Map();
+ for(const r of original){
+  const name=normalizeName(laborV19CellText(ws,'B',r));
+  if(!name)continue;
+  const matches=allEmployees().filter(e=>Number(e.store_id)===Number(d.sid)&&normalizeName(String(e.name))===name);
+  if(matches.length!==1)continue; // same name can belong to two distinct employees
+  const key=String(matches[0].id)+'|'+name;
+  if(!groups.has(key))groups.set(key,[]);
+  groups.get(key).push(r);
+ }
+ for(const rows of groups.values()){
+  if(rows.length<2)continue;
+  // Use the row with an existing O note rather than losing a manual special note.
+  // If two nonempty notes are different, never merge automatically.
+  let keep=rows.find(r=>laborV19CellText(ws,'O',r))??rows[0];
+  const canonical=rows.find(r=>r===keep);
+  if(canonical===undefined)continue;
+  for(const r of rows){
+   if(r===keep)continue;
+   const fieldsMatch='BCDEFGHIJKLMN'.split('').every(col=>{
+    const left=col+(keep+1),right=col+(r+1);
+    const f1=String(ws[left]?.f||''),f2=String(ws[right]?.f||'');
+    return laborV19CellText(ws,col,keep)===laborV19CellText(ws,col,r)&&f1===f2;
+   });
+   if(!fieldsMatch)continue;
+   const keepNote=laborV19CellText(ws,'O',keep),dupeNote=laborV19CellText(ws,'O',r);
+   if(dupeNote&&keepNote!==dupeNote)continue;
+   if(laborV19FormulaReferences(ws,r))continue;
+   removed.set(r,keep);
+  }
+ }
+ return removed;
+}
+// All worksheet operators (automatic O notes, reorder and export) see only one
+// unambiguous source row; no original data is overwritten.
+laborNamedRows=function(ws,sheet='인원현황'){
+ const rows=laborV19BaseNamedRows(ws,sheet);
+ if(sheet!=='인원현황')return rows;
+ const hidden=laborV19DuplicateRows(ws,sheet);
+ return hidden.size?rows.filter(r=>!hidden.has(r)):rows;
+};
+const laborV19PreviousRender=laborRenderSheet;
+laborRenderSheet=function(...args){
+ const result=laborV19PreviousRender(...args),d=laborDraft;
+ const ws=d?.wb?.Sheets?.['인원현황'];
+ if(!ws||$('laborSheetSelect')?.value!=='인원현황')return result;
+ const hidden=laborV19DuplicateRows(ws),box=$('laborWorkbookGrid');
+ if(!hidden.size||!box)return result;
+ for(const r of hidden.keys())box.querySelector(`.laborGridWrap tbody tr[data-labor-row="${r}"]`)?.remove();
+ const ordinalNodes=box.querySelectorAll('.laborGridWrap tbody .laborSerial');
+ let n=0;for(const span of ordinalNodes){span.textContent=String(++n);span.closest('td')?.setAttribute('title',String(n));}
+ const info=$('laborWorkbookInfo');
+ if(info&&!info.textContent.includes('중복 제거'))info.textContent+=` · 완전히 동일한 직원 ${hidden.size}개 중복 제거(원본 보존)`;
+ return result;
+};
+const laborV19PreviousBuild=laborBuildPreservedXlsx;
+laborBuildPreservedXlsx=async function(...args){
+ const d=laborDraft,ws=d?.wb?.Sheets?.['인원현황'];
+ if(!ws)return laborV19PreviousBuild(...args);
+ const before=laborV19DuplicateRows(ws);
+ const bytes=await laborV19PreviousBuild(...args);
+ if(!before.size)return bytes;
+ // Re-evaluate after O auto-sync: changes in a discarded row must never be lost.
+ const final=laborV19DuplicateRows(ws);
+ for(const r of before.keys())if(!final.has(r))throw new Error(`중복 직원 ${r+1}행의 내용이 변경돼 자동제외를 중단했습니다. O열 수기내용을 확인해 주세요.`);
+ const zip=await JSZip.loadAsync(bytes);
+ const workbook=zip.file('xl/workbook.xml'),rels=zip.file('xl/_rels/workbook.xml.rels');
+ if(!workbook||!rels)throw new Error('중복 직원 검증: Excel 내부 시트 연결이 없습니다.');
+ const paths=laborWorksheetPaths(await workbook.async('string'),await rels.async('string'));
+ const path=paths.get('인원현황');if(!path||!zip.file(path))throw new Error('중복 직원 검증: 인원현황 시트가 없습니다.');
+ let xml=await zip.file(path).async('string');
+ const physical=laborOrderedRows(ws,'인원현황').physical;
+ // The redundant row is removed from the output content and marked hidden to
+ // avoid a visible blank line. Other row numbers and worksheet formulas stay put.
+ for(const row of final.keys()){
+  const num=row+1,rx=new RegExp('<row\\b[^>]*\\br="'+num+'"[^>]*(?:\\/>|>[\\s\\S]*?<\\/row>)');
+  const hit=xml.match(rx);
+  if(!hit)throw new Error(`중복 제거 대상 ${num}행을 Excel에서 확인하지 못했습니다.`);
+  xml=xml.replace(rx,`<row r="${num}" hidden="1"/>`);
+ }
+ let num=0;
+ for(const r of physical){
+  if(final.has(r))continue;
+  const ref='A'+(r+1);
+  xml=commerceV20PatchCell(xml,ref,{type:'number',value:++num});
+ }
+ zip.file(path,xml);
+ const data=await zip.generateAsync({type:'uint8array',compression:'DEFLATE',compressionOptions:{level:6}});
+ const check=XLSX.read(data,{type:'array',cellFormula:true,cellStyles:true});
+ const target=check.Sheets['인원현황'];
+ for(const r of final.keys()){
+  const ref='B'+(r+1);
+  if(target?.[ref]?.v!==undefined&&String(target[ref].v).trim())throw new Error('중복 제거 검증 실패: '+ref);
+ }
+ return data;
+};
+</script>
 </body></html>
