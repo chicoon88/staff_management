@@ -3,7 +3,19 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>직원관리 대시보드 2026.11.26_12</title>
+<title>직원관리 대시보드 2026.11.26_14</title>
+<meta name="dashboard-build-version" content="2026.11.26_14">
+<script id="dashboardBuildInfoJS">
+document.addEventListener('DOMContentLoaded',()=>{
+ const version=document.querySelector('meta[name="dashboard-build-version"]')?.getAttribute('content');
+ if(!version)return;
+ document.querySelectorAll('[data-dashboard-version="true"]').forEach(el=>{
+  el.textContent=(el.hasAttribute('data-version-no-prefix')?'':'버전 ')+version;
+ });
+ document.title='직원관리 대시보드 '+version;
+});
+</script>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
@@ -1928,13 +1940,12 @@ body.commerceStoreMode .commerceOnlyNav:not(.hidden){display:flex}
 <main class="main">
 <div id="globalContextToolbar" class="toolbar" style="margin-bottom:12px">
  <select id="storeSelect" onchange="switchStore()"></select>
- <button id="renameStoreBtn" class="btn gray small" onclick="renameCurrentStore()">업장명 수정</button>
  <div class="auditMonthPicker"><button type="button" class="auditMonthButton" onclick="auditChangeMonth(-1)" title="이전 달">‹</button><input id="monthSelect" type="month" onchange="switchMonth()" aria-label="선택 월"><button type="button" class="auditMonthButton" onclick="auditChangeMonth(1)" title="다음 달">›</button><span id="auditMonthLabel" class="auditMonthLabel"></span></div>
  <span id="scheduleStickyContextLabel" class="scheduleStickyContextLabel" aria-label="현재 스케줄 업장 및 월"></span>
 </div>
 
 <section id="commercePage" class="page">
- <div class="commerceHero"><h1 class="title">88커머스 <span class="commerceBuildVersion">버전 2026.11.26_8</span></h1><div class="sub">대시보드에서 직접 입력·수정하고 자동 계산하며, 카페24 반영과 원본 Excel 형식 다운로드까지 한곳에서 관리합니다.</div></div>
+ <div class="commerceHero"><h1 class="title">88커머스 <span class="commerceBuildVersion" data-dashboard-version="true">버전 2026.11.26_14</span></h1><div class="sub">대시보드에서 직접 입력·수정하고 자동 계산하며, 카페24 반영과 원본 Excel 형식 다운로드까지 한곳에서 관리합니다.</div></div>
 
  <div id="commerceGroupBar" class="commerceGroupBar hidden">
   <div><div id="commerceGroupTitle" class="groupTitle">-</div><div id="commerceGroupSub" class="help" style="margin-top:3px">-</div></div>
@@ -2018,7 +2029,7 @@ body.commerceStoreMode .commerceOnlyNav:not(.hidden){display:flex}
 </section>
 
 <section id="homePage" class="page active">
- <div class="row"><div><div class="homeBuildTitle"><h1 class="title" id="homeTitle">현황</h1><span class="buildVersionBadge" id="homeBuildVersion">버전 2026.11.26_8</span></div><div class="sub">업장과 월을 선택하면 모든 정보가 같이 바뀝니다.</div></div></div>
+ <div class="row"><div><div class="homeBuildTitle"><h1 class="title" id="homeTitle">현황</h1><span class="buildVersionBadge" id="homeBuildVersion" data-dashboard-version="true">버전 2026.11.26_14</span></div><div class="sub">업장과 월을 선택하면 모든 정보가 같이 바뀝니다.</div></div></div>
  <div class="cards">
   <div class="card"><div class="k">재직 직원</div><div class="v" id="kEmp">0명</div></div>
   <div class="card"><div class="k">이번 달 연차 발생</div><div class="v" id="kLeaveDue">0명</div></div>
@@ -2199,13 +2210,10 @@ body.commerceStoreMode .commerceOnlyNav:not(.hidden){display:flex}
 
     <span id="laborSaveState" class="saveState" role="status" aria-live="polite">자동 저장 준비</span><button id="laborRetryBtn" type="button" class="btn gray small" style="display:none" onclick="laborFlushSave()">저장 재시도</button>
    </div>
-   <p class="laborIntro">업장별 공통 원본을 보존하면서 <b>선택 업장·급여월별 입력값을 별도 자동저장</b>합니다. <b>직원 데이터 전체 열(B~O) 수정 및 자동저장, 이름 옆 드래그로 순서 변경</b>을 지원합니다. Excel 다운로드에는 수정값·직원 순서·연번이 반영되고 <b>작업 체크·웹 열 너비는 반영되지 않습니다.</b> 퇴사자는 회색으로 구분합니다. 주민번호·급여가 있어 최고관리자 전용입니다.</p>
+   <p class="laborIntro">업장별 공통 원본을 보존하면서 <b>선택 업장·급여월별 입력값을 별도 자동저장</b>합니다. <b>직원 데이터 전체 열(B~O) 수정 및 자동저장, 이름 옆 드래그로 순서 변경</b>을 지원합니다. Excel 다운로드에는 수정값·직원 순서·연번이 반영되고 <b>작업 체크·웹 열 너비는 반영되지 않습니다.</b> 당월 퇴사자는 빨강, 이전월 퇴사자는 회색으로 구분합니다. 주민번호·급여가 있어 최고관리자 전용입니다.</p>
    <div id="laborWorkbookInfo" class="laborInfo">아직 파일을 불러오지 않았습니다.</div>
-   <section id="laborSpecialPanel" class="laborSpecialPanel" aria-label="선택월 특이사항 자동검산">
-    <div class="laborSpecialHeader"><div><strong>선택월 급여 특이사항 자동검산</strong><div class="help">업장·월별로 병가·경조휴가를 확인하고, 전월 주말·공휴일 상여 및 퇴사자 지급제외를 계산합니다. 기존 원본은 보존합니다.</div></div><div class="laborSpecialToolbar"><button type="button" class="btn gray small" onclick="laborSpecialLoad(true)">재검사</button><button type="button" class="btn gray small" onclick="laborSpecialCopy()">노무사 전달문구 복사</button></div></div>
-    <div id="laborSpecialStatus" class="laborSpecialStatus" role="status" aria-live="polite">선택 업장·급여월을 불러오면 자동으로 확인합니다.</div>
-    <div id="laborSpecialBody" class="laborSpecialBody"><div class="laborSpecialEmpty">스케줄·원본 대조 전입니다. [재검사]를 누르세요.</div></div>
-   </section>
+   <!-- 자동검산은 별도 표가 아니라 선택 월 인원현황 O열에 직접 반영 -->
+   <section id="laborSpecialPanel" hidden aria-hidden="true"><span id="laborSpecialStatus"></span><div id="laborSpecialBody"></div></section>
    <div class="laborToolbar" style="margin:10px 0">
     <label for="laborSheetSelect" style="font-size:12px;font-weight:800">시트</label>
     <select id="laborSheetSelect" onchange="laborRenderSheet()" style="max-width:210px"></select>
@@ -2213,6 +2221,8 @@ body.commerceStoreMode .commerceOnlyNav:not(.hidden){display:flex}
     <span style="flex:1"></span>
 
     <button id="laborSaveBtn" class="btn green" style="display:none" onclick="laborSaveMonth()">웹 수정 저장</button>
+    <span id="laborInlineAutoStatus" class="laborInlineAutoStatus" role="status" aria-live="polite">선택월 O열 자동확인 준비</span>
+    <button type="button" class="btn gray small" onclick="laborSpecialLoad(true)" title="선택한 달의 스케줄을 다시 확인해 O열 자동 내용에 반영">O열 자동재확인</button>
     <button id="laborExportBtn" class="btn" style="display:none" onclick="laborDownloadPreservingOriginal()">원본 양식 그대로 다운로드</button>
    </div>
    <div id="laborRetirementMonthlyHint" role="status" aria-live="polite">선택한 업장·월의 퇴사자 표시를 확인합니다.</div>
@@ -2261,7 +2271,7 @@ body.commerceStoreMode .commerceOnlyNav:not(.hidden){display:flex}
 
  <section id="payrollPage" class="page">
  <div class="row">
-  <div><h1 class="title">급여관리 <span style="font-size:12px;color:#315efb;background:#eef3ff;border-radius:999px;padding:4px 8px;vertical-align:middle">2026.11.26_8</span></h1><div class="sub">월별 급여대장을 검산하고, 기간별·직원별 누적 급여도 조회합니다.</div></div>
+  <div><h1 class="title">급여관리 <span data-dashboard-version="true" data-version-no-prefix="true" style="font-size:12px;color:#315efb;background:#eef3ff;border-radius:999px;padding:4px 8px;vertical-align:middle">2026.11.26_14</span></h1><div class="sub">월별 급여대장을 검산하고, 기간별·직원별 누적 급여도 조회합니다.</div></div>
   <div class="toolbar">
    <input type="file" id="payrollFile" accept=".xlsx,.xls,.xlsm" multiple style="display:none" onchange="importPayrollFiles(this.files);this.value=''">
    <button id="payrollBatchImportBtn" class="btn" onclick="$('payrollFile').click()">급여대장 여러개 불러오기</button>
@@ -2815,7 +2825,6 @@ function applyPermissionUI(){
  document.querySelectorAll('.nav[data-page]').forEach(btn=>{btn.style.display=canViewModule(btn.dataset.page)?'':'none'});
  document.querySelectorAll('.nav[data-page="hours"]').forEach(btn=>{let mobile=btn.closest('.mobileNav');let label=isAppAdmin()?(mobile?'근로':'근로시간'):'근태 확인';let text=btn.querySelector('.navText');if(text)text.textContent=label;else btn.textContent=label});
  if($('adminNavDivider'))$('adminNavDivider').style.display=(canViewModule('users')||canViewModule('audit'))?'':'none';
- if($('renameStoreBtn'))$('renameStoreBtn').style.display=canEditModule('stores')?'':'none';
  document.querySelectorAll('.adminOnly').forEach(el=>{el.style.display=isAppAdmin()?'':'none'});
  // V9.1.32: 관리자 발송은 별도의 눈에 띄는 바로가기에서 열 수 있다.
  if($('storeMemoSendBtn'))$('storeMemoSendBtn').style.display=isAppAdmin()?'inline-flex':'none';
@@ -12597,7 +12606,7 @@ function renderAnnualLeaveTable(){
   grandAccrual+=ann.days;grandUsed+=completedUsed;grandFuture+=futureUsed;grandBalance+=balance;
   const next=cutoff?nextMonthlyAccrualStatus(e,cutoff,leaveAttendanceSchedules):null;
   if(next&&['pending','review'].includes(next.status))missing++;
-  return `<tr data-annual-employee="${e.id}" class="${retired?'annualLeaveRetiredRow':''} ${firstRetired?'annualLeaveRetiredFirst':''} ${settled?'annualLeaveSettledRow':''}" ondragover="annualLeaveOrderDragOver(event,${e.id})" ondrop="annualLeaveOrderDrop(event,${e.id})"><td class="annualLeavePinned" style="--employee-print-bg:${employeeColor(e)}"><div class="annualLeaveNameRow">${editable?`<div class="annualLeaveMoveTools"><span class="annualLeaveOrderGrip" draggable="${annualLeaveOrderAvailable===true?'true':'false'}" ondragstart="annualLeaveOrderDragStart(event,${e.id})" ondragend="annualLeaveOrderDragEnd()" title="잡아서 연차관리 직원순서만 이동" aria-label="${esc(e.name)} 순서 끌기">⋮⋮</span><span class="annualLeaveMoveButtons"><button type="button" title="위로 이동" aria-label="${esc(e.name)} 위로 이동" onclick="annualLeaveOrderMove(${e.id},-1)" ${annualLeaveOrderAvailable!==true?'disabled':''}>▲</button><button type="button" title="아래로 이동" aria-label="${esc(e.name)} 아래로 이동" onclick="annualLeaveOrderMove(${e.id},1)" ${annualLeaveOrderAvailable!==true?'disabled':''}>▼</button></span></div>`:''}<div class="annualLeaveNameInfo"><b>${esc(e.name)}</b><small>입사 ${esc(e.hire_date||'미등록')}</small>${retired?``:`<small>${esc(workTypeForDate(e,year+'-12-31'))}</small>`}${settled?'<span class="annualLeaveSettledBadge">정산완료</span>':''}</div></div></td>${monthCells}<td class="annualLeaveStat">${annualLeaveFmt(ann.days)}개<small>${annualLeaveFmt(ann.hours)}h</small>${sickMissedLabel}</td><td class="annualLeaveStat">${annualLeaveFmt(completedUsed)}개<small>${futureUsed?'사용예정 '+annualLeaveFmt(futureUsed)+'개':'완료 기준'}</small></td><td class="annualLeaveStat balance ${balance<0?'negative':''}">${cutoff?annualLeaveFmt(balance)+'h':'예정'}<small>${cutoff?(futureHours>0?'예정 사용 -'+annualLeaveFmt(futureHours)+'h (미차감)':'오늘 기준 원장'):'아직 미도래'}</small>${summary?.confirmedDate?`<small class="annualLeaveConfirmedMark" title="직원관리와 연동된 잔여확정">잔여확정 ${esc(summary.confirmedDate)} · 기준 ${annualLeaveFmt(summary.confirmedBalance)}h</small>`:''}</td><td><div class="annualLeaveActions"><button class="btn gray small" onclick="openAnnualLeaveAttendance(${e.id})">출근확인</button>${editable?`<button class="btn gray small" onclick="adjustLeave(${e.id})">잔여확정</button>`:''}${retired&&editable?(settled?`<button type="button" class="btn green small" onclick="annualLeaveSetSettlement(${e.id},false)">정산 복구</button>`:`<button type="button" class="btn gray small" onclick="annualLeaveSetSettlement(${e.id},true)">정산완료</button>`):''}</div></td></tr>`;
+  return `<tr data-annual-employee="${e.id}" class="${retired?'annualLeaveRetiredRow':''} ${firstRetired?'annualLeaveRetiredFirst':''} ${settled?'annualLeaveSettledRow':''}" ondragover="annualLeaveOrderDragOver(event,${e.id})" ondrop="annualLeaveOrderDrop(event,${e.id})"><td class="annualLeavePinned" style="--employee-print-bg:${employeeColor(e)}"><div class="annualLeaveNameRow"><div class="annualLeaveNameInfo">${editable?`<span class="scheduleDragHandle annualLeaveOrderGrip" draggable="${annualLeaveOrderAvailable===true?'true':'false'}" ondragstart="annualLeaveOrderDragStart(event,${e.id})" ondragend="annualLeaveOrderDragEnd()" title="이름을 잡아 위아래로 끌면 연차관리 순서만 바뀝니다" aria-label="${esc(e.name)} 연차관리 순서 이동"><span class="scheduleDragGrip">⋮⋮</span><b>${esc(e.name)}</b></span>`:`<b>${esc(e.name)}</b>`}<small>입사 ${esc(e.hire_date||'미등록')}</small>${retired?``:`<small>${esc(workTypeForDate(e,year+'-12-31'))}</small>`}${settled?'<span class="annualLeaveSettledBadge">정산완료</span>':''}</div></div></td>${monthCells}<td class="annualLeaveStat">${annualLeaveFmt(ann.days)}개<small>${annualLeaveFmt(ann.hours)}h</small>${sickMissedLabel}</td><td class="annualLeaveStat">${annualLeaveFmt(completedUsed)}개<small>${futureUsed?'사용예정 '+annualLeaveFmt(futureUsed)+'개':'완료 기준'}</small></td><td class="annualLeaveStat balance ${balance<0?'negative':''}">${cutoff?annualLeaveFmt(balance)+'h':'예정'}<small>${cutoff?(futureHours>0?'예정 사용 -'+annualLeaveFmt(futureHours)+'h (미차감)':'오늘 기준 원장'):'아직 미도래'}</small>${summary?.confirmedDate?`<small class="annualLeaveConfirmedMark" title="직원관리와 연동된 잔여확정">잔여확정 ${esc(summary.confirmedDate)} · 기준 ${annualLeaveFmt(summary.confirmedBalance)}h</small>`:''}</td><td><div class="annualLeaveActions"><button class="btn gray small" onclick="openAnnualLeaveAttendance(${e.id})">출근확인</button>${editable?`<button class="btn gray small" onclick="adjustLeave(${e.id})">잔여확정</button>`:''}${retired&&editable?(settled?`<button type="button" class="btn green small" onclick="annualLeaveSetSettlement(${e.id},false)">정산 복구</button>`:`<button type="button" class="btn gray small" onclick="annualLeaveSetSettlement(${e.id},true)">정산완료</button>`):''}</div></td></tr>`;
  }).join(''):`<tr><td colspan="17" style="padding:24px">${settledCount&&!annualLeaveShowSettled?'정산완료로 숨긴 직원만 있습니다. 위 [정산완료 보기]에서 복구할 수 있습니다.':'해당 연도에 재직한 직원이 없습니다.'}</td></tr>`;
  scheduleViewportHeaderRequest();
  if(tiles)tiles.innerHTML=`<div class="annualLeaveTile"><small>${year}년 발생 합계</small><b>${annualLeaveFmt(grandAccrual)}개</b></div><div class="annualLeaveTile"><small>${year}년 사용 완료 / 예정</small><b>${annualLeaveFmt(grandUsed)}개<small style="font-size:12px;font-weight:500"> / 예정 ${annualLeaveFmt(grandFuture)}개</small></b></div><div class="annualLeaveTile"><small>현재·연도말 잔여 합계</small><b>${cutoff?annualLeaveFmt(grandBalance)+'h':'예정 연도'}</b></div><div class="annualLeaveTile"><small>1년 미만 개근 확인 필요</small><b>${missing}명</b></div>`;
@@ -14314,9 +14323,16 @@ async function laborBuildPreservedXlsx(){
   for(const [sourceRef,raw] of valid){const c=XLSX.utils.decode_cell(sourceRef);if(c.c===0||c.r<3)continue;if(laborMergedCovered(ws,c.r,c.c)||ws[sourceRef]?.f!==undefined)throw new Error(sourceRef+' 원본 수식/병합 셀을 바꿀 수 없습니다.');
    const destRow=newRows.get(c.r)??c.r,ref=XLSX.utils.encode_cell({c:c.c,r:destRow}),mod=laborCellMod(sheet,sourceRef,raw);
    xml=commerceV20PatchCell(xml,ref,mod);checks.set(ref,mod);
-   if(c.c===8&&mod.type==='text'&&mod.value.includes('\n')){
+   if((c.c===8||c.c===14)&&mod.type==='text'&&mod.value.includes('\n')){
     const match=xml.match(new RegExp('<c\\b[^>]*\\br="'+ref+'"[^>]*\\bs="(\\d+)"'));
     if(match){const newStyle=wrap.wrapFor(Number(match[1]));if(newStyle!==null)xml=laborApplyWrapToCell(xml,ref,newStyle);}
+    if(c.c===14){
+     const lines=String(mod.value).split('\n').length,height=Math.min(360,Math.max(29,lines*15+12)),rowNumber=destRow+1;
+     const rowRx=new RegExp('<row\\b[^>]*\\br="'+rowNumber+'"[^>]*>');
+     xml=xml.replace(rowRx,tag=>{const ht=Number(tag.match(/\bht="([\d.]+)"/)?.[1]||0);
+      return tag.replace(/\sht="[^"]*"/,'').replace(/\scustomHeight="[^"]*"/,'').replace(/>$/,` ht="${Math.max(height,ht)}" customHeight="1">`);
+     });
+    }
    }
   }
   if(isMain&&sorted.physical.length){for(let i=0;i<sorted.physical.length;i++){
@@ -14702,8 +14718,7 @@ function laborMonthSafeName(v){return String(v||'업장').replace(/[\\/:*?"<>|\x
 </script>
 <script id="laborSpecial20261126_9">/* 2026.11.26_9 · 월별 노무사 특이사항 자동검산 (원본 불변)
    근거: 실제 스케줄 코드 / 명시적인 직원 상여대상 / 입퇴사일 / 공휴일 원장.
-   파일 원본 O셀이나 급여·스케줄 테이블을 자동 수정하지 않는다.
-   해당월 제출용 Excel을 만들 때만 O셀의 자동 특이사항을 합성한다. */
+   파일 급여·스케줄 테이블을 자동 변경하지 않으며 월별 O열에 검산 내용을 보존한다. */
 const LABOR_SPECIAL_VERSION='2026.11.26_9';
 let laborSpecialState=null,laborSpecialFetchToken=0,laborSpecialBusy=false;
 const LABOR_SPECIAL_IGNORE_CODES=new Set(['0','연','병','결','법','예','상','경']);
@@ -14725,7 +14740,7 @@ function laborSpecialBuild(e,payMonth,curRows,prevRows,holidayDates,opts={}){
  const unit=Number(e.holiday_incentive_unit||0),enabled=laborSpecialEligible(e),exit=laborSpecialExitInMonth(e,previous);
  const full=!!opts.prevScheduleReady&&!!opts.holidayReady;
  const items=[];
- if(sick.length)items.push({kind:'sick',dates:sick,text:`${payMonth} 무급병가 ${sick.length}일 (${sick.map(laborSpecialDateLabel).join(', ')}) · 연차사용 차감 없음`});
+ if(sick.length)items.push({kind:'sick',dates:sick,text:`${payMonth} 병가 ${sick.length}일 (${sick.map(laborSpecialDateLabel).join(', ')}) · 급여 및 연차 잔여 반영 확인`});
  if(ceremony.length){const types=[...new Set(ceremony.map(x=>x.code==='경'?'본인결혼':(x.kind||'상례')))];items.push({kind:'ceremony',dates:ceremony.map(x=>x.date),text:`${payMonth} 유급 경조휴가 ${ceremony.length}일 (${ceremony.map(x=>laborSpecialDateLabel(x.date)+(x.code==='경'?' 경':' 상')).join(', ')}) · ${types.join('/')} · 실근로 0시간/연차차감 없음`});}
  if(enabled && full && worked.length){
   items.push(exit?{kind:'bonusExcluded',dates:worked,text:`전월(${previous}) 주말·공휴일 출근기록 ${worked.length}일 · ${previous} 퇴사로 회사 별도상여 미지급 0원`}:{kind:'bonus',dates:worked,text:`전월(${previous}) 주말·공휴일 출근기록 ${worked.length}일 × ${laborSpecialNumber(unit)}원 = 세후 별도상여 지급요청 ${laborSpecialNumber(worked.length*unit)}원`});
@@ -14786,7 +14801,7 @@ async function laborSpecialLoad(force=false){const panel=$('laborSpecialPanel'),
  const status=$('laborSpecialStatus');if(status)status.textContent='스케줄·공휴일·원본 대조 중…';
  laborSpecialBusy=true;
  try{
-  const list=allEmployees().filter(e=>Number(e.store_id)===sid);const ids=list.map(e=>Number(e.id));
+  const list=allEmployees().filter(e=>Number(e.store_id)===sid&&!employeeMonthlyScheduleHidden(e));const ids=list.map(e=>Number(e.id));
   // Always read committed schedule rows: do not infer from initially populated calendar cells.
   const [current,prior]=await Promise.all([fetchScheduleRowsComplete(ids,range.first,range.last),fetchScheduleRowsComplete(ids,past.first,past.last)]);
   const year=Number(previous.slice(0,4));let holidaySet=new Set(),holidayReady=false;
@@ -14865,6 +14880,7 @@ laborBuildPreservedXlsx=async function(){
  // Always compare against the latest committed schedule before generating an accountant workbook.
  await laborSpecialLoad(true);
  if(!laborSpecialState||laborSpecialState.sid!==sid||laborSpecialState.ym!==month||laborSpecialState.loadError)throw new Error('특이사항 자동검산 실패. 먼저 검산 오류를 확인해 주세요.');
+ if(laborDraft?.dirty&&!await laborFlushSave())throw new Error('선택월 O열 자동 특이사항을 서버에 저장하지 못했습니다.');
  const original=await laborSpecialPreviousBuildXlsx();return laborSpecialExportAppend(original);
 };
 // Monthly checks refresh when opening the labor/work-hours view or changing the current store/month.
@@ -14903,22 +14919,22 @@ laborQuickExport=async function(){return laborDownloadPreservingOriginal()};
 const laborMonthlyPreviousPreset=paymentRulePreset;
 paymentRulePreset=function(...args){const p=laborMonthlyPreviousPreset(...args);return {...p,holiday_incentive_enabled:false}};
 </script>
-<style id="annualLeaveOrderV10CSS">/* 2026.11.26_10: annual leave employee order independent of schedule; one-line compact move controls. */
+<style id="annualLeaveOrderV10CSS">/* 2026.11.26_14: annual-leave rows drag by name, like monthly schedule; order remains independent per store. */
 #schedulePage .annualLeaveTable th.annualLeavePinned,
-#schedulePage .annualLeaveTable td.annualLeavePinned{
-  width:186px!important;min-width:186px!important;max-width:186px!important;
+#schedulePage .annualLeaveTable td.annualLeavePinned{width:166px!important;min-width:166px!important;max-width:166px!important}
+#schedulePage .annualLeaveNameRow{display:flex;align-items:center;min-width:0}
+#schedulePage .annualLeaveNameInfo{min-width:0;width:100%;overflow:hidden;text-overflow:ellipsis}
+#schedulePage .annualLeaveNameInfo>.scheduleDragHandle.annualLeaveOrderGrip{
+ display:inline-flex;align-items:center;justify-content:flex-start;gap:6px;
+ width:auto;min-width:0;max-width:100%;height:auto;padding:3px 5px;
+ border:0;border-radius:7px;background:transparent;color:inherit;
+ font-size:12px;letter-spacing:normal;cursor:grab;user-select:none;touch-action:none
 }
-#schedulePage .annualLeaveNameRow{display:flex;align-items:center;gap:5px;min-width:0}
-#schedulePage .annualLeaveMoveTools{display:inline-flex;align-items:center;gap:1px;flex:0 0 auto}
-#schedulePage .annualLeaveOrderGrip{display:inline-flex;align-items:center;justify-content:center;width:17px;height:27px;border-radius:5px;border:1px solid #c9d4e4;background:#f7fafc;font-size:11px;letter-spacing:-2px;color:#52657e;cursor:grab;user-select:none;touch-action:none}
-#schedulePage .annualLeaveOrderGrip:hover{border-color:#6594d8;color:#2357a8;background:#eff5ff}
-#schedulePage .annualLeaveOrderGrip:active{cursor:grabbing}
-#schedulePage .annualLeaveMoveButtons{display:flex;flex-direction:column;gap:1px}
-#schedulePage .annualLeaveMoveButtons button{border:1px solid #dbe3ee;border-radius:3px;background:#fff;color:#56708e;cursor:pointer;padding:0;width:16px;height:13px;font-size:8px;line-height:11px}
-#schedulePage .annualLeaveMoveButtons button:hover{background:#eaf2ff;border-color:#b0c6e9}
-#schedulePage .annualLeaveMoveButtons button:disabled{opacity:.4;cursor:not-allowed}
-#schedulePage .annualLeaveNameInfo{min-width:0;overflow:hidden;text-overflow:ellipsis}
-#schedulePage .annualLeaveNameInfo>b,#schedulePage .annualLeaveNameInfo>small{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#schedulePage .annualLeaveNameInfo>.scheduleDragHandle.annualLeaveOrderGrip:hover{background:#eef3ff;color:#2348bd}
+#schedulePage .annualLeaveNameInfo>.scheduleDragHandle.annualLeaveOrderGrip:active{cursor:grabbing}
+#schedulePage .annualLeaveNameInfo>.scheduleDragHandle.annualLeaveOrderGrip .scheduleDragGrip{font-size:14px;color:#98a2b3;letter-spacing:0;line-height:1;flex:none}
+#schedulePage .annualLeaveNameInfo>.scheduleDragHandle.annualLeaveOrderGrip b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+#schedulePage .annualLeaveNameInfo>small{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #schedulePage .annualLeaveTable tr.annualOrderDragging{opacity:.53}
 #schedulePage .annualLeaveTable tr.annualOrderDropBefore>td{border-top:3px solid #315efb!important}
 #schedulePage .annualLeaveTable tr.annualOrderDropAfter>td{border-bottom:3px solid #315efb!important}
@@ -15003,12 +15019,7 @@ async function annualLeaveOrderDrop(ev,target){
  const dest=ids.indexOf(Number(target))+(position==='after'?1:0);
  ids.splice(dest,0,drag);await annualLeaveOrderCommit(ids);
 }
-async function annualLeaveOrderMove(id,delta){
- if(annualLeaveOrderSaving||annualLeaveOrderAvailable!==true)return;
- const ids=annualLeaveOrderVisibleList().map(e=>Number(e.id)),from=ids.indexOf(Number(id)),to=from+Number(delta);
- if(from<0||to<0||to>=ids.length)return;
- [ids[from],ids[to]]=[ids[to],ids[from]];await annualLeaveOrderCommit(ids);
-}
+
 </script>
 <style id="laborRetirementV11CSS">/* 2026.11.26_11: month-sensitive accountant-workbook resignation colors, all stores */
 #hoursPage #laborWorkbookGrid .laborGridWrap tr.laborRetiring td,
@@ -15187,5 +15198,131 @@ laborBuildPreservedXlsx=async function(...args){
  if(!expected.draft||expected.sid!==Number(storeId())||expected.ym!==laborRetirementMonth()||expected.draft!==laborDraft)throw new Error('퇴사자 서식 적용 중 업장·월이 변경되었습니다.');
  return laborRetirementFormatExport(bytes);
 };
+</script>
+<style id="laborSpecialOInline20261126_14CSS">
+#hoursPage #laborSpecialPanel{display:none!important}
+#hoursPage .laborInlineAutoStatus{display:inline-flex;align-items:center;min-height:27px;font-size:11px;font-weight:800;color:#41617f;padding:3px 7px;white-space:normal;line-height:1.35}
+#hoursPage .laborInlineAutoStatus.ready{color:#087451;background:#e9f8f0;border-radius:7px}
+#hoursPage .laborInlineAutoStatus.warn{color:#9a5215;background:#fff8e8;border-radius:7px}
+#hoursPage .laborInlineAutoStatus.error{color:#b42318;background:#fff0f0;border-radius:7px}
+</style>
+<script id="laborSpecialOInline20261126_14">
+/* Consultant remarks belong in the per-store/per-month O cells, not an auxiliary table.
+   Preserve manual remarks and the source workbook. Never modify schedule/payroll/leave tables. */
+const LABOR_O_AUTO_START=ym=>`【${ym} 자동 특이사항】`;
+const LABOR_O_AUTO_END='【자동 특이사항 종료】';
+const LABOR_O_AUTO_BLOCK_RE=/\n?【20\d{2}-(?:0[1-9]|1[0-2]) 자동 특이사항】[\s\S]*?【자동 특이사항 종료】\n?/g;
+let laborInlineSyncActive=false;
+function laborInlineCleanManual(value){
+ return String(value??'').replace(/\r\n?/g,'\n').replace(LABOR_O_AUTO_BLOCK_RE,'\n').replace(/^\n+|\n+$/g,'');
+}
+function laborInlineBuildOText(manual,entry,ym){
+ const pre=laborInlineCleanManual(manual);
+ if(!entry)return pre;
+ const items=entry.items.filter(x=>!pre.includes(x.text)&&laborSpecialMentioned(pre,x)!=='covered').map(x=>x.text);
+ const extra=laborSpecialSupplement(entry.employeeId,ym);
+ if(extra&&!pre.includes(extra))items.push('별도 전달사항: '+extra);
+ if(!items.length)return pre;
+ return [pre,LABOR_O_AUTO_START(ym),...items,LABOR_O_AUTO_END].filter(Boolean).join('\n');
+}
+function laborInlineStatus(message,style='normal'){
+ const node=$('laborInlineAutoStatus');if(!node)return;
+ node.textContent=message;node.className='laborInlineAutoStatus'+(style==='normal'?'':' '+style);
+}
+function laborInlineDetectContractChanges(e,ym){
+ const rows=typeof workConditionRowsForEmployee==='function'?workConditionRowsForEmployee(e.id):[];
+ const changes=rows.filter((c,i)=>String(c.effective_from||'').startsWith(ym+'-')&&i>0&&String(c.effective_from||'')>String(e.hire_date||''));
+ if(!changes.length)return [];
+ const text=changes.map(x=>laborSpecialDateLabel(x.effective_from)).join(', ');
+ return [{kind:'conditionChange',dates:changes.map(x=>x.effective_from),text:`${ym} 근로조건 변경 적용일 ${text} · 계약/급여 반영 확인 필요`}];
+}
+function laborInlineDetectScheduleDifferences(e,ym,rows){
+ if(typeof workConditionForDate!=='function')return [];
+ const dates=new Map();
+ for(const r of rows||[]){
+  if(Number(r.employee_id)!==Number(e.id)||!String(r.work_date||'').startsWith(ym+'-')||!employedOn(e,r.work_date)||!laborSpecialIsWorked(r))continue;
+  const c=workConditionForDate(e,r.work_date),expected=Number(conditionTimesForDate(c,r.work_date)?.daily_hours||0),
+        actual=Number(r.worked_hours||(/^(?:\d+(?:\.\d+)?)$/.test(String(r.work_code||''))?r.work_code:0));
+  if(expected>0&&actual>0&&Math.abs(actual-expected)>=0.5)dates.set(r.work_date,{expected,actual});
+ }
+ if(!dates.size)return [];
+ const examples=[...dates].sort((a,b)=>a[0].localeCompare(b[0])).slice(0,8).map(([d,h])=>`${laborSpecialDateLabel(d)} ${h.expected}→${h.actual}시간`).join(', ');
+ return [{kind:'hoursReview',dates:[...dates.keys()],text:`${ym} 기본 계약시간 대비 스케줄상 근로시간 차이 ${dates.size}일 (${examples}${dates.size>8?', 외 '+(dates.size-8)+'일':''}) · 실제 근무/급여 변경 여부 확인 필요`}];
+}
+// Add verifiable contract-condition and worked-hour differences for the selected
+// payroll month; never guess a salary increase from a scheduled-hours difference.
+const laborInlinePreviousBuild=laborSpecialBuild;
+laborSpecialBuild=function(e,payMonth,curRows,prevRows,holidayDates,opts={}){
+ const record=laborInlinePreviousBuild(e,payMonth,curRows,prevRows,holidayDates,opts);
+ const extras=[...laborInlineDetectContractChanges(e,payMonth),...laborInlineDetectScheduleDifferences(e,payMonth,curRows)];
+ record.items.push(...extras);record.notes=record.items.map(x=>x.text);return record;
+};
+// The verification overview is no longer a separate, visible report.
+laborSpecialRender=function(){
+ const state=laborSpecialState,hidden=$('laborSpecialStatus');
+ if(!state)return;
+ if(state.loadError){if(hidden)hidden.textContent='검산 실패';laborInlineStatus('O열 검산 오류: '+state.loadError,'error');return;}
+ if(hidden)hidden.textContent='선택월 원본 O열 자동검산';
+ laborInlineStatus(`${state.ym} O열 검산 완료 · ${state.entries.length}명 대상 · 자동 저장 반영 중`,'normal');
+};
+function laborInlineSyncO(){
+ const d=laborDraft,s=laborSpecialState,sc=laborMonthlyScope();
+ if(laborInlineSyncActive||!d||!s||s.loadError||Number(d.sid)!==sc.sid||String(d.ym)!==sc.ym||s.sid!==sc.sid||s.ym!==sc.ym)return;
+ const ws=d.wb?.Sheets?.['인원현황'];if(!ws)return;
+ if(document.activeElement?.matches?.('#laborWorkbookGrid textarea[data-cell^="O"]')){
+  laborInlineStatus('O열 편집 중 · 편집을 마친 후 자동재확인하세요','warn');return;
+ }
+ laborInlineSyncActive=true;
+ try{
+  const matched=new Map(),unmatched=[];
+  for(const entry of s.entries){const idx=laborSpecialFindSource(entry);
+   if(idx===null){unmatched.push(entry.name);continue}
+   if(matched.has(idx)){unmatched.push(entry.name);continue}
+   matched.set(idx,entry);
+  }
+  const named=laborNamedRows(ws,'인원현황');
+  let changed=0,noted=0;
+  const edits=d.edits['인원현황']||(d.edits['인원현황']={});
+  for(const row of named){
+   const ref='O'+(row+1);if(ws[ref]?.f!==undefined||laborMergedCovered(ws,row,14)){
+    if(matched.has(row))unmatched.push(`${matched.get(row).name} (${ref} 수식·병합)`);
+    continue;
+   }
+   const entry=matched.get(row)||null;
+   const manual=laborDisplayValue('인원현황',ref);
+   const next=laborInlineBuildOText(manual,entry,sc.ym);
+   if(next.includes(LABOR_O_AUTO_START(sc.ym)))noted++;
+   if(next===String(manual??'').replace(/\r\n?/g,'\n'))continue;
+   const original=String(laborOriginalDisplay('인원현황',ref)).replace(/\r\n?/g,'\n');
+   if(next===original)delete edits[ref];else edits[ref]=next;
+   changed++;
+  }
+  if(!Object.keys(edits).length)delete d.edits['인원현황'];
+  s.inlineUnmatched=[...new Set(unmatched)];
+  if(changed){d.revision=(d.revision||0)+1;d.dirty=true;
+   laborScheduleAutoSave();
+   if($('laborSheetSelect')?.value==='인원현황')laborRenderSheet();
+  }
+  if(s.inlineUnmatched.length)laborInlineStatus(`${sc.ym} O열 ${noted}명 반영 · 원본 직원 미매칭 ${s.inlineUnmatched.join(', ')} · 다운로드 전 확인`,'warn');
+  else laborInlineStatus(`${sc.ym} O열 자동검산 ${noted}명 ${changed?'반영·자동저장 중':'확인 완료'} · 스케줄·근로 제외 직원은 기존 내용 유지`,'ready');
+ }finally{laborInlineSyncActive=false}
+}
+const laborInlinePreviousLoad=laborSpecialLoad;
+laborSpecialLoad=async function(force=false){
+ const result=await laborInlinePreviousLoad(force);
+ laborInlineSyncO();
+ return result;
+};
+// The standard preserved-format Excel export already writes the per-month O edits.
+// Do not add an extra download-only O overlay (that would duplicate the remarks).
+laborSpecialExportAppend=async function(bytes){
+ const s=laborSpecialState,sc=laborMonthlyScope();
+ if(!s||s.loadError||s.sid!==sc.sid||s.ym!==sc.ym)throw new Error('선택월 O열 자동검산이 완료되지 않았습니다. 다시 확인하세요.');
+ if(s.inlineUnmatched?.length)throw new Error('O열 자동 특이사항 직원이 원본에 매칭되지 않습니다: '+s.inlineUnmatched.join(', '));
+ if(!s.holidayReady&&allEmployees().some(e=>Number(e.store_id)===sc.sid&&!employeeMonthlyScheduleHidden(e)&&laborSpecialEligible(e)))throw new Error('전월 공휴일 자료가 확인되지 않았습니다. 공휴일을 확인한 뒤 다시 다운로드하세요.');
+ return bytes;
+};
+// A direct edit in the O cell remains editable and is persisted by the existing
+// normal per-month save handler. Auto sections are fully regenerated on recheck.
 </script>
 </body></html>
