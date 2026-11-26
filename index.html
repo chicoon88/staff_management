@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>직원관리 대시보드 2026.11.26_3</title>
+<title>직원관리 대시보드 2026.11.26_5</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
@@ -1934,7 +1934,7 @@ body.commerceStoreMode .commerceOnlyNav:not(.hidden){display:flex}
 </div>
 
 <section id="commercePage" class="page">
- <div class="commerceHero"><h1 class="title">88커머스 <span class="commerceBuildVersion">버전 2026.11.26_3</span></h1><div class="sub">대시보드에서 직접 입력·수정하고 자동 계산하며, 카페24 반영과 원본 Excel 형식 다운로드까지 한곳에서 관리합니다.</div></div>
+ <div class="commerceHero"><h1 class="title">88커머스 <span class="commerceBuildVersion">버전 2026.11.26_5</span></h1><div class="sub">대시보드에서 직접 입력·수정하고 자동 계산하며, 카페24 반영과 원본 Excel 형식 다운로드까지 한곳에서 관리합니다.</div></div>
 
  <div id="commerceGroupBar" class="commerceGroupBar hidden">
   <div><div id="commerceGroupTitle" class="groupTitle">-</div><div id="commerceGroupSub" class="help" style="margin-top:3px">-</div></div>
@@ -2018,7 +2018,7 @@ body.commerceStoreMode .commerceOnlyNav:not(.hidden){display:flex}
 </section>
 
 <section id="homePage" class="page active">
- <div class="row"><div><div class="homeBuildTitle"><h1 class="title" id="homeTitle">현황</h1><span class="buildVersionBadge" id="homeBuildVersion">버전 2026.11.26_3</span></div><div class="sub">업장과 월을 선택하면 모든 정보가 같이 바뀝니다.</div></div></div>
+ <div class="row"><div><div class="homeBuildTitle"><h1 class="title" id="homeTitle">현황</h1><span class="buildVersionBadge" id="homeBuildVersion">버전 2026.11.26_5</span></div><div class="sub">업장과 월을 선택하면 모든 정보가 같이 바뀝니다.</div></div></div>
  <div class="cards">
   <div class="card"><div class="k">재직 직원</div><div class="v" id="kEmp">0명</div></div>
   <div class="card"><div class="k">이번 달 연차 발생</div><div class="v" id="kLeaveDue">0명</div></div>
@@ -2188,7 +2188,7 @@ body.commerceStoreMode .commerceOnlyNav:not(.hidden){display:flex}
  </div>
 <section id="laborPage" class="page laborInlinePage">
   <div class="row" style="flex-wrap:wrap;gap:10px">
-   <div><h1 class="title">노무사 제출자료</h1><div class="sub">한 업장당 원본 하나를 등록합니다. 화면에서 <b>I열 근무시간과 O열 특이사항만 바로 수정·자동 저장</b>하며, Excel 다른 셀과 원본 서식은 그대로 유지합니다.</div></div>
+   <div><h1 class="title">노무사 제출자료</h1><div class="sub">한 업장당 원본 하나를 등록합니다. <b>직원 자료 B~O열은 바로 수정·자동 저장</b>되며, 이름 옆 손잡이로 순서를 바꾸면 엑셀 연번과 직원 행도 함께 정렬됩니다.</div></div>
    <span id="laborScopeBadge" class="saveState">업장·월 선택</span>
   </div>
   <div class="card" style="margin-top:14px">
@@ -2199,7 +2199,7 @@ body.commerceStoreMode .commerceOnlyNav:not(.hidden){display:flex}
 
     <span id="laborSaveState" class="saveState" role="status" aria-live="polite">자동 저장 준비</span><button id="laborRetryBtn" type="button" class="btn gray small" style="display:none" onclick="laborFlushSave()">저장 재시도</button>
    </div>
-   <p class="laborIntro">원본 Excel은 업장별로 1개를 계속 편집합니다. <b>I열 근무시간 줄바꿈과 O열 특이사항 수정만 Excel 다운로드에 반영</b>되며, 연번 정렬과 열 너비는 대시보드 화면에만 적용됩니다. 퇴사 직원은 회색으로 구분합니다. 주민번호·급여가 포함되어 <b>최고관리자 전용</b>입니다.</p>
+   <p class="laborIntro">업장별 원본 Excel 한 개를 계속 편집합니다. <b>직원 데이터 전체 열(B~O) 수정 및 자동저장, 이름 옆 드래그로 순서 변경</b>을 지원합니다. Excel 다운로드에는 수정값·직원 순서·연번이 반영되고 <b>작업 체크·웹 열 너비는 반영되지 않습니다.</b> 퇴사자는 회색으로 구분합니다. 주민번호·급여가 있어 최고관리자 전용입니다.</p>
    <div id="laborWorkbookInfo" class="laborInfo">아직 파일을 불러오지 않았습니다.</div>
    <div class="laborToolbar" style="margin:10px 0">
     <label for="laborSheetSelect" style="font-size:12px;font-weight:800">시트</label>
@@ -2211,7 +2211,7 @@ body.commerceStoreMode .commerceOnlyNav:not(.hidden){display:flex}
     <button id="laborExportBtn" class="btn" style="display:none" onclick="laborDownloadPreservingOriginal()">원본 양식 그대로 다운로드</button>
    </div>
    <div id="laborWorkbookGrid" class="laborEmpty">현재 업장·월에 등록된 Excel이 없습니다. 원본을 업로드하거나 이전월 자료를 복사하세요.</div>
-   <div class="help" style="margin-top:9px">노란색 = 근무시간/특이사항 수정값 · 연한 녹색 = 작업 완료 체크 · 회색 행 = 퇴사자 · 표 머리글 오른쪽 경계를 드래그하면 열 너비 조절 · 왼쪽 표시순서 숫자로 화면 정렬 · 변경내용은 자동 저장됩니다. <b>원본 Excel의 시트·서식·연번·다른 항목은 변경하지 않습니다. I열 줄바꿈은 원본 Excel에도 그대로 저장됩니다.</b></div>
+   <div class="help" style="margin-top:9px">연한 녹색 = 작업 체크 · 회색 = 퇴사자 · 이름 옆 ☰ 손잡이 드래그 = 직원 순서 변경 · 머리글 경계 드래그 = 웹 열 너비 조절. <b>직원 자료 B~O 수정, I/O열 줄바꿈, 행 순서 및 A열 연번은 Excel에 반영됩니다. 작업 체크와 웹 열 너비는 Excel에 반영되지 않습니다.</b></div>
   </div>
  </section>
 
@@ -2255,7 +2255,7 @@ body.commerceStoreMode .commerceOnlyNav:not(.hidden){display:flex}
 
  <section id="payrollPage" class="page">
  <div class="row">
-  <div><h1 class="title">급여관리 <span style="font-size:12px;color:#315efb;background:#eef3ff;border-radius:999px;padding:4px 8px;vertical-align:middle">2026.11.26_3</span></h1><div class="sub">월별 급여대장을 검산하고, 기간별·직원별 누적 급여도 조회합니다.</div></div>
+  <div><h1 class="title">급여관리 <span style="font-size:12px;color:#315efb;background:#eef3ff;border-radius:999px;padding:4px 8px;vertical-align:middle">2026.11.26_5</span></h1><div class="sub">월별 급여대장을 검산하고, 기간별·직원별 누적 급여도 조회합니다.</div></div>
   <div class="toolbar">
    <input type="file" id="payrollFile" accept=".xlsx,.xls,.xlsm" multiple style="display:none" onchange="importPayrollFiles(this.files);this.value=''">
    <button id="payrollBatchImportBtn" class="btn" onclick="$('payrollFile').click()">급여대장 여러개 불러오기</button>
@@ -3089,13 +3089,15 @@ async function saveIpLabels(){
 }
 
 function accessEventLabel(t){
- const labels={login:'로그인',logout:'로그아웃',store_open:'업장 열기',labor_workbook_edit:'노무사 I/O열 수정',labor_workbook_check:'노무사 작업 체크',labor_workbook_view:'노무사 화면 설정',labor_workbook_original_uploaded:'노무사 원본 업로드'};
+ const labels={login:'로그인',logout:'로그아웃',store_open:'업장 열기',labor_workbook_edit:'노무사 셀 수정',labor_workbook_check:'노무사 작업 체크',labor_workbook_view:'노무사 화면 설정',labor_workbook_reorder:'노무사 직원 순서 변경',labor_workbook_original_uploaded:'노무사 원본 업로드',labor_workbook_download:'노무사 파일 다운로드'};
  return labels[t]||String(t||'접속');
 }
 function laborAccessEventDetail(x){const d=x?.details||{};
  if(x?.event_type==='labor_workbook_edit')return '수정 셀: '+(Array.isArray(d.cells)?d.cells.join(', '):'-')+' · '+(d.cell_count||0)+'칸';
  if(x?.event_type==='labor_workbook_check')return '확인 완료 '+(d.checked_count||0)+'명 · 변경된 행: '+(Array.isArray(d.changed_rows)?d.changed_rows.join(', '):'-');
- if(x?.event_type==='labor_workbook_view')return '화면 순서/열 너비 조절 (Excel 원본과 별개)';
+ if(x?.event_type==='labor_workbook_view')return '웹 화면 열 너비 조절 (Excel 서식과 별개)';
+ if(x?.event_type==='labor_workbook_reorder')return '직원 순서 변경 · Excel A열 연번 자동 재정렬 · '+(d.row_count||0)+'명';
+ if(x?.event_type==='labor_workbook_download')return 'Excel 다운로드 완료 ('+(d.changed_count||0)+'칸 수정)';
  if(x?.event_type==='labor_workbook_original_uploaded')return '원본 등록: '+String(d.file_name||'').slice(0,120);
  return '';
 }
@@ -3111,8 +3113,10 @@ function renderAuditLogs(){
  let sf=$('auditStoreFilter')?.value||'',uf=$('auditUserFilter')?.value||'',tf=$('auditTypeFilter')?.value||'';
  let edits=auditLogs.filter(x=>(!sf||String(x.store_id)===sf)&&(!uf||String(x.user_id)===uf)).map(x=>({kind:'edit',ts:x.created_at,row:x}));
  let access=accessLogs.filter(x=>(!sf||String(x.store_id)===sf)&&(!uf||String(x.user_id)===uf)&&(x.event_type==='login'||x.event_type==='logout'||x.event_type==='store_open')).map(x=>({kind:'access',ts:x.created_at,row:x}));
- let rows=(tf==='edit'?edits:tf==='access'?access:[...edits,...access]).sort((a,b)=>new Date(b.ts)-new Date(a.ts));
+ let laborActivities=accessLogs.filter(x=>(!sf||String(x.store_id)===sf)&&(!uf||String(x.user_id)===uf)&&String(x.event_type||'').startsWith('labor_workbook_')).map(x=>({kind:'labor',ts:x.created_at,row:x}));
+ let rows=(tf==='edit'?[...edits,...laborActivities]:tf==='access'?access:[...edits,...access,...laborActivities]).sort((a,b)=>new Date(b.ts)-new Date(a.ts));
  $('auditLogBody').innerHTML=rows.map(item=>{
+   if(item.kind==='labor'){let x=item.row;return `<tr><td>${fmtDateTime(x.created_at)}</td><td>${esc(x.actor_name||x.actor_email||'-')}</td><td>${esc(stores.find(s=>s.id===Number(x.store_id))?.name||'-')}</td><td>노무사파일</td><td>${esc(x.details?.report_month||'-')}</td><td><span class="activityBadge edit">${esc(accessEventLabel(x.event_type))}</span></td><td class="auditChange">${esc(laborAccessEventDetail(x)||accessEventLabel(x.event_type))}</td><td class="ipCell">${ipDisplayHtml(x.ip_address)}</td><td>-</td></tr>`}
    if(item.kind==='edit'){let x=item.row;return `<tr><td>${fmtDateTime(x.created_at)}</td><td>${esc(x.actor_name||x.actor_email||'-')}</td><td>${esc(x.store_name||stores.find(s=>s.id===Number(x.store_id))?.name||'-')}</td><td>${esc(x.employee_name||'-')}</td><td>${esc(x.target_date||'-')}</td><td><span class="activityBadge edit">${x.action_type==='INSERT'?'추가':x.action_type==='DELETE'?'삭제':'수정'}</span></td><td class="auditChange">${scheduleAuditSummary(x)}</td><td class="ipCell">${ipDisplayHtml(x.ip_address)}</td><td>${isAppAdmin()?`<button class="btn gray small auditUndoBtn" onclick="undoScheduleAudit(${x.id})">되돌리기</button>`:''}</td></tr>`}
    let x=item.row,cls=accessEventClass(x.event_type),rowCls=x.event_type==='login'?'activityRowLogin':x.event_type==='logout'?'activityRowLogout':'activityRowStore';
    return `<tr class="${rowCls}"><td>${fmtDateTime(x.created_at)}</td><td>${esc(x.actor_name||x.actor_email||'-')}</td><td>${esc(stores.find(s=>s.id===Number(x.store_id))?.name||'-')}</td><td>접속</td><td>-</td><td><span class="activityBadge ${cls}">${esc(accessEventLabel(x.event_type))}</span></td><td class="auditChange">${accessEventSummary(x)}</td><td class="ipCell">${ipDisplayHtml(x.ip_address)}</td><td>-</td></tr>`;
@@ -3356,7 +3360,7 @@ let lastLoadedScheduleStoreId=null,lastLoadedScheduleMonth=null;
 function clearStoreScopedUI(){
  lastLoadedScheduleStoreId=null;lastLoadedScheduleMonth=null;
  annualLeaveLoadedStore=null;annualLeaveLoadedYear=null;annualLeaveScheduleRows=[];annualLeaveLoadingSeq++;
- employees=[];retiredEmployees=[];schedules=[];payroll=[];leaveLedger=[];paymentRegister=[];incentiveRegister=[];employeeDocumentStatusMap=new Map();employeeDocumentStatusReadyStoreId=null;scheduleMonthLocks=[];scheduleEmployeeOrderMap=new Map();scheduleEmployeeOrderTableAvailable=null;scheduleDragEmployeeId=null;
+ employees=[];retiredEmployees=[];schedules=[];payroll=[];leaveLedger=[];leaveAttendanceSchedules=[];paymentRegister=[];incentiveRegister=[];employeeDocumentStatusMap=new Map();employeeDocumentStatusReadyStoreId=null;scheduleMonthLocks=[];scheduleEmployeeOrderMap=new Map();scheduleEmployeeOrderTableAvailable=null;scheduleDragEmployeeId=null;
  selectedEmployees.clear();
  hideScheduleDateTooltip();
  if($('schBody'))$('schBody').innerHTML='<tr><td colspan="40" style="padding:20px;text-align:center">직원·스케줄 불러오는 중...</td></tr>';
@@ -12384,6 +12388,35 @@ function annualLeaveMonthEligibility(e,ym){
  const firstMonth=firstAccrual.slice(0,7)===ym;
  return {locked:false,label:resignMonth?'퇴사월':firstMonth?'첫 발생월':partial?'부분 재직':'',reason:resignMonth?'퇴사월 · 퇴사일까지 사용한 연차만 기록':firstMonth?`첫 발생일 ${firstAccrual} 이후 사용분만 입력`:partial?'재직 중 사용한 연차만 기록':'',partial:!!(partial||resignMonth||firstMonth),firstAccrual};
 }
+// 2026.11.26_5: 주 15시간 이상 입사 첫 1년 개근월의 병가 미발생 사유를 표시한다.
+// 병가로 연차를 "사용"하거나 기존 잔여를 "차감"한 것이 아니다.
+function annualLeaveSickMissedAccruals(e,year,asOf,attendanceRows){
+ if(!e?.hire_date||!asOf)return [];
+ const hire=String(e.hire_date),last=employeeLeaveCutoffDate(e,String(asOf));
+ if(last<hire)return [];
+ const empRows=attendanceRows||[],out=[];
+ for(let m=1;m<=11;m++){
+  const event=addMonthsClamped(hire,m);
+  if(event>last||event.slice(0,4)!==String(year))continue;
+  if(leaveLedger.some(x=>Number(x.employee_id)===Number(e.id)&&String(x.source_key||'')===`accrual-month:${e.id}:${event}`))continue;
+  const start=addMonthsClamped(hire,m-1),end=addDaysIso(event,-1);
+  const matched=empRows.filter(s=>String(s.work_date||'')>=start&&String(s.work_date||'')<=end);
+  if(!matched.some(s=>String(s.work_code||'').trim()==='병'))continue;
+  const status=monthlyAttendanceStatus(e,start,end,empRows);
+  if(status.status!=='fail'||!(status.sick||[]).length)continue;
+  const weekly=legalWeeklyHoursForAccrual(e,event,empRows,end);
+  if(Number(weekly.hours||0)<LEGAL_MIN_WEEKLY_HOURS_FOR_LEAVE||weekly.unknown?.length)continue;
+  out.push({event,dates:[...new Set(status.sick)].sort()});
+ }
+ return out;
+}
+function annualLeaveSickMissedHtml(missed){
+ if(!missed?.length)return '';
+ const allDates=[...new Set(missed.flatMap(x=>x.dates))].sort();
+ const monthDays=allDates.map(d=>d.slice(5)),label=monthDays.slice(0,2).join(', ')+(monthDays.length>2?` 외 ${monthDays.length-2}일`:'');
+ const explanation=missed.map(x=>`${x.dates.join(', ')} 무급병가 → ${x.event} 월 연차 미발생`).join(' / ');
+ return `<small class="annualLeaveSickMiss" title="${esc(explanation)}">병가 미발생 ${missed.length}회 <span>(${esc(label)})</span></small>`;
+}
 function annualLeaveAccrualCount(e,year,asOf){
  let rows=leaveLedger.filter(x=>Number(x.employee_id)===Number(e.id)&&x.event_type==='accrual'&&String(x.event_date||'').startsWith(String(year))&&String(x.event_date)<=asOf);
  let days=0,hours=0;
@@ -12438,6 +12471,11 @@ async function refreshAnnualLeaveData(force=false){
   if(!await persistScheduleEdits())return;
   await loadLeaveLedger();
   if(seq!==annualLeaveLoadingSeq||sid!==storeId())return;
+  if(!leaveAttendanceSchedules.length){
+   const ids=allEmployees().map(e=>Number(e.id)).filter(Boolean);
+   leaveAttendanceSchedules=await fetchLeaveAttendanceSchedules(ids,isoToday());
+   if(seq!==annualLeaveLoadingSeq||sid!==storeId())return;
+  }
   if(force||annualLeaveLoadedStore!==sid||annualLeaveLoadedYear!==year){
    annualLeaveScheduleRows=await fetchAnnualLeaveScheduleRows(year);
    if(seq!==annualLeaveLoadingSeq||sid!==storeId())return;
@@ -12468,6 +12506,9 @@ function renderAnnualLeaveTable(){
  const body=$('annualLeaveBody'),tiles=$('annualLeaveSummaryTiles');if(!body)return;
  const year=annualLeaveYear,today=isoToday(),cutoff=year===Number(today.slice(0,4))?today:(year<Number(today.slice(0,4))?year+'-12-31':null);
  const editable=canEditModule('schedule'),allList=annualLeaveEmployeeList(year);
+ // 전체 연차 판정용 스케줄을 직원별로 묶어 동일한 출근판정 기준으로 표시한다.
+ const annualAttendanceMap=new Map();
+ for(const row of leaveAttendanceSchedules){const id=Number(row.employee_id);if(!annualAttendanceMap.has(id))annualAttendanceMap.set(id,[]);annualAttendanceMap.get(id).push(row)}
  const audit=$('annualLeaveWorkAudit');
  if(audit){
   const issues=allList.flatMap(e=>{
@@ -12489,6 +12530,8 @@ function renderAnnualLeaveTable(){
   const retired=annualLeaveIsRetired(e),settled=!!annualLeaveSettledRow(e.id),firstRetired=retired&&!retiredSeen;
   if(retired)retiredSeen=true;
   const ann=cutoff?annualLeaveAccrualCount(e,year,cutoff):{days:0,hours:0};
+  const sickMissed=cutoff?annualLeaveSickMissedAccruals(e,year,cutoff,annualAttendanceMap.get(Number(e.id))||[]):[];
+  const sickMissedLabel=annualLeaveSickMissedHtml(sickMissed);
   let completedUsed=0,futureUsed=0,futureHours=0,monthCells='';
   for(let m=1;m<=12;m++){
    const ym=annualLeaveYm(year,m),entry=annualLeaveMonthUsage(e,ym),gate=annualLeaveMonthEligibility(e,ym);
@@ -12511,7 +12554,7 @@ function renderAnnualLeaveTable(){
   grandAccrual+=ann.days;grandUsed+=completedUsed;grandFuture+=futureUsed;grandBalance+=balance;
   const next=cutoff?nextMonthlyAccrualStatus(e,cutoff,leaveAttendanceSchedules):null;
   if(next&&['pending','review'].includes(next.status))missing++;
-  return `<tr data-annual-employee="${e.id}" class="${retired?'annualLeaveRetiredRow':''} ${firstRetired?'annualLeaveRetiredFirst':''} ${settled?'annualLeaveSettledRow':''}"><td class="annualLeavePinned" style="--employee-print-bg:${employeeColor(e)}"><b>${esc(e.name)}</b><small>입사 ${esc(e.hire_date||'미등록')}</small>${retired?`<span class="annualLeaveRetiredBadge">퇴사 ${esc(e.resign_date)}</span>`:`<small>${esc(workTypeForDate(e,year+'-12-31'))}</small>`}${settled?'<span class="annualLeaveSettledBadge">정산완료</span>':''}</td>${monthCells}<td class="annualLeaveStat">${annualLeaveFmt(ann.days)}개<small>${annualLeaveFmt(ann.hours)}h</small></td><td class="annualLeaveStat">${annualLeaveFmt(completedUsed)}개<small>${futureUsed?'사용예정 '+annualLeaveFmt(futureUsed)+'개':'완료 기준'}</small></td><td class="annualLeaveStat balance ${balance<0?'negative':''}">${cutoff?annualLeaveFmt(balance)+'h':'예정'}<small>${cutoff?(futureHours>0?'예정 사용 -'+annualLeaveFmt(futureHours)+'h (미차감)':(summary?.confirmedDate?`${summary.confirmedDate.slice(5)} 잔여확정 이후 누적`:'오늘 기준 원장')):'아직 미도래'}</small></td><td><div class="annualLeaveActions"><button class="btn gray small" onclick="openAnnualLeaveAttendance(${e.id})">출근확인</button>${editable?`<button class="btn gray small" onclick="adjustLeave(${e.id})">잔여확정</button>`:''}${retired&&editable?(settled?`<button type="button" class="btn green small" onclick="annualLeaveSetSettlement(${e.id},false)">정산 복구</button>`:`<button type="button" class="btn gray small" onclick="annualLeaveSetSettlement(${e.id},true)">정산완료</button>`):''}</div></td></tr>`;
+  return `<tr data-annual-employee="${e.id}" class="${retired?'annualLeaveRetiredRow':''} ${firstRetired?'annualLeaveRetiredFirst':''} ${settled?'annualLeaveSettledRow':''}"><td class="annualLeavePinned" style="--employee-print-bg:${employeeColor(e)}"><b>${esc(e.name)}</b><small>입사 ${esc(e.hire_date||'미등록')}</small>${retired?`<span class="annualLeaveRetiredBadge">퇴사 ${esc(e.resign_date)}</span>`:`<small>${esc(workTypeForDate(e,year+'-12-31'))}</small>`}${settled?'<span class="annualLeaveSettledBadge">정산완료</span>':''}</td>${monthCells}<td class="annualLeaveStat">${annualLeaveFmt(ann.days)}개<small>${annualLeaveFmt(ann.hours)}h</small>${sickMissedLabel}</td><td class="annualLeaveStat">${annualLeaveFmt(completedUsed)}개<small>${futureUsed?'사용예정 '+annualLeaveFmt(futureUsed)+'개':'완료 기준'}</small></td><td class="annualLeaveStat balance ${balance<0?'negative':''}">${cutoff?annualLeaveFmt(balance)+'h':'예정'}<small>${cutoff?(futureHours>0?'예정 사용 -'+annualLeaveFmt(futureHours)+'h (미차감)':(summary?.confirmedDate?`${summary.confirmedDate.slice(5)} 잔여확정 이후 누적`:'오늘 기준 원장')):'아직 미도래'}</small></td><td><div class="annualLeaveActions"><button class="btn gray small" onclick="openAnnualLeaveAttendance(${e.id})">출근확인</button>${editable?`<button class="btn gray small" onclick="adjustLeave(${e.id})">잔여확정</button>`:''}${retired&&editable?(settled?`<button type="button" class="btn green small" onclick="annualLeaveSetSettlement(${e.id},false)">정산 복구</button>`:`<button type="button" class="btn gray small" onclick="annualLeaveSetSettlement(${e.id},true)">정산완료</button>`):''}</div></td></tr>`;
  }).join(''):`<tr><td colspan="17" style="padding:24px">${settledCount&&!annualLeaveShowSettled?'정산완료로 숨긴 직원만 있습니다. 위 [정산완료 보기]에서 복구할 수 있습니다.':'해당 연도에 재직한 직원이 없습니다.'}</td></tr>`;
  scheduleViewportHeaderRequest();
  if(tiles)tiles.innerHTML=`<div class="annualLeaveTile"><small>${year}년 발생 합계</small><b>${annualLeaveFmt(grandAccrual)}개</b></div><div class="annualLeaveTile"><small>${year}년 사용 완료 / 예정</small><b>${annualLeaveFmt(grandUsed)}개<small style="font-size:12px;font-weight:500"> / 예정 ${annualLeaveFmt(grandFuture)}개</small></b></div><div class="annualLeaveTile"><small>현재·연도말 잔여 합계</small><b>${cutoff?annualLeaveFmt(grandBalance)+'h':'예정 연도'}</b></div><div class="annualLeaveTile"><small>1년 미만 개근 확인 필요</small><b>${missing}명</b></div>`;
@@ -13840,8 +13883,8 @@ function laborSetInfo(){const d=laborDraft,n=stores.find(x=>Number(x.id)===Numbe
  if($('laborScopeBadge'))$('laborScopeBadge').textContent=n+' · 업장별 원본 1개';
  const info=$('laborWorkbookInfo');if(!info)return;
  if(!d){info.textContent=n+' · 등록된 원본이 없습니다. 상단 [원본 업로드]로 등록하세요.';return;}
- const count=Object.entries(d.edits?.['인원현황']||{}).filter(([r])=>/^[IO](?:[4-9]|[1-9]\d+)$/.test(r)).length;
- info.textContent=n+'  |  '+d.fileName+'  |  근무시간/특이사항 수정 '+count+'칸'+(d.dirty?' · 자동 저장 대기':' · 저장됨');
+ const count=Object.entries(d.edits?.['인원현황']||{}).filter(([r])=>/^[B-O][4-9]\d*$/.test(r)).length;
+ info.textContent=n+'  |  '+d.fileName+'  |  수정 '+count+'칸'+(d.dirty?' · 자동 저장 대기':' · 저장됨');
 }
 function laborDisplayValue(sheet,ref){const d=laborDraft,ws=d?.wb.Sheets[sheet];if(!ws)return '';
  if(sheet==='인원현황'&&/^D\d+$/.test(ref)){
@@ -13911,8 +13954,10 @@ async function laborSaveMonth(){const d=laborDraft;if(!d||!d.dirty||laborBusy){r
    }
    if(laborDraft!==d)return true;
    d.loadedMonth='0000-00';d.stamp=q.data?.[0]?.updated_at||payload.updated_at;const prev=d.savedEdits||{};d.savedEdits=edits;d.dirty=(d.revision||0)!==rev;
-   laborAuditDiff(prev,edits,scope.sid).catch(err=>console.warn('노무사 편집 접속이력 저장 오류',err));
-   laborNotify(d.dirty?'추가 수정 중 · 이어서 저장':'자동 저장 완료');laborSetInfo();return true;
+   let auditErr=null;
+   try{await laborAuditDiff(prev,edits,scope.sid)}catch(err){auditErr=err;console.warn('노무사 편집 이력 저장 오류',err)}
+   laborNotify(auditErr?'자료 저장 완료 · 이력 기록 실패: '+(auditErr?.message||auditErr):(d.dirty?'추가 수정 중 · 이어서 저장':'자동 저장 완료'),!!auditErr);
+   laborSetInfo();return true;
   }catch(e){laborAutoLastError=e;if(laborDraft===d){d.dirty=true;laborNotify('자동 저장 실패: '+(e?.message||e),true);}return false;
   }finally{laborBusy=false;if(laborDraft===d&&d.dirty&&!laborAutoLastError)laborScheduleAutoSave();}})();
  laborAutoTask=task;try{return await task}finally{if(laborAutoTask===task)laborAutoTask=null;}
@@ -13953,13 +13998,13 @@ async function laborUploadOriginal(file){if(!file||!laborAllowed()||laborBusy)re
   if(!confirm(`${stores.find(s=>Number(s.id)===sid)?.name||sid} 업장에 ${file.name} 원본을 등록합니다. 계속하시겠습니까?`))return;
   laborBusy=true;laborNotify('원본 업로드 중…');const payload={store_id:sid,report_month:'0000-00',file_name:file.name,file_bytes:laborByteHex(buf),edits:{},updated_at:new Date().toISOString(),updated_by:currentSessionUser?.id||null};
   const q=await sb.from('labor_workbook_files').upsert(payload,{onConflict:'store_id,report_month'});if(q.error)throw q.error;
-  laborBusy=false;await laborLoadSelectedMonth();laborNotify('원본 업로드 완료 · I/O열 바로 수정 가능');logAccessEvent('labor_workbook_original_uploaded',{store_id:sid,file_name:file.name,file_size:file.size}).catch(()=>{});
+  laborBusy=false;await laborLoadSelectedMonth();laborNotify('원본 업로드 완료 · 전체 열 편집 가능');try{await laborActivityLog('labor_workbook_original_uploaded',{store_id:sid,file_name:file.name,file_size:file.size})}catch(err){laborNotify('원본 업로드됨 · 업로드 이력 저장 실패: '+(err?.message||err),true)}
  }catch(e){laborNotify('원본 업로드 오류: '+(e?.message||e),true);alert('업로드 실패: '+(e?.message||e));}finally{laborBusy=false;}
 }
 function laborQuickUpload(){if(!laborAllowed())return;const input=$('laborWorkbookInput');if(input)input.click();}
 async function laborDownloadPreservingOriginal(){if(!laborAllowed())return;let d=laborDraft;if(!d||d.sid!==storeId()){await laborLoadSelectedMonth();d=laborDraft;}if(!d)return alert('현재 업장 원본이 없습니다. [원본 업로드]를 이용하세요.');
  if(!await laborFlushSave()){alert('근무시간/특이사항 자동 저장이 실패했습니다. 저장 상태를 확인한 뒤 다시 다운로드하세요.');return;}
- try{laborNotify('원본 서식 검증·다운로드 중…');const out=await laborBuildPreservedXlsx(),blob=new Blob([out],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=d.fileName;a.style.display='none';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),30000);laborNotify('원본 서식 보존 다운로드 완료');}
+ try{laborNotify('원본 서식 검증·다운로드 중…');const out=await laborBuildPreservedXlsx(),blob=new Blob([out],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=d.fileName;a.style.display='none';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),30000);laborNotify('원본 서식 보존 다운로드 완료');laborActivityLog('labor_workbook_download',{store_id:storeId(),file_name:d.fileName,changed_count:Object.keys(d.edits?.['인원현황']||{}).length}).catch(err=>{console.warn(err);laborNotify('다운로드 완료 · 다운로드 이력 기록 실패',true)});}
  catch(e){laborNotify('다운로드 실패: '+(e?.message||e),true);alert('원본 서식 보존 검증에 실패했습니다. '+(e?.message||e));}
 }
 async function laborQuickExport(){return laborDownloadPreservingOriginal()}
@@ -14027,9 +14072,222 @@ const laborPreviouslyLoad20261126=laborLoadSelectedMonth;
 laborLoadSelectedMonth=async function(...args){
  const result=await laborPreviouslyLoad20261126(...args),draft=laborDraft;
  if(draft&&draft.bytes){try{const rows=await laborReadSourceGrayRows(draft);
-  if(laborDraft===draft){draft.originalGrayRows=rows;if(document.activeElement?.matches?.('#laborWorkbookGrid textarea')){document.querySelectorAll('#laborWorkbookGrid tbody tr').forEach(tr=>{let input=tr.querySelector('.laborOrderInput'),row=Number(input?.dataset?.r);if(Number.isFinite(row)&&rows.has(row))tr.classList.add('laborRetired')})}else laborRenderSheet()}
+  if(laborDraft===draft){draft.originalGrayRows=rows;if(document.activeElement?.matches?.('#laborWorkbookGrid textarea')){document.querySelectorAll('#laborWorkbookGrid tbody tr').forEach(tr=>{let row=Number(tr.getAttribute('data-labor-row'));if(Number.isFinite(row)&&rows.has(row))tr.classList.add('laborRetired')})}else laborRenderSheet()}
  }catch(err){console.warn('원본 퇴사자 회색 표시 검사 실패',err)}}
  return result;
 };
 </script>
+<style id="labor20261126_5Compact">
+/* Only the labor Excel editor is re-styled; general dashboard stays unchanged. */
+#hoursPage .laborGrid{width:max-content;min-width:0;table-layout:fixed;border-collapse:separate;border-spacing:0}
+#hoursPage .laborGrid col{min-width:0!important}
+#hoursPage .laborGrid th,#hoursPage .laborGrid td{box-sizing:border-box;font-size:12px}
+#hoursPage .laborGrid th{min-width:0!important;max-width:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;word-break:keep-all;overflow-wrap:normal;padding:4px 5px}
+#hoursPage .laborGrid thead tr:first-child th{top:0;height:28px;padding:4px 10px 4px 3px}
+#hoursPage .laborGrid thead tr:nth-child(2) th{top:28px;height:29px;padding:4px 5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;word-break:keep-all}
+#hoursPage .laborGrid tbody td{min-width:0!important;max-width:none;padding:1px 3px;height:31px;line-height:1.25;vertical-align:middle}
+#hoursPage .laborGrid thead th:first-child{position:sticky;left:0;z-index:7;width:auto;min-width:0!important;max-width:none}
+#hoursPage .laborGrid tbody td:first-child{position:sticky;left:0;z-index:4;background:#f1f5f9;text-align:center;font-weight:700}
+#hoursPage .laborGrid .laborReadValue{min-width:0;min-height:0;padding:3px 4px;line-height:1.28;white-space:nowrap;word-break:keep-all;overflow-wrap:normal;overflow:hidden;text-overflow:ellipsis}
+#hoursPage .laborGrid input.laborCellInput,#hoursPage .laborGrid textarea.laborCellInput{font:inherit;display:block;width:100%;min-width:0!important;max-width:none!important;height:26px;min-height:26px;box-sizing:border-box;padding:3px 4px;margin:0;background:transparent;border:1px solid transparent;border-radius:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.25;resize:none;color:inherit}
+#hoursPage .laborGrid textarea.laborCellInput.laborMulti{white-space:pre-wrap;overflow:auto;min-height:34px;height:34px;line-height:1.2}
+#hoursPage .laborGrid .laborCellInput:focus{outline:1px solid #739de7;background:#fff!important;border-color:#9fbeef;white-space:pre-wrap;overflow:auto;text-overflow:clip}
+#hoursPage .laborGrid textarea.laborCellInput.laborMulti:focus{height:86px;min-height:86px;max-height:180px;resize:vertical}
+#hoursPage .laborGrid input.laborCellInput.changed,#hoursPage .laborGrid textarea.laborCellInput.changed{background:transparent!important;border-color:transparent!important}
+#hoursPage .laborGrid .laborNameBox{display:flex;align-items:center;gap:3px;width:100%;min-width:0;overflow:hidden}
+#hoursPage .laborGrid .laborNameBox .laborNameCheck{flex:0 0 14px;width:14px;min-width:14px;height:14px;margin:0}
+#hoursPage .laborGrid .laborNameBox .laborDragGrip{flex:0 0 16px;display:inline-flex;width:16px;height:22px;align-items:center;justify-content:center;cursor:grab;border-radius:3px;color:#5e7090;font-size:15px;touch-action:none;user-select:none}
+#hoursPage .laborGrid .laborNameBox .laborDragGrip:hover{color:#164fc1;background:#eaf1ff}
+#hoursPage .laborGrid .laborNameBox .laborCellInput{flex:1 1 0;min-width:0!important;max-width:none!important;font-weight:800;white-space:nowrap;word-break:keep-all;overflow:hidden;text-overflow:ellipsis}
+#hoursPage .laborGrid tr.laborDragOverTop td{border-top:3px solid #3b82f6}
+#hoursPage .laborGrid tr.laborDragOverBottom td{border-bottom:3px solid #3b82f6}
+#hoursPage .laborGrid tr.laborRetired .laborCellInput{background:transparent!important}
+#hoursPage .laborGrid tr.laborDone .laborCellInput{background:transparent!important}
+#hoursPage .laborGrid .laborResizeHandle{width:10px}
+#hoursPage .laborGridWrap{overflow:auto;max-height:68vh}
+@media(max-width:650px){#hoursPage .laborGrid tbody td{height:30px}#hoursPage .laborGrid input.laborCellInput{font-size:12px}}
+</style>
+<script id="labor20261126_5AllFieldsAndReorder">
+/* Private accountant workbook: source ZIP and non-accountant data remain untouched.
+   Source-row IDs stay stable for edits/checks. Download remaps employee row XML,
+   including their original style IDs, to their visual positions. */
+const LABOR_20261126_5 = '2026.11.26_5';
+let laborDragSourceRow=null,laborDragTargetRow=null,laborDragAfter=false;
+function laborOriginalDisplay(sheet,ref){const d=laborDraft,ws=d?.wb?.Sheets?.[sheet];if(!ws)return '';
+ const value=laborOldValue(ws,ref);if(sheet==='인원현황'&&/^D\d+$/.test(ref)){
+  const cell=ws[ref];if(cell?.t==='n'&&Number(cell.v)>20000&&XLSX?.SSF?.parse_date_code){const date=XLSX.SSF.parse_date_code(cell.v);if(date)return `${date.y}-${String(date.m).padStart(2,'0')}-${String(date.d).padStart(2,'0')}`;}
+  const m=String(value).match(/(20\d{2})\D+(\d{1,2})\D+(\d{1,2})/);if(m)return `${m[1]}-${m[2].padStart(2,'0')}-${m[3].padStart(2,'0')}`;
+ }return value;
+}
+function laborDisplayValue(sheet,ref){const edit=laborCellOverride(sheet,ref);return edit!==undefined?String(edit):laborOriginalDisplay(sheet,ref)}
+function laborViewState(sheet){if(!laborDraft)return {widths:{},order:[],checkedRows:[]};const e=laborDraft.edits;e.__view=e.__view||{};e.__view[sheet]=e.__view[sheet]||{widths:{},order:[],checkedRows:[]};return e.__view[sheet]}
+function laborNamedRows(ws,sheet='인원현황'){
+ if(!ws)return [];
+ const limit=Math.min(XLSX.utils.decode_range(ws['!ref']||'A1:A1').e.r,500),rows=[];
+ for(let r=3;r<=limit;r++)if(String(laborDisplayValue(sheet,'B'+(r+1))||'').trim())rows.push(r);
+ return rows;
+}
+function laborOrderedRows(ws,sheet='인원현황'){
+ const physical=laborNamedRows(ws,sheet),set=new Set(physical),view=laborViewState(sheet),order=[];
+ for(const r of view.order||[]){const x=Number(r);if(set.has(x)&&!order.includes(x))order.push(x)}
+ for(const r of physical)if(!order.includes(r))order.push(r);
+ return {physical,order};
+}
+function laborRenderSheet(){const d=laborDraft,box=$('laborWorkbookGrid'),sel=$('laborSheetSelect');if(!box||!sel)return;laborSetInfo();
+ if(!d){box.className='laborEmpty';box.textContent='이 업장에 등록된 근로자현황 원본이 없습니다. [원본 업로드]를 사용하세요.';sel.innerHTML='';return;}
+ const keep=sel.value;sel.innerHTML=d.wb.SheetNames.map(n=>`<option value="${esc(n)}">${esc(n)}</option>`).join('');
+ if(d.wb.SheetNames.includes(keep))sel.value=keep;else if(d.wb.SheetNames.includes('인원현황'))sel.value='인원현황';
+ const sheet=sel.value,ws=d.wb.Sheets[sheet],region=XLSX.utils.decode_range(ws['!ref']||'A1:A1'),maxR=Math.min(500,Math.max(3,region.e.r)),maxC=Math.min(35,region.e.c),cols=Array.from({length:maxC+1},(_,c)=>c),view=laborViewState(sheet),ordered=laborOrderedRows(ws,sheet);
+ const named=new Set(ordered.physical),rows=[0,1,2,...ordered.order,...Array.from({length:maxR-2},(_,i)=>i+3).filter(r=>!named.has(r))];
+ let h='<div class="laborGridWrap"><table class="laborGrid"><colgroup>';
+ for(const c of cols){const col=XLSX.utils.encode_col(c),base=c===0?45:c===1?124:(LABOR_COL_WIDTH[col]||115),min=c===0?30:c===1?74:40,w=Math.max(min,Math.min(680,Number(view.widths?.[col]??base)));h+=`<col data-col="${col}" style="width:${w}px">`}
+ h+='</colgroup><thead><tr>';
+ for(const c of cols){const col=XLSX.utils.encode_col(c);h+=`<th class="laborResizeHeader" data-col="${col}" title="${col}열">${col}<span class="laborResizeHandle" onpointerdown="laborResizeStart(event,'${col}')"></span></th>`}
+ h+='</tr><tr>';
+ for(const c of cols){const col=XLSX.utils.encode_col(c),v=ws[col+'3']?.w??ws[col+'3']?.v??'';h+=`<th title="${esc(String(v))}">${esc(String(v))}</th>`}
+ h+='</tr></thead><tbody>';
+ for(const r of rows){const data=r>=3&&named.has(r)&&sheet==='인원현황',retired=data&&laborRetiredOnRow(ws,r),employee=data?laborEmployeeOnRow(ws,r):null,checked=data&&(view.checkedRows||[]).includes(r),color=employee?employeeColor(employee):'#eaf0f9',ordinal=data?ordered.order.indexOf(r)+1:0;
+  h+=`<tr data-labor-row="${r}" class="${retired?'laborRetired':''} ${checked?'laborDone':''}" style="--labor-row-color:${esc(color)}" ${data?`ondragover="laborRowDragOver(event,${r})" ondrop="laborRowDrop(event,${r})"`:''}>`;
+  for(const c of cols){const col=XLSX.utils.encode_col(c),ref=col+(r+1),value=data&&c===0?String(ordinal):laborDisplayValue(sheet,ref),isCovered=laborMergedCovered(ws,r,c);
+   if(isCovered){h+='<td class="laborMergedCell"></td>';continue;}
+   h+=`<td class="${c===1&&data?'laborEmpCell':''}" title="${esc(String(value)).slice(0,400)}">`;
+   if(data&&c===0){h+=`<span class="laborSerial">${ordinal}</span>`}
+   else if(r<3||c===0||ws[ref]?.f!==undefined){h+=`<div class="laborReadValue">${esc(String(value))}</div>`}
+   else{
+    const edited=!!(d.edits?.[sheet]&&Object.prototype.hasOwnProperty.call(d.edits[sheet],ref)),multi=c===8||c===14,control=multi?`<textarea class="laborCellInput laborMulti${edited?' changed':''}"`:`<input type="text" class="laborCellInput${edited?' changed':''}"`,attrs=` data-cell="${ref}" draggable="false" spellcheck="false" oninput="laborQueueEdit(this)" onchange="laborCellChange(this)" onblur="laborFlushSave()" title="${esc(sheet+'!'+ref)} · 수정 후 자동 저장"`;
+    let element=multi?`${control}${attrs}>${esc(String(value))}</textarea>`:`${control}${attrs} value="${esc(String(value))}">`;
+    if(data&&c===1){h+=`<div class="laborNameBox"><input class="laborNameCheck" type="checkbox" ${checked?'checked':''} onchange="laborToggleChecked(${r},this.checked)" title="이번 작업 완료 표시" aria-label="${esc(String(value))} 작업 완료"><span class="laborDragGrip" draggable="true" ondragstart="laborRowDragStart(event,${r})" ondragend="laborRowDragEnd()" title="이름을 잡고 위아래로 움직여 직원 순서 변경">☰</span>${element}</div>`}
+    else h+=element;
+   }
+   if(data&&c===1&&retired)h+='<span class="laborRetiredBadge">퇴사</span>';
+   h+='</td>';
+  }
+  h+='</tr>';
+ }
+ h+='</tbody></table></div>';box.className='';box.innerHTML=h;
+ if($('laborUploadBtn'))$('laborUploadBtn').disabled=!isAppAdmin();
+}
+function laborSetValue(sheet,ref,value){const d=laborDraft;if(!d||!/^[A-Z]{1,2}[1-9]\d*$/.test(ref))return;
+ const cell=XLSX.utils.decode_cell(ref),ws=d.wb.Sheets[sheet];if(cell.r<3||cell.c===0||laborMergedCovered(ws,cell.r,cell.c)||ws[ref]?.f!==undefined)return;
+ const txt=String(value??'').replace(/\r\n?/g,'\n'),original=String(laborOriginalDisplay(sheet,ref)).replace(/\r\n?/g,'\n');
+ d.edits[sheet]=d.edits[sheet]||{};
+ if(txt===original)delete d.edits[sheet][ref];else d.edits[sheet][ref]=txt;
+ if(!Object.keys(d.edits[sheet]).length)delete d.edits[sheet];
+ d.revision=(d.revision||0)+1;d.dirty=true;laborSetInfo();laborNotify('입력 변경 · 자동 저장 대기');laborScheduleAutoSave();
+}
+function laborCellChange(el){if(el)laborSetValue($('laborSheetSelect').value,el.dataset.cell,el.value)}
+function laborQueueEdit(el){if(el)laborSetValue($('laborSheetSelect').value,el.dataset.cell,el.value)}
+function laborRowDragStart(ev,row){if(!laborDraft)return;laborDragSourceRow=row;laborDragTargetRow=null;laborDragAfter=false;ev.dataTransfer.effectAllowed='move';ev.dataTransfer.setData('text/plain','row:'+row)}
+function laborRowDragOver(ev,target){if(laborDragSourceRow===null||laborDragSourceRow===target)return;ev.preventDefault();ev.dataTransfer.dropEffect='move';laborDragTargetRow=target;
+ const row=ev.currentTarget,rect=row.getBoundingClientRect();laborDragAfter=ev.clientY>rect.top+rect.height/2;
+ document.querySelectorAll('#laborWorkbookGrid .laborDragOverTop,#laborWorkbookGrid .laborDragOverBottom').forEach(x=>x.classList.remove('laborDragOverTop','laborDragOverBottom'));
+ row.classList.add(laborDragAfter?'laborDragOverBottom':'laborDragOverTop');
+}
+function laborRowDrop(ev,target){ev.preventDefault();const from=laborDragSourceRow,after=laborDragAfter;laborRowDragEnd();if(from===null||from===target||!laborDraft)return;
+ const sheet=$('laborSheetSelect').value,view=laborViewState(sheet),result=laborOrderedRows(laborDraft.wb.Sheets[sheet],sheet),order=result.order,fromI=order.indexOf(from);if(fromI<0)return;
+ order.splice(fromI,1);let toI=order.indexOf(target);if(toI<0)return;if(after)toI++;order.splice(toI,0,from);
+ if(JSON.stringify(order)===JSON.stringify(result.physical)){view.order=[];}else view.order=order;
+ laborDraft.revision=(laborDraft.revision||0)+1;laborDraft.dirty=true;laborRenderSheet();laborNotify('직원 순서 변경 · 엑셀 연번 자동수정 · 저장 중');laborScheduleAutoSave();
+}
+function laborRowDragEnd(){laborDragSourceRow=null;laborDragTargetRow=null;laborDragAfter=false;document.querySelectorAll('#laborWorkbookGrid .laborDragOverTop,#laborWorkbookGrid .laborDragOverBottom').forEach(x=>x.classList.remove('laborDragOverTop','laborDragOverBottom'))}
+function laborResizeStart(ev,col){if(!laborDraft||ev.button!==0)return;ev.preventDefault();ev.stopPropagation();const el=ev.target.closest('table')?.querySelector(`col[data-col="${col}"]`);if(!el)return;const w=parseFloat(el.style.width)||105;
+ laborResizeContext={pointerId:ev.pointerId,col,colEl:el,startX:ev.clientX,width:w};ev.target.setPointerCapture?.(ev.pointerId);ev.target.addEventListener('pointermove',laborResizeMove);ev.target.addEventListener('pointerup',laborResizeEnd,{once:true});ev.target.addEventListener('pointercancel',laborResizeEnd,{once:true});
+}
+function laborResizeMove(ev){const c=laborResizeContext;if(!c||ev.pointerId!==c.pointerId)return;const min=c.col==='A'?30:c.col==='B'?74:40;c.colEl.style.width=Math.max(min,Math.min(680,c.width+ev.clientX-c.startX))+'px'}
+function laborResizeEnd(ev){const c=laborResizeContext;if(!c||ev.pointerId!==c.pointerId)return;ev.target.removeEventListener('pointermove',laborResizeMove);
+ const min=c.col==='A'?30:c.col==='B'?74:40,w=Math.round(Math.max(min,Math.min(680,c.width+ev.clientX-c.startX)));laborResizeContext=null;const view=laborViewState($('laborSheetSelect').value);
+ if(view.widths?.[c.col]===w)return;view.widths=view.widths||{};view.widths[c.col]=w;
+ laborDraft.revision=(laborDraft.revision||0)+1;laborDraft.dirty=true;laborNotify('열 너비 변경 · 자동 저장');laborScheduleAutoSave();
+}
+function laborSourceToTargetXml(xml,physical,order){
+ if(physical.length!==order.length||!physical.length)return xml;
+ if(physical.every((r,i)=>r===order[i]))return xml;
+ const segs=new Map();for(const m of xml.matchAll(/<row\b[^>]*\br="(\d+)"[^>]*>[\s\S]*?<\/row>/g))segs.set(Number(m[1])-1,m[0]);
+ const map=new Map(physical.map((dest,i)=>[dest,order[i]]));
+ for(const [dest,source] of map){if(!segs.has(dest)||!segs.has(source))throw new Error('이름이 있는 직원 행의 원본 구조를 찾지 못했습니다.');}
+ for(const m of (laborDraft.wb.Sheets['인원현황']['!merges']||[]))if(physical.some(r=>r>=m.s.r&&r<=m.e.r))throw new Error('직원 행에 병합된 셀이 있어 행 재배치를 중단했습니다.');
+ for(const source of order)if(/<f(?:\s|>)/.test(segs.get(source)))throw new Error('직원 행에 수식이 있어 행 재배치를 중단했습니다.');
+ return xml.replace(/<row\b[^>]*\br="(\d+)"[^>]*>[\s\S]*?<\/row>/g,(whole,num)=>{
+  const dest=Number(num)-1,source=map.get(dest);if(source===undefined)return whole;let part=segs.get(source),to=dest+1;
+  part=part.replace(/(<row\b[^>]*\br=")(\d+)(")/,(_all,a,_n,b)=>a+to+b);
+  return part.replace(/(<c\b[^>]*\br=")([A-Z]+)\d+("[^>]*>)/g,(_all,a,col,b)=>a+col+to+b).replace(/(<c\b[^>]*\br=")([A-Z]+)\d+("[^>]*\/>)/g,(_all,a,col,b)=>a+col+to+b);
+ });
+}
+function laborCellMod(sheet,ref,value){const original=laborDraft.wb.Sheets[sheet]?.[ref]||{},v=String(value??'').replace(/\r\n?/g,'\n');
+ if(v==='')return {type:'text',value:''};if(original?.t==='n'&&laborExcelNumericFormat(original)){
+  const serial=laborExcelDateSerial(v);if(serial!==null)return {type:'number',value:serial};
+ }
+ if(original?.t==='n'&&/^[-+]?(?:\d+\.?\d*|\.\d+)$/.test(v.replace(/,/g,''))&&!/^0\d{2,}/.test(v))return {type:'number',value:Number(v.replace(/,/g,''))};
+ return {type:'text',value:v};
+}
+async function laborBuildPreservedXlsx(){
+ const d=laborDraft;if(!d)throw new Error('원본이 없습니다.');
+ const zip=await JSZip.loadAsync(d.bytes),paths=Object.keys(zip.files).filter(x=>!zip.files[x].dir).sort(),wbf=zip.file('xl/workbook.xml'),rel=zip.file('xl/_rels/workbook.xml.rels');if(!wbf||!rel)throw new Error('기준 Excel 구조를 확인할 수 없습니다.');
+ const mapping=laborWorksheetPaths(await wbf.async('string'),await rel.async('string')),changed=new Set(),wrap=await laborSourceWrapStyle(zip),expected={};
+ for(const sheet of d.wb.SheetNames){const edits=d.edits?.[sheet]||{},valid=Object.entries(edits).filter(([ref])=>/^[A-Z]{1,2}[4-9]\d*$/.test(ref));const isMain=sheet==='인원현황',ws=d.wb.Sheets[sheet],sorted=isMain?laborOrderedRows(ws,sheet):{physical:[],order:[]};
+  const reordered=isMain&&sorted.physical.some((r,i)=>r!==sorted.order[i]);
+  if(!valid.length&&!reordered)continue;
+  const path=mapping.get(sheet),file=path&&zip.file(path);if(!file)throw new Error(sheet+'의 Excel 시트 XML이 없습니다.');
+  let xml=await file.async('string');if(reordered)xml=laborSourceToTargetXml(xml,sorted.physical,sorted.order);
+  const newRows=new Map(sorted.order.map((source,i)=>[source,sorted.physical[i]])),checks=new Map();
+  for(const [sourceRef,raw] of valid){const c=XLSX.utils.decode_cell(sourceRef);if(c.c===0||c.r<3)continue;if(laborMergedCovered(ws,c.r,c.c)||ws[sourceRef]?.f!==undefined)throw new Error(sourceRef+' 원본 수식/병합 셀을 바꿀 수 없습니다.');
+   const destRow=newRows.get(c.r)??c.r,ref=XLSX.utils.encode_cell({c:c.c,r:destRow}),mod=laborCellMod(sheet,sourceRef,raw);
+   xml=commerceV20PatchCell(xml,ref,mod);checks.set(ref,mod);
+   if(c.c===8&&mod.type==='text'&&mod.value.includes('\n')){
+    const match=xml.match(new RegExp('<c\\b[^>]*\\br="'+ref+'"[^>]*\\bs="(\\d+)"'));
+    if(match){const newStyle=wrap.wrapFor(Number(match[1]));if(newStyle!==null)xml=laborApplyWrapToCell(xml,ref,newStyle);}
+   }
+  }
+  if(isMain&&sorted.physical.length){for(let i=0;i<sorted.physical.length;i++){
+   const dest=sorted.physical[i]+1,ref='A'+dest,mod={type:'number',value:i+1};
+   if(reordered||Number(ws[ref]?.v)!==i+1){xml=commerceV20PatchCell(xml,ref,mod);checks.set(ref,mod)}
+  }}
+  commerceV20AssertExpectedCells(xml,checks,sheet);zip.file(path,xml);changed.add(path);expected[sheet]=checks;
+ }
+ wrap.finish?.();if(wrap.changed)changed.add('xl/styles.xml');
+ const result=await zip.generateAsync({type:'uint8array',compression:'DEFLATE',compressionOptions:{level:6}}),newZip=await JSZip.loadAsync(result);
+ if(Object.keys(newZip.files).filter(x=>!newZip.files[x].dir).length!==paths.length)throw new Error('Excel 구성요소 숫자가 달라졌습니다.');
+ for(const path of paths){const a=zip.file(path),b=newZip.file(path);if(!b)throw new Error('Excel 원본 구성요소 누락: '+path);
+  if(!changed.has(path)&&!commerceV20SameBytes(await a.async('uint8array'),await b.async('uint8array')))throw new Error('Excel 원본 다른 구성요소가 변경되었습니다: '+path);
+ }
+ for(const [name,checks] of Object.entries(expected))commerceV20AssertExpectedCells(await newZip.file(mapping.get(name)).async('string'),checks,name);
+ const verify=XLSX.read(result,{type:'array',cellFormula:true,cellNF:true,cellStyles:true});if(JSON.stringify(verify.SheetNames)!==JSON.stringify(d.wb.SheetNames))throw new Error('Excel 시트가 변경되었습니다.');
+ for(const [name,checks] of Object.entries(expected))for(const [ref,mod] of checks){const v=verify.Sheets[name]?.[ref]?.v;
+  if(mod.value===''&&(v===undefined||v===null||v===''))continue;
+  if(mod.type==='number'?Math.abs(Number(v)-Number(mod.value))>0.000001:String(v??'')!==String(mod.value))throw new Error('다운로드 재읽기 검증 실패: '+name+' '+ref);
+ }
+ if(d.wb.Sheets['인원현황']){
+  const s='인원현황',ws=d.wb.Sheets[s],{physical,order}=laborOrderedRows(ws,s);
+  for(let i=0;i<order.length;i++){const from='B'+(order[i]+1),to='B'+(physical[i]+1),wanted=laborDisplayValue(s,from),v=verify.Sheets[s]?.[to]?.v??'';
+   if(String(v)!==String(wanted))throw new Error('직원 순서/이름 검증 실패: '+to);
+  }
+ }
+ return result;
+}
+async function laborActivityLog(eventType,details={}){
+ if(!currentSessionUser?.id)throw new Error('로그인 사용자 정보를 확인할 수 없습니다.');
+ const merged={...details,report_month:$('monthSelect')?.value||null,access_session_id:currentAccessSessionId()||ensureAccessSessionId()},sid=details.store_id??storeId();
+ const payload={user_id:currentSessionUser.id,actor_email:currentSessionUser.email||currentAppUser?.email||null,actor_name:currentAppUser?.display_name||null,event_type:eventType,store_id:sid,device:userDeviceLabel(),details:merged};
+ const r=await sb.from('access_logs').insert(payload).select('id').single();
+ if(r.error)throw r.error;
+ if(r.data){accessLogs.unshift({...payload,id:r.data.id,created_at:new Date().toISOString()});if(accessLogs.length>1000)accessLogs.length=1000;}
+ return true;
+}
+async function laborAuditDiff(prev,next,sid){
+ const before=prev?.['인원현황']||{},after=next?.['인원현황']||{},keys=[...new Set([...Object.keys(before),...Object.keys(after)])].filter(ref=>/^[B-O][4-9]\d*$/.test(ref)&&String(before[ref]??'')!==String(after[ref]??''));
+ if(keys.length)await laborActivityLog('labor_workbook_edit',{store_id:sid,cell_count:keys.length,cells:keys.slice(0,120),fields:[...new Set(keys.map(k=>k.match(/^[A-Z]+/)[0]))]});
+ const b=prev?.__view?.['인원현황']||{},a=next?.__view?.['인원현황']||{},c0=b.checkedRows||[],c1=a.checkedRows||[];
+ if(JSON.stringify([...c0].sort((x,y)=>x-y))!==JSON.stringify([...c1].sort((x,y)=>x-y)))await laborActivityLog('labor_workbook_check',{store_id:sid,checked_count:c1.length,changed_rows:[...new Set([...c0,...c1])].filter(r=>c0.includes(r)!==c1.includes(r)).slice(0,100)});
+ const ord0=b.order||[],ord1=a.order||[];if(JSON.stringify(ord0)!==JSON.stringify(ord1))await laborActivityLog('labor_workbook_reorder',{store_id:sid,row_count:ord1.length});
+ if(JSON.stringify(b.widths||{})!==JSON.stringify(a.widths||{}))await laborActivityLog('labor_workbook_view',{store_id:sid,widths_changed:true});
+}
+</script>
+<style id="annualLeaveSickMissedStyle">
+#schedulePage .annualLeaveTable .annualLeaveStat small.annualLeaveSickMiss{
+ display:block;margin:5px auto 0;padding:3px 5px;max-width:142px;border-radius:5px;
+ background:#fff1ef;border:1px solid #f2ceca;color:#a83b31;font-size:10px;line-height:1.3;font-weight:800;
+ overflow-wrap:normal;word-break:keep-all;white-space:normal;
+}
+#schedulePage .annualLeaveTable .annualLeaveStat small.annualLeaveSickMiss span{font-weight:650}
+</style>
 </body></html>
