@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>직원관리 대시보드 2026.11.26_20</title>
-<meta name="dashboard-build-version" content="2026.11.26_20">
+<title>직원관리 대시보드 2026.11.26_21</title>
+<meta name="dashboard-build-version" content="2026.11.26_21">
 <script id="dashboardBuildInfoJS">
 document.addEventListener('DOMContentLoaded',()=>{
  const version=document.querySelector('meta[name="dashboard-build-version"]')?.getAttribute('content');
@@ -1900,6 +1900,20 @@ body.commerceStoreMode .commerceOnlyNav:not(.hidden){display:flex}
 @media(max-width:900px){.auditMobileTableHint{display:block}}
 @media(max-width:650px){.auditMonthLabel{font-size:11px}.auditMonthButton{width:34px;height:36px;flex-shrink:0}.auditHelpDisclosure>summary{font-size:13px}#employeesPage .btn.small,#schedulePage .btn.small{min-height:33px}}
 </style>
+
+<style id="laborPrivateAccess20261126_21CSS">
+/* 노무사 제출자료는 관리자 전용. 근로시간 집계와 직원별 출근 날짜는 제한하지 않는다. */
+html body:not(.laborPrivateAuthorized) #hoursPage.active section#laborPage.laborInlinePage,
+html body:not(.laborPrivateAuthorized) #hoursPage section#laborPage.laborInlinePage {
+ display:none!important;visibility:hidden!important;
+}
+html body:not(.laborPrivateAuthorized) #hoursPage #laborQuickExportBtn,
+html body:not(.laborPrivateAuthorized) #hoursPage #laborQuickUploadBtn,
+html body:not(.laborPrivateAuthorized) .nav[data-page="labor"] {display:none!important}
+html body:not(.laborPrivateAuthorized) #hoursPage .laborOwnerHelp {display:none!important}
+html body.laborPrivateAuthorized #hoursPage .laborStaffHelp {display:none!important}
+/* The public schedule download remains available to authorized work-hours viewers. */
+</style>
 </head>
 <body>
 <section id="login" class="login">
@@ -1945,7 +1959,7 @@ body.commerceStoreMode .commerceOnlyNav:not(.hidden){display:flex}
 </div>
 
 <section id="commercePage" class="page">
- <div class="commerceHero"><h1 class="title">88커머스 <span class="commerceBuildVersion" data-dashboard-version="true">버전 2026.11.26_20</span></h1><div class="sub">대시보드에서 직접 입력·수정하고 자동 계산하며, 카페24 반영과 원본 Excel 형식 다운로드까지 한곳에서 관리합니다.</div></div>
+ <div class="commerceHero"><h1 class="title">88커머스 <span class="commerceBuildVersion" data-dashboard-version="true">버전 2026.11.26_21</span></h1><div class="sub">대시보드에서 직접 입력·수정하고 자동 계산하며, 카페24 반영과 원본 Excel 형식 다운로드까지 한곳에서 관리합니다.</div></div>
 
  <div id="commerceGroupBar" class="commerceGroupBar hidden">
   <div><div id="commerceGroupTitle" class="groupTitle">-</div><div id="commerceGroupSub" class="help" style="margin-top:3px">-</div></div>
@@ -2029,7 +2043,7 @@ body.commerceStoreMode .commerceOnlyNav:not(.hidden){display:flex}
 </section>
 
 <section id="homePage" class="page active">
- <div class="row"><div><div class="homeBuildTitle"><h1 class="title" id="homeTitle">현황</h1><span class="buildVersionBadge" id="homeBuildVersion" data-dashboard-version="true">버전 2026.11.26_20</span></div><div class="sub">업장과 월을 선택하면 모든 정보가 같이 바뀝니다.</div></div></div>
+ <div class="row"><div><div class="homeBuildTitle"><h1 class="title" id="homeTitle">현황</h1><span class="buildVersionBadge" id="homeBuildVersion" data-dashboard-version="true">버전 2026.11.26_21</span></div><div class="sub">업장과 월을 선택하면 모든 정보가 같이 바뀝니다.</div></div></div>
  <div class="cards">
   <div class="card"><div class="k">재직 직원</div><div class="v" id="kEmp">0명</div></div>
   <div class="card"><div class="k">이번 달 연차 발생</div><div class="v" id="kLeaveDue">0명</div></div>
@@ -2190,7 +2204,7 @@ body.commerceStoreMode .commerceOnlyNav:not(.hidden){display:flex}
   </div>
  </div>
  <div class="workHoursExcelExportBar" aria-label="업장별 엑셀 파일 관리">
-  <div class="workHoursExcelExportInfo"><strong>엑셀 파일 관리</strong><span>선택한 업장·월 기준 · 근로시간 파일 및 노무사 원본 양식을 각각 다운로드합니다.</span></div>
+  <div class="workHoursExcelExportInfo"><strong>엑셀 파일 관리</strong><span class="laborOwnerHelp">선택한 업장·월 기준 · 근로시간 파일 및 노무사 원본 양식을 각각 다운로드합니다.</span><span class="laborStaffHelp">선택한 업장·월의 스케줄 자료를 다운로드합니다.</span></div>
   <div class="hoursExcelActionGroup">
    <button type="button" class="btn green workHoursExcelDownloadBtn" id="workHoursExcelBtn" onclick="exportSchedule()" title="기존 근무표와 집계 서식 포함">스케줄다운로드</button>
    <button type="button" class="btn" id="laborQuickExportBtn" onclick="laborQuickExport()" title="I열 근무시간·O열 특이사항 수정만 반영한 원본 Excel 다운로드">5. 근로자현황파악</button>
@@ -2271,7 +2285,7 @@ body.commerceStoreMode .commerceOnlyNav:not(.hidden){display:flex}
 
  <section id="payrollPage" class="page">
  <div class="row">
-  <div><h1 class="title">급여관리 <span data-dashboard-version="true" data-version-no-prefix="true" style="font-size:12px;color:#315efb;background:#eef3ff;border-radius:999px;padding:4px 8px;vertical-align:middle">2026.11.26_20</span></h1><div class="sub">월별 급여대장을 검산하고, 기간별·직원별 누적 급여도 조회합니다.</div></div>
+  <div><h1 class="title">급여관리 <span data-dashboard-version="true" data-version-no-prefix="true" style="font-size:12px;color:#315efb;background:#eef3ff;border-radius:999px;padding:4px 8px;vertical-align:middle">2026.11.26_21</span></h1><div class="sub">월별 급여대장을 검산하고, 기간별·직원별 누적 급여도 조회합니다.</div></div>
   <div class="toolbar">
    <input type="file" id="payrollFile" accept=".xlsx,.xls,.xlsm" multiple style="display:none" onchange="importPayrollFiles(this.files);this.value=''">
    <button id="payrollBatchImportBtn" class="btn" onclick="$('payrollFile').click()">급여대장 여러개 불러오기</button>
@@ -16288,6 +16302,70 @@ laborLoadSelectedMonth=async function(...args){
  }
  return response;
 };
+</script>
+
+
+<script id="laborPrivateAccess20261126_21JS">
+/* Permission split: normal staff may see working hours/dates, but NOT the labor consultant workbook.
+ * The public.labor_workbook_files RLS also enforces app_is_admin() on select/insert/update.
+ * UI does not replace server-side authorization. Do not silently alter DB roles or policies.
+ */
+function laborPrivateAllowedV21(){
+ return permissionSystemAvailable===true &&
+        !!currentSessionUser?.id &&
+        currentAppUser?.user_id===currentSessionUser.id &&
+        currentAppUser?.active===true && currentAppUser?.is_admin===true;
+}
+const laborV21BeforeApplyPermissionUI=applyPermissionUI;
+applyPermissionUI=function(...args){
+ const allowed=laborPrivateAllowedV21();
+ document.body.classList.toggle('laborPrivateAuthorized',allowed);
+ if(!allowed){
+   $('laborPage')?.classList.remove('active');
+   // Never retain a private workbook in the browser after access is revoked.
+   laborDraft=null;
+   laborSpecialState=null;
+   ++laborFetchToken;
+ }
+ return laborV21BeforeApplyPermissionUI(...args);
+};
+const laborV21BeforeAllowed=laborAllowed;
+laborAllowed=function(){
+ if(!laborPrivateAllowedV21()){
+   alert('노무사 제출자료는 최고관리자 계정만 열람·수정·다운로드할 수 있습니다.');
+   return false;
+ }
+ return laborV21BeforeAllowed();
+};
+const laborV21BeforeLoad=laborLoadSelectedMonth;
+laborLoadSelectedMonth=async function(...args){
+ if(!laborPrivateAllowedV21()){
+   laborDraft=null;
+   laborSpecialState=null;
+   return;
+ }
+ return laborV21BeforeLoad(...args);
+};
+const laborV21BeforeSpecialLoad=laborSpecialLoad;
+laborSpecialLoad=async function(...args){
+ if(!laborPrivateAllowedV21())return;
+ return laborV21BeforeSpecialLoad(...args);
+};
+const laborV21BeforeSave=laborSaveMonth;
+laborSaveMonth=async function(...args){
+ if(!laborPrivateAllowedV21())return false;
+ return laborV21BeforeSave(...args);
+};
+const laborV21BeforeToggle=toggleLaborInlineEditor;
+toggleLaborInlineEditor=async function(...args){
+ if(!laborPrivateAllowedV21()){
+   $('laborPage')?.classList.remove('active');
+   alert('노무사 제출자료는 최고관리자 전용입니다.');
+   return;
+ }
+ return laborV21BeforeToggle(...args);
+};
+// Neither the existing work-hours summary nor its per-employee attendance-date grid is altered.
 </script>
 
 </body></html>
