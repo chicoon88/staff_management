@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>직원관리 대시보드 2026.11.26_16</title>
-<meta name="dashboard-build-version" content="2026.11.26_16">
+<title>직원관리 대시보드 2026.11.26_17</title>
+<meta name="dashboard-build-version" content="2026.11.26_17">
 <script id="dashboardBuildInfoJS">
 document.addEventListener('DOMContentLoaded',()=>{
  const version=document.querySelector('meta[name="dashboard-build-version"]')?.getAttribute('content');
@@ -1945,7 +1945,7 @@ body.commerceStoreMode .commerceOnlyNav:not(.hidden){display:flex}
 </div>
 
 <section id="commercePage" class="page">
- <div class="commerceHero"><h1 class="title">88커머스 <span class="commerceBuildVersion" data-dashboard-version="true">버전 2026.11.26_16</span></h1><div class="sub">대시보드에서 직접 입력·수정하고 자동 계산하며, 카페24 반영과 원본 Excel 형식 다운로드까지 한곳에서 관리합니다.</div></div>
+ <div class="commerceHero"><h1 class="title">88커머스 <span class="commerceBuildVersion" data-dashboard-version="true">버전 2026.11.26_17</span></h1><div class="sub">대시보드에서 직접 입력·수정하고 자동 계산하며, 카페24 반영과 원본 Excel 형식 다운로드까지 한곳에서 관리합니다.</div></div>
 
  <div id="commerceGroupBar" class="commerceGroupBar hidden">
   <div><div id="commerceGroupTitle" class="groupTitle">-</div><div id="commerceGroupSub" class="help" style="margin-top:3px">-</div></div>
@@ -2029,7 +2029,7 @@ body.commerceStoreMode .commerceOnlyNav:not(.hidden){display:flex}
 </section>
 
 <section id="homePage" class="page active">
- <div class="row"><div><div class="homeBuildTitle"><h1 class="title" id="homeTitle">현황</h1><span class="buildVersionBadge" id="homeBuildVersion" data-dashboard-version="true">버전 2026.11.26_16</span></div><div class="sub">업장과 월을 선택하면 모든 정보가 같이 바뀝니다.</div></div></div>
+ <div class="row"><div><div class="homeBuildTitle"><h1 class="title" id="homeTitle">현황</h1><span class="buildVersionBadge" id="homeBuildVersion" data-dashboard-version="true">버전 2026.11.26_17</span></div><div class="sub">업장과 월을 선택하면 모든 정보가 같이 바뀝니다.</div></div></div>
  <div class="cards">
   <div class="card"><div class="k">재직 직원</div><div class="v" id="kEmp">0명</div></div>
   <div class="card"><div class="k">이번 달 연차 발생</div><div class="v" id="kLeaveDue">0명</div></div>
@@ -2271,7 +2271,7 @@ body.commerceStoreMode .commerceOnlyNav:not(.hidden){display:flex}
 
  <section id="payrollPage" class="page">
  <div class="row">
-  <div><h1 class="title">급여관리 <span data-dashboard-version="true" data-version-no-prefix="true" style="font-size:12px;color:#315efb;background:#eef3ff;border-radius:999px;padding:4px 8px;vertical-align:middle">2026.11.26_16</span></h1><div class="sub">월별 급여대장을 검산하고, 기간별·직원별 누적 급여도 조회합니다.</div></div>
+  <div><h1 class="title">급여관리 <span data-dashboard-version="true" data-version-no-prefix="true" style="font-size:12px;color:#315efb;background:#eef3ff;border-radius:999px;padding:4px 8px;vertical-align:middle">2026.11.26_17</span></h1><div class="sub">월별 급여대장을 검산하고, 기간별·직원별 누적 급여도 조회합니다.</div></div>
   <div class="toolbar">
    <input type="file" id="payrollFile" accept=".xlsx,.xls,.xlsm" multiple style="display:none" onchange="importPayrollFiles(this.files);this.value=''">
    <button id="payrollBatchImportBtn" class="btn" onclick="$('payrollFile').click()">급여대장 여러개 불러오기</button>
@@ -6949,7 +6949,7 @@ function renderEmployees(){
 
    <td class="empInlineCell">${employeeView==='active'?employeeInlineNumber(e,'break_minutes','1','empInlineSmall',currentCond.break_minutes):(currentCond.break_minutes||0)}</td>
 
-   <td>${currentCond.work_type==='36'?'주4일':currentCond.work_type==='40'?'주5일':'기타'}<br><span class="help">${conditionScheduleMode(currentCond)==='auto'?'고정요일 자동채우기':'스케줄 직접입력'}</span>${employeeView==='active'?`<label class="scheduleHideToggle" title="직원관리·급여관리에는 그대로 두고 월간스케줄·주간편성·근로시간에서만 숨깁니다."><input type="checkbox" ${employeeMonthlyScheduleHidden(e)?'checked':''} onchange="saveMonthlyScheduleVisibility(${e.id},this.checked,this)">스케줄·근로 제외</label>`:''}<div class="empBonusBesideSchedule"><label class="empBonusToggle" title="회사 별도상여 대상자 · 체크값만 노무사 O열 추가상여의 대상 판정에 사용"><input type="checkbox" ${e.holiday_bonus_eligible===true?'checked':''} ${employeeView==='active'?'':'disabled'} onchange="saveEmployeeInline(${e.id},'holiday_bonus_eligible',this.checked)">상여대상</label></div></td>
+   <td>${currentCond.work_type==='36'?'주4일':currentCond.work_type==='40'?'주5일':'기타'}<br><span class="help">${conditionScheduleMode(currentCond)==='auto'?'고정요일 자동채우기':'스케줄 직접입력'}</span><div class="empScheduleToggles">${employeeView==='active'?`<label class="scheduleHideToggle" title="직원관리·급여관리에는 그대로 두고 월간스케줄·주간편성·근로시간에서만 숨깁니다."><input type="checkbox" ${employeeMonthlyScheduleHidden(e)?'checked':''} onchange="saveMonthlyScheduleVisibility(${e.id},this.checked,this)">스케줄·근로 제외</label>`:''}<label class="empBonusToggle" title="회사 별도상여 대상자 · 체크값만 노무사 O열 추가상여의 대상 판정에 사용"><input type="checkbox" ${e.holiday_bonus_eligible===true?'checked':''} ${employeeView==='active'?'':'disabled'} onchange="saveEmployeeInline(${e.id},'holiday_bonus_eligible',this.checked)">상여대상</label></div></td>
 
    <td class="empInlineCell">${payTypeCell}</td>
 
@@ -15579,6 +15579,32 @@ toggleLaborInlineEditor=async function(...args){
 /* V16: append only new employees to the *monthly draft*, not the store's 0000-00 template;
    keep every original byte unmodified in database, while the exported workbook receives style-matched extra rows. */
 let laborV16AllowFormulaOverride=false;
+/* V17: month-aware employee-master -> labor workbook column mapping for appended employees.
+   Mapping is deliberately explicit, so bank accounts/memos are not leaked into salary or remarks columns.
+   Empty/unknown items (salary, insurance, employment contract status, exact break interval) stay blank. */
+function laborV17MasterCellValues(e,ym){
+ const yy=Number(String(ym).slice(0,4)),mm=Number(String(ym).slice(5,7));
+ const last=`${ym}-${String(new Date(yy,mm,0).getDate()).padStart(2,'0')}`;
+ const cond=workConditionForDate(e,last),days=normalizedWorkDays(cond.work_days);
+ const koDays=['일','월','화','수','목','금','토'];
+ const first=String(cond.default_start_time||'').slice(0,5),end=String(cond.default_end_time||'').slice(0,5);
+ const br=Number(cond.break_minutes),payday=String(e.salary_pay_day||'').trim(),lag=Number(e.salary_delay_months);
+ let payLabel='';
+ if(payday){const formatted=/^\d{1,2}$/.test(payday)?`${payday}일`:payday;
+  payLabel=`${lag===1?'전월 근무분 익월 ':lag===0?'당월 지급 ':''}매월 ${formatted}`;
+ }
+ const values={
+  C:String(e.resident_number||'').trim(),
+  D:String(e.hire_date||'').slice(0,10),
+  E:String(e.department||'').trim(),
+  F:String(e.role||'').trim(),
+  G:days.length?days.map(day=>koDays[day]).join('·')+'요일':'',
+  I:first&&end?`${first} ~ ${end}`:'',
+  J:Number.isFinite(br)&&br>0?`${br}분`:'',
+  L:payLabel
+ };
+ return values;
+}
 function laborV16EnsurePeople(d,carriedNames=[]){
  if(!d||!d.wb?.Sheets?.['인원현황']||!/^20\d\d-(0[1-9]|1[0-2])$/.test(d.ym))return 0;
  const ws=d.wb.Sheets['인원현황'],range=XLSX.utils.decode_range(ws['!ref']||'A1:O4');
@@ -15602,20 +15628,36 @@ function laborV16EnsurePeople(d,carriedNames=[]){
   const row=++maxRow+1;
   d.edits['인원현황']=d.edits['인원현황']||{};
   d.edits['인원현황']['B'+row]=String(e.name);
-  // Only obvious text headers are seeded; do NOT invent payroll, resident IDs or statutory hours.
-  for(let c=2;c<=14;c++){
-   const col=XLSX.utils.encode_col(c),header=String(ws[col+'3']?.w??ws[col+'3']?.v??'').replace(/\s+/g,'');
-   const ref=col+row;
-   if(/^(입사일|입사일자)$/.test(header)&&e.hire_date)d.edits['인원현황'][ref]=String(e.hire_date).slice(0,10);
-   if(/^(퇴사일|퇴사일자)$/.test(header)&&e.resign_date&&String(e.resign_date).slice(0,10)<=last)d.edits['인원현황'][ref]=String(e.resign_date).slice(0,10);
-  }
+  // Populate the mapped employee fields in one backfill pass below.
   names.add(normalized);nameRows.set(normalized,maxRow);
   added++;
  }
+ // Backfill already-created appended rows too (e.g. a prior version wrote only name and hire date).
+ // Never touch shared-template employee rows or overwrite any manually edited cell, even an explicit empty value.
+ let filled=0,rowsBackfilled=0;
+ for(let r=baseEnd+1;r<=maxRow;r++){
+  const row=r+1,name=String(d.edits?.['인원현황']?.['B'+row]??laborOldValue(ws,'B'+row)??'').trim();
+  if(!name)continue;
+  const hits=people.filter(p=>normalizeName(p.name)===normalizeName(name));
+  if(hits.length!==1)continue; // ambiguity should be reviewed, not merged by name
+  const e=hits[0],mapped=laborV17MasterCellValues(e,d.ym);let rowFilled=0;
+  for(const [col,val] of Object.entries(mapped)){
+   const ref=col+row;
+   if(!val)continue;
+   if(Object.prototype.hasOwnProperty.call(d.edits['인원현황'],ref))continue;
+   const original=String(laborOldValue(ws,ref)??'').trim();
+   if(original)continue;
+   d.edits['인원현황'][ref]=val;
+   rowFilled++;filled++;
+  }
+  if(rowFilled)rowsBackfilled++;
+ }
  if(maxRow>range.e.r)ws['!ref']=XLSX.utils.encode_range({...range,e:{...range.e,r:maxRow,c:Math.max(range.e.c,14)}});
+ d.v17NewMasterCells=(d.v17NewMasterCells||0)+filled;
+ d.v17NewMasterRows=(d.v17NewMasterRows||0)+rowsBackfilled;
  d.v16ExtraRows=[];
  for(let r=baseEnd+1;r<=maxRow;r++)if(String(existing['B'+(r+1)]??d.edits?.['인원현황']?.['B'+(r+1)]??'').trim())d.v16ExtraRows.push(r);
- if(added){d.revision=(d.revision||0)+1;d.dirty=true;laborScheduleAutoSave();}
+ if(added||filled){d.revision=(d.revision||0)+1;d.dirty=true;laborScheduleAutoSave();}
  return added;
 }
 /* The active worksheet renderer is the latest V11/15 wrapper. Invoke registration once per draft. */
@@ -15630,7 +15672,7 @@ laborEmployeeOnRow=function(ws,r){
 };
 const laborV16PriorRender=laborRenderSheet;
 laborRenderSheet=function(...args){
- const d=laborDraft;if(d&&d.v16Prepared!==true){d.v16Prepared=true;const added=laborV16EnsurePeople(d);if(added&&typeof laborInlineStatus==='function')laborInlineStatus(`${d.ym} 신규직원 ${added}명 원본 누락 확인 · 월별 작업본에 자동추가·저장`,'warn');}
+ const d=laborDraft;if(d&&d.v16Prepared!==true){d.v16Prepared=true;const added=laborV16EnsurePeople(d);if((added||d.v17NewMasterCells)&&typeof laborInlineStatus==='function')laborInlineStatus(`${d.ym} 신규직원 ${added}명 추가 · 직원관리 정보 ${d.v17NewMasterRows||0}명 ${d.v17NewMasterCells||0}칸 자동보완 · 월별 작업본에 저장 중`,'warn');}
  const value=laborV16PriorRender(...args);
  requestAnimationFrame(()=>laborV16FitNotesAndRemarks());
  return value;
@@ -15843,4 +15885,29 @@ laborBuildPreservedXlsx=async function(...args){
  }finally{d.bytes=original;laborV16AllowFormulaOverride=active}
 };
 </script>
+
+<style id="dashboardV17EmployeeToggleAlignment">
+/* V17: Align schedule/work exclusion + holiday-bonus eligibility side by side.
+   The two inputs share height, baseline, gap, and a consistent click target. */
+#employeesPage #employeeBody .empScheduleToggles{
+ display:flex!important;flex-wrap:nowrap!important;align-items:center!important;
+ justify-content:flex-start!important;gap:8px!important;margin-top:5px!important;
+ width:100%!important;min-width:0!important;line-height:1.25!important;
+}
+#employeesPage #employeeBody .empScheduleToggles label.scheduleHideToggle,
+#employeesPage #employeeBody .empScheduleToggles label.empBonusToggle{
+ display:inline-flex!important;align-items:center!important;justify-content:flex-start!important;
+ flex:0 0 auto!important;margin:0!important;padding:3px 4px!important;
+ gap:5px!important;white-space:nowrap!important;font-size:10px!important;
+ line-height:16px!important;height:24px!important;min-height:24px!important;
+ border-radius:5px!important;box-sizing:border-box!important;
+}
+#employeesPage #employeeBody .empScheduleToggles input[type="checkbox"]{
+ margin:0!important;padding:0!important;width:15px!important;height:15px!important;
+ min-width:15px!important;max-width:15px!important;flex:0 0 15px!important;
+ box-sizing:border-box!important;vertical-align:middle!important;
+}
+#employeesPage #employeeBody td:nth-child(12){width:265px!important;min-width:265px!important;max-width:265px!important;}
+#employeesPage #employeeBody td:nth-child(12) .empScheduleToggles{overflow:hidden!important;}
+</style>
 </body></html>
