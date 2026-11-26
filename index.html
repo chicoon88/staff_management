@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>직원관리 대시보드 2026.11.26_5</title>
+<title>직원관리 대시보드 2026.11.26_6</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
@@ -1934,7 +1934,7 @@ body.commerceStoreMode .commerceOnlyNav:not(.hidden){display:flex}
 </div>
 
 <section id="commercePage" class="page">
- <div class="commerceHero"><h1 class="title">88커머스 <span class="commerceBuildVersion">버전 2026.11.26_5</span></h1><div class="sub">대시보드에서 직접 입력·수정하고 자동 계산하며, 카페24 반영과 원본 Excel 형식 다운로드까지 한곳에서 관리합니다.</div></div>
+ <div class="commerceHero"><h1 class="title">88커머스 <span class="commerceBuildVersion">버전 2026.11.26_6</span></h1><div class="sub">대시보드에서 직접 입력·수정하고 자동 계산하며, 카페24 반영과 원본 Excel 형식 다운로드까지 한곳에서 관리합니다.</div></div>
 
  <div id="commerceGroupBar" class="commerceGroupBar hidden">
   <div><div id="commerceGroupTitle" class="groupTitle">-</div><div id="commerceGroupSub" class="help" style="margin-top:3px">-</div></div>
@@ -2018,7 +2018,7 @@ body.commerceStoreMode .commerceOnlyNav:not(.hidden){display:flex}
 </section>
 
 <section id="homePage" class="page active">
- <div class="row"><div><div class="homeBuildTitle"><h1 class="title" id="homeTitle">현황</h1><span class="buildVersionBadge" id="homeBuildVersion">버전 2026.11.26_5</span></div><div class="sub">업장과 월을 선택하면 모든 정보가 같이 바뀝니다.</div></div></div>
+ <div class="row"><div><div class="homeBuildTitle"><h1 class="title" id="homeTitle">현황</h1><span class="buildVersionBadge" id="homeBuildVersion">버전 2026.11.26_6</span></div><div class="sub">업장과 월을 선택하면 모든 정보가 같이 바뀝니다.</div></div></div>
  <div class="cards">
   <div class="card"><div class="k">재직 직원</div><div class="v" id="kEmp">0명</div></div>
   <div class="card"><div class="k">이번 달 연차 발생</div><div class="v" id="kLeaveDue">0명</div></div>
@@ -2255,7 +2255,7 @@ body.commerceStoreMode .commerceOnlyNav:not(.hidden){display:flex}
 
  <section id="payrollPage" class="page">
  <div class="row">
-  <div><h1 class="title">급여관리 <span style="font-size:12px;color:#315efb;background:#eef3ff;border-radius:999px;padding:4px 8px;vertical-align:middle">2026.11.26_5</span></h1><div class="sub">월별 급여대장을 검산하고, 기간별·직원별 누적 급여도 조회합니다.</div></div>
+  <div><h1 class="title">급여관리 <span style="font-size:12px;color:#315efb;background:#eef3ff;border-radius:999px;padding:4px 8px;vertical-align:middle">2026.11.26_6</span></h1><div class="sub">월별 급여대장을 검산하고, 기간별·직원별 누적 급여도 조회합니다.</div></div>
   <div class="toolbar">
    <input type="file" id="payrollFile" accept=".xlsx,.xls,.xlsm" multiple style="display:none" onchange="importPayrollFiles(this.files);this.value=''">
    <button id="payrollBatchImportBtn" class="btn" onclick="$('payrollFile').click()">급여대장 여러개 불러오기</button>
@@ -14139,8 +14139,14 @@ function laborRenderSheet(){const d=laborDraft,box=$('laborWorkbookGrid'),sel=$(
  if(d.wb.SheetNames.includes(keep))sel.value=keep;else if(d.wb.SheetNames.includes('인원현황'))sel.value='인원현황';
  const sheet=sel.value,ws=d.wb.Sheets[sheet],region=XLSX.utils.decode_range(ws['!ref']||'A1:A1'),maxR=Math.min(500,Math.max(3,region.e.r)),maxC=Math.min(35,region.e.c),cols=Array.from({length:maxC+1},(_,c)=>c),view=laborViewState(sheet),ordered=laborOrderedRows(ws,sheet);
  const named=new Set(ordered.physical),rows=[0,1,2,...ordered.order,...Array.from({length:maxR-2},(_,i)=>i+3).filter(r=>!named.has(r))];
- let h='<div class="laborGridWrap"><table class="laborGrid"><colgroup>';
- for(const c of cols){const col=XLSX.utils.encode_col(c),base=c===0?45:c===1?124:(LABOR_COL_WIDTH[col]||115),min=c===0?30:c===1?74:40,w=Math.max(min,Math.min(680,Number(view.widths?.[col]??base)));h+=`<col data-col="${col}" style="width:${w}px">`}
+ // Fixed table pixel width is essential: with width:max-content the browser's
+ // intrinsic text width overrides <col> even when CSS says min-width:0.
+ const pixelWidths=cols.map(c=>{const col=XLSX.utils.encode_col(c),base=c===0?45:c===1?124:(LABOR_COL_WIDTH[col]||115);
+  return Math.max(24,Math.min(680,Number(view.widths?.[col]??base)||base));
+ });
+ const totalWidth=pixelWidths.reduce((sum,w)=>sum+w,0);
+ let h=`<div class="laborGridWrap"><table class="laborGrid" style="width:${totalWidth}px;min-width:${totalWidth}px;max-width:${totalWidth}px"><colgroup>`;
+ for(const c of cols){const col=XLSX.utils.encode_col(c),w=pixelWidths[c];h+=`<col data-col="${col}" style="width:${w}px;min-width:${w}px;max-width:${w}px">`}
  h+='</colgroup><thead><tr>';
  for(const c of cols){const col=XLSX.utils.encode_col(c);h+=`<th class="laborResizeHeader" data-col="${col}" title="${col}열">${col}<span class="laborResizeHandle" onpointerdown="laborResizeStart(event,'${col}')"></span></th>`}
  h+='</tr><tr>';
@@ -14165,6 +14171,10 @@ function laborRenderSheet(){const d=laborDraft,box=$('laborWorkbookGrid'),sel=$(
   h+='</tr>';
  }
  h+='</tbody></table></div>';box.className='';box.innerHTML=h;
+ // The page owns vertical scrolling. Only the worksheet scrolls horizontally.
+ // The independent sticky header is outside that overflow-x container, so it
+ // follows the document scroll instead of getting trapped by the worksheet.
+ laborInstallStickyHeader(box);
  if($('laborUploadBtn'))$('laborUploadBtn').disabled=!isAppAdmin();
 }
 function laborSetValue(sheet,ref,value){const d=laborDraft;if(!d||!/^[A-Z]{1,2}[1-9]\d*$/.test(ref))return;
@@ -14190,12 +14200,39 @@ function laborRowDrop(ev,target){ev.preventDefault();const from=laborDragSourceR
  laborDraft.revision=(laborDraft.revision||0)+1;laborDraft.dirty=true;laborRenderSheet();laborNotify('직원 순서 변경 · 엑셀 연번 자동수정 · 저장 중');laborScheduleAutoSave();
 }
 function laborRowDragEnd(){laborDragSourceRow=null;laborDragTargetRow=null;laborDragAfter=false;document.querySelectorAll('#laborWorkbookGrid .laborDragOverTop,#laborWorkbookGrid .laborDragOverBottom').forEach(x=>x.classList.remove('laborDragOverTop','laborDragOverBottom'))}
-function laborResizeStart(ev,col){if(!laborDraft||ev.button!==0)return;ev.preventDefault();ev.stopPropagation();const el=ev.target.closest('table')?.querySelector(`col[data-col="${col}"]`);if(!el)return;const w=parseFloat(el.style.width)||105;
- laborResizeContext={pointerId:ev.pointerId,col,colEl:el,startX:ev.clientX,width:w};ev.target.setPointerCapture?.(ev.pointerId);ev.target.addEventListener('pointermove',laborResizeMove);ev.target.addEventListener('pointerup',laborResizeEnd,{once:true});ev.target.addEventListener('pointercancel',laborResizeEnd,{once:true});
+function laborInstallStickyHeader(box){
+ const wrap=box?.querySelector('.laborGridWrap'),table=wrap?.querySelector('.laborGrid');if(!wrap||!table?.tHead)return;
+ const shell=document.createElement('div');shell.className='laborStickyHead';shell.setAttribute('role','group');shell.setAttribute('aria-label','노무사 근로자현황 열 제목 · 드래그로 너비 조정');
+ const mirror=document.createElement('table');mirror.className='laborGrid laborStickyHeadGrid';
+ mirror.style.width=table.style.width;mirror.style.minWidth=table.style.minWidth;mirror.style.maxWidth=table.style.maxWidth;
+ mirror.innerHTML=table.querySelector('colgroup').outerHTML+table.tHead.outerHTML;
+ shell.appendChild(mirror);box.insertBefore(shell,wrap);
+ const sync=()=>{mirror.style.transform=`translate3d(${-wrap.scrollLeft}px,0,0)`};wrap.addEventListener('scroll',sync,{passive:true});sync();
+ laborUpdateStickyOffsets();
 }
-function laborResizeMove(ev){const c=laborResizeContext;if(!c||ev.pointerId!==c.pointerId)return;const min=c.col==='A'?30:c.col==='B'?74:40;c.colEl.style.width=Math.max(min,Math.min(680,c.width+ev.clientX-c.startX))+'px'}
-function laborResizeEnd(ev){const c=laborResizeContext;if(!c||ev.pointerId!==c.pointerId)return;ev.target.removeEventListener('pointermove',laborResizeMove);
- const min=c.col==='A'?30:c.col==='B'?74:40,w=Math.round(Math.max(min,Math.min(680,c.width+ev.clientX-c.startX)));laborResizeContext=null;const view=laborViewState($('laborSheetSelect').value);
+function laborResizeSetLive(col,width){
+ const px=Math.max(24,Math.min(680,Math.round(width)));
+ const root=$('laborWorkbookGrid');if(!root)return;
+ root.querySelectorAll(`.laborGrid col[data-col="${col}"]`).forEach(el=>{
+  el.style.width=px+'px';el.style.minWidth=px+'px';el.style.maxWidth=px+'px';
+ });
+ for(const table of root.querySelectorAll('table.laborGrid')){
+  const total=[...table.querySelectorAll('col[data-col]')].reduce((sum,el)=>sum+(parseFloat(el.style.width)||24),0);
+  table.style.width=total+'px';table.style.minWidth=total+'px';table.style.maxWidth=total+'px';
+ }
+}
+function laborResizeStart(ev,col){if(!laborDraft||ev.button!==0)return;ev.preventDefault();ev.stopPropagation();
+ const el=$('laborWorkbookGrid')?.querySelector(`.laborGridWrap col[data-col="${col}"]`);if(!el)return;
+ const width=parseFloat(el.style.width)||105;
+ laborResizeContext={pointerId:ev.pointerId,col,startX:ev.clientX,width};
+ ev.target.setPointerCapture?.(ev.pointerId);ev.target.addEventListener('pointermove',laborResizeMove);
+ ev.target.addEventListener('pointerup',laborResizeEnd,{once:true});ev.target.addEventListener('pointercancel',laborResizeEnd,{once:true});
+}
+function laborResizeMove(ev){const c=laborResizeContext;if(!c||ev.pointerId!==c.pointerId)return;laborResizeSetLive(c.col,c.width+ev.clientX-c.startX)}
+function laborResizeEnd(ev){const c=laborResizeContext;if(!c||ev.pointerId!==c.pointerId)return;
+ ev.target.removeEventListener('pointermove',laborResizeMove);
+ const w=Math.round(Math.max(24,Math.min(680,c.width+ev.clientX-c.startX)));
+ laborResizeSetLive(c.col,w);laborResizeContext=null;const view=laborViewState($('laborSheetSelect').value);
  if(view.widths?.[c.col]===w)return;view.widths=view.widths||{};view.widths[c.col]=w;
  laborDraft.revision=(laborDraft.revision||0)+1;laborDraft.dirty=true;laborNotify('열 너비 변경 · 자동 저장');laborScheduleAutoSave();
 }
@@ -14290,4 +14327,104 @@ async function laborAuditDiff(prev,next,sid){
 }
 #schedulePage .annualLeaveTable .annualLeaveStat small.annualLeaveSickMiss span{font-weight:650}
 </style>
+
+<style id="labor20261126_6TrueWidthsAndPageScroll">
+/* Staff management style: a narrow column clips its text instead of wrapping,
+   rotating, expanding table layout or increasing row height. Applies to ALL columns. */
+#hoursPage #laborWorkbookGrid{width:100%;max-width:100%;min-width:0}
+#hoursPage #laborWorkbookGrid .laborGridWrap{
+ max-height:none!important;height:auto!important;min-height:0!important;
+ overflow-x:auto!important;overflow-y:hidden!important;
+ overscroll-behavior:auto!important;
+ border-top:0;border-radius:0 0 8px 8px;
+}
+#hoursPage #laborWorkbookGrid table.laborGrid{
+ table-layout:fixed!important;width:var(--labor-table-width,auto);
+ min-width:0!important;border-spacing:0;
+}
+#hoursPage #laborWorkbookGrid table.laborGrid col{min-width:0!important}
+#hoursPage #laborWorkbookGrid table.laborGrid th,
+#hoursPage #laborWorkbookGrid table.laborGrid td{
+ box-sizing:border-box!important;min-width:0!important;
+ max-width:none!important;overflow:hidden!important;
+ white-space:nowrap!important;word-break:normal!important;
+ overflow-wrap:normal!important;text-overflow:clip!important;
+}
+#hoursPage #laborWorkbookGrid table.laborGrid td{height:30px;max-height:30px;padding:1px 3px!important}
+#hoursPage #laborWorkbookGrid table.laborGrid .laborReadValue{
+ display:block;width:100%;min-width:0!important;max-width:100%!important;
+ overflow:hidden!important;white-space:nowrap!important;
+ word-break:normal!important;overflow-wrap:normal!important;
+ text-overflow:clip!important;line-height:1.25!important;
+}
+#hoursPage #laborWorkbookGrid table.laborGrid input.laborCellInput,
+#hoursPage #laborWorkbookGrid table.laborGrid textarea.laborCellInput{
+ width:100%!important;min-width:0!important;max-width:100%!important;
+ white-space:nowrap!important;overflow:hidden!important;
+ overflow-wrap:normal!important;word-break:normal!important;
+ text-overflow:clip!important;
+}
+#hoursPage #laborWorkbookGrid table.laborGrid .laborNameBox{
+ display:flex;min-width:0!important;max-width:100%!important;
+ overflow:hidden!important;white-space:nowrap!important;
+}
+#hoursPage #laborWorkbookGrid table.laborGrid .laborNameBox .laborCellInput{
+ flex:1 1 0!important;min-width:0!important;max-width:100%!important;
+}
+/* Text can be edited in full on focus without making the actual column wider. */
+#hoursPage #laborWorkbookGrid table.laborGrid .laborCellInput:focus{
+ white-space:pre-wrap!important;overflow:auto!important;text-overflow:clip!important;
+ background:#fff!important;
+}
+#hoursPage #laborWorkbookGrid table.laborGrid textarea.laborMulti:not(:focus){
+ height:27px!important;min-height:27px!important;max-height:27px!important;
+ overflow:hidden!important;white-space:nowrap!important;
+}
+#hoursPage #laborWorkbookGrid .laborGridWrap .laborGrid thead{display:none!important}
+#hoursPage #laborWorkbookGrid .laborStickyHead{
+ position:sticky;top:var(--labor-head-top,140px);z-index:25;
+ width:100%;overflow:hidden;background:#eff4fc;
+ border:1px solid #cbd7e9;border-radius:8px 8px 0 0;
+ box-shadow:0 3px 6px rgba(18,37,62,.08);
+}
+#hoursPage #laborWorkbookGrid .laborStickyHead table{position:relative;will-change:transform;margin:0}
+#hoursPage #laborWorkbookGrid .laborStickyHead thead{display:table-header-group!important}
+#hoursPage #laborWorkbookGrid .laborStickyHead th{position:relative!important;top:auto!important}
+#app:has(#hoursPage.active) #globalContextToolbar{
+ position:sticky;top:var(--schedule-context-offset,66px);z-index:28;
+ background:rgba(255,255,255,.98);padding:9px 11px;
+ border:1px solid #dce3ee;border-radius:11px;
+ box-shadow:0 4px 13px rgba(20,35,56,.1);
+}
+#app:has(#hoursPage.active) .scheduleStickyContextLabel{display:inline-flex}
+@media(max-width:900px){#app:has(#hoursPage.active) #globalContextToolbar{padding:8px 9px;row-gap:6px}#app:has(#hoursPage.active) .scheduleStickyContextLabel{margin-left:0}}
+@media print{
+ #app:has(#hoursPage.active) #globalContextToolbar{position:static!important}
+ #hoursPage #laborWorkbookGrid .laborStickyHead{position:static!important}
+}
+</style>
+<script id="labor20261126_6StickyViewport">
+/* Only update layout offsets, never original Excel or server data. */
+let laborViewportFrame=0;
+function laborUpdateStickyOffsets(){
+ if(!$('hoursPage')?.classList.contains('active'))return;
+ if(laborViewportFrame)return;
+ laborViewportFrame=requestAnimationFrame(()=>{
+  laborViewportFrame=0;
+  let top=document.querySelector('.top')?.getBoundingClientRect().bottom||66;
+  const nav=document.querySelector('.mobileNav');
+  if(nav&&getComputedStyle(nav).display!=='none')top=Math.max(top,nav.getBoundingClientRect().bottom);
+  const ctx=$('globalContextToolbar');
+  if(ctx){ctx.style.setProperty('--schedule-context-offset',Math.round(top)+'px');
+   const rect=ctx.getBoundingClientRect();if(getComputedStyle(ctx).position==='sticky')top=Math.max(top,rect.bottom);
+  }
+  if(typeof syncScheduleStickyContext==='function')syncScheduleStickyContext();
+  const head=$('laborWorkbookGrid');if(head)head.style.setProperty('--labor-head-top',Math.ceil(top+2)+'px');
+ });
+}
+window.addEventListener('scroll',laborUpdateStickyOffsets,{passive:true});
+window.addEventListener('resize',laborUpdateStickyOffsets,{passive:true});
+$('monthSelect')?.addEventListener('change',laborUpdateStickyOffsets);
+$('storeSelect')?.addEventListener('change',laborUpdateStickyOffsets);
+</script>
 </body></html>
