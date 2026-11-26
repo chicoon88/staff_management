@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>직원관리 대시보드 2026.11.25_4</title>
+<title>직원관리 대시보드 2026.11.26_3</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
@@ -1934,7 +1934,7 @@ body.commerceStoreMode .commerceOnlyNav:not(.hidden){display:flex}
 </div>
 
 <section id="commercePage" class="page">
- <div class="commerceHero"><h1 class="title">88커머스 <span class="commerceBuildVersion">버전 2026.11.25_4</span></h1><div class="sub">대시보드에서 직접 입력·수정하고 자동 계산하며, 카페24 반영과 원본 Excel 형식 다운로드까지 한곳에서 관리합니다.</div></div>
+ <div class="commerceHero"><h1 class="title">88커머스 <span class="commerceBuildVersion">버전 2026.11.26_3</span></h1><div class="sub">대시보드에서 직접 입력·수정하고 자동 계산하며, 카페24 반영과 원본 Excel 형식 다운로드까지 한곳에서 관리합니다.</div></div>
 
  <div id="commerceGroupBar" class="commerceGroupBar hidden">
   <div><div id="commerceGroupTitle" class="groupTitle">-</div><div id="commerceGroupSub" class="help" style="margin-top:3px">-</div></div>
@@ -2018,7 +2018,7 @@ body.commerceStoreMode .commerceOnlyNav:not(.hidden){display:flex}
 </section>
 
 <section id="homePage" class="page active">
- <div class="row"><div><div class="homeBuildTitle"><h1 class="title" id="homeTitle">현황</h1><span class="buildVersionBadge" id="homeBuildVersion">버전 2026.11.25_4</span></div><div class="sub">업장과 월을 선택하면 모든 정보가 같이 바뀝니다.</div></div></div>
+ <div class="row"><div><div class="homeBuildTitle"><h1 class="title" id="homeTitle">현황</h1><span class="buildVersionBadge" id="homeBuildVersion">버전 2026.11.26_3</span></div><div class="sub">업장과 월을 선택하면 모든 정보가 같이 바뀝니다.</div></div></div>
  <div class="cards">
   <div class="card"><div class="k">재직 직원</div><div class="v" id="kEmp">0명</div></div>
   <div class="card"><div class="k">이번 달 연차 발생</div><div class="v" id="kLeaveDue">0명</div></div>
@@ -2181,37 +2181,37 @@ body.commerceStoreMode .commerceOnlyNav:not(.hidden){display:flex}
  <div class="workHoursExcelExportBar" aria-label="업장별 엑셀 파일 관리">
   <div class="workHoursExcelExportInfo"><strong>엑셀 파일 관리</strong><span>선택한 업장·월 기준 · 근로시간 파일 및 노무사 원본 양식을 각각 다운로드합니다.</span></div>
   <div class="hoursExcelActionGroup">
-   <button type="button" class="btn green workHoursExcelDownloadBtn" id="workHoursExcelBtn" onclick="exportSchedule()" title="근로시간·스케줄 서식이 포함된 Excel 다운로드">근로시간 엑셀파일</button>
-   <button type="button" class="btn laborExcelToggleBtn" id="laborExcelToggleBtn" onclick="toggleLaborInlineEditor()" aria-controls="laborPage" aria-expanded="false">노무사 엑셀파일</button>
-   <button type="button" class="btn gray" id="laborQuickUploadBtn" onclick="laborQuickUpload()">원본 업로드</button>
-   <button type="button" class="btn gray" id="laborQuickExportBtn" onclick="laborQuickExport()">노무사 파일 다운로드</button>
+   <button type="button" class="btn green workHoursExcelDownloadBtn" id="workHoursExcelBtn" onclick="exportSchedule()" title="기존 근무표와 집계 서식 포함">스케줄다운로드</button>
+   <button type="button" class="btn" id="laborQuickExportBtn" onclick="laborQuickExport()" title="I열 근무시간·O열 특이사항 수정만 반영한 원본 Excel 다운로드">5. 근로자현황파악</button>
+   <button type="button" class="btn gray" id="laborQuickUploadBtn" onclick="laborQuickUpload()" title="현재 업장에 사용할 원본 Excel 등록 또는 교체">원본 업로드</button>
   </div>
  </div>
 <section id="laborPage" class="page laborInlinePage">
   <div class="row" style="flex-wrap:wrap;gap:10px">
-   <div><h1 class="title">노무사 제출자료</h1><div class="sub">현재 선택한 업장과 월의 <b>근로자현황파악.xlsx</b> 원본을 웹에서 수정합니다.</div></div>
+   <div><h1 class="title">노무사 제출자료</h1><div class="sub">한 업장당 원본 하나를 등록합니다. 화면에서 <b>I열 근무시간과 O열 특이사항만 바로 수정·자동 저장</b>하며, Excel 다른 셀과 원본 서식은 그대로 유지합니다.</div></div>
    <span id="laborScopeBadge" class="saveState">업장·월 선택</span>
   </div>
   <div class="card" style="margin-top:14px">
    <div class="laborToolbar">
     <input id="laborWorkbookInput" type="file" accept=".xlsx" style="display:none" onchange="laborUploadOriginal(this.files?.[0]);this.value=''">
-    <button class="btn" id="laborUploadBtn" onclick="$('laborWorkbookInput').click()">원본 Excel 등록 / 교체</button>
-    <button class="btn gray" id="laborCopyBtn" onclick="laborCopyPriorMonth()">이전월 자료 복사</button>
-    <button class="btn gray" onclick="laborReloadMonth()">저장본 다시 불러오기</button>
-    <span id="laborSaveState" class="saveState">대기</span>
+    <button class="btn" id="laborUploadBtn" style="display:none" onclick="$('laborWorkbookInput').click()">원본 Excel 등록 / 교체</button>
+    <button class="btn gray" id="laborCopyBtn" style="display:none" onclick="laborCopyPriorMonth()">이전월 자료 복사</button>
+
+    <span id="laborSaveState" class="saveState" role="status" aria-live="polite">자동 저장 준비</span><button id="laborRetryBtn" type="button" class="btn gray small" style="display:none" onclick="laborFlushSave()">저장 재시도</button>
    </div>
-   <p class="laborIntro"><b>업장별 2개 파일</b> · 기존 <b>근로시간 엑셀파일</b>과 이곳의 <b>근로자현황파악.xlsx</b>를 각각 내려받아 전달합니다. 같은 파일명이라도 업장·월별로 별도 보관하며 직원관리·급여대장의 원본 데이터는 변경하지 않습니다. 주민번호·급여 정보가 포함되어 이 화면은 <b>최고관리자만</b> 볼 수 있습니다.</p>
+   <p class="laborIntro">원본 Excel은 업장별로 1개를 계속 편집합니다. <b>I열 근무시간 줄바꿈과 O열 특이사항 수정만 Excel 다운로드에 반영</b>되며, 연번 정렬과 열 너비는 대시보드 화면에만 적용됩니다. 퇴사 직원은 회색으로 구분합니다. 주민번호·급여가 포함되어 <b>최고관리자 전용</b>입니다.</p>
    <div id="laborWorkbookInfo" class="laborInfo">아직 파일을 불러오지 않았습니다.</div>
    <div class="laborToolbar" style="margin:10px 0">
     <label for="laborSheetSelect" style="font-size:12px;font-weight:800">시트</label>
     <select id="laborSheetSelect" onchange="laborRenderSheet()" style="max-width:210px"></select>
+    <button id="laborClearChecksBtn" type="button" class="btn gray small" onclick="laborClearChecks()" title="작업 완료 체크만 모두 해제하고, Excel 내용은 변경하지 않습니다.">체크 모두 해제</button>
     <span style="flex:1"></span>
-    <button id="laborUndoBtn" class="btn gray" onclick="laborUndoDraft()">미저장 수정 취소</button>
-    <button id="laborSaveBtn" class="btn green" onclick="laborSaveMonth()">웹 수정 저장</button>
-    <button id="laborExportBtn" class="btn" onclick="laborDownloadPreservingOriginal()">원본 양식 그대로 다운로드</button>
+
+    <button id="laborSaveBtn" class="btn green" style="display:none" onclick="laborSaveMonth()">웹 수정 저장</button>
+    <button id="laborExportBtn" class="btn" style="display:none" onclick="laborDownloadPreservingOriginal()">원본 양식 그대로 다운로드</button>
    </div>
    <div id="laborWorkbookGrid" class="laborEmpty">현재 업장·월에 등록된 Excel이 없습니다. 원본을 업로드하거나 이전월 자료를 복사하세요.</div>
-   <div class="help" style="margin-top:9px">노란색 셀 = 웹에서 수정한 값 · 수식 셀/병합된 칸은 임의로 덮어쓰지 않습니다. 다운로드 전 변경사항을 저장하세요. 출력 시 원본 셀 서식·열 너비·인쇄 설정·시트 구조를 유지합니다.</div>
+   <div class="help" style="margin-top:9px">노란색 = 근무시간/특이사항 수정값 · 연한 녹색 = 작업 완료 체크 · 회색 행 = 퇴사자 · 표 머리글 오른쪽 경계를 드래그하면 열 너비 조절 · 왼쪽 표시순서 숫자로 화면 정렬 · 변경내용은 자동 저장됩니다. <b>원본 Excel의 시트·서식·연번·다른 항목은 변경하지 않습니다. I열 줄바꿈은 원본 Excel에도 그대로 저장됩니다.</b></div>
   </div>
  </section>
 
@@ -2255,7 +2255,7 @@ body.commerceStoreMode .commerceOnlyNav:not(.hidden){display:flex}
 
  <section id="payrollPage" class="page">
  <div class="row">
-  <div><h1 class="title">급여관리 <span style="font-size:12px;color:#315efb;background:#eef3ff;border-radius:999px;padding:4px 8px;vertical-align:middle">2026.11.25_4</span></h1><div class="sub">월별 급여대장을 검산하고, 기간별·직원별 누적 급여도 조회합니다.</div></div>
+  <div><h1 class="title">급여관리 <span style="font-size:12px;color:#315efb;background:#eef3ff;border-radius:999px;padding:4px 8px;vertical-align:middle">2026.11.26_3</span></h1><div class="sub">월별 급여대장을 검산하고, 기간별·직원별 누적 급여도 조회합니다.</div></div>
   <div class="toolbar">
    <input type="file" id="payrollFile" accept=".xlsx,.xls,.xlsm" multiple style="display:none" onchange="importPayrollFiles(this.files);this.value=''">
    <button id="payrollBatchImportBtn" class="btn" onclick="$('payrollFile').click()">급여대장 여러개 불러오기</button>
@@ -3088,7 +3088,17 @@ async function saveIpLabels(){
  }catch(err){alert('IP 이름 저장 오류\n'+(err?.message||err))}
 }
 
-function accessEventLabel(t){return t==='login'?'로그인':t==='logout'?'로그아웃':t==='store_open'?'업장 열기':String(t||'접속')}
+function accessEventLabel(t){
+ const labels={login:'로그인',logout:'로그아웃',store_open:'업장 열기',labor_workbook_edit:'노무사 I/O열 수정',labor_workbook_check:'노무사 작업 체크',labor_workbook_view:'노무사 화면 설정',labor_workbook_original_uploaded:'노무사 원본 업로드'};
+ return labels[t]||String(t||'접속');
+}
+function laborAccessEventDetail(x){const d=x?.details||{};
+ if(x?.event_type==='labor_workbook_edit')return '수정 셀: '+(Array.isArray(d.cells)?d.cells.join(', '):'-')+' · '+(d.cell_count||0)+'칸';
+ if(x?.event_type==='labor_workbook_check')return '확인 완료 '+(d.checked_count||0)+'명 · 변경된 행: '+(Array.isArray(d.changed_rows)?d.changed_rows.join(', '):'-');
+ if(x?.event_type==='labor_workbook_view')return '화면 순서/열 너비 조절 (Excel 원본과 별개)';
+ if(x?.event_type==='labor_workbook_original_uploaded')return '원본 등록: '+String(d.file_name||'').slice(0,120);
+ return '';
+}
 function accessEventClass(t){return t==='login'?'accessLogin':t==='logout'?'accessLogout':'accessStore'}
 function accessEventSummary(x){
  let label=accessEventLabel(x.event_type),device=String(x.device||'').trim();
@@ -3243,7 +3253,7 @@ async function loadAuditPage(){
  if($('auditStoreFilter'))$('auditStoreFilter').innerHTML='<option value="">전체 업장</option>'+stores.map(st=>`<option value="${st.id}">${esc(st.name)}</option>`).join('');
  if($('auditUserFilter'))$('auditUserFilter').innerHTML='<option value="">전체 사용자</option>'+adminUsers.map(x=>`<option value="${x.user_id}">${esc(x.display_name||x.email||'사용자')}</option>`).join('');
  renderAuditLogs();renderAccessSessions();
- $('accessLogBody').innerHTML=accessLogs.map(x=>`<tr><td>${fmtDateTime(x.created_at)}</td><td>${esc(x.actor_name||x.actor_email||'-')}</td><td class="accessEvent"><span class="activityBadge ${accessEventClass(x.event_type)}">${esc(accessEventLabel(x.event_type))}</span></td><td>${esc(stores.find(s=>s.id===Number(x.store_id))?.name||'-')}</td><td class="ipCell">${ipDisplayHtml(x.ip_address)}</td><td>${esc(x.device||'-')}</td></tr>`).join('')||'<tr><td colspan="6" style="padding:20px">접속기록이 없습니다.</td></tr>';
+ $('accessLogBody').innerHTML=accessLogs.map(x=>`<tr><td>${fmtDateTime(x.created_at)}</td><td>${esc(x.actor_name||x.actor_email||'-')}</td><td class="accessEvent"><span class="activityBadge ${accessEventClass(x.event_type)}" title="${esc(laborAccessEventDetail(x))}">${esc(accessEventLabel(x.event_type))}</span></td><td>${esc(stores.find(s=>s.id===Number(x.store_id))?.name||'-')}</td><td class="ipCell">${ipDisplayHtml(x.ip_address)}</td><td>${esc(x.device||'-')}</td></tr>`).join('')||'<tr><td colspan="6" style="padding:20px">접속기록이 없습니다.</td></tr>';
 }
 
 
@@ -10348,14 +10358,50 @@ function hoursExcelBuildRows(r,list){
  return {monthXml,sumXml,storeName:name,month:r.m,employees:list.length,expectedRows:monthRows.length};
 }
 async function hoursExcelBuildWorkbook(r,list){
- if(typeof JSZip==='undefined')throw new Error('Excel 서식 생성 라이브러리(JSZip)를 불러오지 못했습니다.');
- const s=hoursExcelBuildRows(r,list),z=new JSZip();
- z.file('[Content_Types].xml','<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/worksheets/sheet2.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/></Types>');
- z.file('_rels/.rels','<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>');
- z.file('xl/workbook.xml','<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><bookViews><workbookView activeTab="0"/></bookViews><sheets><sheet name="내역" sheetId="1" r:id="rId1"/><sheet name="근로시간 집계" sheetId="2" r:id="rId2"/></sheets><calcPr calcId="191029"/></workbook>');
- z.file('xl/_rels/workbook.xml.rels','<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet2.xml"/><Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>');
- z.file('xl/styles.xml',hoursExcelStyleXml());z.file('xl/worksheets/sheet1.xml',s.monthXml);z.file('xl/worksheets/sheet2.xml',s.sumXml);
- return z.generateAsync({type:'uint8array',compression:'DEFLATE',compressionOptions:{level:6}})
+ // Stable SheetJS workbook envelope from the previously openable Excel export.
+ // We add only the two fully formatted worksheets and the native OOXML styles.
+ // Do NOT assemble [Content_Types] / workbook relationships by hand: Excel can reject
+ // nominally valid XML when the OOXML package or worksheet element order is wrong.
+ if(typeof XLSX==='undefined'||typeof JSZip==='undefined')throw new Error('Excel 구성요소(XLSX/JSZip)를 불러오지 못했습니다. 인터넷 연결을 확인하세요.');
+ const s=hoursExcelBuildRows(r,list);
+ const wb=XLSX.utils.book_new();
+ XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([['근로시간']]),'내역');
+ XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([['근로시간 집계']]),'근로시간 집계');
+ const base=XLSX.write(wb,{bookType:'xlsx',type:'array',compression:true});
+ const z=await JSZip.loadAsync(base),workbookFile=z.file('xl/workbook.xml'),relsFile=z.file('xl/_rels/workbook.xml.rels');
+ if(!workbookFile||!relsFile||!z.file('xl/styles.xml'))throw new Error('안전한 Excel 기본 패키지를 생성하지 못했습니다.');
+ // XML DOM parsing avoids fragile attribute-order and namespace-prefix assumptions.
+ const doc=new DOMParser().parseFromString(await workbookFile.async('string'),'application/xml');
+ const relDoc=new DOMParser().parseFromString(await relsFile.async('string'),'application/xml');
+ if(doc.querySelector('parsererror')||relDoc.querySelector('parsererror'))throw new Error('Excel 시트 관계 XML을 읽을 수 없습니다.');
+ const rels=new Map([...relDoc.getElementsByTagNameNS('*','Relationship')].map(node=>[node.getAttribute('Id'),node.getAttribute('Target')]));
+ const sheetMap=new Map();
+ for(const node of doc.getElementsByTagNameNS('*','sheet')){
+  const rid=node.getAttributeNS('http://schemas.openxmlformats.org/officeDocument/2006/relationships','id')||node.getAttribute('r:id');
+  const rel=rels.get(rid);if(!rel)continue;
+  const path=rel.startsWith('/')?rel.slice(1):rel.startsWith('xl/')?rel:'xl/'+rel;
+  sheetMap.set(node.getAttribute('name'),path);
+ }
+ const detailPath=sheetMap.get('내역'),summaryPath=sheetMap.get('근로시간 집계');
+ if(!detailPath||!summaryPath||!z.file(detailPath)||!z.file(summaryPath))throw new Error('Excel 시트의 관계 정보가 올바르지 않습니다.');
+ z.file('xl/styles.xml',hoursExcelStyleXml());
+ z.file(detailPath,s.monthXml);
+ z.file(summaryPath,s.sumXml);
+ const output=await z.generateAsync({type:'uint8array',compression:'DEFLATE',compressionOptions:{level:6}});
+ // Do not issue broken downloads. Reopen the exact output in independent SheetJS parser.
+ try{
+  const check=XLSX.read(output,{type:'array',cellFormula:true,cellStyles:true});
+  const expected=['내역','근로시간 집계'];
+  if(check.SheetNames.length!==2||expected.some((name,i)=>check.SheetNames[i]!==name))throw new Error('시트 이름 또는 개수가 다릅니다.');
+  if(check.Sheets['내역']?.A4?.v!=='직원'||check.Sheets['내역']?.B1?.v!==s.storeName)throw new Error('월간 근무표 내용이 일치하지 않습니다.');
+  if(check.Sheets['근로시간 집계']?.A3?.v!=='직원'||check.Sheets['근로시간 집계']?.N3?.v!=='차이')throw new Error('근로시간 집계 열이 누락되었습니다.');
+  if(list.length&&check.Sheets['내역']?.A5?.v!==list[0].name)throw new Error('첫 번째 직원의 근무표가 누락되었습니다.');
+  const verify=await JSZip.loadAsync(output);
+  if(!verify.file('xl/styles.xml')||!verify.file(detailPath)||!verify.file(summaryPath))throw new Error('서식 XML 또는 시트 파일이 누락되었습니다.');
+  const xml=await verify.file(detailPath).async('string');
+  if(!xml.includes('pageSetup')||!xml.includes('mergeCells')||!xml.includes('autoFilter'))throw new Error('인쇄·병합·자동필터 서식이 빠졌습니다.');
+ }catch(e){throw new Error('Excel 최종 개방 검사 실패: '+(e?.message||e))}
+ return output;
 }
 async function exportSchedule(employeeIds=null){
  try{
@@ -13601,9 +13647,73 @@ laborDraft.dirty=true;laborRenderSheet();laborNotify('이전월 복사됨 · 선
 async function laborSaveMonth(){if(!laborAllowed()||!laborDraft||laborBusy)return;let d=laborDraft,{sid,ym}=laborScope();if(sid!==d.sid||ym!==d.ym)return alert('다른 업장 또는 월의 자료입니다. 새로 불러오세요.');laborBusy=true;laborNotify('수정 내용 저장 중');try{let payload={store_id:sid,report_month:ym,file_name:d.fileName,file_bytes:laborByteHex(d.bytes),edits:d.edits,updated_at:new Date().toISOString(),updated_by:currentSessionUser?.id||null};let q;if(d.loadedMonth===ym){q=await sb.from('labor_workbook_files').update({edits:d.edits,updated_at:payload.updated_at,updated_by:payload.updated_by}).eq('store_id',sid).eq('report_month',ym).eq('updated_at',d.stamp).select('updated_at');if(q.error)throw q.error;if(!q.data?.length)throw new Error('다른 사용자가 수정했거나 자료가 바뀌었습니다. 새로고침 후 비교해 주세요.')}else{q=await sb.from('labor_workbook_files').insert(payload).select('updated_at');if(q.error)throw q.error}d.savedEdits=structuredClone(d.edits);d.dirty=false;d.loadedMonth=ym;d.sourceMonth=ym;d.fromTemplate=false;d.stamp=q.data?.[0]?.updated_at||payload.updated_at;laborSetInfo();laborNotify('업장·월별 수정 저장 완료')}catch(e){laborNotify('저장 실패: '+(e?.message||e),true);alert('저장 실패: '+(e?.message||e))}finally{laborBusy=false}}
 function laborExcelNumericFormat(cell){let fmt=String(cell?.z||'');return /(?:[ymd]{2,4}[-\/]|[-\/][ymd]{1,4})/i.test(fmt)&&cell?.t==='n'}
 function laborExcelDateSerial(s){let m=String(s||'').match(/^(20\d{2})[-./](\d{1,2})[-./](\d{1,2})$/);if(!m)return null;let d=Date.UTC(Number(m[1]),Number(m[2])-1,Number(m[3])),dt=new Date(d);if(dt.getUTCFullYear()!==Number(m[1])||dt.getUTCMonth()!==Number(m[2])-1||dt.getUTCDate()!==Number(m[3]))return null;return (d-Date.UTC(1899,11,30))/86400000}
-function laborCellMod(sheet,ref,value){let cell=laborDraft.wb.Sheets[sheet][ref]||{},s=String(value??'');if(s==='')return {value:'',type:'text'};if(laborExcelNumericFormat(cell)){let n=laborExcelDateSerial(s);if(n!=null)return {value:n,type:'number'}}if(cell.t==='n'&&/^[-+]?\d+(?:\.\d+)?$/.test(s.replace(/,/g,'')))return {value:Number(s.replace(/,/g,'')),type:'number'};if(!cell.t&&/^[-+]?\d+(?:\.\d+)?$/.test(s.replace(/,/g,''))&&!/^0\d+/.test(s))return {value:Number(s.replace(/,/g,'')),type:'number'};return {value:s,type:'text'}}
+function laborCellMod(sheet,ref,value){let cell=laborDraft.wb.Sheets[sheet][ref]||{},s=String(value??'');if(sheet==='인원현황'&&/^[IO](?:[4-9]|[1-9]\d+)$/.test(ref))return {value:s.replace(/\r\n?/g,'\n'),type:'text'};if(s==='')return {value:'',type:'text'};if(laborExcelNumericFormat(cell)){let n=laborExcelDateSerial(s);if(n!=null)return {value:n,type:'number'}}if(cell.t==='n'&&/^[-+]?\d+(?:\.\d+)?$/.test(s.replace(/,/g,'')))return {value:Number(s.replace(/,/g,'')),type:'number'};if(!cell.t&&/^[-+]?\d+(?:\.\d+)?$/.test(s.replace(/,/g,''))&&!/^0\d+/.test(s))return {value:Number(s.replace(/,/g,'')),type:'number'};return {value:s,type:'text'}}
 function laborWorksheetPaths(wbXml,relXml){let rels=new Map(),paths=new Map();for(const m of relXml.matchAll(/<Relationship\b[^>]*Id="([^"]+)"[^>]*Target="([^"]+)"[^>]*\/?>/g))rels.set(m[1],m[2]);for(const m of wbXml.matchAll(/<sheet\b[^>]*name="([^"]+)"[^>]*r:id="([^"]+)"[^>]*\/?>/g)){let r=rels.get(m[2]);if(!r)continue;let path=r.startsWith('/')?r.slice(1):r.startsWith('xl/')?r:'xl/'+r;paths.set(m[1],path)}return paths}
-async function laborBuildPreservedXlsx(){let d=laborDraft;if(!d)throw new Error('원본 파일이 없습니다.');let zip=await JSZip.loadAsync(d.bytes),expected={},originalPaths=Object.keys(zip.files).filter(path=>!zip.files[path].dir).sort(),wbFile=zip.file('xl/workbook.xml'),relFile=zip.file('xl/_rels/workbook.xml.rels');if(!wbFile||!relFile)throw new Error('Excel 원본 구조가 없습니다.');let mapping=laborWorksheetPaths(await wbFile.async('string'),await relFile.async('string'));let changedPaths=new Set();for(const [sheet,cellUpdates] of Object.entries(d.edits||{})){if(!d.wb.SheetNames.includes(sheet))throw new Error('존재하지 않는 시트: '+sheet);let path=mapping.get(sheet),f=path&&zip.file(path);if(!f)throw new Error(sheet+' 시트의 원본 XML 경로를 찾지 못했습니다.');let ws=d.wb.Sheets[sheet],xml=await f.async('string'),checks=new Map();for(const [ref,value] of Object.entries(cellUpdates)){if(!/^\$?[A-Z]{1,3}\$?[1-9]\d*$/.test(ref))throw new Error('잘못된 셀 좌표: '+ref);let cell=XLSX.utils.decode_cell(ref);if(laborMergedCovered(ws,cell.r,cell.c)||ws[ref]?.f!==undefined)throw new Error('수식/병합 셀을 변경할 수 없습니다: '+sheet+'!'+ref);let mod=laborCellMod(sheet,ref,value);xml=commerceV20PatchCell(xml,ref,mod);checks.set(ref,mod)}commerceV20AssertExpectedCells(xml,checks,sheet);zip.file(path,xml);expected[sheet]=checks;changedPaths.add(path)}let out=await zip.generateAsync({type:'uint8array',compression:'DEFLATE',compressionOptions:{level:6}}),reloaded=await JSZip.loadAsync(out);for(const path of originalPaths){let a=zip.file(path),b=reloaded.file(path);if(!b)throw new Error('원본 파일 구성요소가 누락되었습니다: '+path);if(!changedPaths.has(path)&&a&&!commerceV20SameBytes(await a.async('uint8array'),await b.async('uint8array')))throw new Error('원본의 시트 이외 파일이 변경되었습니다: '+path)}for(const [sheet,checks] of Object.entries(expected))commerceV20AssertExpectedCells(await reloaded.file(mapping.get(sheet)).async('string'),checks,sheet);let finalWb=XLSX.read(out,{type:'array',cellFormula:true});if(JSON.stringify(finalWb.SheetNames)!==JSON.stringify(d.wb.SheetNames))throw new Error('시트 목록이 변경되었습니다.');return out}
+/* Detect whether the source workbook already has an identical cell style with wrapText=1.
+   Only amended I cells gain wrapText; other styles and file components stay byte-identical. */
+async function laborSourceWrapStyle(zip){
+ const file=zip.file('xl/styles.xml');if(!file)return {wrapFor:()=>null,changed:false};
+ const src=await file.async('string'),doc=commerceV20XmlDoc(src,'원본 스타일'),xfs=doc.getElementsByTagNameNS('*','cellXfs')[0];
+ if(!xfs)return {wrapFor:()=>null,changed:false};
+ const ns=doc.documentElement.namespaceURI;
+ let items=Array.from(xfs.childNodes).filter(x=>x.localName==='xf');let changed=false;
+ function attrs(el,ignore=[]){return Array.from(el.attributes||[]).filter(a=>!ignore.includes(a.name)).map(a=>a.name+'='+a.value).sort().join('|')}
+ function signature(x){const align=Array.from(x.childNodes).find(c=>c.localName==='alignment');
+    return attrs(x,['applyAlignment'])+'::'+(align?attrs(align,['wrapText']):'');}
+ function wrapped(x){const a=Array.from(x.childNodes).find(c=>c.localName==='alignment');return a?.getAttribute('wrapText')==='1'}
+ const wrapFor=(index)=>{
+   if(!Number.isInteger(index)||index<0||index>=items.length)return null;
+   let base=items[index];if(wrapped(base))return index;
+   let wanted=signature(base),found=items.findIndex(x=>wrapped(x)&&signature(x)===wanted);
+   if(found>=0)return found;
+   let copy=base.cloneNode(true);let a=Array.from(copy.childNodes).find(c=>c.localName==='alignment');
+   if(!a){a=doc.createElementNS(ns,'alignment');copy.appendChild(a)}
+   a.setAttribute('wrapText','1');copy.setAttribute('applyAlignment','1');xfs.appendChild(copy);items.push(copy);changed=true;
+   return items.length-1;
+ };
+ return {wrapFor,finish:()=>{if(changed){xfs.setAttribute('count',String(items.length));zip.file('xl/styles.xml',new XMLSerializer().serializeToString(doc));}},get changed(){return changed}};
+}
+function laborApplyWrapToCell(xml,ref,newStyle){
+ if(newStyle===null||newStyle===undefined)return xml;
+ const rx=new RegExp('(<c\\b[^>]*\\br="'+ref+'"[^>]*\\bs=")(\\d+)(")');
+ if(rx.test(xml))return xml.replace(rx,(_m,a,_old,b)=>a+newStyle+b);
+ const cellRe=new RegExp('(<c\\b[^>]*\\br="'+ref+'")');
+ return xml.replace(cellRe,'$1 s="'+newStyle+'"');
+}
+async function laborBuildPreservedXlsx(){
+ const d=laborDraft;if(!d)throw new Error('원본 파일이 없습니다.');
+ const zip=await JSZip.loadAsync(d.bytes),originalPaths=Object.keys(zip.files).filter(path=>!zip.files[path].dir).sort(),wbFile=zip.file('xl/workbook.xml'),relFile=zip.file('xl/_rels/workbook.xml.rels');
+ if(!wbFile||!relFile)throw new Error('Excel 원본 구조가 없습니다.');
+ const mapping=laborWorksheetPaths(await wbFile.async('string'),await relFile.async('string'));
+ const wrap=await laborSourceWrapStyle(zip),changedPaths=new Set(),expected={},input=d.edits?.['인원현황']||{};
+ const valid=Object.entries(input).filter(([ref])=>/^[IO](?:[4-9]|[1-9]\d{1,3})$/.test(ref));
+ if(valid.length){
+  const sheet='인원현황',path=mapping.get(sheet),file=path&&zip.file(path);if(!file)throw new Error('인원현황 시트의 원본 XML을 찾지 못했습니다.');
+  let xml=await file.async('string'),ws=d.wb.Sheets[sheet],checks=new Map();
+  for(const [ref,raw] of valid){
+   const cell=XLSX.utils.decode_cell(ref);
+   if(laborMergedCovered(ws,cell.r,cell.c)||ws[ref]?.f!==undefined)throw new Error('수식 또는 병합된 셀을 변경할 수 없습니다: '+ref);
+   const mod=laborCellMod(sheet,ref,raw);xml=commerceV20PatchCell(xml,ref,mod);
+   if(ref.startsWith('I')&&mod.value.includes('\n')){
+    const match=xml.match(new RegExp('<c\\b[^>]*\\br="'+ref+'"[^>]*\\bs="(\\d+)"'));
+    const beforeStyle=match?Number(match[1]):null;
+    const afterStyle=beforeStyle===null?null:wrap.wrapFor(beforeStyle);
+    if(afterStyle!==null)xml=laborApplyWrapToCell(xml,ref,afterStyle);
+   }
+   checks.set(ref,mod);
+  }
+  commerceV20AssertExpectedCells(xml,checks,sheet);zip.file(path,xml);expected[sheet]=checks;changedPaths.add(path);
+ }
+ wrap.finish?.();if(wrap.changed)changedPaths.add('xl/styles.xml');
+ const result=await zip.generateAsync({type:'uint8array',compression:'DEFLATE',compressionOptions:{level:6}}),reloaded=await JSZip.loadAsync(result);
+ for(const path of originalPaths){const a=zip.file(path),b=reloaded.file(path);if(!b)throw new Error('원본 구성요소 누락: '+path);
+  if(!changedPaths.has(path)&&a&&!commerceV20SameBytes(await a.async('uint8array'),await b.async('uint8array')))throw new Error('원본 구성요소가 변경되었습니다: '+path);}
+ for(const [sheet,checks] of Object.entries(expected))commerceV20AssertExpectedCells(await reloaded.file(mapping.get(sheet)).async('string'),checks,sheet);
+ const checkWb=XLSX.read(result,{type:'array',cellFormula:true});
+ if(JSON.stringify(checkWb.SheetNames)!==JSON.stringify(d.wb.SheetNames))throw new Error('원본 시트가 변경되었습니다.');
+ for(const [ref,mod] of expected['인원현황']||[])if(String(checkWb.Sheets['인원현황']?.[ref]?.v??'')!==mod.value)throw new Error('Excel 재읽기 값 검증 실패: '+ref);
+ return result;
+}
 async function laborDownloadPreservingOriginal(){if(!laborAllowed()||!laborDraft||laborBusy)return;let {sid,ym}=laborScope(),d=laborDraft;if(d.sid!==sid||d.ym!==ym)return alert('업장·월을 다시 선택해 주세요.');if(d.dirty||d.loadedMonth!==ym){alert('다운로드하기 전에 [웹 수정 저장]을 먼저 눌러주세요.');return}try{laborBusy=true;laborNotify('원본 서식 검증·Excel 생성 중');let out=await laborBuildPreservedXlsx(),blob=new Blob([out],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}),a=document.createElement('a'),url=URL.createObjectURL(blob);a.href=url;a.download=d.fileName;a.style.display='none';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),30000);laborNotify(`원본 서식 유지 다운로드 완료 · ${ym}`)}catch(e){laborNotify('다운로드 실패: '+(e?.message||e),true);alert('원본 서식을 보존하지 못해 파일 생성을 중단했습니다.\n'+(e?.message||e))}finally{laborBusy=false}}
 // Keep the new page selected while switching between any store type, including 88 commerce.
 
@@ -13681,5 +13791,245 @@ function toggleCompactTable(kind){
 document.addEventListener('DOMContentLoaded',()=>{
  auditSyncMonthLabel();document.getElementById('monthSelect')?.addEventListener('change',auditSyncMonthLabel);
 });
+</script>
+<style id="labor20261126_2CSS">
+/* Labor workbook occupies the hours page directly, without the former extra edit-toggle step. */
+#hoursPage.active #laborPage.laborInlinePage{display:block!important}
+#hoursPage .workHoursExcelExportBar{align-items:center}
+#hoursPage .hoursExcelActionGroup{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+#hoursPage .laborInlinePage .laborGridWrap{max-height:66vh;overscroll-behavior:contain}
+#hoursPage .laborExcelQuickAction{min-height:41px}
+#hoursPage .laborGrid{table-layout:fixed;min-width:1600px;width:max-content}
+#hoursPage .laborGrid col{min-width:58px}
+#hoursPage .laborGrid th{position:sticky}
+#hoursPage .laborGrid thead tr:first-child th{height:36px;padding:7px 12px 7px 5px}
+#hoursPage .laborGrid thead tr:nth-child(2) th{top:36px;height:40px}
+#hoursPage .laborGrid thead th.laborResizeHeader{position:sticky;padding-right:13px}
+#hoursPage .laborResizeHandle{position:absolute;right:0;top:0;bottom:0;width:9px;cursor:col-resize;background:rgba(52,95,155,.07);border-right:2px solid #b7c9e0;touch-action:none}
+#hoursPage .laborResizeHandle:hover{background:#bad1f9;border-color:#416fc2}
+#hoursPage .laborGrid .laborReadValue{white-space:pre-wrap;overflow-wrap:anywhere;word-break:break-word;line-height:1.5;font-size:12px;min-height:25px;padding:6px 7px}
+#hoursPage .laborGrid .laborReadValue.workTime{white-space:pre-line;min-height:42px}
+#hoursPage .laborGrid textarea.laborRemarks{display:block;width:100%;min-height:52px;max-height:200px;resize:vertical;padding:8px 7px;font:inherit;line-height:1.5;border-radius:6px;border:1px solid #d5dee9;background:#fffdf4;box-sizing:border-box;white-space:pre-wrap}
+#hoursPage .laborGrid textarea.laborRemarks:focus{outline:2px solid #9cbcff;border-color:#638dd0}
+#hoursPage .laborGrid textarea.laborRemarks.changed{background:#fff1bb;border-color:#e6bd5c}
+#hoursPage .laborGrid .laborRowActions{min-width:88px;max-width:88px;width:88px;background:#f1f4f9;z-index:6;text-align:center}
+#hoursPage .laborGrid .laborOrderInput{width:48px;min-width:45px;max-width:52px;height:29px;text-align:center;padding:3px;border:1px solid #cbd5e1;background:#fff;border-radius:6px;font-weight:800}
+#hoursPage .laborGrid .laborEmpCell{font-weight:900;border-left:4px solid var(--labor-row-color,#dbeafe);background:var(--labor-row-color,#edf4ff)}
+#hoursPage .laborGrid tr.laborRetired td,#hoursPage .laborGrid tr.laborRetired th{background:#e6e9ee!important;color:#5c6674!important}
+#hoursPage .laborGrid tr.laborRetired .laborReadValue{color:#667085!important}
+#hoursPage .laborGrid tr.laborRetired textarea.laborRemarks{background:#f1f2f4!important}
+#hoursPage .laborRetiredBadge{display:inline-block;background:#9ba3b0;color:#fff;font-size:10px;padding:2px 5px;border-radius:4px;margin-left:4px}
+#hoursPage .laborSaveHint{font-size:11px;font-weight:700;color:#526e87}
+@media(max-width:650px){#hoursPage .hoursExcelActionGroup .btn{font-size:12px;padding:9px 10px}#hoursPage .laborGrid textarea.laborRemarks{min-height:58px}}
+
+#hoursPage .laborGrid textarea.laborWorkTimeEdit{min-height:94px;background:#f4faff;border-color:#c3d8f3;white-space:pre-wrap;line-height:1.55}
+#hoursPage .laborGrid textarea.laborWorkTimeEdit.changed{background:#fff1bb;border-color:#e6bd5c}
+#hoursPage .laborGrid .laborNameCheck{display:flex;align-items:center;gap:5px;font-weight:800;cursor:pointer;min-width:0}
+#hoursPage .laborGrid .laborNameCheck input{width:17px;height:17px;flex-shrink:0;accent-color:#18935a}
+#hoursPage .laborGrid tr.laborDone td,#hoursPage .laborGrid tr.laborDone th{background:#e7f7eb!important}
+#hoursPage .laborGrid tr.laborDone .laborEmpCell{border-left:4px solid #18a05e}
+#hoursPage .laborGrid tr.laborDone textarea{background:#fcffef!important}
+#hoursPage .laborGrid tr.laborRetired td,#hoursPage .laborGrid tr.laborRetired th{background:#e5e7eb!important}
+</style>
+<script id="labor20261126_2AutoSave">
+/* Scope: only the consultant Excel editor. Does not update employee, salary, leave, schedule or commerce tables. */
+let laborAutoTimer=null,laborAutoTask=null,laborAutoLastError=null,laborResizeContext=null;
+function laborScope(){return {sid:Number(storeId()),ym:'0000-00'}}
+function laborNotify(message,error=false){const el=$('laborSaveState');if(el){el.textContent=message;el.className='saveState '+(error?'error':'saved');}const retry=$('laborRetryBtn');if(retry)retry.style.display=error?'inline-flex':'none';}
+function laborSetInfo(){const d=laborDraft,n=stores.find(x=>Number(x.id)===Number(storeId()))?.name||`업장 ${storeId()}`;
+ if($('laborScopeBadge'))$('laborScopeBadge').textContent=n+' · 업장별 원본 1개';
+ const info=$('laborWorkbookInfo');if(!info)return;
+ if(!d){info.textContent=n+' · 등록된 원본이 없습니다. 상단 [원본 업로드]로 등록하세요.';return;}
+ const count=Object.entries(d.edits?.['인원현황']||{}).filter(([r])=>/^[IO](?:[4-9]|[1-9]\d+)$/.test(r)).length;
+ info.textContent=n+'  |  '+d.fileName+'  |  근무시간/특이사항 수정 '+count+'칸'+(d.dirty?' · 자동 저장 대기':' · 저장됨');
+}
+function laborDisplayValue(sheet,ref){const d=laborDraft,ws=d?.wb.Sheets[sheet];if(!ws)return '';
+ if(sheet==='인원현황'&&/^D\d+$/.test(ref)){
+  const c=ws[ref];if(c?.t==='n'&&Number(c.v)>20000&&XLSX?.SSF?.parse_date_code){const x=XLSX.SSF.parse_date_code(c.v);if(x)return `${x.y}-${String(x.m).padStart(2,'0')}-${String(x.d).padStart(2,'0')}`;}
+  const old=laborOldValue(ws,ref),m=old.match(/(20\d{2})\D+(\d{1,2})\D+(\d{1,2})/);if(m)return m[1]+'-'+m[2].padStart(2,'0')+'-'+m[3].padStart(2,'0');
+ }
+ if(sheet==='인원현황'&&/^[IO]\d+$/.test(ref))return laborEditedValue(sheet,ref);
+ return laborOldValue(ws,ref);
+}
+function laborEmployeeOnRow(ws,r){const name=String(laborOldValue(ws,'B'+(r+1))||'').trim();if(!name)return null;
+ return [...(employees||[]),...(retiredEmployees||[])].find(x=>normalizeName(x.name)===normalizeName(name))||null;
+}
+function laborRetiredOnRow(ws,r){let e=laborEmployeeOnRow(ws,r);return !!(e&&(e.active===false||(e.resign_date&&e.resign_date<=isoToday())))}
+function laborViewState(sheet){if(!laborDraft)return {widths:{},order:[],checkedRows:[]};laborDraft.edits.__view=laborDraft.edits.__view||{};laborDraft.edits.__view[sheet]=laborDraft.edits.__view[sheet]||{widths:{},order:[],checkedRows:[]};return laborDraft.edits.__view[sheet];}
+const LABOR_COL_WIDTH={A:88,B:116,C:150,D:125,E:120,F:115,G:135,H:135,I:265,J:115,K:135,L:145,M:145,N:125,O:360};
+function laborRenderSheet(){const d=laborDraft,box=$('laborWorkbookGrid'),sel=$('laborSheetSelect');if(!box||!sel)return;laborSetInfo();
+ if(!d){box.className='laborEmpty';box.textContent='현재 업장에 등록된 근로자현황파악 원본이 없습니다. 위 [원본 업로드] 버튼을 사용하세요.';sel.innerHTML='';return;}
+ const current=sel.value;sel.innerHTML=d.wb.SheetNames.map(x=>`<option value="${esc(x)}">${esc(x)}</option>`).join('');if(d.wb.SheetNames.includes(current))sel.value=current;else if(d.wb.SheetNames.includes('인원현황'))sel.value='인원현황';
+ const name=sel.value,ws=d.wb.Sheets[name],boxR=XLSX.utils.decode_range(ws['!ref']||'A1:A1'),maxR=Math.min(500,Math.max(boxR.e.r,3)),maxC=Math.min(35,boxR.e.c),cols=Array.from({length:maxC+1},(_,i)=>i),view=laborViewState(name);
+ const dataRows=Array.from({length:maxR-2},(_,i)=>i+3),withNames=name==='인원현황'?dataRows.filter(r=>String(laborOldValue(ws,'B'+(r+1))).trim()):[];
+ const valid=new Set(withNames);let order=(view.order||[]).filter(r=>valid.has(r));for(const r of withNames)if(!order.includes(r))order.push(r);const rows=[0,1,2,...order,...dataRows.filter(r=>!valid.has(r))];
+ let totalWidth=88,html='<div class="laborGridWrap"><table class="laborGrid"><colgroup><col style="width:88px">';
+ for(let c of cols){let col=XLSX.utils.encode_col(c),w=Math.max(58,Math.min(660,Number(view.widths?.[col]||LABOR_COL_WIDTH[col]||115)));totalWidth+=w;html+=`<col data-col="${col}" style="width:${w}px">`;}
+ html+=`</colgroup><thead><tr><th class="laborRowActions">순서(화면)</th>`;
+ for(let c of cols){const col=XLSX.utils.encode_col(c);html+=`<th class="laborResizeHeader" data-col="${col}">${col}<span class="laborResizeHandle" onpointerdown="laborResizeStart(event,'${col}')" aria-label="${col}열 너비 조절"></span></th>`;}
+ html+='</tr><tr><th class="laborRowActions">원본 행</th>';
+ for(const c of cols){const col=XLSX.utils.encode_col(c),ref=col+'3',v=ws[ref]?.w??ws[ref]?.v??'';html+=`<th title="${esc(v)}">${esc(String(v)).slice(0,75)}</th>`;}
+ html+='</tr></thead><tbody>';
+ for(let idx=0;idx<rows.length;idx++){const r=rows[idx],isData=r>=3&&valid.has(r),retired=isData&&laborRetiredOnRow(ws,r),e=isData?laborEmployeeOnRow(ws,r):null,color=e?employeeColor(e):'#e8eff9';
+  const orderPos=order.indexOf(r)+1,checked=isData&&Array.isArray(view.checkedRows)&&view.checkedRows.includes(r);html+=`<tr class="${retired?'laborRetired':''} ${checked?'laborDone':''}" style="--labor-row-color:${esc(color)}"><th class="laborRowActions">`;
+  if(isData)html+=`<input class="laborOrderInput" type="number" min="1" max="${order.length}" value="${orderPos}" data-r="${r}" onchange="laborChangeOrder(this)" title="화면에서만 순서 변경">${retired?'<span class="laborRetiredBadge">퇴사</span>':''}`;
+  else html+=(r+1);html+='</th>';
+  for(const c of cols){let col=XLSX.utils.encode_col(c),ref=col+(r+1);
+   if(laborMergedCovered(ws,r,c)){html+='<td class="laborMergedCell"></td>';continue;}
+   const value=laborDisplayValue(name,ref),changed=laborCellOverride(name,ref)!==undefined,edit=name==='인원현황'&&(c===8||c===14)&&r>=3&&!ws[ref]?.f;
+   const cellClass=c===1&&isData?' class="laborEmpCell"':'';html+=`<td${cellClass}>`;
+   if(edit)html+=`<textarea class="laborRemarks ${c===8?'laborWorkTimeEdit':''}${changed?' changed':''}" data-cell="${ref}" spellcheck="false" oninput="laborQueueEdit(this)" onchange="laborCellChange(this)" onblur="laborFlushSave()" title="${c===8?'근무시간 · Enter로 줄바꿈하고 Excel에도 같은 줄바꿈 반영':'특이사항 · 자유 입력'} · 수정 후 자동 저장">${esc(value)}</textarea>`;
+   else if(c===1&&isData)html+=`<label class="laborNameCheck"><input type="checkbox" ${checked?'checked':''} onchange="laborToggleChecked(${r},this.checked)" aria-label="${esc(value)} 작업 완료 체크"><span class="laborReadValue" title="${esc(value)}">${esc(value)}</span></label>`;
+   else html+=`<div class="laborReadValue ${c===8?'workTime':''}" title="${esc(value)}">${esc(value)}</div>`;
+   html+='</td>';
+  }html+='</tr>';
+ }
+ html+='</tbody></table></div>';box.className='';box.innerHTML=html;
+ if($('laborUploadBtn'))$('laborUploadBtn').disabled=!isAppAdmin();if($('laborCopyBtn'))$('laborCopyBtn').disabled=true;
+}
+function laborSetValue(sheet,ref,value){const d=laborDraft;if(!d||sheet!=='인원현황'||!/^[IO](?:[4-9]|[1-9]\d+)$/.test(ref))return;
+ const txt=String(value??'').replace(/\r\n?/g,'\n'),original=laborOldValue(d.wb.Sheets[sheet],ref).replace(/\r\n?/g,'\n');
+ d.edits[sheet]=d.edits[sheet]||{};
+ if(txt===original)delete d.edits[sheet][ref];else d.edits[sheet][ref]=txt;
+ if(!Object.keys(d.edits[sheet]).length)delete d.edits[sheet];
+ d.revision=(d.revision||0)+1;d.dirty=true;laborSetInfo();laborNotify('수정됨 · 자동 저장 대기');
+ const inp=document.querySelector(`#laborWorkbookGrid textarea[data-cell="${ref}"]`);if(inp)inp.classList.toggle('changed',d.edits[sheet]?.[ref]!==undefined);
+ laborScheduleAutoSave();
+}
+function laborQueueEdit(input){if(!input||!laborDraft)return;laborSetValue($('laborSheetSelect')?.value,input.dataset.cell,input.value);}
+function laborCellChange(input){if(!input||!laborDraft)return;laborSetValue($('laborSheetSelect')?.value,input.dataset.cell,input.value);}
+function laborScheduleAutoSave(){if(laborAutoTimer)clearTimeout(laborAutoTimer);laborAutoTimer=setTimeout(()=>{laborAutoTimer=null;laborSaveMonth()},700);}
+async function laborSaveMonth(){const d=laborDraft;if(!d||!d.dirty||laborBusy){return laborAutoTask||null;}
+ const scope=laborScope();if(d.sid!==scope.sid||d.ym!==scope.ym){laborNotify('업장 변경 후 저장할 수 없습니다. 다시 확인하세요.',true);return false;}
+ laborBusy=true;laborAutoLastError=null;const edits=structuredClone(d.edits),rev=d.revision||0,payload={store_id:scope.sid,report_month:'0000-00',file_name:d.fileName,file_bytes:laborByteHex(d.bytes),edits,updated_at:new Date().toISOString(),updated_by:currentSessionUser?.id||null};laborNotify('저장 중…');
+ const task=(async()=>{try{let q;
+   if(d.loadedMonth==='0000-00'){
+    q=await sb.from('labor_workbook_files').update({edits,updated_at:payload.updated_at,updated_by:payload.updated_by}).eq('store_id',scope.sid).eq('report_month','0000-00').eq('updated_at',d.stamp).select('updated_at');
+    if(q.error)throw q.error;if(!q.data?.length)throw new Error('다른 사용자가 수정한 내용이 있습니다. 원본과 비교 후 다시 시도하세요.');
+   }else{
+    q=await sb.from('labor_workbook_files').insert(payload).select('updated_at');if(q.error)throw q.error;
+   }
+   if(laborDraft!==d)return true;
+   d.loadedMonth='0000-00';d.stamp=q.data?.[0]?.updated_at||payload.updated_at;const prev=d.savedEdits||{};d.savedEdits=edits;d.dirty=(d.revision||0)!==rev;
+   laborAuditDiff(prev,edits,scope.sid).catch(err=>console.warn('노무사 편집 접속이력 저장 오류',err));
+   laborNotify(d.dirty?'추가 수정 중 · 이어서 저장':'자동 저장 완료');laborSetInfo();return true;
+  }catch(e){laborAutoLastError=e;if(laborDraft===d){d.dirty=true;laborNotify('자동 저장 실패: '+(e?.message||e),true);}return false;
+  }finally{laborBusy=false;if(laborDraft===d&&d.dirty&&!laborAutoLastError)laborScheduleAutoSave();}})();
+ laborAutoTask=task;try{return await task}finally{if(laborAutoTask===task)laborAutoTask=null;}
+}
+async function laborFlushSave(){if(laborAutoTimer){clearTimeout(laborAutoTimer);laborAutoTimer=null;}
+ if(laborAutoTask)await laborAutoTask;
+ if(laborDraft?.dirty)return await laborSaveMonth();return true;
+}
+function laborChangeOrder(input){const d=laborDraft;if(!d||!input)return;const sheet=$('laborSheetSelect').value,view=laborViewState(sheet),ws=d.wb.Sheets[sheet],r=Number(input.dataset.r);
+ const last=XLSX.utils.decode_range(ws['!ref']||'A1:A1').e.r;let candidates=[];for(let x=3;x<=last;x++)if(String(laborOldValue(ws,'B'+(x+1))).trim())candidates.push(x);
+ let order=(view.order||[]).filter(x=>candidates.includes(x));for(let x of candidates)if(!order.includes(x))order.push(x);
+ const from=order.indexOf(r),target=Math.max(0,Math.min(order.length-1,Number(input.value||0)-1));if(from<0)return;
+ order.splice(from,1);order.splice(target,0,r);view.order=order;d.revision=(d.revision||0)+1;d.dirty=true;laborRenderSheet();laborNotify('화면 순서 변경 · 자동 저장 대기');laborScheduleAutoSave();
+}
+function laborResizeStart(ev,col){if(!laborDraft||ev.button!==0)return;ev.preventDefault();ev.stopPropagation();
+ const table=ev.target.closest('table'),colEl=table?.querySelector(`col[data-col="${col}"]`);if(!colEl)return;
+ const width=parseFloat(colEl.style.width)||120;laborResizeContext={pointerId:ev.pointerId,col,table,colEl,startX:ev.clientX,width};
+ ev.target.setPointerCapture?.(ev.pointerId);ev.target.addEventListener('pointermove',laborResizeMove);ev.target.addEventListener('pointerup',laborResizeEnd,{once:true});ev.target.addEventListener('pointercancel',laborResizeEnd,{once:true});
+}
+function laborResizeMove(ev){const ctx=laborResizeContext;if(!ctx||ev.pointerId!==ctx.pointerId)return;const w=Math.max(58,Math.min(660,ctx.width+ev.clientX-ctx.startX));ctx.colEl.style.width=w+'px';}
+function laborResizeEnd(ev){const ctx=laborResizeContext;if(!ctx||ev.pointerId!==ctx.pointerId)return;ev.target.removeEventListener('pointermove',laborResizeMove);
+ const w=Math.max(58,Math.min(660,ctx.width+ev.clientX-ctx.startX));laborResizeContext=null;
+ const view=laborViewState($('laborSheetSelect').value);view.widths[ctx.col]=Math.round(w);const d=laborDraft;d.revision=(d.revision||0)+1;d.dirty=true;laborNotify('열 너비 변경 · 자동 저장 대기');laborScheduleAutoSave();
+}
+// One shared canonical workbook per store. Read old monthly data only as a non-destructive fallback.
+async function laborLoadSelectedMonth(){const sid=storeId(),seq=++laborFetchToken;if(!sid||!isAppAdmin()||permissionSystemAvailable===false){laborDraft=null;laborRenderSheet();return;}
+ laborNotify('원본 파일 불러오는 중…');try{let row=await laborFetchMonth(sid,'0000-00');if(!row){const q=await sb.from('labor_workbook_files').select('*').eq('store_id',sid).neq('report_month','0000-00').order('updated_at',{ascending:false}).limit(1);if(q.error)throw q.error;row=q.data?.[0]||null;}
+  if(seq!==laborFetchToken||sid!==storeId())return;
+  laborDraft=row?laborDraftFromRow(row,'0000-00'):null;if(laborDraft){laborDraft.revision=0;laborDraft.loadedMonth=row.report_month==='0000-00'?'0000-00':null;}
+  laborRenderSheet();laborNotify(row?row.report_month==='0000-00'?'원본 불러옴 · 자동 저장 사용':'기존 저장본 불러옴 · 첫 수정부터 업장별 원본으로 저장':'원본 파일 없음 · 업로드 필요');
+ }catch(e){if(seq!==laborFetchToken)return;laborDraft=null;laborRenderSheet();laborNotify('원본 불러오기 실패: '+(e?.message||e),true);}
+}
+async function laborUploadOriginal(file){if(!file||!laborAllowed()||laborBusy)return;
+ if(!/\.xlsx$/i.test(file.name))return alert('.xlsx 원본만 등록할 수 있습니다.');if(file.size>5242880)return alert('원본 Excel은 5MB 이하여야 합니다.');
+ const sid=storeId(),sc=laborScope();try{await laborFlushSave();const old=await laborFetchMonth(sid,'0000-00');
+  if(old&&!confirm('이 업장의 원본 Excel을 교체할까요? 기존 원본과 특이사항 수정내용이 새 파일로 변경됩니다.'))return;
+  const buf=new Uint8Array(await file.arrayBuffer()),wb=laborReadWorkbook(buf);if(!wb.SheetNames.includes('인원현황'))throw new Error('원본에 인원현황 시트가 없습니다.');
+  if(!confirm(`${stores.find(s=>Number(s.id)===sid)?.name||sid} 업장에 ${file.name} 원본을 등록합니다. 계속하시겠습니까?`))return;
+  laborBusy=true;laborNotify('원본 업로드 중…');const payload={store_id:sid,report_month:'0000-00',file_name:file.name,file_bytes:laborByteHex(buf),edits:{},updated_at:new Date().toISOString(),updated_by:currentSessionUser?.id||null};
+  const q=await sb.from('labor_workbook_files').upsert(payload,{onConflict:'store_id,report_month'});if(q.error)throw q.error;
+  laborBusy=false;await laborLoadSelectedMonth();laborNotify('원본 업로드 완료 · I/O열 바로 수정 가능');logAccessEvent('labor_workbook_original_uploaded',{store_id:sid,file_name:file.name,file_size:file.size}).catch(()=>{});
+ }catch(e){laborNotify('원본 업로드 오류: '+(e?.message||e),true);alert('업로드 실패: '+(e?.message||e));}finally{laborBusy=false;}
+}
+function laborQuickUpload(){if(!laborAllowed())return;const input=$('laborWorkbookInput');if(input)input.click();}
+async function laborDownloadPreservingOriginal(){if(!laborAllowed())return;let d=laborDraft;if(!d||d.sid!==storeId()){await laborLoadSelectedMonth();d=laborDraft;}if(!d)return alert('현재 업장 원본이 없습니다. [원본 업로드]를 이용하세요.');
+ if(!await laborFlushSave()){alert('근무시간/특이사항 자동 저장이 실패했습니다. 저장 상태를 확인한 뒤 다시 다운로드하세요.');return;}
+ try{laborNotify('원본 서식 검증·다운로드 중…');const out=await laborBuildPreservedXlsx(),blob=new Blob([out],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=d.fileName;a.style.display='none';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),30000);laborNotify('원본 서식 보존 다운로드 완료');}
+ catch(e){laborNotify('다운로드 실패: '+(e?.message||e),true);alert('원본 서식 보존 검증에 실패했습니다. '+(e?.message||e));}
+}
+async function laborQuickExport(){return laborDownloadPreservingOriginal()}
+// Separate visual change from Excel content. Never overwrite source rows or other columns.
+const laborPrevSwitchStore20261126=switchStore;
+switchStore=async function(...args){if(!await laborFlushSave())return;const result=await laborPrevSwitchStore20261126(...args);if($('hoursPage')?.classList.contains('active'))await laborLoadSelectedMonth();return result;};
+const laborPrevSwitchMonth20261126=switchMonth;
+switchMonth=async function(...args){if(!await laborFlushSave())return;const result=await laborPrevSwitchMonth20261126(...args);if($('hoursPage')?.classList.contains('active'))await laborLoadSelectedMonth();return result;};
+for(const btn of document.querySelectorAll('.nav[data-page="hours"]'))btn.addEventListener('click',()=>{setTimeout(()=>{if($('hoursPage')?.classList.contains('active')&&isAppAdmin()&&(!laborDraft||laborDraft.sid!==storeId()))laborLoadSelectedMonth();},120);});
+// Remove confusing standalone labor navigation; the editor is always under the hours tab.
+for(const btn of document.querySelectorAll('.nav[data-page="labor"]'))btn.style.display='none';
+
+function laborToggleChecked(row,enabled){
+ const d=laborDraft;if(!d||!Number.isInteger(row))return;
+ const view=laborViewState($('laborSheetSelect')?.value||'인원현황');let checked=Array.isArray(view.checkedRows)?view.checkedRows:[];
+ if(enabled&&!checked.includes(row))checked=[...checked,row];else if(!enabled)checked=checked.filter(x=>x!==row);
+ view.checkedRows=checked;d.revision=(d.revision||0)+1;d.dirty=true;
+ const tr=document.querySelector(`#laborWorkbookGrid input[onchange="laborToggleChecked(${row},this.checked)"]`)?.closest('tr');if(tr)tr.classList.toggle('laborDone',enabled);
+ laborNotify(enabled?'작업 완료 체크 · 자동 저장 대기':'작업 완료 체크 해제 · 자동 저장 대기');laborScheduleAutoSave();
+}
+function laborClearChecks(){const d=laborDraft;if(!d)return;
+ const sheet=$('laborSheetSelect')?.value||'인원현황',view=laborViewState(sheet),checked=view.checkedRows||[];
+ if(!checked.length)return; if(!confirm('체크 '+checked.length+'명을 모두 해제할까요? (엑셀 내용은 그대로 유지됩니다)'))return;
+ view.checkedRows=[];d.revision=(d.revision||0)+1;d.dirty=true;laborRenderSheet();laborNotify('작업 체크 전체 해제 · 자동 저장 대기');laborScheduleAutoSave();
+}
+async function laborAuditDiff(prev,next,sid){
+ if(typeof logAccessEvent!=='function')return;
+ const before=prev?.['인원현황']||{},after=next?.['인원현황']||{};
+ const keys=[...new Set([...Object.keys(before),...Object.keys(after)])].filter(ref=>/^[IO][4-9]\d*$/.test(ref)&&String(before[ref]??'')!==String(after[ref]??''));
+ if(keys.length)await logAccessEvent('labor_workbook_edit',{store_id:sid,fields:keys.map(ref=>ref[0]),cell_count:keys.length,cells:keys.slice(0,50)});
+ const v0=prev?.__view?.['인원현황']||{},v1=next?.__view?.['인원현황']||{};
+ const a=Array.isArray(v0.checkedRows)?v0.checkedRows:[],b=Array.isArray(v1.checkedRows)?v1.checkedRows:[];
+ if(JSON.stringify([...a].sort())!==JSON.stringify([...b].sort()))await logAccessEvent('labor_workbook_check',{store_id:sid,checked_count:b.length,changed_rows:[...new Set([...a,...b])].filter(r=>a.includes(r)!==b.includes(r)).slice(0,80)});
+ const widthsChange=JSON.stringify(v0.widths||{})!==JSON.stringify(v1.widths||{}),orderChange=JSON.stringify(v0.order||[])!==JSON.stringify(v1.order||[]);
+ if(widthsChange||orderChange)await logAccessEvent('labor_workbook_view',{store_id:sid,widths_changed:widthsChange,order_changed:orderChange});
+}
+</script>
+<script id="laborOriginalGrayRows20261126">
+async function laborReadSourceGrayRows(d){
+ const zip=await JSZip.loadAsync(d.bytes),styleFile=zip.file('xl/styles.xml');if(!styleFile)return new Set();
+ const styleDoc=commerceV20XmlDoc(await styleFile.async('string'),'원본 직원색상');
+ const fonts=Array.from(styleDoc.getElementsByTagNameNS('*','fonts')[0]?.childNodes||[]).filter(x=>x.localName==='font');
+ const xfs=Array.from(styleDoc.getElementsByTagNameNS('*','cellXfs')[0]?.childNodes||[]).filter(x=>x.localName==='xf');
+ const isGray=fonts.map(f=>{const c=Array.from(f.childNodes).find(x=>x.localName==='color');if(!c)return false;
+  const tint=Number(c.getAttribute('tint')||0),theme=c.getAttribute('theme');
+  if((theme==='0'||theme==='1')&&tint<=-0.25)return true;
+  const rgb=String(c.getAttribute('rgb')||'').replace(/^FF/i,'');if(!/^[0-9a-f]{6}$/i.test(rgb))return false;
+  const r=parseInt(rgb.slice(0,2),16),g=parseInt(rgb.slice(2,4),16),b=parseInt(rgb.slice(4),16);
+  return Math.max(r,g,b)-Math.min(r,g,b)<14&&r>=65&&r<200;
+ });
+ const wbFile=zip.file('xl/workbook.xml'),relFile=zip.file('xl/_rels/workbook.xml.rels');if(!wbFile||!relFile)return new Set();
+ const mapping=laborWorksheetPaths(await wbFile.async('string'),await relFile.async('string')),
+       path=mapping.get('인원현황'),file=path&&zip.file(path);if(!file)return new Set();
+ const doc=commerceV20XmlDoc(await file.async('string'),'원본 직원행'),result=new Set();
+ for(const c of doc.getElementsByTagNameNS('*','c')){
+  const hit=String(c.getAttribute('r')||'').match(/^B(\d+)$/);if(!hit||Number(hit[1])<4)continue;
+  const style=xfs[Number(c.getAttribute('s')||0)],fontId=Number(style?.getAttribute('fontId')||0);
+  if(isGray[fontId])result.add(Number(hit[1])-1);
+ }
+ return result;
+}
+const laborPreviouslyRetired20261126=laborRetiredOnRow;
+laborRetiredOnRow=function(ws,row){return laborPreviouslyRetired20261126(ws,row)||!!laborDraft?.originalGrayRows?.has(row)};
+const laborPreviouslyLoad20261126=laborLoadSelectedMonth;
+laborLoadSelectedMonth=async function(...args){
+ const result=await laborPreviouslyLoad20261126(...args),draft=laborDraft;
+ if(draft&&draft.bytes){try{const rows=await laborReadSourceGrayRows(draft);
+  if(laborDraft===draft){draft.originalGrayRows=rows;if(document.activeElement?.matches?.('#laborWorkbookGrid textarea')){document.querySelectorAll('#laborWorkbookGrid tbody tr').forEach(tr=>{let input=tr.querySelector('.laborOrderInput'),row=Number(input?.dataset?.r);if(Number.isFinite(row)&&rows.has(row))tr.classList.add('laborRetired')})}else laborRenderSheet()}
+ }catch(err){console.warn('원본 퇴사자 회색 표시 검사 실패',err)}}
+ return result;
+};
 </script>
 </body></html>
