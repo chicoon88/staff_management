@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>직원관리 대시보드 2026.11.26_21</title>
-<meta name="dashboard-build-version" content="2026.11.26_21">
+<title>직원관리 대시보드 2026.11.26_24</title>
+<meta name="dashboard-build-version" content="2026.11.26_24">
 <script id="dashboardBuildInfoJS">
 document.addEventListener('DOMContentLoaded',()=>{
  const version=document.querySelector('meta[name="dashboard-build-version"]')?.getAttribute('content');
@@ -1596,7 +1596,7 @@ body.resizingEmployeeColumn *{
 #schedulePage .annualLeavePanel{padding:16px}
 #schedulePage .annualLeavePanelHead{gap:12px}
 #schedulePage #annualLeaveYear{min-width:115px;width:auto;padding:8px 9px;font-weight:800}
-#schedulePage .annualLeaveSummaryTiles{display:grid;grid-template-columns:repeat(4,minmax(125px,1fr));gap:9px;margin:14px 0 11px}
+#schedulePage .annualLeaveSummaryTiles{display:grid;grid-template-columns:repeat(5,minmax(125px,1fr));gap:9px;margin:14px 0 11px}
 #schedulePage .annualLeaveTile{padding:11px 13px;background:#f8fafc;border:1px solid #e0e6ef;border-radius:11px}
 #schedulePage .annualLeaveTile small{display:block;font-size:11px;color:#64748b;font-weight:750}
 #schedulePage .annualLeaveTile b{display:block;font-size:19px;font-weight:950;margin-top:5px}
@@ -1847,8 +1847,7 @@ body.commerceStoreMode .commerceOnlyNav:not(.hidden){display:flex}
 #hoursPage .laborInlinePage .card{background:#fff}
 #hoursPage .laborInlinePage .title{font-size:19px}
 #hoursPage .laborInlinePage .laborGridWrap{max-height:62vh}
-#hoursPage:has(.laborInlinePage.active) #hoursSummaryView,
-#hoursPage:has(.laborInlinePage.active) #attendanceView{display:none!important}
+/* 노무사 제출자료는 근로시간 내용 맨 아래에 배치. 위쪽 집계/근태 영역을 숨기지 않는다. */
 @media(max-width:760px){#hoursPage .hoursExcelActionGroup{width:100%;display:grid;grid-template-columns:1fr 1fr;gap:7px}#hoursPage .hoursExcelActionGroup .btn{width:100%;font-size:12px;padding:8px 5px;white-space:normal}#hoursPage .laborInlinePage{padding:7px}}
 
 .auditHoursMismatch{background:#fffaf0;border:1px solid #e7c989;color:#5c4220;border-radius:11px;padding:11px 14px;margin:12px 0;line-height:1.6}
@@ -1914,6 +1913,18 @@ html body:not(.laborPrivateAuthorized) #hoursPage .laborOwnerHelp {display:none!
 html body.laborPrivateAuthorized #hoursPage .laborStaffHelp {display:none!important}
 /* The public schedule download remains available to authorized work-hours viewers. */
 </style>
+
+<style id="hoursBottomLabor20261126_22CSS">
+/* 일반 담당자는 노무사 원본/개인정보에 접근할 수 없다. 관리자만 근로시간 페이지 맨 끝에 표시한다. */
+body.laborPrivateAuthorized #hoursPage.active > #laborPage.laborInlinePage {
+ display:block!important;
+ margin-top:28px;
+ border-top:2px solid #cddbf0;
+ padding-top:20px;
+}
+body:not(.laborPrivateAuthorized) #hoursPage > #laborPage.laborInlinePage{display:none!important;}
+#hoursPage #laborPage .laborToolbar{flex-wrap:wrap;align-items:center;gap:9px;}
+</style>
 </head>
 <body>
 <section id="login" class="login">
@@ -1959,7 +1970,7 @@ html body.laborPrivateAuthorized #hoursPage .laborStaffHelp {display:none!import
 </div>
 
 <section id="commercePage" class="page">
- <div class="commerceHero"><h1 class="title">88커머스 <span class="commerceBuildVersion" data-dashboard-version="true">버전 2026.11.26_21</span></h1><div class="sub">대시보드에서 직접 입력·수정하고 자동 계산하며, 카페24 반영과 원본 Excel 형식 다운로드까지 한곳에서 관리합니다.</div></div>
+ <div class="commerceHero"><h1 class="title">88커머스 <span class="commerceBuildVersion" data-dashboard-version="true">버전 2026.11.26_24</span></h1><div class="sub">대시보드에서 직접 입력·수정하고 자동 계산하며, 카페24 반영과 원본 Excel 형식 다운로드까지 한곳에서 관리합니다.</div></div>
 
  <div id="commerceGroupBar" class="commerceGroupBar hidden">
   <div><div id="commerceGroupTitle" class="groupTitle">-</div><div id="commerceGroupSub" class="help" style="margin-top:3px">-</div></div>
@@ -2043,7 +2054,7 @@ html body.laborPrivateAuthorized #hoursPage .laborStaffHelp {display:none!import
 </section>
 
 <section id="homePage" class="page active">
- <div class="row"><div><div class="homeBuildTitle"><h1 class="title" id="homeTitle">현황</h1><span class="buildVersionBadge" id="homeBuildVersion" data-dashboard-version="true">버전 2026.11.26_21</span></div><div class="sub">업장과 월을 선택하면 모든 정보가 같이 바뀝니다.</div></div></div>
+ <div class="row"><div><div class="homeBuildTitle"><h1 class="title" id="homeTitle">현황</h1><span class="buildVersionBadge" id="homeBuildVersion" data-dashboard-version="true">버전 2026.11.26_24</span></div><div class="sub">업장과 월을 선택하면 모든 정보가 같이 바뀝니다.</div></div></div>
  <div class="cards">
   <div class="card"><div class="k">재직 직원</div><div class="v" id="kEmp">0명</div></div>
   <div class="card"><div class="k">이번 달 연차 발생</div><div class="v" id="kLeaveDue">0명</div></div>
@@ -2057,7 +2068,7 @@ html body.laborPrivateAuthorized #hoursPage .laborStaffHelp {display:none!import
   <div id="adminTaskList" class="adminTaskList"><div class="adminTaskItem info"><b>확인 중</b><span class="meta">현재 업장과 월의 상태를 불러옵니다.</span></div></div>
  </div>
  <div class="grid2">
-  <div class="card"><h3>이번 달 연차 발생 직원</h3><div class="sub">연차는 시간으로 관리합니다. 1년 미만 월 연차는 입사일부터 1개월 구간의 스케줄이 모두 입력되고 개근이 확인된 뒤 발생합니다. 주5일(주40h 소정)은 월 +8h·연차 1회 -8h, 주4일(주32h 소정·연장 별도)은 월 +7h·1회 -7h가 기본입니다. 실제 발생·사용시간은 직원별 근로조건을 따릅니다.</div><div class="auditMobileTableHint">↔ 표는 좌우로 밀어서 모든 열을 확인하세요.</div><div class="tablewrap" style="margin-top:10px"><table><thead><tr><th class="name">직원</th><th>근무형태</th><th>입사일</th><th>이번 달 발생</th><th>누적 발생</th><th>누적 사용</th><th>조정</th><th>잔여</th></tr></thead><tbody id="homeEmployees"></tbody></table></div></div>
+  <div class="card"><h3>이번 달 연차 발생 직원</h3><div class="sub">연차 발생은 모든 직원의 <b>입사일을 기준</b>으로 자동 반영됩니다. 과거 스케줄이 비어 있어도 발생을 보류하지 않습니다. 명시된 무급병가·결근과 관리자 출근확인, 주 15시간 미만 예외만 적용합니다. 스케줄이 누락된 과거 사용분은 <b>잔여확정</b>에서 직접 수정할 수 있으며, 이후 새 발생분은 계속 누적됩니다.</div><div class="auditMobileTableHint">↔ 표는 좌우로 밀어서 모든 열을 확인하세요.</div><div class="tablewrap" style="margin-top:10px"><table><thead><tr><th class="name">직원</th><th>근무형태</th><th>입사일</th><th>이번 달 발생</th><th>누적 발생</th><th>누적 사용</th><th>조정</th><th>잔여</th></tr></thead><tbody id="homeEmployees"></tbody></table></div></div>
   <div class="card"><h3>운영 흐름</h3><p class="help">① 월간 스케줄 작성 → ② 실제 근무시간 필요 시 날짜 클릭해 수정 → ③ 월 근로시간 확인 → ④ 노무사 급여대장 Excel 업로드 → ⑤ 스케줄 시간과 급여대장 시간 차이 검수 → ⑥ 필요 시 스케줄/급여 Excel 출력.</p>
   <div class="homeWorkChangeBoard">
    <div class="homeWorkChangeHead"><b>전월 대비 근무 변화 감지</b><span id="homeWorkChangeStatus" class="help">조회 중...</span></div>
@@ -2172,14 +2183,14 @@ html body.laborPrivateAuthorized #hoursPage .laborStaffHelp {display:none!import
   <div id="annualLeaveWrap" class="hidden">
     <div class="card annualLeavePanel">
       <div class="row annualLeavePanelHead">
-        <div><h3 style="margin:0">직원별 연차관리 <span class="pill">입사일 기준</span></h3><div class="help" style="margin-top:5px">월간·주간 스케줄의 ‘연’은 자동 반영됩니다. 과거 미입력 월은 해당 칸에서 실제 사용량을 수동 확정할 수 있습니다.</div></div>
+        <div><h3 style="margin:0">직원별 연차관리 <span class="pill">입사일 기준</span></h3><div class="help" style="margin-top:5px"><b>1년 미만: 월 개근 시 1일(최대 11일) / 입사 1주년: 직전 1년 출근율 80% 이상이면 15일 / 3주년부터 2년마다 1일 추가(최대 25일).</b> 주 36시간의 1주년은 15일·108시간, 주 40시간은 15일·120시간이며 실제 계약된 주 소정근로시간을 사용합니다.</div><div class="help" style="margin-top:5px"><b>연도 발생: 모든 직원의 입사일을 기준으로 계산된 자동발생 원장 합계</b>입니다. 스케줄의 ‘연’은 사용량입니다. 기존 시스템 사용 전 과거 스케줄 공란은 결근으로 보지 않으므로, 병가·결근 또는 관리자 출근확인이 따로 없다면 입사일 기준으로 발생합니다. 미입력 기간의 개근은 확인된 사실이 아니라 운영상 추정이며, 실제 기록이 있다면 출근확인에서 정정할 수 있습니다.</div></div>
         <div class="toolbar"><select id="annualLeaveYear" aria-label="연차관리 연도" onchange="annualLeaveChangeYear()"></select><button type="button" id="annualLeaveSettledToggle" class="btn gray small" aria-pressed="false" onclick="annualLeaveToggleSettled()">정산완료 보기 (0)</button><button type="button" class="btn gray small" onclick="refreshAnnualLeaveData(true)">새로고침</button><span id="annualLeaveLoadState" class="saveState">준비</span></div>
       </div>
       <div id="annualLeaveSummaryTiles" class="annualLeaveSummaryTiles"></div>
       <div id="annualLeaveWorkAudit" class="help hidden" role="status" style="margin:4px 0 9px;padding:9px 12px;border:1px solid #ebd8aa;border-radius:8px;background:#fffaf0;color:#684718"></div>
-      <div class="annualLeaveLegend"><span class="annualLeaveTag">숫자 = 스케줄 연차 일수 (미래는 예정)</span><span class="annualLeaveTag auto">스케줄 자동</span><span class="annualLeaveTag manual">관리자 확정</span><span class="annualLeaveTag warning">과거 근태 미확인 → 발생 보류</span><span class="annualLeaveTag">셀 클릭 = 사용량 직접 입력·수정</span><span class="annualLeaveTag outside">회색 사선 = 첫 연차 발생 전 또는 재직기간 밖 (입력 불가)</span><span class="annualLeaveTag color">직원 이름 색상 = 월간 스케줄 출력색</span><span class="annualLeaveTag annualLeaveOrderHint">↕ 연차관리 순서만 개별 조정 (월간 스케줄 순서 유지)</span><span id="annualLeaveOrderState" class="saveState">순서 조회 준비</span></div>
+      <div class="annualLeaveLegend"><span class="annualLeaveTag">숫자 = 스케줄 연차 일수 (미래는 예정)</span><span class="annualLeaveTag auto">스케줄 자동</span><span class="annualLeaveTag manual">관리자 확정</span><span class="annualLeaveTag warning">과거 스케줄 공란 = 결근 아님 · 발생은 입사일 기준 추정</span><span class="annualLeaveTag">셀 클릭 = 사용량 직접 입력·수정</span><span class="annualLeaveTag outside">회색 사선 = 첫 연차 발생 전 또는 재직기간 밖 (입력 불가)</span><span class="annualLeaveTag color">직원 이름 색상 = 월간 스케줄 출력색</span><span class="annualLeaveTag annualLeaveOrderHint">↕ 연차관리 순서만 개별 조정 (월간 스케줄 순서 유지)</span><span id="annualLeaveOrderState" class="saveState">순서 조회 준비</span></div>
       <div class="tablewrap annualLeaveGridScroll"><table id="annualLeaveTable" class="annualLeaveTable"><thead><tr><th class="annualLeavePinned">직원 / 입사일</th><th>1월</th><th>2월</th><th>3월</th><th>4월</th><th>5월</th><th>6월</th><th>7월</th><th>8월</th><th>9월</th><th>10월</th><th>11월</th><th>12월</th><th>연도 발생</th><th>사용 완료 / 예정</th><th>잔여 연차</th><th>관리</th></tr></thead><tbody id="annualLeaveBody"><tr><td colspan="17" class="help">연차 자료를 불러오는 중입니다.</td></tr></tbody></table></div>
-      <div class="help" style="margin-top:10px;line-height:1.65"><b>사용 완료와 미래 사용 예정은 구분합니다.</b> 잔여는 오늘까지 실제 발생·사용한 기록만 반영하며, 미래의 '연'은 아직 차감하지 않습니다. 미래 월 연차가 추가 발생할 수도 있습니다. 잔여는 기존 연차원장의 발생·사용·조정 기록을 시간(h) 기준으로 계산합니다. <b>잔여확정</b>을 하면 그 날짜의 잔여를 새 기준으로 삼고, 그 이후 연차 발생·사용은 입사일 기준으로 계속 누적합니다. 기존 기록은 삭제되지 않습니다. 연차관리에서 월 사용량을 확정하면 스케줄에 입력된 그 달 연차와 <b>중복 차감하지 않습니다.</b> 근무조건이 바뀐 직원은 일수와 시간을 함께 확인하세요. 스케줄이 없는 기간은 자동으로 개근 처리하지 않으며, ‘출근확인’에서 실제 출근 사실을 확인한 후 발생에 반영합니다.</div>
+      <div class="help" style="margin-top:10px;line-height:1.65"><b>사용 완료와 미래 사용 예정은 구분합니다.</b> 잔여는 오늘까지 실제 발생·사용한 기록만 반영하며, 미래의 '연'은 아직 차감하지 않습니다. 미래 월 연차가 추가 발생할 수도 있습니다. 잔여는 기존 연차원장의 발생·사용·조정 기록을 시간(h) 기준으로 계산합니다. <b>잔여확정</b>을 하면 그 날짜의 잔여를 새 기준으로 삼고, 그 이후 연차 발생·사용은 입사일 기준으로 계속 누적합니다. 기존 기록은 삭제되지 않습니다. <b>연도가 바뀌어도 잔여는 자동 초기화하지 않고 다음 해로 이월</b>합니다. 미사용 연차수당 정산 여부는 입사일을 기준으로 1년 단위로 검토하고, 실제 수당을 지급했다면 관리자가 [잔여확정]으로 남길 잔여를 직접 수정합니다. 수당 지급·법정 사용기간 만료는 이 화면에서 자동 확정하지 않습니다. 연차관리에서 월 사용량을 확정하면 스케줄에 입력된 그 달 연차와 <b>중복 차감하지 않습니다.</b> 근무조건이 바뀐 직원은 일수와 시간을 함께 확인하세요. 과거 스케줄 공란은 결근으로 간주하지 않습니다. 확인된 무급병가·결근은 발생 요건에서 제외하고, 필요하면 ‘출근확인’에서 개근·결근을 확정할 수 있습니다.</div>
     </div>
   </div>
 
@@ -2204,46 +2215,12 @@ html body.laborPrivateAuthorized #hoursPage .laborStaffHelp {display:none!import
   </div>
  </div>
  <div class="workHoursExcelExportBar" aria-label="업장별 엑셀 파일 관리">
-  <div class="workHoursExcelExportInfo"><strong>엑셀 파일 관리</strong><span class="laborOwnerHelp">선택한 업장·월 기준 · 근로시간 파일 및 노무사 원본 양식을 각각 다운로드합니다.</span><span class="laborStaffHelp">선택한 업장·월의 스케줄 자료를 다운로드합니다.</span></div>
+  <div class="workHoursExcelExportInfo"><strong>엑셀 파일 관리</strong><span class="laborOwnerHelp">스케줄 다운로드 · 노무사 제출자료는 근로시간 탭 맨 아래에서 별도로 관리합니다.</span><span class="laborStaffHelp">선택한 업장·월의 스케줄 자료를 다운로드합니다.</span></div>
   <div class="hoursExcelActionGroup">
    <button type="button" class="btn green workHoursExcelDownloadBtn" id="workHoursExcelBtn" onclick="exportSchedule()" title="기존 근무표와 집계 서식 포함">스케줄다운로드</button>
-   <button type="button" class="btn" id="laborQuickExportBtn" onclick="laborQuickExport()" title="I열 근무시간·O열 특이사항 수정만 반영한 원본 Excel 다운로드">5. 근로자현황파악</button>
-   <button type="button" class="btn gray" id="laborQuickUploadBtn" onclick="laborQuickUpload()" title="현재 업장에 사용할 원본 Excel 등록 또는 교체">원본 업로드</button>
   </div>
  </div>
-<section id="laborPage" class="page laborInlinePage">
-  <div class="row" style="flex-wrap:wrap;gap:10px">
-   <div><h1 class="title">노무사 제출자료</h1><div class="sub">공통 원본은 업장별 1개를 보존하고, <b>선택한 급여월마다 수정 내용과 특이사항을 따로 저장</b>합니다. <b>직원 자료 B~O열은 바로 수정·자동 저장</b>되며, 이름 옆 손잡이로 순서를 바꾸면 엑셀 연번과 직원 행도 함께 정렬됩니다.</div></div>
-   <span id="laborScopeBadge" class="saveState">업장·월 선택</span>
-  </div>
-  <div class="card" style="margin-top:14px">
-   <div class="laborToolbar">
-    <input id="laborWorkbookInput" type="file" accept=".xlsx" style="display:none" onchange="laborUploadOriginal(this.files?.[0]);this.value=''">
-    <button class="btn" id="laborUploadBtn" style="display:none" onclick="$('laborWorkbookInput').click()">원본 Excel 등록 / 교체</button>
-    <button class="btn gray" id="laborCopyBtn" style="display:none" onclick="laborCopyPriorMonth()">이전월 자료 복사</button>
 
-    <span id="laborSaveState" class="saveState" role="status" aria-live="polite">자동 저장 준비</span><button id="laborRetryBtn" type="button" class="btn gray small" style="display:none" onclick="laborFlushSave()">저장 재시도</button>
-   </div>
-   <p class="laborIntro">업장별 공통 원본을 보존하면서 <b>선택 업장·급여월별 입력값을 별도 자동저장</b>합니다. <b>직원 데이터 전체 열(B~O) 수정 및 자동저장, 이름 옆 드래그로 순서 변경</b>을 지원합니다. Excel 다운로드에는 수정값·직원 순서·연번이 반영되고 <b>작업 체크·웹 열 너비는 반영되지 않습니다.</b> 당월 퇴사자는 빨강, 이전월 퇴사자는 회색으로 구분합니다. 주민번호·급여가 있어 최고관리자 전용입니다.</p>
-   <div id="laborWorkbookInfo" class="laborInfo">아직 파일을 불러오지 않았습니다.</div>
-   <!-- 자동검산은 별도 표가 아니라 선택 월 인원현황 O열에 직접 반영 -->
-   <section id="laborSpecialPanel" hidden aria-hidden="true"><span id="laborSpecialStatus"></span><div id="laborSpecialBody"></div></section>
-   <div class="laborToolbar" style="margin:10px 0">
-    <label for="laborSheetSelect" style="font-size:12px;font-weight:800">시트</label>
-    <select id="laborSheetSelect" onchange="laborRenderSheet()" style="max-width:210px"></select>
-    <button id="laborClearChecksBtn" type="button" class="btn gray small" onclick="laborClearChecks()" title="작업 완료 체크만 모두 해제하고, Excel 내용은 변경하지 않습니다.">체크 모두 해제</button>
-    <span style="flex:1"></span>
-
-    <button id="laborSaveBtn" class="btn green" style="display:none" onclick="laborSaveMonth()">웹 수정 저장</button>
-    <span id="laborInlineAutoStatus" class="laborInlineAutoStatus" role="status" aria-live="polite">선택월 O열 자동확인 준비</span>
-    <button type="button" class="btn gray small" onclick="laborSpecialLoad(true)" title="선택한 달의 스케줄을 다시 확인해 O열 자동 내용에 반영">O열 자동재확인</button>
-    <button id="laborExportBtn" class="btn" style="display:none" onclick="laborDownloadPreservingOriginal()">원본 양식 그대로 다운로드</button>
-   </div>
-   <div id="laborRetirementMonthlyHint" role="status" aria-live="polite">선택한 업장·월의 퇴사자 표시를 확인합니다.</div>
-    <div id="laborWorkbookGrid" class="laborEmpty">현재 업장·월에 등록된 Excel이 없습니다. 원본을 업로드하거나 이전월 자료를 복사하세요.</div>
-   <div class="help" style="margin-top:9px">연한 녹색 = 작업 체크 · 회색 = 퇴사자 · 이름 옆 ☰ 손잡이 드래그 = 직원 순서 변경 · 머리글 경계 드래그 = 웹 열 너비 조절. <b>직원 자료 B~O 수정, I/O열 줄바꿈, 행 순서 및 A열 연번은 Excel에 반영됩니다. 작업 체크와 웹 열 너비는 Excel에 반영되지 않습니다.</b></div>
-  </div>
- </section>
 
  <div id="hoursSummaryView">
   <div id="hoursMismatchBanner" class="auditHoursMismatch hidden" role="status"></div>
@@ -2280,12 +2257,48 @@ html body.laborPrivateAuthorized #hoursPage .laborStaffHelp {display:none!import
   </div>
   <div class="tablewrap"><table class="attendanceTable"><thead><tr><th style="width:42px">선택</th><th>직원</th><th>날짜</th><th>스케줄</th><th>텔레캅</th><th>상태</th><th>처리</th></tr></thead><tbody id="attendanceBody"><tr><td colspan="7" class="attEmpty">텔레캅 파일을 불러오면 확인할 기록만 표시합니다.</td></tr></tbody></table></div>
  </div>
+
+<section id="laborPage" class="page laborInlinePage">
+  <div class="row" style="flex-wrap:wrap;gap:10px">
+   <div><h1 class="title">노무사 제출자료</h1><div class="sub">공통 원본은 업장별 1개를 보존하고, <b>선택한 급여월마다 수정 내용과 특이사항을 따로 저장</b>합니다. <b>직원 자료 B~O열은 바로 수정·자동 저장</b>되며, 이름 옆 손잡이로 순서를 바꾸면 엑셀 연번과 직원 행도 함께 정렬됩니다.</div></div>
+   <span id="laborScopeBadge" class="saveState">업장·월 선택</span>
+  </div>
+  <div class="card" style="margin-top:14px">
+   <div class="laborToolbar">
+    <input id="laborWorkbookInput" type="file" accept=".xlsx" style="display:none" onchange="laborUploadOriginal(this.files?.[0]);this.value=''">
+   <button type="button" class="btn" id="laborQuickExportBtn" onclick="laborQuickExport()" title="I열 근무시간·O열 특이사항 수정만 반영한 원본 Excel 다운로드">5. 근로자현황파악</button>
+   <button type="button" class="btn gray" id="laborQuickUploadBtn" onclick="laborQuickUpload()" title="현재 업장에 사용할 원본 Excel 등록 또는 교체">원본 업로드</button>
+    <button class="btn" id="laborUploadBtn" style="display:none" onclick="$('laborWorkbookInput').click()">원본 Excel 등록 / 교체</button>
+    <button class="btn gray" id="laborCopyBtn" style="display:none" onclick="laborCopyPriorMonth()">이전월 자료 복사</button>
+
+    <span id="laborSaveState" class="saveState" role="status" aria-live="polite">자동 저장 준비</span><button id="laborRetryBtn" type="button" class="btn gray small" style="display:none" onclick="laborFlushSave()">저장 재시도</button>
+   </div>
+   <p class="laborIntro">업장별 공통 원본을 보존하면서 <b>선택 업장·급여월별 입력값을 별도 자동저장</b>합니다. <b>직원 데이터 전체 열(B~O) 수정 및 자동저장, 이름 옆 드래그로 순서 변경</b>을 지원합니다. Excel 다운로드에는 수정값·직원 순서·연번이 반영되고 <b>작업 체크·웹 열 너비는 반영되지 않습니다.</b> 당월 퇴사자는 빨강, 이전월 퇴사자는 회색으로 구분합니다. 주민번호·급여가 있어 최고관리자 전용입니다.</p>
+   <div id="laborWorkbookInfo" class="laborInfo">아직 파일을 불러오지 않았습니다.</div>
+   <!-- 자동검산은 별도 표가 아니라 선택 월 인원현황 O열에 직접 반영 -->
+   <section id="laborSpecialPanel" hidden aria-hidden="true"><span id="laborSpecialStatus"></span><div id="laborSpecialBody"></div></section>
+   <div class="laborToolbar" style="margin:10px 0">
+    <label for="laborSheetSelect" style="font-size:12px;font-weight:800">시트</label>
+    <select id="laborSheetSelect" onchange="laborRenderSheet()" style="max-width:210px"></select>
+    <button id="laborClearChecksBtn" type="button" class="btn gray small" onclick="laborClearChecks()" title="작업 완료 체크만 모두 해제하고, Excel 내용은 변경하지 않습니다.">체크 모두 해제</button>
+    <span style="flex:1"></span>
+
+    <button id="laborSaveBtn" class="btn green" style="display:none" onclick="laborSaveMonth()">웹 수정 저장</button>
+    <span id="laborInlineAutoStatus" class="laborInlineAutoStatus" role="status" aria-live="polite">선택월 O열 자동확인 준비</span>
+    <button type="button" class="btn gray small" onclick="laborSpecialLoad(true)" title="선택한 달의 스케줄을 다시 확인해 O열 자동 내용에 반영">O열 자동재확인</button>
+    <button id="laborExportBtn" class="btn" style="display:none" onclick="laborDownloadPreservingOriginal()">원본 양식 그대로 다운로드</button>
+   </div>
+   <div id="laborRetirementMonthlyHint" role="status" aria-live="polite">선택한 업장·월의 퇴사자 표시를 확인합니다.</div>
+    <div id="laborWorkbookGrid" class="laborEmpty">현재 업장·월에 등록된 Excel이 없습니다. 원본을 업로드하거나 이전월 자료를 복사하세요.</div>
+   <div class="help" style="margin-top:9px">연한 녹색 = 작업 체크 · 회색 = 퇴사자 · 이름 옆 ☰ 손잡이 드래그 = 직원 순서 변경 · 머리글 경계 드래그 = 웹 열 너비 조절. <b>직원 자료 B~O 수정, I/O열 줄바꿈, 행 순서 및 A열 연번은 Excel에 반영됩니다. 작업 체크와 웹 열 너비는 Excel에 반영되지 않습니다.</b></div>
+  </div>
+ </section>
 </section>
 
 
  <section id="payrollPage" class="page">
  <div class="row">
-  <div><h1 class="title">급여관리 <span data-dashboard-version="true" data-version-no-prefix="true" style="font-size:12px;color:#315efb;background:#eef3ff;border-radius:999px;padding:4px 8px;vertical-align:middle">2026.11.26_21</span></h1><div class="sub">월별 급여대장을 검산하고, 기간별·직원별 누적 급여도 조회합니다.</div></div>
+  <div><h1 class="title">급여관리 <span data-dashboard-version="true" data-version-no-prefix="true" style="font-size:12px;color:#315efb;background:#eef3ff;border-radius:999px;padding:4px 8px;vertical-align:middle">2026.11.26_24</span></h1><div class="sub">월별 급여대장을 검산하고, 기간별·직원별 누적 급여도 조회합니다.</div></div>
   <div class="toolbar">
    <input type="file" id="payrollFile" accept=".xlsx,.xls,.xlsm" multiple style="display:none" onchange="importPayrollFiles(this.files);this.value=''">
    <button id="payrollBatchImportBtn" class="btn" onclick="$('payrollFile').click()">급여대장 여러개 불러오기</button>
@@ -3349,7 +3362,7 @@ async function boot(){let {data}=await sb.auth.getSession();if(data.session)open
 async function openApp(){
  try{
   let ok=await loadCurrentAccessContext();if(!ok)return;
-  $('login').classList.add('hidden');$('app').classList.remove('hidden');applyPermissionUI();setHoursView(isAppAdmin()?(localStorage.getItem('staff_hours_view')||'summary'):'attendance');await loadStores();if(isAppAdmin()&&permissionSystemAvailable===true){try{await loadAdminAccountDirectory()}catch(err){console.warn(err)}}selectInitialPermittedPage();applyPermissionUI();await refreshAll();
+  $('login').classList.add('hidden');$('app').classList.remove('hidden');applyPermissionUI();setHoursView(hoursSavedView(),false);await loadStores();if(isAppAdmin()&&permissionSystemAvailable===true){try{await loadAdminAccountDirectory()}catch(err){console.warn(err)}}selectInitialPermittedPage();applyPermissionUI();await refreshAll();
   if(sessionStorage.getItem('staff_access_logged')!=='1'){ensureAccessSessionId();await logAccessEvent('login',{store_id:$('storeSelect')?.value?storeId():null});sessionStorage.setItem('staff_access_logged','1')}
   await startAccessSessionTracking();startStoreMemoMonitor();
  }catch(err){console.error(err);$('loginMsg').textContent=err?.message||String(err)}
@@ -3365,7 +3378,7 @@ document.querySelectorAll('.nav[data-page]').forEach(b=>b.onclick=async()=>{
  let page=$(b.dataset.page+'Page');if(page)page.classList.add('active');
  if(b.dataset.page==='schedule'){if(scheduleView==='weekly')renderWeeklyPlanner();else if(scheduleView==='leave')await refreshAnnualLeaveData(false);else renderSchedule();applyScheduleEditState()}
  else if(b.dataset.page==='employees'){employeeView='active';$('activeEmpTab')?.classList.add('active');$('retiredEmpTab')?.classList.remove('active');loadEmployeesPageData()}
- else if(b.dataset.page==='hours'){setHoursView(isAppAdmin()?(localStorage.getItem('staff_hours_view')||'summary'):'attendance');loadHoursPageData();if($('laborExcelToggleBtn'))$('laborExcelToggleBtn').setAttribute('aria-expanded','false');}
+ else if(b.dataset.page==='hours'){setHoursView(hoursView,false);loadHoursPageData();if($('laborExcelToggleBtn'))$('laborExcelToggleBtn').setAttribute('aria-expanded','false');}
  else if(b.dataset.page==='labor'){$('hoursPage')?.classList.add('active');await toggleLaborInlineEditor(true);}
  else if(b.dataset.page==='payroll'){applyPayrollColumnWidths();loadPayrollSimple()}
  else if(b.dataset.page==='holidays')loadHolidayManagementYear();
@@ -3434,6 +3447,15 @@ async function switchMonth(){
  const saved=await persistScheduleEdits();
  if(!saved)return;
  $('monthSelect').value=requestedMonth;
+ // V23: 상단 월을 2027-01로 바꾸면 직원별 연차관리 표도 2027년으로 함께 전환한다.
+ // 연차관리 안에서 연도를 직접 선택한 경우에는 상단 월을 변경할 때까지 그 선택을 보존한다.
+ const targetLeaveYear=Number(requestedMonth.slice(0,4));
+ if(Number.isInteger(targetLeaveYear)&&targetLeaveYear>=2000&&targetLeaveYear<=2100){
+   const yearChanged=annualLeaveYear!==targetLeaveYear;
+   annualLeaveYear=targetLeaveYear;
+   if($('annualLeaveYear'))$('annualLeaveYear').value=String(targetLeaveYear);
+   if(yearChanged&&$('annualLeaveBody'))$('annualLeaveBody').innerHTML=`<tr><td colspan="17" class="help">${targetLeaveYear}년 연차 자료를 불러오는 중입니다.</td></tr>`;
+ }
  ++payrollReloadToken;
  clearStoreScopedUI();
  await refreshAll();
@@ -3690,8 +3712,25 @@ function addYearsClamped(dateStr,n){
  let {y,m,d}=dateParts(dateStr),yy=y+n,last=new Date(yy,m,0).getDate();
  return `${yy}-${String(m).padStart(2,'0')}-${String(Math.min(d,last)).padStart(2,'0')}`;
 }
-function annualLeaveDays(serviceYears){return Math.min(25,15+Math.floor(Math.max(0,serviceYears-1)/2))}
-function annualLeaveHours(e,serviceYears,date=isoToday(),weeklyHours=null){let w=Number(weeklyHours??leaveWeeklyHoursAt(e,date));if(w<LEGAL_MIN_WEEKLY_HOURS_FOR_LEAVE)return 0;return legalRoundLeaveHours(annualLeaveDays(serviceYears)*(Math.min(w,LEGAL_FULLTIME_WEEKLY_HOURS)/LEGAL_FULLTIME_WEEKLY_HOURS)*8)}
+// V24: 1년 이상 연차는 입사일 '주년' 기준, 1주년 15일 · 3주년 16일 · 이후 2년마다 1일(최대 25일).
+// 유급휴가 일수와 시간은 별개의 지표: 주36h 소정근로는 15일=108h, 주40h는 15일=120h.
+// '주4일 스케줄근무'라는 근무형태 이름만 보고 36h로 간주하지 않는다.
+function annualLeaveDays(serviceYears){
+ const years=Math.max(1,Math.floor(Number(serviceYears)||1));
+ return Math.min(25,15+Math.floor((years-1)/2));
+}
+function annualLeaveEntitlement(serviceYears,weeklyHours){
+ const years=Math.max(1,Math.floor(Number(serviceYears)||1));
+ const weekly=Number(weeklyHours||0);
+ const days=annualLeaveDays(years);
+ if(!Number.isFinite(weekly)||weekly<LEGAL_MIN_WEEKLY_HOURS_FOR_LEAVE)return {serviceYears:years,days:0,hours:0,weeklyHours:weekly||0,eligible:false};
+ const proportion=Math.min(weekly,LEGAL_FULLTIME_WEEKLY_HOURS)/LEGAL_FULLTIME_WEEKLY_HOURS;
+ // 단시간근로자 법정 비례시간: 연차일수 × (주 소정시간 / 40) × 8h. 1시간 미만은 올림.
+ return {serviceYears:years,days,hours:legalRoundLeaveHours(days*proportion*8),weeklyHours:weekly,eligible:true};
+}
+function annualLeaveHours(e,serviceYears,date=isoToday(),weeklyHours=null){
+ return annualLeaveEntitlement(serviceYears,weeklyHours??leaveWeeklyHoursAt(e,date)).hours;
+}
 function scheduleMapForEmployee(rows,employeeId){
  let m=new Map();
  (rows||[]).forEach(s=>{
@@ -3770,7 +3809,7 @@ function attendancePeriodAnalysis(e,periodStart,periodEnd,scheduleRows){
    plannedDays++;
    if(code==='결'){absent.push(cur)}
    else if(code==='병'){sick.push(cur)}
-   else if(code==='상'||code==='경'){review.push(cur)}
+   else if(code==='상'||code==='경'){attendedDays++;worked+=scheduleRowPrescribedHours(e,cur,s)} // 유급 경조휴가는 출근간주: 연차 발생 보류 불가
    else if(code==='예'){attendedDays++;worked+=scheduleRowPrescribedHours(e,cur,s)}else if(code==='연'||code==='법'||Number(s?.worked_hours||0)>0||(!isNaN(Number(code))&&Number(code)>0)){attendedDays++;worked+=Number(s?.worked_hours||0)}
    else {review.push(cur)}
    cur=addDaysIso(cur,1);
@@ -3798,9 +3837,16 @@ function legalWeeklyHoursForAccrual(e,eventDate,scheduleRows,periodEnd){
  if(rules.length||days.length||/주\s*[1-6]일/.test(String(c.work_type||'')))return {hours:conditionWeeklyPrescribedHours(c),unknown:[],source:'condition-pattern'};
  // 근무요일도 소정시간도 미확정인 일용직은 근로시간 확인 전 40h로 가정하지 않는다.
  if(/일용직/.test(String(c.work_type||''))&&explicit>=40)return {hours:0,unknown:['일용직 계약근로일 미확인'],source:'condition-review'};
- if(explicit>0&&!(mode==='manual'&&c.work_type==='custom'&&Math.abs(explicit-40)<0.01))return {hours:Math.round(explicit*100)/100,unknown:[],source:'condition-weekly'};
+ // V23: 직원관리의 주 소정근로시간이 명시된 경우 과거 스케줄 미입력 때문에 해당 직원의 발생을 보류하지 않는다.
+ // 다만 근무일 미확정 일용직의 '기본값 40h'는 확정 계약조건이 아니므로 기존 안전 예외를 보존한다.
+ if(explicit>0){
+   if((String(e.pay_type||'')==='daily'||/일용/.test(String(c.work_type||'')))&&
+      !days.length&&!rules.length&&explicit>=40){
+     return {hours:0,unknown:['일용·시급 근무일 미확정 · 주 15시간 충족 확인 필요'],source:'daily-review'};
+   }
+   return {hours:Math.round(explicit*100)/100,unknown:[],source:'condition-weekly'};
+ }
  let derived=scheduleDerivedWeeklyHours(e,periodEnd||addDaysIso(eventDate,-1),scheduleRows||[]);if(!derived.unknown.length&&derived.hours>0)return derived;
- if(explicit>0)return {hours:Math.round(explicit*100)/100,unknown:derived.unknown||[],source:'condition-fallback'};
  return derived;
 }
 function monthlyAttendanceStatus(e,periodStart,periodEnd,scheduleRows){
@@ -3811,22 +3857,26 @@ function monthlyAttendanceStatus(e,periodStart,periodEnd,scheduleRows){
  if(a.sick.length)return {...a,status:'fail',memo:`무급 병가 ${a.sick.length}일 · 개근 불충족`};
  let verified=annualLeaveAttendanceVerification(e.id,'month',periodStart);
  if(verified&&['pass','fail','review'].includes(verified.status))return {...a,status:verified.status,memo:'관리자 출근 확인',verification:verified,manualVerified:true};
- if(a.missing.length)return {...a,status:'pending',memo:`확인 중 · 스케줄 미입력 ${a.missing.length}일`};
+ // 과거 스케줄 관리가 시작되기 전의 공란은 '결근'이 아니다.
+ // 입사일 기준 발생을 기본으로 하되, 명시된 병가·결근 및 관리자 확인은 위 조건에서 이미 걸러진다.
  if(a.review.length)return {...a,status:'review',memo:`경조/기타 출근 확인 필요 ${a.review.length}일`};
  if(a.absent.length)return {...a,status:'fail',memo:`미발생 · 결근 ${a.absent.length}일`};
+ if(a.missing.length)return {...a,status:'pass',legacyAssumed:true,memo:`입사일 기준 발생 · 스케줄 미입력 ${a.missing.length}일은 결근으로 간주하지 않음`};
  return {...a,status:'pass',memo:`개근확인 · 소정근로일 ${a.plannedDays}일`};
 }
 function annualAttendanceStatus(e,periodStart,periodEnd,scheduleRows){
  let a=attendancePeriodAnalysis(e,periodStart,periodEnd,scheduleRows);
  let verified=annualLeaveAttendanceVerification(e.id,'year',periodStart);
- // 완료된 스케줄의 일반 무급병가는 불출근으로 출근율에 반영한다.
- // 예전에는 병가 1일만 있어도 무조건 '검토'로 멈췄지만 1년 이상은 80% 규칙으로 판정한다.
- if(!a.missing.length&&!a.review.length)return {...a,status:a.rate>=0.8?'pass80':'low80'};
- // 스케줄 없는 과거 기간 또는 경조휴가의 출근 판정은 관리자 확인값을 활용한다.
+ // 사용자가 직접 판정한 출근율을 우선한다. 기존 코드에서는 스케줄이 모두 있을 때 수기판정을 무시했다.
  if(verified&&['pass80','low80','review'].includes(verified.status))return {...a,status:verified.status,rate:verified.status==='pass80'?1:verified.status==='low80'?0.79:a.rate,verification:verified,manualVerified:true};
- if(a.missing.length)return {...a,status:'pending'};
  if(a.review.length)return {...a,status:'review'};
- return {...a,status:a.rate>=0.8?'pass80':'low80'};
+ // 예전에는 과거 스케줄이 없다는 이유만으로 1년 경과 연차 15일도 보류했다.
+ // '미등록'을 '결근'으로 취급하지 않고, 실제로 기록된 병·결만 미출근으로 반영한다.
+ // 미입력일은 해당 소정근로일에 출근한 것으로 '추정'하는 운영 기준임을 원장에 명시한다.
+ const denominator=a.plannedDays+a.missing.length;
+ const numerator=a.attendedDays+a.missing.length;
+ const rate=denominator?Math.min(1,numerator/denominator):1;
+ return {...a,status:rate>=0.8?'pass80':'low80',rate,legacyAssumed:a.missing.length>0,assumedDays:a.missing.length};
 }
 function employeeLeaveCutoffDate(e,through=isoToday()){
  let t=String(through||isoToday());
@@ -3848,11 +3898,12 @@ function expectedAccruals(e,through=isoToday(),attendanceSchedules=[]){
    let weekly=Number(wh.hours||0);
    if(wh.unknown?.length||weekly<LEGAL_MIN_WEEKLY_HOURS_FOR_LEAVE)continue;
    let hrs=legalRoundLeaveHours(Math.min(weekly,40)/40*8);if(!hrs)continue;
-   out.push({employee_id:e.id,event_date:dt,event_type:'accrual',hours:hrs,source:'auto',source_key:`accrual-month:${e.id}:${dt}`,memo:`입사 ${m}개월차 개근 · 주 소정 ${weekly}h 비례 ${hrs}h · ${periodStart}~${periodEnd}`});
+   out.push({employee_id:e.id,event_date:dt,event_type:'accrual',hours:hrs,source:'auto',source_key:`accrual-month:${e.id}:${dt}`,memo:`입사 ${m}개월차 ${att.legacyAssumed?'스케줄 미기록 구간 결근 미확인·입사일 기준 추정':'개근 확인'} · 주 소정 ${weekly}h 비례 ${hrs}h · ${periodStart}~${periodEnd}`});
  }
 
- // 1년 이상: 직전 1년 실제 소정근로일의 출근율을 확인한다.
- // 80% 이상이면 15일(+가산)을 시간비례 부여, 80% 미만이면 그 1년 중 개근한 달만 제60조2항으로 부여한다.
+ // 1년 이상: 입사 1주년부터 매년 같은 입사일 기준, 직전 1년 출근율 80% 이상이면 15일(+가산) 발생.
+ // 첫 1년의 월 개근 최대 11일과 별도로 부여하며, 주 소정시간 비례 환산(36h→108h, 40h→120h)한다.
+ // 80% 미만이면 월 개근 발생분을 인정한다. 미래 입사기념일은 원장에 선기록하지 않는다.
  for(let y=1;y<=60;y++){
    let dt=addYearsClamped(e.hire_date,y);if(dt>through)break;
    let yearStart=addYearsClamped(e.hire_date,y-1),yearEnd=addDaysIso(dt,-1),ann=annualAttendanceStatus(e,yearStart,yearEnd,attendanceSchedules);
@@ -3861,8 +3912,9 @@ function expectedAccruals(e,through=isoToday(),attendanceSchedules=[]){
      let wh=legalWeeklyHoursForAccrual(e,dt,attendanceSchedules,yearEnd);
      if(ann.verification?.weeklyHours>0)wh={hours:ann.verification.weeklyHours,unknown:[],source:'manual-confirmation'};
      let weekly=Number(wh.hours||0);if(wh.unknown?.length||weekly<LEGAL_MIN_WEEKLY_HOURS_FOR_LEAVE)continue;
-     let hrs=annualLeaveHours(e,y,dt,weekly);if(!hrs)continue;
-     out.push({employee_id:e.id,event_date:dt,event_type:'accrual',hours:hrs,source:'auto',source_key:`accrual-year:${e.id}:${dt}`,memo:`입사 ${y}주년 · 출근율 ${(ann.rate*100).toFixed(1)}% · ${annualLeaveDays(y)}일 비례 ${hrs}h`});
+     const entitled=annualLeaveEntitlement(y,weekly);
+     if(!entitled.eligible||!entitled.hours)continue;
+     out.push({employee_id:e.id,event_date:dt,event_type:'accrual',hours:entitled.hours,source:'auto',source_key:`accrual-year:${e.id}:${dt}`,memo:`입사 ${y}주년 · 출근율 ${(ann.rate*100).toFixed(1)}%${ann.legacyAssumed?'(과거 미입력 구간 출근 추정)':''} · ${entitled.days}일 × (주 소정 ${weekly}h / 40h) × 8h = ${entitled.hours}h`});
    }else if(ann.status==='low80'){
      for(let m=1;m<=12;m++){
        if(y===1&&m<=11)continue;
@@ -3870,7 +3922,7 @@ function expectedAccruals(e,through=isoToday(),attendanceSchedules=[]){
        if(ma.status!=='pass')continue;
        let wh=legalWeeklyHoursForAccrual(e,ev,attendanceSchedules,pe),weekly=Number(wh.hours||0);if(wh.unknown?.length||weekly<LEGAL_MIN_WEEKLY_HOURS_FOR_LEAVE)continue;
        let hrs=legalRoundLeaveHours(Math.min(weekly,40)/40*8);if(!hrs)continue;
-       out.push({employee_id:e.id,event_date:dt,event_type:'accrual',hours:hrs,source:'auto',source_key:`accrual-low80:${e.id}:${dt}:${m}`,memo:`직전 1년 출근율 ${(ann.rate*100).toFixed(1)}% 미만 · ${m}번째 개근월 비례 ${hrs}h (${ps}~${pe})`});
+       out.push({employee_id:e.id,event_date:dt,event_type:'accrual',hours:hrs,source:'auto',source_key:`accrual-low80:${e.id}:${dt}:${m}`,memo:`직전 1년 출근율 ${(ann.rate*100).toFixed(1)}% 미만 · ${m}번째 ${ma.legacyAssumed?'스케줄 미입력·결근 미확인':'개근 확인'}월 비례 ${hrs}h (${ps}~${pe})`});
      }
    }
  }
@@ -3908,7 +3960,7 @@ function monthlyAccrualEmployeeBadge(e,through=isoToday()){
    if(st.status==='review'){let n=(st.review||[]).length;return `<br><span class="reviewWarn" title="경조/기타 출근판정 확인기간 ${st.periodStart} ~ ${st.periodEnd}">기타 확인 필요 · ${n}일</span>`}
    if(st.status==='fail'){let n=(st.absent||[]).length,nSick=(st.sick||[]).length;return `<br><span class="warn" title="확인기간 ${st.periodStart} ~ ${st.periodEnd} · 일반무급병가 ${nSick}일 · 결근 ${n}일">${nSick?'무급병가':'결근'}으로 미발생</span>`}
    if(st.status==='ineligible')return `<br><span class="warn" title="4주 평균 주 소정근로시간 15시간 미만은 법정 연차 적용 제외">주15h 미만 · 법정연차 제외</span>`;
-   if(st.status==='pass'){let h=legalRoundLeaveHours(Math.min(Number(st.weeklyHours||0),40)/40*8);return `<br><span class="ok" title="개근 · 주 소정 ${st.weeklyHours}h · 발생 ${h}h">발생 처리 중 · ${h}h</span>`}
+   if(st.status==='pass'){let h=legalRoundLeaveHours(Math.min(Number(st.weeklyHours||0),40)/40*8);return `<br><span class="ok" title="${st.legacyAssumed?'과거 스케줄 미입력 · 입사일 기준 추정':'개근 확인'} · 주 소정 ${st.weeklyHours}h · 발생 ${h}h">발생 처리 중 · ${h}h</span>`}
  }
  let monthlyRows=leaveLedger.filter(x=>Number(x.employee_id)===Number(e.id)&&String(x.source_key||'').startsWith(`accrual-month:${e.id}:`)&&String(x.event_date||'')<=cutoff);
  if(monthlyRows.length){let latest=[...monthlyRows].sort((a,b)=>String(b.event_date||'').localeCompare(String(a.event_date||'')))[0];return `<br><span class="ok" title="${latest.event_date} 월차 ${Number(latest.hours||0)}h 원장 반영 완료">발생완료</span>`}
@@ -3916,29 +3968,34 @@ function monthlyAccrualEmployeeBadge(e,through=isoToday()){
  return '';
 }
 
+// V23: 모든 업장·직원에 입사일 기준 자동발생을 적용한다. 과거 스케줄 공란은 결근으로 보지 않는다.
+// 입사일 기준 자동발생을 따로 승인받지 않으며, 병가·결근/수기 출근확인/주15시간 미만은 기존 예외를 그대로 사용한다.
+// 사용자가 '잔여확정'한 balance_reset은 삭제/변경하지 않고, 그 날짜 이후의 발생분만 잔여에 누적한다.
 async function syncLeaveLedger(){
- if(!employees.length)return;
- const ids=employees.map(e=>e.id);
- // 다른 PC에서 확인한 근태 판정을 자동 발생 계산에 반드시 반영한다.
+ // V23: 재직자만이 아니라 같은 업장 퇴사자를 포함해 모든 직원의 실제 재직기간을 판정한다.
+ // expectedAccruals는 각 직원의 퇴사일까지만 발생시키므로 퇴사 후 신규 발생은 없다.
+ const targetEmployees=allEmployees();
+ if(!targetEmployees.length)return;
+ const ids=targetEmployees.map(e=>e.id);
  try{leaveLedger=await fetchLeaveLedgerPaged(ids,null)}catch(err){console.warn('연차 판정 원장 사전조회',err);}
  // 기존 연차잔여값이 있다면 최초 1회 기초잔액으로 이관
- const opening=employees.filter(e=>Number(e.leave_balance||0)!==0).map(e=>({
+ const opening=targetEmployees.filter(e=>Number(e.leave_balance||0)!==0).map(e=>({
    employee_id:e.id,event_date:e.hire_date,event_type:'adjust',hours:Number(e.leave_balance||0),source:'opening',
    source_key:`opening:${e.id}`,memo:'기존 연차잔여 이관'
  }));
- if(opening.length)await sb.from('leave_ledger').upsert(opening,{onConflict:'source_key'});
+ if(opening.length){const op=await sb.from('leave_ledger').upsert(opening,{onConflict:'source_key'});if(op.error)throw new Error('기초 연차원장 저장 실패: '+op.error.message);}
 
- // 입사 1년 미만 월 연차는 실제 스케줄 입력/개근 확인 후 자동 발생.
- // 판정을 위해 현재 직원들의 스케줄을 한 번 읽는다.
- let attendanceSchedules=await fetchLeaveAttendanceSchedules(ids,isoToday());
+ // 모든 직원의 도래한 입사일 기념일을 계산한다. 과거 일정 입력 누락은 결근으로 판단하지 않는다.
+ // 실제로 확인된 병·결·출근 판정 등은 expectedAccruals가 반영한다.
+ const attendanceSchedules=await fetchLeaveAttendanceSchedules(ids,isoToday());
  leaveAttendanceSchedules=attendanceSchedules;
-
- let accruals=[];
- employees.forEach(e=>accruals.push(...expectedAccruals(e,isoToday(),attendanceSchedules)));
-
+ const accruals=[];
+ targetEmployees.forEach(e=>accruals.push(...expectedAccruals(e,isoToday(),attendanceSchedules)));
  if(accruals.length){
-   let a=await sb.from('leave_ledger').upsert(accruals,{onConflict:'source_key'});
-   if(a.error)console.warn(a.error.message);
+   for(let i=0;i<accruals.length;i+=150){
+     const result=await sb.from('leave_ledger').upsert(accruals.slice(i,i+150),{onConflict:'source_key'});
+     if(result.error)throw new Error('입사일 기준 연차발생 저장 실패: '+result.error.message);
+   }
  }
 
  // 출근 확인 변경 시 더 이상 유효하지 않은 자동 월·연차 발생기록도 정리한다.
@@ -3954,7 +4011,7 @@ async function syncLeaveLedger(){
  // DB에 저장된 모든 '연' 스케줄을 연차사용 원장과 동기화
  let leaveSchedules=await fetchAllLeaveSchedules(ids);
  let usage=leaveSchedules.map(s=>{
-   let e=employees.find(x=>x.id===s.employee_id),saved=Number(s.scheduled_hours||0),decision=leaveUseHoursDecision(e||{},s.work_date,s),
+   let e=targetEmployees.find(x=>x.id===s.employee_id),saved=Number(s.scheduled_hours||0),decision=leaveUseHoursDecision(e||{},s.work_date,s),
        hrs=decision.source==='weekly32-seven-hour-policy'?decision.hours:(saved>0?saved:decision.hours);
    return {employee_id:s.employee_id,event_date:s.work_date,event_type:'use',hours:-hrs,source:'schedule',
      source_key:`schedule-leave:${s.employee_id}:${s.work_date}`,memo:`스케줄 연차 사용 ${hrs}h${saved>0?' · 해당일 소정시간 저장값':''}`};
@@ -4017,6 +4074,14 @@ function leaveSummary(e,asOf=monthRange().last){
      !(x.source==='annual_use_override'&&String(x.event_date||'').slice(0,7)===ym) &&
      (String(x.event_date||'')>date || (String(x.event_date||'')===date && Number(x.id||0)>resetId)));
    let net=after.reduce((sum,x)=>sum+Number(x.hours||0),0);
+   // V23: 입사기념일에 전년도 미사용 연차를 0으로 정산할 때 같은 날 새로 발생한 연차는 보존한다.
+   // 기존 잔여확정(오늘 새 발생분까지 0 포함) 기록과의 호환을 위해 새 메모가 명시한 경우에만 적용.
+   let settlementMemo={};try{settlementMemo=JSON.parse(reset.row.memo||'{}')}catch(_){}
+   if(settlementMemo.preserveNewAnniversaryAccrual===true){
+     net+=rows.filter(x=>x.event_type==='accrual'&&String(x.event_date||'')===date&&
+       String(x.source_key||'')===`accrual-year:${e.id}:${date}`&&Number(x.id||0)<=resetId)
+       .reduce((sum,x)=>sum+Number(x.hours||0),0);
+   }
    const monthOverride=rows.find(x=>x.source==='annual_use_override'&&x.event_type==='use'&&String(x.event_date||'').slice(0,7)===ym);
    if(monthOverride){
      // 확정일 시점의 당월 사용량과 달라진 부분만 새 잔여에 반영한다 (기존 사용분 중복 차감 방지).
@@ -4087,11 +4152,18 @@ async function adjustLeave(id){
  const target=Number(String(raw).replace(/,/g,'').trim());
  if(!Number.isFinite(target)||Math.abs(target)>100000)return alert('확정할 잔여시간을 숫자로 입력하세요. 0도 입력 가능합니다.');
  const balance=Math.round(target*100)/100;
- if(!confirm(`${e.name}님의 ${date} 잔여연차를 ${balance}시간으로 확정할까요?\n\n기존 원장·스케줄은 유지하며, ${date} 이후 새로 발생한 연차와 사용한 연차만 이 잔여에 가감됩니다.`))return;
+ // 입사기념일 당일에 0으로 수당정산하는 경우: 새로 발생한 연차까지 지워서는 안 된다.
+ const anniversaryRow=target===0?leaveLedger.find(x=>Number(x.employee_id)===Number(id)&&x.event_type==='accrual'&&
+   String(x.source_key||'')===`accrual-year:${id}:${date}`):null;
+ const preserveNewAnniversaryAccrual=!!anniversaryRow;
+ const newAnniversaryHours=preserveNewAnniversaryAccrual?Number(anniversaryRow.hours||0):0;
+ const anniversaryNote=preserveNewAnniversaryAccrual?
+   `\n\n※ 오늘 입사기념일에 새로 발생한 연차 ${newAnniversaryHours}h는 이전 미사용분 정산과 구분해 보존합니다. 0시간 확정 직후 표시 잔여는 새 발생분 ${newAnniversaryHours}h입니다.`:'';
+ if(!confirm(`${e.name}님의 ${date} 잔여연차를 ${balance}시간으로 확정할까요?\n\n기존 원장·스케줄은 유지하며, ${date} 이후 새로 발생한 연차와 사용한 연차만 이 잔여에 가감됩니다.${anniversaryNote}`))return;
  const key=`balance-reset:${id}:${Date.now()}:${Math.random().toString(36).slice(2,9)}`;
  const ym=date.slice(0,7),override=leaveLedger.find(x=>Number(x.employee_id)===Number(id)&&x.source==='annual_use_override'&&x.event_type==='use'&&String(x.event_date||'').slice(0,7)===ym);
  const monthUsageAtReset=override?Math.abs(Number(override.hours||0)):leaveLedger.filter(x=>Number(x.employee_id)===Number(id)&&x.source==='schedule'&&x.event_type==='use'&&String(x.event_date||'')>=ym+'-01'&&String(x.event_date||'')<=date&&employedOn(e,String(x.event_date||''))).reduce((sum,x)=>sum+Math.abs(Number(x.hours||0)),0);
- const memo=JSON.stringify({balance,priorBalance:cur,monthUsageAtReset:Math.round(monthUsageAtReset*100)/100,confirmedAt:new Date().toISOString(),note:'관리자 잔여연차 기준값 확정 (기존 원장 보존)'});
+ const memo=JSON.stringify({balance,priorBalance:cur,monthUsageAtReset:Math.round(monthUsageAtReset*100)/100,confirmedAt:new Date().toISOString(),preserveNewAnniversaryAccrual,note:'관리자 잔여연차 기준값 확정 (기존 원장 보존)'});
  const q=await sb.from('leave_ledger').insert({employee_id:id,event_date:date,event_type:'adjust',hours:0,source:'balance_reset',source_key:key,memo});
  if(q.error)return alert('잔여연차 확정 저장 실패: '+q.error.message);
  await loadLeaveLedger();
@@ -4099,7 +4171,7 @@ async function adjustLeave(id){
  if($('homePage')?.classList.contains('active'))renderHome();
  if($('annualLeaveWrap')&&!$('annualLeaveWrap').classList.contains('hidden'))renderAnnualLeaveTable();
  refreshLiveLeaveUI(id);
- alert(`${e.name}님 ${date} 잔여연차 ${balance}시간 확정 완료.\n이후 발생하는 월·연차는 기존 입사일을 기준으로 정상 누적됩니다.`);
+ alert(`${e.name}님 ${date} 잔여연차 ${balance}시간 확정 완료.${preserveNewAnniversaryAccrual?`\n당일 신규 발생 연차 ${newAnniversaryHours}h는 별도로 유지됩니다.`:''}\n이후 발생하는 월·연차는 기존 입사일을 기준으로 정상 누적됩니다.`);
 }
 async function loadPayroll(){
  payroll=[];
@@ -5611,7 +5683,7 @@ ${why}`;
 
 연차 수동확인 필요: 입사 ${st.month}개월차
 확인기간 ${st.periodStart} ~ ${st.periodEnd}
-일반 병가·경조휴가 등은 법정 연차 개근판정에 자동 반영하지 않습니다. 관리자 확인이 필요합니다.`;
+확인되지 않은 출근코드가 있어 관리자 확인이 필요합니다. 무급병가·결근은 발생 제외, 유급 경조휴가는 출근으로 인정합니다.`;
  if(st.status==='fail')return `
 
 연차 미발생: 입사 ${st.month}개월차
@@ -5866,8 +5938,18 @@ function renderHours(){
 
 
 /* ===== 텔레캅 근태검증 ===== */
-function setHoursView(view){
- hoursView=view==='attendance'?'attendance':'summary';localStorage.setItem('staff_hours_view',hoursView);
+// 사용자별 마지막 선택을 유지한다. 최초 사용 계정은 근로시간(summary)이 기본값이다.
+function hoursViewStorageKey(){return currentSessionUser?.id?'staff_hours_view_v22:'+currentSessionUser.id:''}
+function hoursSavedView(){
+ let value='';try{const key=hoursViewStorageKey();if(key)value=localStorage.getItem(key)||'';
+  // 이전 버전 관리자의 저장된 선택은 보존한다. 담당자에게 과거 관리자 설정을 적용하지 않는다.
+  if(!value&&isAppAdmin())value=localStorage.getItem('staff_hours_view')||'';
+ }catch(err){/* 저장을 막은 브라우저는 현재 탭 선택만 기억 */}
+ return value==='attendance'?'attendance':'summary';
+}
+function setHoursView(view,remember=true){
+ hoursView=view==='attendance'?'attendance':'summary';
+ if(remember){try{const key=hoursViewStorageKey();if(key)localStorage.setItem(key,hoursView)}catch(err){/* 메모리의 선택은 유지 */}}
  $('hoursSummaryView')?.classList.toggle('hidden',hoursView!=='summary');$('attendanceView')?.classList.toggle('hidden',hoursView!=='attendance');
  $('hoursSummaryTabBtn')?.classList.toggle('active',hoursView==='summary');$('attendanceTabBtn')?.classList.toggle('active',hoursView==='attendance');
  if($('hoursPageTitle'))$('hoursPageTitle').textContent=hoursView==='attendance'?'근태 확인':'근로시간';
@@ -12359,6 +12441,8 @@ window.addEventListener('load',boot,{once:true});
 // === V9.1.42 직원별 연차관리 (기존 연차원장 활용 / 스케줄값 덮어쓰기 없음) ===
 let annualLeaveYear=Number(($('monthSelect')?.value||isoToday()).slice(0,4))||new Date().getFullYear();
 let annualLeaveScheduleRows=[],annualLeaveLoadedStore=null,annualLeaveLoadedYear=null,annualLeaveLoadingSeq=0;
+// Store/day/employee set key prevents repeated full-ledger writes when switching months.
+let annualLeaveLastSyncedContext='';
 // A zero-hour ledger marker records only the display state; it never modifies annual leave balances.
 let annualLeaveShowSettled=false;
 const annualLeaveSettlementKey=id=>`annual-settlement:${Number(id)}`;
@@ -12510,7 +12594,11 @@ function annualLeaveFillYearOptions(){
  el.innerHTML=opts;el.value=String(annualLeaveYear);
 }
 async function annualLeaveChangeYear(){
- const year=Number($('annualLeaveYear')?.value);if(year>=2000&&year<=2100)annualLeaveYear=year;
+ const year=Number($('annualLeaveYear')?.value);
+ if(year>=2000&&year<=2100){
+   annualLeaveYear=year;
+   if($('annualLeaveBody'))$('annualLeaveBody').innerHTML=`<tr><td colspan="17" class="help">${year}년 연차 자료를 불러오는 중입니다.</td></tr>`;
+ }
  await refreshAnnualLeaveData(false);
 }
 async function refreshAnnualLeaveData(force=false){
@@ -12523,6 +12611,15 @@ async function refreshAnnualLeaveData(force=false){
   if(!await persistScheduleEdits())return;
   await annualLeaveOrderLoad(sid);
   if(seq!==annualLeaveLoadingSeq||sid!==storeId())return;
+  // 연차 페이지를 직접 열어도 입사일 기준 도래한 모든 직원의 발생분을 자동 동기화한다.
+  // 선택한 2027년처럼 미래의 아직 도래하지 않은 발생일은 절대 원장에 미리 저장하지 않는다.
+  const syncContext=`${sid}|${isoToday()}|${allEmployees().map(e=>`${e.id}:${e.hire_date||''}:${e.resign_date||''}`).join(',')}`;
+  if(canEditModule('schedule')&&(force||annualLeaveLastSyncedContext!==syncContext)){
+   if(state)state.textContent='입사일 기준 발생 계산 중';
+   await syncLeaveLedger();
+   if(seq!==annualLeaveLoadingSeq||sid!==storeId())return;
+   annualLeaveLastSyncedContext=syncContext;
+  }
   await loadLeaveLedger();
   if(seq!==annualLeaveLoadingSeq||sid!==storeId())return;
   if(!leaveAttendanceSchedules.length){
@@ -12556,6 +12653,32 @@ function annualLeaveWorkScheduleCheck(e,date=isoToday()){
  if(!days.length&&/일용직/.test(type)&&weekly>=40)return '일용직 근무일 미등록 · 주40h 추정 불가';
  return '';
 }
+// V23: 연차원장은 달력연도 경계에서 끊지 않는다. 전년도말 현재 잔여가 차년도 기초 이월이다.
+// 미래 연도 조회 시에는 전년도말이 아직 오지 않았으므로 실제 오늘까지 확정된 잠정잔여만 보여준다.
+// 날짜가 지나면 확정된 원장과 수기 잔여확정 값을 그대로 사용한다.
+function annualLeaveCarryoverInfo(e,year,today=isoToday()){
+ const yearBefore=`${Number(year)-1}-12-31`,asOf=yearBefore<today?yearBefore:today;
+ const valid=!!e?.hire_date&&String(e.hire_date)<=asOf;
+ const prior=valid?leaveSummary(e,asOf):{balance:0};
+ return {asOf,yearBefore,confirmed:yearBefore<=today,balance:annualLeaveRound(prior.balance)};
+}
+// 미래 발생예정은 화면용 추정치다. 현재 날짜 이후의 연차원장을 선기록하지 않는다.
+function annualLeaveFutureAccrualCount(e,year,today=isoToday()){
+ const end=`${year}-12-31`;
+ if(end<=today||!e?.hire_date||String(e.hire_date)>end)return {days:0,hours:0};
+ const rows=expectedAccruals(e,end,leaveAttendanceSchedules).filter(x=>
+   String(x.event_date||'').slice(0,4)===String(year)&&String(x.event_date||'')>today);
+ let days=0,hours=0;
+ for(const r of rows){
+   hours+=Math.max(0,Number(r.hours||0));
+   const key=String(r.source_key||'');
+   if(key.startsWith('accrual-year:')){
+     const anniversaries=Number(String(r.event_date).slice(0,4))-Number(String(e.hire_date).slice(0,4));
+     days+=annualLeaveDays(Math.max(1,anniversaries));
+   }else days+=1;
+ }
+ return {days:annualLeaveRound(days),hours:annualLeaveRound(hours)};
+}
 function renderAnnualLeaveTable(){
  const body=$('annualLeaveBody'),tiles=$('annualLeaveSummaryTiles');if(!body)return;
  const year=annualLeaveYear,today=isoToday(),cutoff=year===Number(today.slice(0,4))?today:(year<Number(today.slice(0,4))?year+'-12-31':null);
@@ -12579,11 +12702,22 @@ function renderAnnualLeaveTable(){
  const toggle=$('annualLeaveSettledToggle');
  if(toggle){toggle.textContent=annualLeaveShowSettled?`정산완료 숨기기 (${settledCount})`:`정산완료 보기 (${settledCount})`;toggle.setAttribute('aria-pressed',String(annualLeaveShowSettled));toggle.disabled=!settledCount&&!annualLeaveShowSettled;}
  const list=allList.filter(e=>annualLeaveShowSettled||!annualLeaveSettledRow(e.id));
- let grandAccrual=0,grandUsed=0,grandFuture=0,grandBalance=0,missing=0,retiredSeen=false;
+ let grandAccrual=0,grandAccrualFuture=0,grandUsed=0,grandFuture=0,grandBalance=0,grandCarryover=0,missing=0,retiredSeen=false;
  body.innerHTML=list.length?list.map(e=>{
   const retired=annualLeaveIsRetired(e),settled=!!annualLeaveSettledRow(e.id),firstRetired=retired&&!retiredSeen;
   if(retired)retiredSeen=true;
   const ann=cutoff?annualLeaveAccrualCount(e,year,cutoff):{days:0,hours:0};
+  const annualAnniversaryRows=leaveLedger.filter(x=>Number(x.employee_id)===Number(e.id)&&x.event_type==='accrual'&&
+    String(x.source_key||'').startsWith(`accrual-year:${e.id}:`)&&String(x.event_date||'').startsWith(String(year))&&
+    cutoff&&String(x.event_date||'')<=cutoff);
+  const anniversaryLabel=annualAnniversaryRows.map(x=>{
+    const n=Number(String(x.event_date).slice(0,4))-Number(String(e.hire_date||'').slice(0,4));
+    return `입사 ${n}주년 ${annualLeaveDays(n)}일 · ${annualLeaveFmt(x.hours)}h`;
+  }).join(' / ');
+  const upcoming=annualLeaveFutureAccrualCount(e,year,today);
+  const carryover=annualLeaveCarryoverInfo(e,year,today);
+  grandCarryover+=carryover.balance;
+  grandAccrualFuture+=upcoming.days;
   const sickMissed=cutoff?annualLeaveSickMissedAccruals(e,year,cutoff,annualAttendanceMap.get(Number(e.id))||[]):[];
   const sickMissedLabel=annualLeaveSickMissedHtml(sickMissed);
   let completedUsed=0,futureUsed=0,futureHours=0,monthCells='';
@@ -12604,14 +12738,19 @@ function renderAnnualLeaveTable(){
    const tooltip=gate.reason?`${gate.reason}${gate.locked?'':' · '+desc}`:desc;
    monthCells+=`<td class="${gate.locked?'annualLeaveOutsideCell':gate.partial?'annualLeavePartialCell':''}"><button type="button" class="annualLeaveCell ${cls}" ${gate.locked?'disabled':''} onclick="openAnnualLeaveMonth(${e.id},'${ym}')" title="${esc(tooltip)}" aria-label="${ym} ${esc(e.name)} ${esc(tooltip)}">${entry.days?annualLeaveFmt(entry.days):gate.locked?'—':'-'}<small>${esc(short)}</small></button></td>`;
   }
-  let summary=cutoff?leaveSummary(e,cutoff):null,balance=summary?summary.balance:0;
+  let summary=cutoff?leaveSummary(e,cutoff):leaveSummary(e,carryover.asOf);
+  const balance=cutoff?summary.balance:carryover.balance;
   grandAccrual+=ann.days;grandUsed+=completedUsed;grandFuture+=futureUsed;grandBalance+=balance;
   const next=cutoff?nextMonthlyAccrualStatus(e,cutoff,leaveAttendanceSchedules):null;
   if(next&&['pending','review'].includes(next.status))missing++;
-  return `<tr data-annual-employee="${e.id}" class="${retired?'annualLeaveRetiredRow':''} ${firstRetired?'annualLeaveRetiredFirst':''} ${settled?'annualLeaveSettledRow':''}" ondragover="annualLeaveOrderDragOver(event,${e.id})" ondrop="annualLeaveOrderDrop(event,${e.id})"><td class="annualLeavePinned" style="--employee-print-bg:${employeeColor(e)}"><div class="annualLeaveNameRow"><div class="annualLeaveNameInfo">${editable?`<span class="scheduleDragHandle annualLeaveOrderGrip" draggable="${annualLeaveOrderAvailable===true?'true':'false'}" ondragstart="annualLeaveOrderDragStart(event,${e.id})" ondragend="annualLeaveOrderDragEnd()" title="이름을 잡아 위아래로 끌면 연차관리 순서만 바뀝니다" aria-label="${esc(e.name)} 연차관리 순서 이동"><span class="scheduleDragGrip">⋮⋮</span><b>${esc(e.name)}</b></span>`:`<b>${esc(e.name)}</b>`}<small>입사 ${esc(e.hire_date||'미등록')}</small>${retired?``:`<small>${esc(workTypeForDate(e,year+'-12-31'))}</small>`}${settled?'<span class="annualLeaveSettledBadge">정산완료</span>':''}</div></div></td>${monthCells}<td class="annualLeaveStat">${annualLeaveFmt(ann.days)}개<small>${annualLeaveFmt(ann.hours)}h</small>${sickMissedLabel}</td><td class="annualLeaveStat">${annualLeaveFmt(completedUsed)}개<small>${futureUsed?'사용예정 '+annualLeaveFmt(futureUsed)+'개':'완료 기준'}</small></td><td class="annualLeaveStat balance ${balance<0?'negative':''}">${cutoff?annualLeaveFmt(balance)+'h':'예정'}<small>${cutoff?(futureHours>0?'예정 사용 -'+annualLeaveFmt(futureHours)+'h (미차감)':'오늘 기준 원장'):'아직 미도래'}</small>${summary?.confirmedDate?`<small class="annualLeaveConfirmedMark" title="직원관리와 연동된 잔여확정">잔여확정 ${esc(summary.confirmedDate)} · 기준 ${annualLeaveFmt(summary.confirmedBalance)}h</small>`:''}</td><td><div class="annualLeaveActions"><button class="btn gray small" onclick="openAnnualLeaveAttendance(${e.id})">출근확인</button>${editable?`<button class="btn gray small" onclick="adjustLeave(${e.id})">잔여확정</button>`:''}${retired&&editable?(settled?`<button type="button" class="btn green small" onclick="annualLeaveSetSettlement(${e.id},false)">정산 복구</button>`:`<button type="button" class="btn gray small" onclick="annualLeaveSetSettlement(${e.id},true)">정산완료</button>`):''}</div></td></tr>`;
+  return `<tr data-annual-employee="${e.id}" class="${retired?'annualLeaveRetiredRow':''} ${firstRetired?'annualLeaveRetiredFirst':''} ${settled?'annualLeaveSettledRow':''}" ondragover="annualLeaveOrderDragOver(event,${e.id})" ondrop="annualLeaveOrderDrop(event,${e.id})"><td class="annualLeavePinned" style="--employee-print-bg:${employeeColor(e)}"><div class="annualLeaveNameRow"><div class="annualLeaveNameInfo">${editable?`<span class="scheduleDragHandle annualLeaveOrderGrip" draggable="${annualLeaveOrderAvailable===true?'true':'false'}" ondragstart="annualLeaveOrderDragStart(event,${e.id})" ondragend="annualLeaveOrderDragEnd()" title="이름을 잡아 위아래로 끌면 연차관리 순서만 바뀝니다" aria-label="${esc(e.name)} 연차관리 순서 이동"><span class="scheduleDragGrip">⋮⋮</span><b>${esc(e.name)}</b></span>`:`<b>${esc(e.name)}</b>`}<small>입사 ${esc(e.hire_date||'미등록')}</small>${retired?``:`<small>${esc(workTypeForDate(e,year+'-12-31'))}</small>`}${settled?'<span class="annualLeaveSettledBadge">정산완료</span>':''}</div></div></td>${monthCells}<td class="annualLeaveStat">${annualLeaveFmt(ann.days)}개<small>${annualLeaveFmt(ann.hours)}h</small>${anniversaryLabel?`<small title="${esc(anniversaryLabel)} · 1주년 15일, 3주년부터 가산" style="color:#1761b9;font-weight:650">${esc(anniversaryLabel)}</small>`:''}${upcoming.days?`<small title="입사일 기준 추정 · 아직 원장 미반영">예정 ${annualLeaveFmt(upcoming.days)}개 (${annualLeaveFmt(upcoming.hours)}h)</small>`:''}${sickMissedLabel}</td><td class="annualLeaveStat">${annualLeaveFmt(completedUsed)}개<small>${futureUsed?'사용예정 '+annualLeaveFmt(futureUsed)+'개':'완료 기준'}</small></td><td class="annualLeaveStat balance ${balance<0?'negative':''}">${annualLeaveFmt(balance)}h<small>${cutoff?(futureHours>0?'예정 사용 -'+annualLeaveFmt(futureHours)+'h (미차감)':'선택 연도 기준 원장'):`${carryover.asOf} 현재 잔여 · 차년도 잠정이월`}</small>${summary?.confirmedDate?`<small class="annualLeaveConfirmedMark" title="직원관리와 연동된 잔여확정">잔여확정 ${esc(summary.confirmedDate)} · 기준 ${annualLeaveFmt(summary.confirmedBalance)}h</small>`:''}</td><td><div class="annualLeaveActions"><button class="btn gray small" onclick="openAnnualLeaveAttendance(${e.id})">출근확인</button>${editable?`<button class="btn gray small" onclick="adjustLeave(${e.id})">잔여확정</button>`:''}${retired&&editable?(settled?`<button type="button" class="btn green small" onclick="annualLeaveSetSettlement(${e.id},false)">정산 복구</button>`:`<button type="button" class="btn gray small" onclick="annualLeaveSetSettlement(${e.id},true)">정산완료</button>`):''}</div></td></tr>`;
  }).join(''):`<tr><td colspan="17" style="padding:24px">${settledCount&&!annualLeaveShowSettled?'정산완료로 숨긴 직원만 있습니다. 위 [정산완료 보기]에서 복구할 수 있습니다.':'해당 연도에 재직한 직원이 없습니다.'}</td></tr>`;
  scheduleViewportHeaderRequest();
- if(tiles)tiles.innerHTML=`<div class="annualLeaveTile"><small>${year}년 발생 합계</small><b>${annualLeaveFmt(grandAccrual)}개</b></div><div class="annualLeaveTile"><small>${year}년 사용 완료 / 예정</small><b>${annualLeaveFmt(grandUsed)}개<small style="font-size:12px;font-weight:500"> / 예정 ${annualLeaveFmt(grandFuture)}개</small></b></div><div class="annualLeaveTile"><small>현재·연도말 잔여 합계</small><b>${cutoff?annualLeaveFmt(grandBalance)+'h':'예정 연도'}</b></div><div class="annualLeaveTile"><small>1년 미만 개근 확인 필요</small><b>${missing}명</b></div>`;
+ if(tiles){
+  const carryoverFinal=(`${year-1}-12-31`<=today);
+  const leaveCaption=cutoff?'선택 연도 잔여 합계':'현재 확인된 차년도 잠정잔여';
+  tiles.innerHTML=`<div class="annualLeaveTile"><small>${year}년 발생 합계</small><b>${annualLeaveFmt(grandAccrual)}개</b>${grandAccrualFuture?`<small>입사일 기준 발생예정 ${annualLeaveFmt(grandAccrualFuture)}개</small>`:''}</div><div class="annualLeaveTile"><small>${year}년 사용 완료 / 예정</small><b>${annualLeaveFmt(grandUsed)}개<small style="font-size:12px;font-weight:500"> / 예정 ${annualLeaveFmt(grandFuture)}개</small></b></div><div class="annualLeaveTile"><small>${leaveCaption}</small><b>${annualLeaveFmt(grandBalance)}h</b></div><div class="annualLeaveTile"><small>${year-1}년 잔여 이월${carryoverFinal?'':' (잠정)'}</small><b>${annualLeaveFmt(grandCarryover)}h</b><small>${carryoverFinal?'전년도 12/31 원장 기준':today+' 원장 기준 · 연말에 변동 가능'}</small></div><div class="annualLeaveTile"><small>연차 출근요건 확인 필요</small><b>${missing}명</b></div>`;
+ }
 }
 function openAnnualLeaveMonth(id,ym){
  const e=allEmployees().find(x=>Number(x.id)===Number(id));if(!e)return;
@@ -12669,7 +12808,7 @@ function openAnnualLeaveAttendance(id){
  const e=allEmployees().find(x=>Number(x.id)===Number(id));if(!e)return;
  const rows=annualLeaveAttendanceRows(e,annualLeaveYear),edit=canEditModule('schedule');
  const html=rows.map((x,i)=>`<tr><td style="text-align:left"><b>${esc(x.label)}</b><div class="help">${esc(x.start)} ~ ${esc(x.end)}<br>발생일 ${esc(x.event)}</div></td><td><select class="annualCheckStatus" data-type="${x.type}" data-start="${x.start}" ${edit?'':'disabled'}>${x.options.map(o=>`<option value="${o[0]}" ${x.chosen===o[0]?'selected':''}>${o[1]}</option>`).join('')}</select></td><td><input type="number" class="annualCheckWeekly" min="0" max="80" step="0.1" value="${annualLeaveFmt(x.weeklyHours)}" ${edit?'':'disabled'} aria-label="주 소정근로시간"></td></tr>`).join('');
- modal(`<h2>${esc(e.name)} · ${annualLeaveYear}년 출근 확인</h2><div class="annualLeaveTag warning">스케줄이 없는 과거 기간은 자동 개근처리하지 않습니다.</div><div class="help" style="margin-top:10px;line-height:1.65">실제 출근·결근 사실을 확인한 구간만 직접 판정하세요. 입사일에 따라 확인 기간이 달라집니다. 주 소정근로시간은 근로계약 조건을 확인해 정확히 입력해야 합니다. <b>1주 15시간 미만은 자동 발생에서 제외</b>됩니다.</div><div class="annualCheckTable"><table><thead><tr><th>확인 기간</th><th style="width:145px">판정</th><th style="width:110px">주 소정시간</th></tr></thead><tbody>${html||'<tr><td colspan="3" style="padding:18px">이 연도에 발생 확인 대상이 없습니다.</td></tr>'}</tbody></table></div><div class="modalActions"><button class="btn gray" onclick="closeModal()">닫기</button>${edit&&rows.length?`<button class="btn" id="annualAttendanceSaveBtn" onclick="annualLeaveSaveAttendance(${id})">출근확인 저장 · 연차 재계산</button>`:''}</div>`);
+ modal(`<h2>${esc(e.name)} · ${annualLeaveYear}년 출근 확인</h2><div class="annualLeaveTag warning">과거 스케줄 공란은 결근으로 간주하지 않습니다. 입사일 기준 추정 발생과 실제 개근 확인은 구분합니다.</div><div class="help" style="margin-top:10px;line-height:1.65">과거 무급병가·결근 등 실제 출근사실을 확인한 경우에만 자동 추정값을 수정하세요. 입사일에 따라 확인 기간이 달라집니다. 주 소정근로시간은 근로계약 조건을 확인해 정확히 입력해야 합니다. <b>1주 15시간 미만은 자동 발생에서 제외</b>됩니다.</div><div class="annualCheckTable"><table><thead><tr><th>확인 기간</th><th style="width:145px">판정</th><th style="width:110px">주 소정시간</th></tr></thead><tbody>${html||'<tr><td colspan="3" style="padding:18px">이 연도에 발생 확인 대상이 없습니다.</td></tr>'}</tbody></table></div><div class="modalActions"><button class="btn gray" onclick="closeModal()">닫기</button>${edit&&rows.length?`<button class="btn" id="annualAttendanceSaveBtn" onclick="annualLeaveSaveAttendance(${id})">출근확인 저장 · 연차 재계산</button>`:''}</div>`);
  $('modalBox')?.classList.add('annualLeaveEditModal');
 }
 async function annualLeaveSaveAttendance(id){
@@ -13821,23 +13960,16 @@ async function laborDownloadPreservingOriginal(){if(!laborAllowed()||!laborDraft
 
 /* 2026-11-25_3: payroll accountant workbook controls directly beside Work Hours Excel. */
 async function toggleLaborInlineEditor(force){
- const editor=$('laborPage'),hours=$('hoursPage');if(!editor||!hours)return;
- const open=typeof force==='boolean'?force:!editor.classList.contains('active');
- if(open&&!laborAllowed())return;
- if(!open&&laborDraft?.dirty&&!confirm('노무사 엑셀파일 수정사항이 아직 저장되지 않았습니다. 편집기를 닫을까요?'))return;
- editor.classList.toggle('active',open);
- $('hoursSummaryView')?.classList.toggle('hidden',open);
- $('attendanceView')?.classList.toggle('hidden',open);
- const toggle=$('laborExcelToggleBtn');if(toggle){toggle.setAttribute('aria-expanded',String(open));toggle.classList.toggle('green',open)}
- if(open){
-   if(!laborDraft||laborDraft.sid!==storeId()||laborDraft.ym!==$('monthSelect')?.value)await laborLoadSelectedMonth();
-   editor.scrollIntoView({block:'start',behavior:'smooth'});
- }else setHoursView(hoursView);
+ const editor=$('laborPage'),hours=$('hoursPage');if(!editor||!hours||!laborAllowed())return;
+ // 노무사 자료는 독립 팝업처럼 다른 표를 감추지 않고, 근로시간 페이지 맨 아래에 유지한다.
+ hours.classList.add('active');editor.classList.add('active');setHoursView(hoursView,false);
+ if(!laborDraft||laborDraft.sid!==storeId()||laborDraft.ym!==$('monthSelect')?.value)await laborLoadSelectedMonth();
+ editor.scrollIntoView({block:'start',behavior:'smooth'});
 }
 function laborQuickUpload(){
  if(!laborAllowed())return;
  // Opening the file chooser must happen inside the original user click, before any async DB load.
- $('laborPage')?.classList.add('active');$('hoursSummaryView')?.classList.add('hidden');$('attendanceView')?.classList.add('hidden');
+ $('laborPage')?.classList.add('active');setHoursView(hoursView,false);
  $('laborExcelToggleBtn')?.setAttribute('aria-expanded','true');
  $('laborWorkbookInput')?.click();
  if(!laborDraft||laborDraft.sid!==storeId()||laborDraft.ym!==$('monthSelect')?.value)laborLoadSelectedMonth();
