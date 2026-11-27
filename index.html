@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>직원관리 대시보드 2026.11.27_5</title>
-<meta name="dashboard-build-version" content="2026.11.27_5">
+<title>직원관리 대시보드 2026.11.27_6</title>
+<meta name="dashboard-build-version" content="2026.11.27_6">
 <script id="dashboardBuildInfoJS">
 document.addEventListener('DOMContentLoaded',()=>{
  const version=document.querySelector('meta[name="dashboard-build-version"]')?.getAttribute('content');
@@ -2084,7 +2084,7 @@ body.commerceStoreMode .mobileNav .nav[data-page]{display:none!important}
 </div>
 
 <section id="commercePage" class="page">
- <div class="commerceHero"><h1 class="title">88커머스 <span class="commerceBuildVersion" data-dashboard-version="true">버전 2026.11.27_5</span></h1><div class="sub">대시보드에서 직접 입력·수정하고 자동 계산하며, 카페24 반영과 원본 Excel 형식 다운로드까지 한곳에서 관리합니다.</div></div>
+ <div class="commerceHero"><h1 class="title">88커머스 <span class="commerceBuildVersion" data-dashboard-version="true">버전 2026.11.27_6</span></h1><div class="sub">대시보드에서 직접 입력·수정하고 자동 계산하며, 카페24 반영과 원본 Excel 형식 다운로드까지 한곳에서 관리합니다.</div></div>
 
  <section id="commerceMenuSettings" class="card hidden" aria-labelledby="commerceMenuConfigTitle" style="margin:12px 0 16px">
  <div class="row" style="gap:12px;align-items:flex-start;flex-wrap:wrap"><div><h2 id="commerceMenuConfigTitle" style="margin:0 0 5px;font-size:18px">88커머스 표시 메뉴 설정</h2>
@@ -2175,7 +2175,7 @@ body.commerceStoreMode .mobileNav .nav[data-page]{display:none!important}
 </section>
 
 <section id="homePage" class="page active">
- <div class="row"><div><div class="homeBuildTitle"><h1 class="title" id="homeTitle">현황</h1><span class="buildVersionBadge" id="homeBuildVersion" data-dashboard-version="true">버전 2026.11.27_5</span></div><div class="sub">업장과 월을 선택하면 모든 정보가 같이 바뀝니다.</div></div></div>
+ <div class="row"><div><div class="homeBuildTitle"><h1 class="title" id="homeTitle">현황</h1><span class="buildVersionBadge" id="homeBuildVersion" data-dashboard-version="true">버전 2026.11.27_6</span></div><div class="sub">업장과 월을 선택하면 모든 정보가 같이 바뀝니다.</div></div></div>
  <div class="cards">
   <div class="card"><div class="k">재직 직원</div><div class="v" id="kEmp">0명</div></div>
   <div class="card"><div class="k">이번 달 연차 발생</div><div class="v" id="kLeaveDue">0명</div></div>
@@ -2420,7 +2420,7 @@ body.commerceStoreMode .mobileNav .nav[data-page]{display:none!important}
 
  <section id="payrollPage" class="page">
  <div class="row">
-  <div><h1 class="title">급여관리 <span data-dashboard-version="true" data-version-no-prefix="true" style="font-size:12px;color:#315efb;background:#eef3ff;border-radius:999px;padding:4px 8px;vertical-align:middle">2026.11.27_5</span></h1><div class="sub">월별 급여대장을 검산하고, 기간별·직원별 누적 급여도 조회합니다.</div></div>
+  <div><h1 class="title">급여관리 <span data-dashboard-version="true" data-version-no-prefix="true" style="font-size:12px;color:#315efb;background:#eef3ff;border-radius:999px;padding:4px 8px;vertical-align:middle">2026.11.27_6</span></h1><div class="sub">월별 급여대장을 검산하고, 기간별·직원별 누적 급여도 조회합니다.</div></div>
   <div class="toolbar">
    <input type="file" id="payrollFile" accept=".xlsx,.xls,.xlsm" multiple style="display:none" onchange="importPayrollFiles(this.files);this.value=''">
    <button id="payrollBatchImportBtn" class="btn" onclick="$('payrollFile').click()">급여대장 여러개 불러오기</button>
@@ -2474,6 +2474,27 @@ body.commerceStoreMode .mobileNav .nav[data-page]{display:none!important}
      <tbody id="payrollPeriodBody"><tr><td style="padding:22px">기간과 직원을 선택한 뒤 조회하세요.</td></tr></tbody>
      <tfoot id="payrollPeriodFoot"></tfoot>
    </table></div>
+ </div>
+
+ <div class="card" id="payrollExcelBridge" style="margin-top:14px">
+  <div class="row">
+   <div><h3 style="margin:0">메가팜스365 급여표 원본 연동 · 검증</h3><div class="help">기존 급여표 .xlsm 파일을 기준으로 직원별 정기급여와 말일 선지급금액을 대조합니다. 원본의 매크로·시트·수식·퇴사자 행과 모든 기존 데이터를 유지하며, 사용자가 승인한 금액 및 지급완료 글자색만 별도 사본에 반영합니다.</div></div>
+   <div class="toolbar">
+    <input type="file" id="pbFile" accept=".xlsm" style="display:none" onchange="pbOpenFile(this.files[0]);this.value=''">
+    <button type="button" class="btn" onclick="$('pbFile').click()">기존 급여표 선택·검증</button>
+    <button type="button" class="btn green" id="pbExportBtn" onclick="pbDownload()" disabled>원본 양식 반영본 다운로드</button>
+   </div>
+  </div>
+  <div class="toolbar" style="margin-top:12px">
+   <label for="pbMonth" style="font-weight:800;font-size:12px">근무 귀속월</label>
+   <select id="pbMonth" onchange="pbCompare()" style="min-width:210px"><option value="">원본을 먼저 선택하세요</option></select>
+   <label style="font-size:12px;display:flex;align-items:center;gap:6px"><input type="checkbox" id="pbShowAll" onchange="pbRenderReview()">일치 항목도 표시</label>
+   <button type="button" class="btn gray small" onclick="pbCompare()">대시보드 자료 다시 대조</button>
+  </div>
+  <p class="help" style="margin:9px 0 5px"><b>정기급여</b>는 근무월 다음달 10일 지급액이고, <b>말일 선지급</b>은 같은 근무월 말일 지급액입니다. 인센일수는 해당 월 주말·공휴일 근무일수이며, 정기급여 지급완료 표시 시 두 달 전 인센일수도 빨간색으로 변경합니다. <b>빨간색은 실제 송금확인 후에만 적용</b>합니다. 기존 불일치 금액은 임의 덮어쓰기 하지 않습니다.</p>
+  <div id="pbState" class="help" role="status" aria-live="polite" style="margin:8px 0">원본 .xlsm 파일을 선택하면 변경 없이 대조합니다.</div>
+  <div class="tablewrap" style="max-height:510px;overflow:auto"><table style="min-width:850px"><thead><tr><th>직원</th><th>항목 / 원본 셀</th><th>대시보드 자료</th><th>현재 급여표</th><th>대조 결과</th><th>직접 확인 후 반영</th></tr></thead><tbody id="pbReviewBody"><tr><td colspan="6" style="padding:20px">급여표 원본 선택 전입니다.</td></tr></tbody></table></div>
+  <p class="help" style="margin-top:7px">※ 노무사 선지급공제는 실제 송금내역과 다른 경우가 있어 참고금액으로 표시합니다. 차이·복수 지급은 담당자가 직접 확인해야 합니다. 이 화면에서 원본 Excel 또는 노무사 급여대장 자체를 덮어쓰지 않습니다. 파일은 사용자의 PC에서 분석하며 급여표 원본을 서버에 업로드하지 않습니다.</p>
  </div>
 </section>
 
@@ -16993,5 +17014,247 @@ const v27_5PriorSwitchStore=switchStore;
 switchStore=async function(...args){const ret=await v27_5PriorSwitchStore(...args);syncCommerceWorkspaceNavigation();return ret};
 // A previously chosen 88 menu remains inside 88, not the unrelated labor/time screens.
 document.addEventListener('DOMContentLoaded',()=>{syncCommerceWorkspaceNavigation()});
+/* 2026.11.27_6 메가팜스365 급여표 연동: 원본 XLSM 보호 / 충돌 확인 / 지급완료 기록 */
+let payrollBridge={file:null,buffer:null,zip:null,ws:null,sheetPath:'',sheetXml:null,stylesXml:null,
+  timeline:[],nameRows:new Map(),duplicateNames:new Set(),cells:new Map(),entries:[],payRecords:[],incRecords:[],
+  workMonth:'',review:[],edits:new Map(),redMarks:new Set(),baseStore:null};
+const PB_NS='http://schemas.openxmlformats.org/spreadsheetml/2006/main';
+function pbMessage(t,error=false){let el=$('pbState');if(el){el.textContent=t;el.style.color=error?'#b42318':'#475467'}}
+function pbName(s){return String(s||'').normalize('NFKC').replace(/\s+/g,'').trim()}
+function pbNumber(v){if(v===null||v===undefined||v==='')return null;let n=Number(String(v).replace(/,/g,''));return Number.isFinite(n)?n:null}
+function pbMoney(v){return v===null||v===undefined?'—':Math.round(Number(v)).toLocaleString('ko-KR')+'원'}
+function pbXml(bytes){let x=new DOMParser().parseFromString(bytes,'application/xml');if(x.getElementsByTagName('parsererror').length)throw new Error('Excel 내부 XML을 읽지 못했습니다.');return x}
+function pbChildren(doc,tag){return [...doc.getElementsByTagNameNS(PB_NS,tag)]}
+function pbLocal(c,tag){return [...c.children].find(x=>x.localName===tag&&x.namespaceURI===PB_NS)}
+function pbExcelCell(addr){return payrollBridge.cells.get(addr)}
+function pbCellValue(addr){let e=payrollBridge.edits.get(addr);if(e)return e.value;return payrollBridge.ws?.[addr]?.v??null}
+function pbFontInfo(styleId){
+ let b=payrollBridge.stylesXml;if(!b)return {red:false,fontId:0};
+ let xfs=pbChildren(b,'cellXfs')[0],fonts=pbChildren(b,'fonts')[0],xf=xfs?.children[Number(styleId||0)];
+ let id=Number(xf?.getAttribute('fontId')||0),font=fonts?.children[id],color=font&&pbLocal(font,'color');
+ let rgb=(color?.getAttribute('rgb')||'').toUpperCase();
+ return {red:/^(?:FF)?FF0000$/.test(rgb)||rgb==='FFFF0000',fontId:id};
+}
+function pbIsRed(addr){if(payrollBridge.redMarks.has(addr))return true;let c=pbExcelCell(addr);return !!c&&pbFontInfo(c.getAttribute('s')).red}
+function pbTimeline(headers){
+ let a=[];
+ headers.forEach((v,j)=>{let s=String(v??'').trim(),explicit=s.match(/^(\d{2,4})년(\d{1,2})월$/),bare=s.match(/^(\d{1,2})월$/);
+  if(explicit){let y=Number(explicit[1]);a.push({col:j+1,month:Number(explicit[2]),year:y<100?2000+y:y})}
+  else if(bare)a.push({col:j+1,month:Number(bare[1]),year:null});
+ });
+ if(!a.some(x=>x.year!==null))throw new Error('급여표에 연도를 확인할 수 있는 월 제목(예: 27년1월)이 없습니다. 추정해서 처리하지 않습니다.');
+ for(let i=a.length-2;i>=0;i--){if(a[i].year===null&&a[i+1].year!==null)a[i].year=a[i+1].year-(a[i].month>a[i+1].month?1:0)}
+ for(let i=1;i<a.length;i++){if(a[i].year===null&&a[i-1].year!==null)a[i].year=a[i-1].year+(a[i].month<a[i-1].month?1:0)}
+ a.forEach((x,i)=>{if(x.year===null||x.month<1||x.month>12)throw new Error('월별 열의 연도 인식 실패');
+  x.ym=`${x.year}-${String(x.month).padStart(2,'0')}`;
+  let end=(a[i+1]?.col||headers.length+1)-1;for(let c=x.col+1;c<=end;c++){
+   let h=String(headers[c-1]||'').trim();if(new RegExp(`^${x.month}월인센`).test(h))x.incCol=c;
+   if(new RegExp(`^${x.month}월(?:28|29|30|31)일$`).test(h))x.endCol=c;
+  }
+ });
+ for(let i=1;i<a.length;i++)if(a[i].ym<=a[i-1].ym)throw new Error('급여표의 월 순서가 잘못되었습니다.');
+ return a;
+}
+async function pbOpenFile(file){
+ if(!file)return;if(!canViewModule('payroll'))return alert('급여관리 열람 권한이 없습니다.');
+ let pharmacy=stores.find(x=>Number(x.id)===Number(storeId()));
+ if(!String(pharmacy?.name||'').includes('메가팜스365'))return alert('메가팜스365약국을 선택한 후 급여표를 연동하세요. 다른 업장은 수정하지 않습니다.');
+ payrollBridge.file=null;payrollBridge.edits.clear();payrollBridge.redMarks.clear();if($('pbExportBtn'))$('pbExportBtn').disabled=true;
+ if(!/\.xlsm$/i.test(file.name))return alert('원본 양식을 보존하기 위해 .xlsm 파일만 선택하세요.');
+ try{
+  pbMessage('원본 XLSM 검사 중 · 아직 수정하지 않았습니다.');
+  let array=await file.arrayBuffer(),zip=await JSZip.loadAsync(array),wb=XLSX.read(array,{type:'array',bookVBA:true,cellFormula:true,cellStyles:true}),
+  sn=wb.SheetNames.find(s=>s.includes('약국급여표'));if(!sn)throw new Error('약국급여표 시트를 찾지 못했습니다.');
+  if(!zip.file('xl/vbaProject.bin'))throw new Error('매크로 원본이 없는 파일입니다.');
+  let wbXml=pbXml(await zip.file('xl/workbook.xml').async('string')),relXml=pbXml(await zip.file('xl/_rels/workbook.xml.rels').async('string')),
+  rns='http://schemas.openxmlformats.org/officeDocument/2006/relationships',sheet=pbChildren(wbXml,'sheet').find(x=>x.getAttribute('name')===sn),rid=sheet?.getAttributeNS(rns,'id'),
+  rel=[...relXml.getElementsByTagName('*')].find(x=>x.localName==='Relationship'&&x.getAttribute('Id')===rid),t=rel?.getAttribute('Target');
+  if(!t)throw new Error('시트 관계정보 누락');let path=t.startsWith('/')?t.slice(1):t.startsWith('xl/')?t:'xl/'+t;
+  if(!zip.file(path))throw new Error('원본 시트 경로 확인 실패');
+  let sx=pbXml(await zip.file(path).async('string')),styles=pbXml(await zip.file('xl/styles.xml').async('string')),
+  cells=new Map(pbChildren(sx,'c').map(c=>[c.getAttribute('r'),c]));
+  let ws=wb.Sheets[sn],headers=[];for(let j=0;j<=Math.max(75,XLSX.utils.decode_range(ws['!ref']||'A1:AZ100').e.c);j++)headers[j]=ws[cellAddress(j+1,5)]?.v??'';
+  let timeline=pbTimeline(headers),nameRows=new Map(),duplicates=new Set();
+  for(let row=6;row<=Math.min(1000,XLSX.utils.decode_range(ws['!ref']||'A1:AZ100').e.r+1);row++){
+   let n=pbName(ws[`C${row}`]?.v);if(!n)continue;if(nameRows.has(n))duplicates.add(n);else nameRows.set(n,row);
+  }
+  payrollBridge={file,buffer:array,zip,ws,sheetPath:path,sheetXml:sx,stylesXml:styles,timeline,nameRows,
+   duplicateNames:duplicates,cells,entries:[],payRecords:[],incRecords:[],workMonth:'',review:[],edits:new Map(),redMarks:new Set(),baseStore:storeId()};
+  let sel=$('pbMonth'),options=timeline.filter(t=>t.year>=2026).map(t=>({ym:shiftMonth(t.ym,-1),t}));
+  sel.innerHTML=options.map(({ym,t})=>`<option value="${ym}">${ym} 근무분 (정기 ${t.ym})</option>`).join('');
+  sel.value=options.some(x=>x.ym===$('monthSelect')?.value)?$('monthSelect').value:(options.find(x=>x.ym==='2026-10')?.ym||options[0]?.ym||'');
+  $('pbExportBtn').disabled=false;
+  pbMessage(`원본 확인: ${file.name} · ${timeline[0].ym}~${timeline[timeline.length-1].ym} · ${nameRows.size}명 · 기존 서식·매크로 보존`);
+  await pbCompare();
+ }catch(e){console.error(e);pbMessage('급여표 검사 실패: '+(e.message||e),true)}
+}
+async function pbCompare(){
+ let state=payrollBridge;if(!state.file)return alert('원본 .xlsm 파일을 먼저 선택하세요.');
+ if(Number(state.baseStore)!==Number(storeId()))return alert('업장이 바뀌었습니다. 원본 파일을 다시 선택하세요.');
+ let work=$('pbMonth')?.value;if(!work)return;state.workMonth=work;
+ try{
+  pbMessage(`${work} 근무분 대조 중…`);
+  let m=await sb.from('payroll_months').select('id,pay_month').eq('store_id',storeId()).eq('pay_month',work+'-01').order('id',{ascending:false});if(m.error)throw m.error;
+  let ids=(m.data||[]).map(x=>x.id),entries=ids.length?await sb.from('payroll_entries').select('id,employee_id,employee_name,net_pay,other_deduction').in('payroll_month_id',ids):{data:[]};if(entries.error)throw entries.error;
+  let pay=await sb.from('payment_register').select('id,employee_id,payment_month,pay_slot,amount,status,paid_at,source_type').eq('store_id',storeId()).in('payment_month',[work+'-01',shiftMonth(work,1)+'-01']);if(pay.error)throw pay.error;
+  let inc=await sb.from('incentive_register').select('id,employee_id,work_month,count').eq('store_id',storeId()).eq('work_month',work+'-01');if(inc.error)throw inc.error;
+  state.entries=entries.data||[];state.payRecords=pay.data||[];state.incRecords=inc.data||[];
+  let tRegular=state.timeline.find(t=>t.ym===shiftMonth(work,1)),tEnd=state.timeline.find(t=>t.ym===work),
+   list=new Map();function add(kind,name,e,value,reference,source){let n=pbName(name),row=state.nameRows.get(n),hasDup=state.duplicateNames.has(n),col=kind==='regular'?tRegular?.col:kind==='end'?tEnd?.endCol:tEnd?.incCol;
+    let addr=row&&col?cellAddress(col,row):'',orig=addr?pbNumber(pbCellValue(addr)):null,k=`${kind}|${n}`;
+    let item={key:k,kind,name,row,addr,excel:orig,db:reference===undefined?null:reference,source,employee:e,ambiguous:hasDup,entryCount:0};
+    let prior=list.get(k);if(prior){prior.db=Number(prior.db||0)+Number(reference||0);prior.entryCount=(prior.entryCount||1)+1;return prior;}
+    list.set(k,item);return item;
+   }
+  let entryNames=new Set();for(let p of state.entries){let n=pbName(p.employee_name),e=allEmployees().find(x=>Number(x.id)===Number(p.employee_id))||allEmployees().find(x=>pbName(x.name)===n),
+   display=e?.name||p.employee_name, v=pbNumber(p.net_pay)||0,d=pbNumber(p.other_deduction)||0,reg=add('regular',display,e,p,v,'급여대장 실지급');
+   reg.entryCount++;entryNames.add(pbName(display));
+   if(d){let adv=add('end',display,e,p,d,'노무사 선지급공제(참고)');adv.entryCount++}
+  }
+  for(let [name,row] of state.nameRows){if(state.duplicateNames.has(name))continue;
+   let e=allEmployees().find(x=>pbName(x.name)===name);
+   for(let [kind,t,col] of [['regular',tRegular,tRegular?.col],['end',tEnd,tEnd?.endCol]]){
+    if(!col)continue;let addr=cellAddress(col,row),v=pbNumber(pbCellValue(addr)),k=`${kind}|${name}`;
+    if(v!==null&&!list.has(k))list.set(k,{key:k,kind,name:e?.name||state.ws[`C${row}`]?.v,row,addr,excel:v,db:null,source:'급여표만 존재',employee:e,entryCount:0});
+   }
+  }
+  // 인센티브는 별도의 지급월이 아니라 해당 근무월 기준. 지급완료는 정기급여 완료에서만 연계한다.
+  if(tEnd?.incCol){
+   try{
+    let bonus=allEmployees().filter(e=>Number(e.store_id)===Number(storeId())&&e.holiday_bonus_eligible===true&&state.nameRows.has(pbName(e.name)));
+    await loadHolidayYear(Number(work.slice(0,4)));
+    let scheduleRows=await workRowsForMonth(bonus.map(e=>e.id),work);
+    for(let e of bonus){
+     let saved=state.incRecords.find(x=>Number(x.employee_id)===Number(e.id));
+     let calculated=incentiveCountFromRows(e,work,scheduleRows).count;
+     let inc=add('incentive',e.name,e,null,saved?Number(saved.count):calculated,saved?'저장된 인센일수':'근무스케줄 자동계산');
+     inc.incentiveCalculated=calculated;inc.incentiveSaved=!!saved;
+    }
+   }catch(error){console.warn('인센일수 조회 실패 - 급여대조는 계속 진행',error);}
+  }
+  for(let item of list.values()){
+   let e=item.employee,month=item.kind==='regular'?shiftMonth(work,1):work,slot=item.kind==='regular'?'regular':item.kind==='end'?'month_end':null;
+   item.payMonth=month;item.paySlot=slot;
+   item.record=e&&slot?state.payRecords.find(x=>Number(x.employee_id)===Number(e.id)&&x.payment_month===month+'-01'&&x.pay_slot===slot):null;
+   item.duplicateName=state.duplicateNames.has(pbName(item.name));
+   if(item.record&&item.db===null)item.db=pbNumber(item.record.amount);
+   if(item.record&&item.excel!==null&&Number(item.record.amount)!==item.excel)item.recordConflict=true;
+   item.paid=!!(item.addr&&(pbIsRed(item.addr)||item.record?.status==='paid'));
+   if(!item.addr)item.result='엑셀 직원 또는 열 없음';
+   else if(item.entryCount>1)item.result='동일 직원 급여대장 복수행 · 확인 필요';
+   else if(item.duplicateName)item.result='동명이인·중복 행 확인';
+   else if(item.recordConflict)item.result='저장된 지급액 충돌';
+   else if(item.db===null)item.result='급여표만 존재';
+   else if(item.excel===null)item.result=item.db?'빈칸 · 확인 후 반영':'양쪽 공란';
+   else if(item.excel!==Number(item.db))item.result='금액 차이 · 확인 필요';
+   else item.result='일치';
+   if(item.addr&&item.record?.status==='paid'&&item.excel!==null&&!item.recordConflict){
+    state.redMarks.add(item.addr);
+    if(item.kind==='regular'){let prior=state.timeline.find(t=>t.ym===shiftMonth(item.payMonth,-2));
+     if(prior?.incCol&&item.row){let a=cellAddress(prior.incCol,item.row),v=pbNumber(pbCellValue(a));if(v!==null&&v!==0)state.redMarks.add(a)}
+    }
+   }
+  }
+  state.review=[...list.values()].sort((a,b)=>(a.kind==='regular'?0:1)-(b.kind==='regular'?0:1)||(a.row||999)-(b.row||999));
+  pbRenderReview();
+ }catch(e){console.error(e);pbMessage('DB 급여 대조 실패: '+(e?.message||e),true)}
+}
+function pbRenderReview(){
+ let s=payrollBridge,showAll=$('pbShowAll')?.checked,items=s.review.filter(x=>showAll||x.result!=='일치'),conflicts=s.review.filter(x=>x.result!=='일치');
+ let html=items.map((x,i)=>{
+  let kind=x.kind==='regular'?'다음달 10일 정기급여':x.kind==='end'?'근무월 말일 선지급':'해당월 인센일수',bad=x.result!=='일치',change=x.addr&&x.db!==null&&x.db!==x.excel&&!x.duplicateName&&x.db>=0,
+  paid=x.paid,cell=x.addr||'—',fmt=v=>x.kind==='incentive'?(v===null||v===undefined?'—':`${v}일`):pbMoney(v),
+  btn=change?`<button class="btn gray small" onclick="pbConfirmAmount(decodeURIComponent('${encodeURIComponent(x.key).replaceAll("'",'%27')}'))">${x.kind==='incentive'?'일수 확인·반영':'금액 확인·반영'}</button>`:'',
+  paidBtn=x.kind!=='incentive'&&x.addr&&Number(x.excel)>0&&!paid&&!x.duplicateName?`<button class="btn green small" onclick="pbMarkPaid(decodeURIComponent('${encodeURIComponent(x.key).replaceAll("'",'%27')}'))">송금완료 기록</button>`:'';
+  return `<tr><td>${esc(x.name)}</td><td>${kind}<br><span class="help">${cell}</span></td><td class="money">${fmt(x.db)}</td><td class="money">${fmt(x.excel)}</td><td class="${bad?'warn':'ok'}">${esc(x.result)}${paid?'<br><span class="ok">지급완료 표시</span>':''}</td><td>${btn} ${paidBtn}</td></tr>`;
+ }).join('');
+ $('pbReviewBody').innerHTML=html||'<tr><td colspan="6" style="padding:20px">차이 없음. ‘일치 포함’으로 전체 내역을 볼 수 있습니다.</td></tr>';
+ pbMessage(`${s.workMonth} 근무분 · ${s.review.length}건 대조 · 정상 ${s.review.length-conflicts.length}건 · 확인 필요 ${conflicts.length}건 · 원본 XLSM은 아직 변경되지 않았습니다.`);
+}
+function pbFindItem(key){return payrollBridge.review.find(x=>x.key===key)}
+async function pbConfirmAmount(key){
+ if(!requireModuleEdit('payroll'))return;let x=pbFindItem(key);if(!x||!x.addr||x.db===null||x.duplicateName)return;
+ if(x.excel!==null){let unit=x.kind==='incentive'?'일':'원',term=x.kind==='incentive'?'인센확인':'금액변경';let word=prompt(`${x.name} / ${x.addr}\n현재 원본: ${x.excel}${unit}\n대시보드: ${x.db}${unit}\n\n원본에 이미 입력된 값을 변경하게 됩니다. 직접 검토하고 변경하려면 '${term}'을 입력하세요.`);
+  if(word!==term)return;
+ }else if(!confirm(`${x.name} / ${x.addr}\n현재 빈칸에 ${x.kind==='incentive'?x.db+'일':pbMoney(x.db)}를 반영할까요?`))return;
+ let cell=pbExcelCell(x.addr);if(cell&&pbLocal(cell,'f'))return alert('수식이 들어 있는 셀은 자동 수정하지 않습니다.');
+ payrollBridge.edits.set(x.addr,{value:x.db});x.excel=x.db;x.result='일치';pbRenderReview();
+}
+async function pbMarkPaid(key){
+ if(!requireModuleEdit('payroll'))return;let x=pbFindItem(key);if(x?.entryCount>1)return alert('같은 직원의 급여대장 행이 여러 건입니다. 먼저 지급내역을 개별 확인한 후 처리하세요.');if(!x||!x.addr||!x.employee||!Number(x.excel)||x.duplicateName)return alert('대상 직원과 금액을 확인할 수 없습니다.');
+ let reg=x.record,delta=x.db!==null&&Number(x.db)!==Number(x.excel),collide=reg&&Number(reg.amount)!==Number(x.excel);
+ let text=`${x.name}\n${x.kind==='regular'?'정기급여':'말일 선지급'} / ${x.payMonth}\n급여표: ${pbMoney(x.excel)}\n\n실제 송금을 완료했습니까?\n확인하면 대시보드에 지급완료로 저장되고, 원본 사본 다운로드 시 빨간색으로 반영합니다.`;
+ if(delta||collide){let word=prompt(text+`\n\n주의: 대시보드 참고금액 ${pbMoney(x.db)}과 다릅니다.\n급여표의 금액으로 지급완료 기록을 남기려면 '금액확인'을 입력하세요.`);if(word!=='금액확인')return}
+ else if(!confirm(text))return;
+ let e=x.employee,month=x.payMonth,day=x.kind==='regular'?10:new Date(Number(month.slice(0,4)),Number(month.slice(5,7)),0).getDate(),date=month+'-'+String(day).padStart(2,'0'),payload={
+  store_id:storeId(),employee_id:e.id,payment_month:month+'-01',pay_slot:x.paySlot,work_month:(x.kind==='regular'?shiftMonth(month,-1):month)+'-01',payment_date:date,
+  amount:Number(x.excel),status:'paid',locked:true,paid_at:new Date().toISOString(),source_type:'pharmacy_sheet_confirmed',source_file:payrollBridge.file.name
+ };
+ let q=reg?await sb.from('payment_register').update(payload).eq('id',reg.id).eq('store_id',storeId()).select('id').single():await sb.from('payment_register').upsert(payload,{onConflict:'store_id,employee_id,payment_month,pay_slot'}).select('id').single();
+ if(q.error)return alert('지급완료 저장 실패: '+q.error.message);
+ payrollBridge.redMarks.add(x.addr);x.paid=true;
+ if(x.kind==='regular'){
+  let incMonth=shiftMonth(x.payMonth,-2),target=payrollBridge.timeline.find(t=>t.ym===incMonth);
+  if(target?.incCol){let incAddr=cellAddress(target.incCol,x.row),v=pbNumber(pbCellValue(incAddr));if(v!==null&&v!==0)payrollBridge.redMarks.add(incAddr)}
+ }
+ await pbCompare();alert(`${x.name} 지급완료를 저장했습니다.\n빨간색 변경은 '원본 양식 반영본 다운로드'로 받은 사본에서 확인하세요.`);
+}
+function pbRedStyle(base){
+ let s=payrollBridge.stylesXml,fonts=pbChildren(s,'fonts')[0],xfs=pbChildren(s,'cellXfs')[0],xf=xfs.children[Number(base||0)];
+ if(!xf)throw new Error('유효하지 않은 셀 스타일');if(pbFontInfo(base).red)return String(base||0);
+ let origFont=fonts.children[Number(xf.getAttribute('fontId')||0)],rgbFont=origFont.cloneNode(true),col=pbLocal(rgbFont,'color');
+ if(!col){col=s.createElementNS(PB_NS,'color');rgbFont.appendChild(col)}
+ while(col.attributes.length)col.removeAttribute(col.attributes[0].name);col.setAttribute('rgb','FFFF0000');fonts.appendChild(rgbFont);fonts.setAttribute('count',String(fonts.children.length));
+ let newXf=xf.cloneNode(true);newXf.setAttribute('fontId',String(fonts.children.length-1));newXf.setAttribute('applyFont','1');xfs.appendChild(newXf);xfs.setAttribute('count',String(xfs.children.length));return String(xfs.children.length-1);
+}
+function pbPatchNumCell(doc,cells,ref,value){
+ let c=cells.get(ref),rowNo=Number(ref.match(/\d+$/)?.[0]);if(!rowNo)throw new Error('엑셀 주소 오류');
+ if(!c){let data=pbChildren(doc,'sheetData')[0];let row=[...data.children].find(x=>Number(x.getAttribute('r'))===rowNo);
+  if(!row)throw new Error(`${ref}: 원본에 행이 없어 자동 삽입을 중단합니다.`);
+  c=doc.createElementNS(PB_NS,'c');c.setAttribute('r',ref);
+  let col=ref.match(/^[A-Z]+/)[0],num=(s)=>[...s].reduce((a,ch)=>a*26+ch.charCodeAt(0)-64,0),thisCol=num(col),next=[...row.children].find(x=>x.localName==='c'&&num(x.getAttribute('r').match(/^[A-Z]+/)[0])>thisCol);
+  row.insertBefore(c,next||null);cells.set(ref,c);
+ }
+ if(pbLocal(c,'f'))throw new Error(`${ref}: 수식 셀을 덮어쓸 수 없습니다.`);
+ c.removeAttribute('t');let v=pbLocal(c,'v');if(!v){v=doc.createElementNS(PB_NS,'v');c.appendChild(v)}v.textContent=String(value);
+ return c;
+}
+async function pbDownload(){
+ let s=payrollBridge;if(!s.file)return alert('원본 Excel을 선택하세요.');if(!requireModuleEdit('payroll'))return;
+ if(Number(s.baseStore)!==Number(storeId()))return alert('원본을 선택한 업장과 현재 업장이 다릅니다.');
+ let changes=s.edits.size+s.redMarks.size;
+ if(!changes)return alert('급여표에 반영할 승인된 변경 내용이 없습니다. 기존 원본을 그대로 사용하세요.');
+ if(!confirm(`${s.file.name}\n기존 파일을 새로 만들지 않고 그 파일의 지정 셀만 수정한 복사본을 다운로드합니다.\n반영 예정: 금액 ${s.edits.size}셀 · 지급완료 색상 ${s.redMarks.size}셀\n\n원본 파일과 다른 모든 셀·수식·매크로·퇴사자 행 순서는 유지합니다. 계속할까요?`))return;
+ try{
+  pbMessage('원본 보존 검증 및 사본 생성 중…');
+  let zip=await JSZip.loadAsync(s.buffer),xml=pbXml(await zip.file(s.sheetPath).async('string')),styles=pbXml(await zip.file('xl/styles.xml').async('string'));
+  let baseStyles=s.stylesXml;s.stylesXml=styles;
+  let cells=new Map(pbChildren(xml,'c').map(c=>[c.getAttribute('r'),c]));
+  for(let [addr,rec] of s.edits)pbPatchNumCell(xml,cells,addr,rec.value);
+  let styleMemo=new Map();for(let addr of s.redMarks){let c=cells.get(addr);if(!c)continue;let base=c.getAttribute('s')||'0',style=styleMemo.get(base);
+   if(!style){style=pbRedStyle(base);styleMemo.set(base,style)}c.setAttribute('s',style);
+  }
+  s.stylesXml=baseStyles;
+  let ser=new XMLSerializer(),newXML=ser.serializeToString(xml),newStyle=ser.serializeToString(styles);
+  zip.file(s.sheetPath,newXML);if(s.redMarks.size)zip.file('xl/styles.xml',newStyle);
+  let out=await zip.generateAsync({type:'uint8array',compression:'DEFLATE',compressionOptions:{level:6}}),again=await JSZip.loadAsync(out),orig=await JSZip.loadAsync(s.buffer);
+  let expected=Object.keys(orig.files).sort(),actual=Object.keys(again.files).sort();if(JSON.stringify(expected)!==JSON.stringify(actual))throw new Error('원본 ZIP 구성 파일이 달라졌습니다.');
+  for(let path of ['xl/vbaProject.bin','xl/workbook.xml','xl/_rels/workbook.xml.rels','xl/worksheets/sheet2.xml','xl/calcChain.xml','xl/tables/table1.xml']){
+   if(!orig.file(path))continue;let before=await orig.file(path).async('uint8array'),after=await again.file(path).async('uint8array');
+   if(before.length!==after.length||before.some((v,i)=>v!==after[i]))throw new Error('원본 보존 검사 실패: '+path);
+  }
+  let check=pbXml(await again.file(s.sheetPath).async('string')),
+    finalCells=new Map(pbChildren(check,'c').map(c=>[c.getAttribute('r'),c]));
+  for(let [addr,rec] of s.edits){let node=finalCells.get(addr);if(Number(pbLocal(node,'v')?.textContent)!==Number(rec.value))throw new Error('반영된 금액 검증 실패: '+addr)}
+  for(let addr of s.redMarks){let node=finalCells.get(addr);if(!node)throw new Error('반영된 빨간색 셀 누락: '+addr)}
+  let expectedSheets=XLSX.read(s.buffer,{type:'array',bookSheets:true}).SheetNames,read=XLSX.read(out,{type:'array',bookVBA:true,cellFormula:true});
+  if(JSON.stringify(read.SheetNames)!==JSON.stringify(expectedSheets))throw new Error('최종 Excel 시트 개수가 다릅니다.');
+  for(let [addr,rec] of s.edits)if(Number(read.Sheets[expectedSheets.find(x=>x.includes('약국급여표'))]?.[addr]?.v)!==Number(rec.value))throw new Error('Excel 재개봉 금액 검사 실패: '+addr);
+  let name=s.file.name.replace(/\.xlsm$/i,'_대시보드확인반영.xlsm'),blob=new Blob([out],{type:'application/vnd.ms-excel.sheet.macroEnabled.12'}),a=document.createElement('a'),url=URL.createObjectURL(blob);
+  a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),30000);
+  pbMessage(`반영본 생성완료 · 금액 ${s.edits.size}셀 · 지급완료 ${s.redMarks.size}셀 · 기존 매크로 및 모든 원본 구성 보존 검증 통과`);
+ }catch(e){console.error(e);pbMessage('검증 실패 · 다운로드 중단: '+(e.message||e),true);alert('원본 보존 또는 다운로드 검사 실패:\n'+(e.message||e))}
+}
+
 </script>
 </body></html>
