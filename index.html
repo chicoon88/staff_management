@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>직원관리 대시보드 2026.11.27_3</title>
-<meta name="dashboard-build-version" content="2026.11.27_3">
+<title>직원관리 대시보드 2026.11.27_5</title>
+<meta name="dashboard-build-version" content="2026.11.27_5">
 <script id="dashboardBuildInfoJS">
 document.addEventListener('DOMContentLoaded',()=>{
  const version=document.querySelector('meta[name="dashboard-build-version"]')?.getAttribute('content');
@@ -1970,6 +1970,57 @@ body:not(.laborPrivateAuthorized) #hoursPage > #laborPage.laborInlinePage{displa
   .layout > aside.side{position:static!important}
 }
 </style>
+
+<style id="globalStickyContextToolbar20261127_5CSS">
+/* Same store/month context for every page, not just schedule and hours.
+   The page is the only vertical scrolling container; no independent toolbar scroll. */
+#app #globalContextToolbar{
+  position:sticky!important;
+  top:var(--global-context-top,66px)!important;
+  z-index:28;
+  width:100%;
+  padding:9px 11px;
+  border:1px solid #dce3ee;
+  border-radius:11px;
+  background:#fff;
+  box-shadow:0 4px 13px rgba(20,35,56,.1);
+  margin-bottom:12px!important;
+}
+#app #globalContextToolbar .auditMonthPicker{max-width:100%;}
+@media(max-width:900px){
+  #app #globalContextToolbar{top:var(--global-context-top,120px)!important;padding:8px 9px;row-gap:6px;}
+}
+@media print{
+  #app #globalContextToolbar{position:static!important;box-shadow:none!important;}
+}
+</style>
+<style id="separatedCommerceWorkspace20261127_5CSS">
+/* Independent business workspaces; pharmacy nav stays unchanged. */
+.workspaceSwitchers{padding:5px 3px 9px;display:grid;gap:5px}
+.workspaceLabel{font-size:10px;letter-spacing:.04em;font-weight:900;color:#667085;padding:0 11px 3px}
+.workspaceButton{display:flex;align-items:center;gap:9px;width:100%;min-height:43px;text-align:left;background:#f8fafc;border:1px solid #e4e7ec;border-radius:10px;padding:9px 12px;color:#344054;font-weight:900;cursor:pointer}
+.workspaceButton.active,.workspaceButton:hover{background:#eaf2ff;color:#175cd3;border-color:#b7ceff}
+.workspaceDivider{border-top:1px solid #e4e7ec;margin:3px 0 10px}
+body.commerceStoreMode .side>.workspaceSwitchers,body.commerceStoreMode .side>.workspaceDivider{display:grid!important}
+body:not(.commerceStoreMode) .side>.workspaceSwitchers{display:grid!important}
+body.commerceStoreMode .side>.nav:not(.commerceOnlyNav){display:none!important}
+body.commerceStoreMode .side>.nav.commerceMenuConfigBtn,body.commerceStoreMode .side>.nav.commerceHomeshopBtn{display:flex}
+body:not(.commerceStoreMode) .side .commerceOnlyNav{display:none!important}
+body.commerceStoreMode #homeshopPage.active{display:block}
+body.commerceStoreMode .mobileNav .workspaceMobile{display:flex!important}
+body:not(.commerceStoreMode) .mobileNav .workspaceMobile{display:flex!important}
+body:not(.commerceStoreMode) .mobileNav .commerceMobileNavBtn{display:none!important}
+body.commerceStoreMode .mobileNav .commerceMobileNavBtn{display:flex}
+body.commerceStoreMode .mobileNav .nav[data-page]{display:none!important}
+.workspaceMobile.active{background:#eaf2ff;border-color:#175cd3;color:#175cd3}
+.commerceNavGroupTitle{font-size:12px;letter-spacing:.03em;color:#667085;font-weight:900;padding:8px 12px}
+.commerceMenuChoices{display:grid;grid-template-columns:repeat(3,minmax(160px,1fr));gap:9px;margin-top:18px}
+.commerceMenuChoice{display:flex;align-items:center;gap:10px;background:#f8fafc;border:1px solid #e4e7ec;border-radius:10px;padding:12px;font-size:13px;font-weight:750;cursor:pointer;min-height:48px}
+.commerceMenuChoice input{width:17px;height:17px;accent-color:#175cd3}
+.commerceMenuConfigBtn{border-top:1px solid #eaecf0!important;margin-top:11px!important}
+@media(max-width:1000px){.commerceMenuChoices{grid-template-columns:repeat(2,minmax(145px,1fr))}}
+@media(max-width:600px){.commerceMenuChoices{grid-template-columns:1fr}.workspaceSwitchers{display:none!important}.workspaceDivider{display:none!important}}
+</style>
 </head>
 <body>
 <section id="login" class="login">
@@ -1981,23 +2032,42 @@ body:not(.laborPrivateAuthorized) #hoursPage > #laborPage.laborInlinePage{displa
 <div id="storeMemoNotice" class="storeMemoNotice" style="display:none" role="status" aria-live="polite"></div>
 <div id="storeMemoAlertPopup" class="storeMemoAlertPopup" role="alertdialog" aria-label="미확인 메모 알림" aria-live="polite" style="display:none"></div>
 <div class="mobileNav">
- <button class="nav commerceOnlyNav" data-page="commerce">88커머스</button>
- <button class="nav active" data-page="home">현황</button><button class="nav" data-page="homeshop">홈쇼핑</button><button class="nav" data-page="schedule">스케줄</button><button class="nav" data-page="hours">근로</button><button class="nav" data-page="labor">노무사</button><button class="nav commerceOnlyNav" data-page="labor">노무사</button><button class="nav" data-page="payroll">급여</button><button class="nav" data-page="employees">직원</button><button class="nav" data-page="stores">업장</button>
+<button class="nav workspaceMobile" type="button" data-workspace="pharmacy" onclick="openPharmacyWorkspace()">약국 업무</button>
+<button class="nav workspaceMobile" type="button" data-workspace="commerce" onclick="openCommerceWorkspace()">88커머스</button>
+
+ 
+ <button class="nav active" data-page="home">현황</button><button class="nav" data-page="schedule">스케줄</button><button class="nav" data-page="hours">근로</button><button class="nav" data-page="payroll">급여</button><button class="nav" data-page="employees">직원</button><button class="nav" data-page="stores">업장</button>
+<button class="nav commerceOnlyNav commerceMobileNavBtn commerceNavBtn" data-commerce-menu="비용지출" data-commerce-sheet="비용지출" onclick="openCommerceSheet('비용지출')">비용지출</button>
+<button class="nav commerceOnlyNav commerceMobileNavBtn commerceNavBtn" data-commerce-menu="통장관리" data-commerce-sheet="통장관리" onclick="openCommerceSheet('통장관리')">통장관리</button>
+<button class="nav commerceOnlyNav commerceMobileNavBtn commerceNavBtn" data-commerce-menu="지출상세내역" data-commerce-sheet="지출상세내역" onclick="openCommerceSheet('지출상세내역')">지출상세내역</button>
+<button class="nav commerceOnlyNav commerceMobileNavBtn commerceNavBtn" data-commerce-menu="매입입력" data-commerce-sheet="매입입력" onclick="openCommerceSheet('매입입력')">매입입력</button>
+<button class="nav commerceOnlyNav commerceMobileNavBtn commerceNavBtn" data-commerce-menu="매출입력" data-commerce-sheet="매출입력" onclick="openCommerceSheet('매출입력')">매출입력</button>
+<button class="nav commerceOnlyNav commerceMobileNavBtn commerceNavBtn commerceReportNavBtn" data-commerce-menu="자료조회" data-commerce-group="reports" onclick="openCommerceReportHub()">자료조회</button>
+<button class="nav commerceOnlyNav commerceMobileNavBtn commerceHomeshopBtn" data-commerce-menu="homeshop" onclick="openCommerceHomeShopping()">홈쇼핑 건기식</button>
+<button class="nav commerceOnlyNav commerceMobileNavBtn commerceMenuConfigBtn" onclick="openCommerceMenuSettings()">메뉴 설정</button>
 </div>
 <div class="layout">
 <aside class="side">
-<div class="commerceOnlyNav commerceNavGroupTitle">88커머스</div>
-<button class="nav commerceOnlyNav commerceNavBtn" data-commerce-sheet="비용지출" onclick="openCommerceSheet('비용지출')"><span class="navIcon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><rect x="3" y="5" width="18" height="15" rx="2"/><path d="M3 9h18M16 13h5v5h-5a2.5 2.5 0 0 1 0-5Z"/></svg></span><span class="navText">비용지출</span></button>
-<button class="nav commerceOnlyNav commerceNavBtn" data-commerce-sheet="통장관리" onclick="openCommerceSheet('통장관리')"><span class="navIcon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><path d="M2 9 12 3l10 6M4 9v11M9 9v11M15 9v11M20 9v11M2 21h20"/></svg></span><span class="navText">통장관리</span></button>
-<button class="nav commerceOnlyNav commerceNavBtn" data-commerce-sheet="지출상세내역" onclick="openCommerceSheet('지출상세내역')"><span class="navIcon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M7 8h10M7 12h10M7 16h10"/></svg></span><span class="navText">지출상세내역</span></button>
-<button class="nav commerceOnlyNav commerceNavBtn" data-commerce-sheet="매입입력" onclick="openCommerceSheet('매입입력')"><span class="navIcon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><path d="M12 3v15m-5-5 5 5 5-5M3 21h18"/></svg></span><span class="navText">매입입력</span></button>
-<button class="nav commerceOnlyNav commerceNavBtn" data-commerce-sheet="매출입력" onclick="openCommerceSheet('매출입력')"><span class="navIcon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><path d="M12 21V6m-5 5 5-5 5 5M3 3h18"/></svg></span><span class="navText">매출입력</span></button>
-<button class="nav commerceOnlyNav commerceNavBtn commerceReportNavBtn" data-commerce-group="reports" onclick="openCommerceReportHub()"><span class="navIcon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M7 17v-4M12 17V7M17 17v-7"/></svg></span><span class="navText">자료조회</span></button>
+<div class="workspaceSwitchers" aria-label="업무 선택">
+  <div class="workspaceLabel">업무 선택</div>
+  <button type="button" class="workspaceButton" data-workspace="pharmacy" onclick="openPharmacyWorkspace()">🏥 약국 업무</button>
+  <button type="button" class="workspaceButton" data-workspace="commerce" onclick="openCommerceWorkspace()">🛒 88커머스</button>
+</div>
+<div class="workspaceDivider"></div>
+<div class="commerceOnlyNav commerceNavGroupTitle">88커머스 메뉴</div>
+<button class="nav commerceOnlyNav commerceNavBtn" data-commerce-menu="비용지출" data-commerce-sheet="비용지출" onclick="openCommerceSheet('비용지출')"><span class="navIcon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><rect x="3" y="5" width="18" height="15" rx="2"/><path d="M3 9h18M16 13h5v5h-5a2.5 2.5 0 0 1 0-5Z"/></svg></span><span class="navText">비용지출</span></button>
+<button class="nav commerceOnlyNav commerceNavBtn" data-commerce-menu="통장관리" data-commerce-sheet="통장관리" onclick="openCommerceSheet('통장관리')"><span class="navIcon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><path d="M2 9 12 3l10 6M4 9v11M9 9v11M15 9v11M20 9v11M2 21h20"/></svg></span><span class="navText">통장관리</span></button>
+<button class="nav commerceOnlyNav commerceNavBtn" data-commerce-menu="지출상세내역" data-commerce-sheet="지출상세내역" onclick="openCommerceSheet('지출상세내역')"><span class="navIcon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M7 8h10M7 12h10M7 16h10"/></svg></span><span class="navText">지출상세내역</span></button>
+<button class="nav commerceOnlyNav commerceNavBtn" data-commerce-menu="매입입력" data-commerce-sheet="매입입력" onclick="openCommerceSheet('매입입력')"><span class="navIcon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><path d="M12 3v15m-5-5 5 5 5-5M3 21h18"/></svg></span><span class="navText">매입입력</span></button>
+<button class="nav commerceOnlyNav commerceNavBtn" data-commerce-menu="매출입력" data-commerce-sheet="매출입력" onclick="openCommerceSheet('매출입력')"><span class="navIcon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><path d="M12 21V6m-5 5 5-5 5 5M3 3h18"/></svg></span><span class="navText">매출입력</span></button>
+<button class="nav commerceOnlyNav commerceNavBtn commerceReportNavBtn" data-commerce-menu="자료조회" data-commerce-group="reports" onclick="openCommerceReportHub()"><span class="navIcon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M7 17v-4M12 17V7M17 17v-7"/></svg></span><span class="navText">자료조회</span></button>
+<button class="nav commerceOnlyNav commerceHomeshopBtn" data-commerce-menu="homeshop" onclick="openCommerceHomeShopping()"><span class="navIcon">📺</span><span class="navText">홈쇼핑 건기식</span></button>
+<button class="nav commerceOnlyNav commerceMenuConfigBtn" onclick="openCommerceMenuSettings()"><span class="navIcon">⚙</span><span class="navText">표시 메뉴 설정</span></button>
  <button class="nav active" data-page="home"><span class="navIcon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg></span><span class="navText">전체 현황</span></button>
- <button class="nav" data-page="homeshop"><span class="navIcon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><rect x="2" y="5" width="20" height="14" rx="3"/><path d="M7 22h10M12 19v3M8 2l4 3 4-3"/></svg></span><span class="navText">홈쇼핑 건기식</span></button>
+
  <button class="nav" data-page="schedule"><span class="navIcon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/><path d="m9 16 2 2 4-4"/></svg></span><span class="navText">월간 스케줄</span></button>
  <button class="nav" data-page="hours"><span class="navIcon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span><span class="navText">근로시간</span></button>
- <button class="nav staffOnlyNav laborLegacyMenu" data-page="labor"><span class="navIcon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M8 7h8M8 11h8M8 15h8"/></svg></span><span class="navText">노무사 제출자료</span></button>
+
   <button class="nav" data-page="payroll"><span class="navIcon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9h18M16 13h5v5h-5a2.5 2.5 0 0 1 0-5Z"/></svg></span><span class="navText">급여관리</span></button>
  <button class="nav" data-page="employees"><span class="navIcon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><circle cx="9" cy="8" r="3"/><path d="M3 21v-2a6 6 0 0 1 12 0v2M17 5.5a3 3 0 0 1 0 5.8M18 15a5 5 0 0 1 3 4.5V21"/></svg></span><span class="navText">직원관리</span></button>
  <button class="nav" data-page="stores"><span class="navIcon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><path d="M3 21h18M5 21V7l7-4 7 4v14M9 21v-6h6v6M9 10h.01M15 10h.01"/></svg></span><span class="navText">업장관리</span></button>
@@ -2005,8 +2075,7 @@ body:not(.laborPrivateAuthorized) #hoursPage > #laborPage.laborInlinePage{displa
  <div id="adminNavDivider" class="sideDivider"></div>
  <button class="nav" data-page="users"><span class="navIcon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/><circle cx="12" cy="10" r="2"/><path d="M8.5 16a4 4 0 0 1 7 0"/></svg></span><span class="navText">사용자 / 권한</span></button>
  <button class="nav" data-page="audit"><span class="navIcon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><path d="M3 12a9 9 0 1 0 3-6.7M3 3v6h6M12 7v5l3 2"/></svg></span><span class="navText">접속 / 수정이력</span></button>
-
- <button class="nav commerceOnlyNav" data-page="labor"><span class="navIcon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M8 7h8M8 11h8M8 15h8"/></svg></span><span class="navText">노무사 제출자료</span></button></aside>
+</aside>
 <main class="main">
 <div id="globalContextToolbar" class="toolbar" style="margin-bottom:12px">
  <select id="storeSelect" onchange="switchStore()"></select>
@@ -2015,9 +2084,16 @@ body:not(.laborPrivateAuthorized) #hoursPage > #laborPage.laborInlinePage{displa
 </div>
 
 <section id="commercePage" class="page">
- <div class="commerceHero"><h1 class="title">88커머스 <span class="commerceBuildVersion" data-dashboard-version="true">버전 2026.11.27_3</span></h1><div class="sub">대시보드에서 직접 입력·수정하고 자동 계산하며, 카페24 반영과 원본 Excel 형식 다운로드까지 한곳에서 관리합니다.</div></div>
+ <div class="commerceHero"><h1 class="title">88커머스 <span class="commerceBuildVersion" data-dashboard-version="true">버전 2026.11.27_5</span></h1><div class="sub">대시보드에서 직접 입력·수정하고 자동 계산하며, 카페24 반영과 원본 Excel 형식 다운로드까지 한곳에서 관리합니다.</div></div>
 
- <div id="commerceGroupBar" class="commerceGroupBar hidden">
+ <section id="commerceMenuSettings" class="card hidden" aria-labelledby="commerceMenuConfigTitle" style="margin:12px 0 16px">
+ <div class="row" style="gap:12px;align-items:flex-start;flex-wrap:wrap"><div><h2 id="commerceMenuConfigTitle" style="margin:0 0 5px;font-size:18px">88커머스 표시 메뉴 설정</h2>
+ <div class="help">최고관리자만 설정할 수 있습니다. 숨기는 메뉴는 데이터가 삭제되지 않으며, 모든 기기에 동일한 구성이 적용됩니다.</div></div>
+ <button type="button" class="btn gray" onclick="closeCommerceMenuSettings()">닫기</button></div>
+ <div id="commerceMenuCheckboxes" class="commerceMenuChoices"></div>
+ <div class="toolbar" style="margin-top:12px;gap:8px"><button type="button" class="btn" onclick="saveCommerceMenuSettings()">선택한 메뉴 저장</button><button type="button" class="btn gray" onclick="resetCommerceMenuSettings()">기본 표시 복원</button><span id="commerceMenuSaveStatus" class="saveState saved">서버 저장형 · 변경 전까지 적용되지 않습니다.</span></div>
+</section>
+<div id="commerceGroupBar" class="commerceGroupBar hidden">
   <div><div id="commerceGroupTitle" class="groupTitle">-</div><div id="commerceGroupSub" class="help" style="margin-top:3px">-</div></div>
   <div id="commerceGroupTabs" class="simpleTabs"></div>
  </div>
@@ -2099,7 +2175,7 @@ body:not(.laborPrivateAuthorized) #hoursPage > #laborPage.laborInlinePage{displa
 </section>
 
 <section id="homePage" class="page active">
- <div class="row"><div><div class="homeBuildTitle"><h1 class="title" id="homeTitle">현황</h1><span class="buildVersionBadge" id="homeBuildVersion" data-dashboard-version="true">버전 2026.11.27_3</span></div><div class="sub">업장과 월을 선택하면 모든 정보가 같이 바뀝니다.</div></div></div>
+ <div class="row"><div><div class="homeBuildTitle"><h1 class="title" id="homeTitle">현황</h1><span class="buildVersionBadge" id="homeBuildVersion" data-dashboard-version="true">버전 2026.11.27_5</span></div><div class="sub">업장과 월을 선택하면 모든 정보가 같이 바뀝니다.</div></div></div>
  <div class="cards">
   <div class="card"><div class="k">재직 직원</div><div class="v" id="kEmp">0명</div></div>
   <div class="card"><div class="k">이번 달 연차 발생</div><div class="v" id="kLeaveDue">0명</div></div>
@@ -2344,7 +2420,7 @@ body:not(.laborPrivateAuthorized) #hoursPage > #laborPage.laborInlinePage{displa
 
  <section id="payrollPage" class="page">
  <div class="row">
-  <div><h1 class="title">급여관리 <span data-dashboard-version="true" data-version-no-prefix="true" style="font-size:12px;color:#315efb;background:#eef3ff;border-radius:999px;padding:4px 8px;vertical-align:middle">2026.11.27_3</span></h1><div class="sub">월별 급여대장을 검산하고, 기간별·직원별 누적 급여도 조회합니다.</div></div>
+  <div><h1 class="title">급여관리 <span data-dashboard-version="true" data-version-no-prefix="true" style="font-size:12px;color:#315efb;background:#eef3ff;border-radius:999px;padding:4px 8px;vertical-align:middle">2026.11.27_5</span></h1><div class="sub">월별 급여대장을 검산하고, 기간별·직원별 누적 급여도 조회합니다.</div></div>
   <div class="toolbar">
    <input type="file" id="payrollFile" accept=".xlsx,.xls,.xlsm" multiple style="display:none" onchange="importPayrollFiles(this.files);this.value=''">
    <button id="payrollBatchImportBtn" class="btn" onclick="$('payrollFile').click()">급여대장 여러개 불러오기</button>
@@ -16723,5 +16799,199 @@ loadStores=async function(...args){
  if(currentSessionUser?.id){applyPermissionUI();setHoursView(hoursSavedView(),false)}
  return result;
 };
+</script>
+
+<script id="globalStickyContextToolbar20261127_5JS">
+/* Avoid a fixed mobile-header guess: the mobile navigation can change height
+   when permissions, viewport width or the current business mode changes. */
+(function(){
+  const bar=document.getElementById('globalContextToolbar');
+  if(!bar)return;
+  const topBar=document.querySelector('#app > .top');
+  const mobileNav=document.querySelector('#app > .mobileNav');
+  let frame=0;
+  function update(){
+    frame=0;
+    let offset=topBar&&getComputedStyle(topBar).display!=='none'
+      ?Math.round(topBar.getBoundingClientRect().bottom):66;
+    if(mobileNav&&getComputedStyle(mobileNav).display!=='none'){
+      offset=Math.max(offset,Math.round(mobileNav.getBoundingClientRect().bottom));
+    }
+    bar.style.setProperty('--global-context-top',Math.max(0,offset)+'px');
+  }
+  function request(){if(!frame)frame=requestAnimationFrame(update);}
+  window.addEventListener('resize',request,{passive:true});
+  window.addEventListener('orientationchange',request,{passive:true});
+  document.addEventListener('DOMContentLoaded',request);
+  if(typeof ResizeObserver!=='undefined'){
+    const observer=new ResizeObserver(request);
+    if(topBar)observer.observe(topBar);
+    if(mobileNav)observer.observe(mobileNav);
+  }
+  request();
+})();
+</script>
+<script id="separatedCommerceWorkspace20261127_5JS">
+/* Standalone 88커머스 workspace. No payroll, schedule or labor code is modified. */
+const COMMERCE_NAV_ALL=['비용지출','통장관리','지출상세내역','매입입력','매출입력','자료조회','homeshop'];
+const COMMERCE_NAV_DEFAULT=[...COMMERCE_NAV_ALL];
+let commerceNavEnabled=[...COMMERCE_NAV_DEFAULT],commerceNavStore=0,commerceWorkspaceSubView='sheet',commerceMenuEditing=false;
+const commerceNavigationNames={비용지출:'비용지출',통장관리:'통장관리',지출상세내역:'지출상세내역',매입입력:'매입입력',매출입력:'매출입력',자료조회:'자료조회 (매출·광고·매입)',homeshop:'홈쇼핑 건기식'};
+function workspaceCommerceId(){return [...commerceStoreIds].find(id=>stores.some(s=>Number(s.id)===id))||0}
+function workspacePharmacyId(){
+ const preferred=Number(localStorage.getItem('staff_dashboard_last_pharmacy_store_id')||0);
+ const ids=stores.filter(s=>!commerceStoreIds.has(Number(s.id))).map(s=>Number(s.id));
+ return ids.includes(preferred)?preferred:ids[0]||0;
+}
+function commerceMenuPresent(key){return commerceNavEnabled.includes(key) && (key!=='homeshop'||canViewModule('homeshop'))}
+function commerceFirstMenuKey(){return ['매출입력',...COMMERCE_NAV_ALL].find(commerceMenuPresent)||'매출입력'}
+function syncCommerceWorkspaceNavigation(){
+ const commerce=isCommerceStore(),available=!!workspaceCommerceId()&&canViewModule('commerce'),pharm=!!workspacePharmacyId();
+ const brand=document.querySelector('#app > .top .brand');if(brand){const main=brand.firstChild,subtitle=brand.querySelector('small');if(main&&main.nodeType===3)main.textContent=commerce?'88커머스 통합관리':'직원관리 대시보드';if(subtitle)subtitle.textContent=commerce?'매입 · 매출 · 비용 · 자료조회 · 홈쇼핑':'업장 · 스케줄 · 근로시간 · 급여';}
+ document.querySelectorAll('[data-workspace="commerce"]').forEach(b=>{b.classList.toggle('active',commerce);b.style.display=available?'':'none'});
+ document.querySelectorAll('[data-workspace="pharmacy"]').forEach(b=>{b.classList.toggle('active',!commerce);b.style.display=pharm?'':'none'});
+ document.querySelectorAll('[data-commerce-menu]').forEach(b=>{
+   const enabled=commerce&&available&&commerceMenuPresent(b.dataset.commerceMenu);
+   b.classList.toggle('hidden',!enabled);
+ });
+ document.querySelectorAll('.commerceMenuConfigBtn').forEach(b=>{b.classList.toggle('hidden',!(commerce&&isAppAdmin()&&permissionSystemAvailable!==false))});
+ // A native store selector may still be used internally for commerce data, but
+ // its picker never mixes pharmacy destinations with the 88 commerce workspace.
+ const pick=$('storeSelect'); if(pick){
+  Array.from(pick.options).forEach(opt=>{const same=commerceStoreIds.has(Number(opt.value))===commerce;opt.hidden=!same;opt.disabled=!same});
+ }
+ if($('globalContextToolbar'))$('globalContextToolbar').style.display=commerce&&commerceWorkspaceSubView==='homeshop'?'none':'';
+}
+async function openCommerceWorkspace(){
+ if(!canViewModule('commerce'))return alert('88커머스 보기 권한이 없습니다.');
+ const id=workspaceCommerceId();if(!id)return alert('88커머스 접근 업장이 없습니다.');
+ if(!isCommerceStore()){
+  if(storeId())localStorage.setItem('staff_dashboard_last_pharmacy_store_id',String(storeId()));
+  const pick=$('storeSelect'),opt=Array.from(pick.options).find(o=>Number(o.value)===id);if(opt){opt.disabled=false;opt.hidden=false}
+  pick.value=String(id);await switchStore();
+ }
+ commerceWorkspaceSubView='sheet';commerceMenuEditing=false;
+ showCommerceWorkspacePage();
+ const key=commerceFirstMenuKey();
+ if(key==='homeshop')openCommerceHomeShopping();
+ else if(key==='자료조회')openCommerceReportHub();
+ else openCommerceSheet(key);
+ syncCommerceWorkspaceNavigation();
+}
+async function openPharmacyWorkspace(){
+ const id=workspacePharmacyId();if(!id)return alert('접근 가능한 약국이 없습니다.');
+ if(isCommerceStore()||Number(storeId())!==id){
+  const pick=$('storeSelect'),opt=Array.from(pick.options).find(o=>Number(o.value)===id);if(opt){opt.disabled=false;opt.hidden=false}
+  pick.value=String(id);await switchStore();
+ }
+ commerceWorkspaceSubView='sheet';commerceMenuEditing=false;
+ if($('commerceMenuSettings'))$('commerceMenuSettings').classList.add('hidden');
+ const page=document.querySelector('.page.active');
+ if(!page||page.id==='commercePage'||page.id==='homeshopPage'){
+  const first=['home','schedule','hours','employees','payroll','stores','holidays'].find(canViewModule)||'home';
+  document.querySelectorAll('.page').forEach(el=>el.classList.remove('active'));
+  $(`${first}Page`)?.classList.add('active');
+  document.querySelectorAll('.nav[data-page]').forEach(el=>el.classList.toggle('active',el.dataset.page===first));
+  if(first==='home')loadHomePageData();
+ }
+ syncCommerceWorkspaceNavigation();
+}
+function showCommerceWorkspacePage(){
+ if(!isCommerceStore())return;
+ document.querySelectorAll('.page').forEach(el=>el.classList.remove('active'));
+ $('commercePage')?.classList.add('active');
+ if($('globalContextToolbar'))$('globalContextToolbar').style.display='';
+}
+function commerceClearMenuEditor(){commerceMenuEditing=false;$('commerceMenuSettings')?.classList.add('hidden')}
+function openCommerceHomeShopping(){
+ if(!isCommerceStore()||!commerceMenuPresent('homeshop'))return;
+ commerceClearMenuEditor();commerceWorkspaceSubView='homeshop';
+ document.querySelectorAll('.page').forEach(el=>el.classList.remove('active'));
+ $('homeshopPage')?.classList.add('active');
+ document.querySelectorAll('.commerceNavBtn,.commerceHomeshopBtn,.commerceMenuConfigBtn').forEach(el=>el.classList.remove('active'));
+ document.querySelectorAll('.commerceHomeshopBtn').forEach(el=>el.classList.add('active'));
+ if($('globalContextToolbar'))$('globalContextToolbar').style.display='none';
+ initHomeShoppingDashboard();syncCommerceWorkspaceNavigation();
+}
+function openCommerceMenuSettings(){
+ if(!isCommerceStore()||!isAppAdmin()||permissionSystemAvailable===false)return alert('메뉴 설정은 최고관리자 전용입니다.');
+ commerceWorkspaceSubView='settings';commerceMenuEditing=true;showCommerceWorkspacePage();
+ document.querySelectorAll('.commerceView').forEach(el=>el.classList.add('hidden'));
+ $('commerceMenuSettings')?.classList.remove('hidden');
+ document.querySelectorAll('.commerceNavBtn,.commerceHomeshopBtn,.commerceMenuConfigBtn').forEach(el=>el.classList.remove('active'));
+ document.querySelectorAll('.commerceMenuConfigBtn').forEach(el=>el.classList.add('active'));
+ $('commerceMenuCheckboxes').innerHTML=COMMERCE_NAV_ALL.map(k=>`<label class="commerceMenuChoice"><input type="checkbox" data-commerce-choice="${k}" ${commerceNavEnabled.includes(k)?'checked':''}><span>${commerceNavigationNames[k]}</span></label>`).join('');
+ $('commerceMenuSaveStatus').textContent='저장하면 모든 기기의 88커머스 메뉴 구성이 바뀝니다.';
+ syncCommerceWorkspaceNavigation();
+}
+function closeCommerceMenuSettings(){commerceClearMenuEditor();commerceWorkspaceSubView='sheet';showCommerceWorkspacePage();const key=commerceFirstMenuKey();if(key==='homeshop')openCommerceHomeShopping();else if(key==='자료조회')openCommerceReportHub();else openCommerceSheet(key)}
+function resetCommerceMenuSettings(){
+ if(!isAppAdmin())return;
+ document.querySelectorAll('#commerceMenuCheckboxes input[type="checkbox"]').forEach(b=>b.checked=COMMERCE_NAV_DEFAULT.includes(b.dataset.commerceChoice));
+ $('commerceMenuSaveStatus').textContent='기본값을 선택했습니다. 저장을 누르면 적용됩니다.';
+}
+async function saveCommerceMenuSettings(){
+ if(!isAppAdmin()||permissionSystemAvailable===false)return alert('최고관리자만 메뉴 구성을 저장할 수 있습니다.');
+ const enabled=Array.from(document.querySelectorAll('#commerceMenuCheckboxes input:checked')).map(b=>b.dataset.commerceChoice).filter(k=>COMMERCE_NAV_ALL.includes(k));
+ if(!enabled.length)return alert('최소 1개의 메뉴를 선택하세요.');
+ const sid=workspaceCommerceId();if(!sid)return alert('커머스 업장 확인 실패');
+ const st=$('commerceMenuSaveStatus');st.textContent='서버 저장 중…';
+ try{
+  const r=await sb.from('commerce_nav_preferences').upsert({store_id:sid,enabled_keys:enabled,updated_at:new Date().toISOString(),updated_by:currentSessionUser?.id||null},{onConflict:'store_id'});
+  if(r.error)throw r.error;
+  commerceNavEnabled=enabled;commerceNavStore=sid;syncCommerceWorkspaceNavigation();
+  st.textContent='저장 완료 · 모든 기기에 동일하게 적용됩니다.';
+ }catch(e){console.error(e);st.textContent='저장 실패: '+(e?.message||e.message);alert('메뉴 설정 저장 실패: '+(e?.message||e))}
+}
+async function loadCommerceNavigationPreferences(){
+ const sid=workspaceCommerceId();commerceNavEnabled=[...COMMERCE_NAV_DEFAULT];commerceNavStore=sid;
+ if(!sid)return;
+ try{
+  const q=await sb.from('commerce_nav_preferences').select('enabled_keys').eq('store_id',sid).maybeSingle();if(q.error)throw q.error;
+  if(Array.isArray(q.data?.enabled_keys)){const items=[...new Set(q.data.enabled_keys)].filter(k=>COMMERCE_NAV_ALL.includes(k));if(items.length)commerceNavEnabled=items}
+ }catch(e){console.warn('88커머스 메뉴 환경설정 조회 실패 · 기본 표시 적용',e)}
+ syncCommerceWorkspaceNavigation();
+}
+// Keep original commerce Excel builders, imports and reports intact.
+const v27_5PriorCommerceStoreLoader=loadCommerceStoreSettings;
+loadCommerceStoreSettings=async function(...args){const result=await v27_5PriorCommerceStoreLoader(...args);return result};
+const v27_5PriorLoadStores=loadStores;
+loadStores=async function(...args){
+ const result=await v27_5PriorLoadStores(...args);
+ await loadCommerceNavigationPreferences();
+ const id=storeId();if(id&&!commerceStoreIds.has(id))localStorage.setItem('staff_dashboard_last_pharmacy_store_id',String(id));
+ syncCommerceWorkspaceNavigation();return result;
+};
+const v27_5PriorOpenCommerceSheet=window.openCommerceSheet;
+window.openCommerceSheet=function(sheet,...args){
+ if(isCommerceStore()){commerceWorkspaceSubView='sheet';commerceClearMenuEditor();showCommerceWorkspacePage()}
+ const r=v27_5PriorOpenCommerceSheet.call(this,sheet,...args);syncCommerceWorkspaceNavigation();return r;
+};
+const v27_5PriorOpenCommerceNav=openCommerceNav;
+openCommerceNav=function(...args){
+ if(isCommerceStore()){commerceWorkspaceSubView='sheet';commerceClearMenuEditor();showCommerceWorkspacePage()}
+ return v27_5PriorOpenCommerceNav(...args);
+};
+const v27_5PriorApplyStoreModeUI=applyStoreModeUI;
+applyStoreModeUI=function(...args){
+ const was=commerceWorkspaceSubView,ret=v27_5PriorApplyStoreModeUI(...args);
+ if(isCommerceStore()){
+  if(was==='homeshop'&&commerceMenuPresent('homeshop'))openCommerceHomeShopping();
+  else if(was==='settings'&&isAppAdmin())openCommerceMenuSettings();
+ }else if($('homeshopPage')?.classList.contains('active')){
+  commerceWorkspaceSubView='sheet';
+  document.querySelectorAll('.page').forEach(el=>el.classList.remove('active'));
+  $('homePage')?.classList.add('active');
+ }
+ syncCommerceWorkspaceNavigation();return ret;
+};
+const v27_5PriorPermissionUI=applyPermissionUI;
+applyPermissionUI=function(...args){const ret=v27_5PriorPermissionUI(...args);syncCommerceWorkspaceNavigation();return ret};
+// A 88-only selection is never a valid pharmacy selection in the visible dropdown.
+// This handler keeps the left workspace buttons active even after store/month changes.
+const v27_5PriorSwitchStore=switchStore;
+switchStore=async function(...args){const ret=await v27_5PriorSwitchStore(...args);syncCommerceWorkspaceNavigation();return ret};
+// A previously chosen 88 menu remains inside 88, not the unrelated labor/time screens.
+document.addEventListener('DOMContentLoaded',()=>{syncCommerceWorkspaceNavigation()});
 </script>
 </body></html>
