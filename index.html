@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>직원관리 대시보드 2026.11.26_24</title>
-<meta name="dashboard-build-version" content="2026.11.26_24">
+<title>직원관리 대시보드 2026.11.27_1</title>
+<meta name="dashboard-build-version" content="2026.11.27_1">
 <script id="dashboardBuildInfoJS">
 document.addEventListener('DOMContentLoaded',()=>{
  const version=document.querySelector('meta[name="dashboard-build-version"]')?.getAttribute('content');
@@ -1925,6 +1925,15 @@ body.laborPrivateAuthorized #hoursPage.active > #laborPage.laborInlinePage {
 body:not(.laborPrivateAuthorized) #hoursPage > #laborPage.laborInlinePage{display:none!important;}
 #hoursPage #laborPage .laborToolbar{flex-wrap:wrap;align-items:center;gap:9px;}
 </style>
+<style id="annualLeaveCumulative20261127">
+/* V2026.11.27_1: 전년도 발생분을 입사 후 누적에 포함하되, 연도 발생량·잔여 이월은 별도로 명확하게 표시 */
+#schedulePage .annualLeaveTable th:nth-last-child(4),
+#schedulePage .annualLeaveTable .annualLeaveAccrualBreakdown{min-width:168px;max-width:208px;white-space:normal;line-height:1.4}
+#schedulePage .annualLeaveTable .annualLeaveAccrualBreakdown>b{display:block;font-size:16px;font-weight:950;color:#182b4d}
+#schedulePage .annualLeaveTable .annualLeaveAccrualBreakdown>small{display:block;margin-top:3px;white-space:normal}
+#schedulePage .annualLeaveTable .annualLeaveAccrualBreakdown .annualLeavePreviousAccrual{font-weight:850;color:#235bb0}
+#schedulePage .annualLeaveTable .annualLeaveCarryoverLabel{display:block;color:#305d8d;font-weight:700;margin-top:3px;white-space:normal}
+</style>
 </head>
 <body>
 <section id="login" class="login">
@@ -1970,7 +1979,7 @@ body:not(.laborPrivateAuthorized) #hoursPage > #laborPage.laborInlinePage{displa
 </div>
 
 <section id="commercePage" class="page">
- <div class="commerceHero"><h1 class="title">88커머스 <span class="commerceBuildVersion" data-dashboard-version="true">버전 2026.11.26_24</span></h1><div class="sub">대시보드에서 직접 입력·수정하고 자동 계산하며, 카페24 반영과 원본 Excel 형식 다운로드까지 한곳에서 관리합니다.</div></div>
+ <div class="commerceHero"><h1 class="title">88커머스 <span class="commerceBuildVersion" data-dashboard-version="true">버전 2026.11.27_1</span></h1><div class="sub">대시보드에서 직접 입력·수정하고 자동 계산하며, 카페24 반영과 원본 Excel 형식 다운로드까지 한곳에서 관리합니다.</div></div>
 
  <div id="commerceGroupBar" class="commerceGroupBar hidden">
   <div><div id="commerceGroupTitle" class="groupTitle">-</div><div id="commerceGroupSub" class="help" style="margin-top:3px">-</div></div>
@@ -2054,7 +2063,7 @@ body:not(.laborPrivateAuthorized) #hoursPage > #laborPage.laborInlinePage{displa
 </section>
 
 <section id="homePage" class="page active">
- <div class="row"><div><div class="homeBuildTitle"><h1 class="title" id="homeTitle">현황</h1><span class="buildVersionBadge" id="homeBuildVersion" data-dashboard-version="true">버전 2026.11.26_24</span></div><div class="sub">업장과 월을 선택하면 모든 정보가 같이 바뀝니다.</div></div></div>
+ <div class="row"><div><div class="homeBuildTitle"><h1 class="title" id="homeTitle">현황</h1><span class="buildVersionBadge" id="homeBuildVersion" data-dashboard-version="true">버전 2026.11.27_1</span></div><div class="sub">업장과 월을 선택하면 모든 정보가 같이 바뀝니다.</div></div></div>
  <div class="cards">
   <div class="card"><div class="k">재직 직원</div><div class="v" id="kEmp">0명</div></div>
   <div class="card"><div class="k">이번 달 연차 발생</div><div class="v" id="kLeaveDue">0명</div></div>
@@ -2183,13 +2192,13 @@ body:not(.laborPrivateAuthorized) #hoursPage > #laborPage.laborInlinePage{displa
   <div id="annualLeaveWrap" class="hidden">
     <div class="card annualLeavePanel">
       <div class="row annualLeavePanelHead">
-        <div><h3 style="margin:0">직원별 연차관리 <span class="pill">입사일 기준</span></h3><div class="help" style="margin-top:5px"><b>1년 미만: 월 개근 시 1일(최대 11일) / 입사 1주년: 직전 1년 출근율 80% 이상이면 15일 / 3주년부터 2년마다 1일 추가(최대 25일).</b> 주 36시간의 1주년은 15일·108시간, 주 40시간은 15일·120시간이며 실제 계약된 주 소정근로시간을 사용합니다.</div><div class="help" style="margin-top:5px"><b>연도 발생: 모든 직원의 입사일을 기준으로 계산된 자동발생 원장 합계</b>입니다. 스케줄의 ‘연’은 사용량입니다. 기존 시스템 사용 전 과거 스케줄 공란은 결근으로 보지 않으므로, 병가·결근 또는 관리자 출근확인이 따로 없다면 입사일 기준으로 발생합니다. 미입력 기간의 개근은 확인된 사실이 아니라 운영상 추정이며, 실제 기록이 있다면 출근확인에서 정정할 수 있습니다.</div></div>
+        <div><h3 style="margin:0">직원별 연차관리 <span class="pill">입사일 기준</span></h3><div class="help" style="margin-top:5px"><b>1년 미만: 월 개근 시 1일(최대 11일) / 입사 1주년: 직전 1년 출근율 80% 이상이면 15일 / 3주년부터 2년마다 1일 추가(최대 25일).</b> 주 36시간의 1주년은 15일·108시간, 주 40시간은 15일·120시간이며 실제 계약된 주 소정근로시간을 사용합니다.</div><div class="help" style="margin-top:5px"><b>입사 후 누적 발생에는 전년도 이전에 발생한 연차도 포함</b>합니다. 표 안에는 이전 연도 발생분과 선택 연도 신규 발생분을 따로 표시합니다. <b>잔여연차는 수기 잔여확정·사용량·전년도 이월을 적용한 별도 값</b>입니다. 스케줄의 ‘연’은 사용량입니다. 기존 시스템 사용 전 과거 스케줄 공란은 결근으로 보지 않으므로, 병가·결근 또는 관리자 출근확인이 따로 없다면 입사일 기준으로 발생합니다. 미입력 기간의 개근은 확인된 사실이 아니라 운영상 추정이며, 실제 기록이 있다면 출근확인에서 정정할 수 있습니다.</div></div>
         <div class="toolbar"><select id="annualLeaveYear" aria-label="연차관리 연도" onchange="annualLeaveChangeYear()"></select><button type="button" id="annualLeaveSettledToggle" class="btn gray small" aria-pressed="false" onclick="annualLeaveToggleSettled()">정산완료 보기 (0)</button><button type="button" class="btn gray small" onclick="refreshAnnualLeaveData(true)">새로고침</button><span id="annualLeaveLoadState" class="saveState">준비</span></div>
       </div>
       <div id="annualLeaveSummaryTiles" class="annualLeaveSummaryTiles"></div>
       <div id="annualLeaveWorkAudit" class="help hidden" role="status" style="margin:4px 0 9px;padding:9px 12px;border:1px solid #ebd8aa;border-radius:8px;background:#fffaf0;color:#684718"></div>
       <div class="annualLeaveLegend"><span class="annualLeaveTag">숫자 = 스케줄 연차 일수 (미래는 예정)</span><span class="annualLeaveTag auto">스케줄 자동</span><span class="annualLeaveTag manual">관리자 확정</span><span class="annualLeaveTag warning">과거 스케줄 공란 = 결근 아님 · 발생은 입사일 기준 추정</span><span class="annualLeaveTag">셀 클릭 = 사용량 직접 입력·수정</span><span class="annualLeaveTag outside">회색 사선 = 첫 연차 발생 전 또는 재직기간 밖 (입력 불가)</span><span class="annualLeaveTag color">직원 이름 색상 = 월간 스케줄 출력색</span><span class="annualLeaveTag annualLeaveOrderHint">↕ 연차관리 순서만 개별 조정 (월간 스케줄 순서 유지)</span><span id="annualLeaveOrderState" class="saveState">순서 조회 준비</span></div>
-      <div class="tablewrap annualLeaveGridScroll"><table id="annualLeaveTable" class="annualLeaveTable"><thead><tr><th class="annualLeavePinned">직원 / 입사일</th><th>1월</th><th>2월</th><th>3월</th><th>4월</th><th>5월</th><th>6월</th><th>7월</th><th>8월</th><th>9월</th><th>10월</th><th>11월</th><th>12월</th><th>연도 발생</th><th>사용 완료 / 예정</th><th>잔여 연차</th><th>관리</th></tr></thead><tbody id="annualLeaveBody"><tr><td colspan="17" class="help">연차 자료를 불러오는 중입니다.</td></tr></tbody></table></div>
+      <div class="tablewrap annualLeaveGridScroll"><table id="annualLeaveTable" class="annualLeaveTable"><thead><tr><th class="annualLeavePinned">직원 / 입사일</th><th>1월</th><th>2월</th><th>3월</th><th>4월</th><th>5월</th><th>6월</th><th>7월</th><th>8월</th><th>9월</th><th>10월</th><th>11월</th><th>12월</th><th title="입사 후 누적 발생에는 이전 연도 발생분이 포함됩니다. 해당 연도 발생량은 셀 안에서 구분합니다.">입사 후 누적 / 연도 발생</th><th>사용 완료 / 예정</th><th>잔여 연차</th><th>관리</th></tr></thead><tbody id="annualLeaveBody"><tr><td colspan="17" class="help">연차 자료를 불러오는 중입니다.</td></tr></tbody></table></div>
       <div class="help" style="margin-top:10px;line-height:1.65"><b>사용 완료와 미래 사용 예정은 구분합니다.</b> 잔여는 오늘까지 실제 발생·사용한 기록만 반영하며, 미래의 '연'은 아직 차감하지 않습니다. 미래 월 연차가 추가 발생할 수도 있습니다. 잔여는 기존 연차원장의 발생·사용·조정 기록을 시간(h) 기준으로 계산합니다. <b>잔여확정</b>을 하면 그 날짜의 잔여를 새 기준으로 삼고, 그 이후 연차 발생·사용은 입사일 기준으로 계속 누적합니다. 기존 기록은 삭제되지 않습니다. <b>연도가 바뀌어도 잔여는 자동 초기화하지 않고 다음 해로 이월</b>합니다. 미사용 연차수당 정산 여부는 입사일을 기준으로 1년 단위로 검토하고, 실제 수당을 지급했다면 관리자가 [잔여확정]으로 남길 잔여를 직접 수정합니다. 수당 지급·법정 사용기간 만료는 이 화면에서 자동 확정하지 않습니다. 연차관리에서 월 사용량을 확정하면 스케줄에 입력된 그 달 연차와 <b>중복 차감하지 않습니다.</b> 근무조건이 바뀐 직원은 일수와 시간을 함께 확인하세요. 과거 스케줄 공란은 결근으로 간주하지 않습니다. 확인된 무급병가·결근은 발생 요건에서 제외하고, 필요하면 ‘출근확인’에서 개근·결근을 확정할 수 있습니다.</div>
     </div>
   </div>
@@ -2298,7 +2307,7 @@ body:not(.laborPrivateAuthorized) #hoursPage > #laborPage.laborInlinePage{displa
 
  <section id="payrollPage" class="page">
  <div class="row">
-  <div><h1 class="title">급여관리 <span data-dashboard-version="true" data-version-no-prefix="true" style="font-size:12px;color:#315efb;background:#eef3ff;border-radius:999px;padding:4px 8px;vertical-align:middle">2026.11.26_24</span></h1><div class="sub">월별 급여대장을 검산하고, 기간별·직원별 누적 급여도 조회합니다.</div></div>
+  <div><h1 class="title">급여관리 <span data-dashboard-version="true" data-version-no-prefix="true" style="font-size:12px;color:#315efb;background:#eef3ff;border-radius:999px;padding:4px 8px;vertical-align:middle">2026.11.27_1</span></h1><div class="sub">월별 급여대장을 검산하고, 기간별·직원별 누적 급여도 조회합니다.</div></div>
   <div class="toolbar">
    <input type="file" id="payrollFile" accept=".xlsx,.xls,.xlsm" multiple style="display:none" onchange="importPayrollFiles(this.files);this.value=''">
    <button id="payrollBatchImportBtn" class="btn" onclick="$('payrollFile').click()">급여대장 여러개 불러오기</button>
@@ -12570,6 +12579,23 @@ function annualLeaveAccrualCount(e,year,asOf){
  });
  return {days:annualLeaveRound(days),hours:annualLeaveRound(hours)};
 }
+// V2026.11.27_1: 과거 발생분은 해당 연도 화면에서 숨기지 말고 입사 이후 누적 발생에 포함한다.
+// 조회 연도 전까지의 실제 발생원장만 합산한다. 수기 사용·잔여확정은 발생건수에 영향을 주지 않는다.
+// 연도 발생과 입사 후 누적 발생을 혼동하지 않도록 수치를 병기한다.
+function annualLeavePriorAccrualCount(e,year){
+ const cutoff=String(year)+'-01-01',years=new Set();
+ leaveLedger.forEach(x=>{
+  if(Number(x.employee_id)!==Number(e.id)||x.event_type!=='accrual')return;
+  const d=String(x.event_date||'');
+  if(d<cutoff&&/^\d{4}-\d{2}-\d{2}$/.test(d))years.add(Number(d.slice(0,4)));
+ });
+ let days=0,hours=0;
+ [...years].sort((a,b)=>a-b).forEach(y=>{
+  const earned=annualLeaveAccrualCount(e,y,`${y}-12-31`);
+  days+=earned.days;hours+=earned.hours;
+ });
+ return {days:annualLeaveRound(days),hours:annualLeaveRound(hours)};
+}
 async function fetchAnnualLeaveScheduleRows(year){
  const ids=allEmployees().map(e=>Number(e.id)).filter(Boolean),all=[],start=year+'-01-01',end=year+'-12-31',size=1000;
  for(let group=0;group<ids.length;group+=18){
@@ -12702,11 +12728,14 @@ function renderAnnualLeaveTable(){
  const toggle=$('annualLeaveSettledToggle');
  if(toggle){toggle.textContent=annualLeaveShowSettled?`정산완료 숨기기 (${settledCount})`:`정산완료 보기 (${settledCount})`;toggle.setAttribute('aria-pressed',String(annualLeaveShowSettled));toggle.disabled=!settledCount&&!annualLeaveShowSettled;}
  const list=allList.filter(e=>annualLeaveShowSettled||!annualLeaveSettledRow(e.id));
- let grandAccrual=0,grandAccrualFuture=0,grandUsed=0,grandFuture=0,grandBalance=0,grandCarryover=0,missing=0,retiredSeen=false;
+ let grandAccrual=0,grandPriorAccrual=0,grandAccrualFuture=0,grandUsed=0,grandFuture=0,grandBalance=0,grandCarryover=0,missing=0,retiredSeen=false;
  body.innerHTML=list.length?list.map(e=>{
   const retired=annualLeaveIsRetired(e),settled=!!annualLeaveSettledRow(e.id),firstRetired=retired&&!retiredSeen;
   if(retired)retiredSeen=true;
   const ann=cutoff?annualLeaveAccrualCount(e,year,cutoff):{days:0,hours:0};
+  const priorEarned=annualLeavePriorAccrualCount(e,year);
+  const lifetimeEarned={days:annualLeaveRound(priorEarned.days+ann.days),hours:annualLeaveRound(priorEarned.hours+ann.hours)};
+  grandPriorAccrual+=priorEarned.days;
   const annualAnniversaryRows=leaveLedger.filter(x=>Number(x.employee_id)===Number(e.id)&&x.event_type==='accrual'&&
     String(x.source_key||'').startsWith(`accrual-year:${e.id}:`)&&String(x.event_date||'').startsWith(String(year))&&
     cutoff&&String(x.event_date||'')<=cutoff);
@@ -12743,13 +12772,13 @@ function renderAnnualLeaveTable(){
   grandAccrual+=ann.days;grandUsed+=completedUsed;grandFuture+=futureUsed;grandBalance+=balance;
   const next=cutoff?nextMonthlyAccrualStatus(e,cutoff,leaveAttendanceSchedules):null;
   if(next&&['pending','review'].includes(next.status))missing++;
-  return `<tr data-annual-employee="${e.id}" class="${retired?'annualLeaveRetiredRow':''} ${firstRetired?'annualLeaveRetiredFirst':''} ${settled?'annualLeaveSettledRow':''}" ondragover="annualLeaveOrderDragOver(event,${e.id})" ondrop="annualLeaveOrderDrop(event,${e.id})"><td class="annualLeavePinned" style="--employee-print-bg:${employeeColor(e)}"><div class="annualLeaveNameRow"><div class="annualLeaveNameInfo">${editable?`<span class="scheduleDragHandle annualLeaveOrderGrip" draggable="${annualLeaveOrderAvailable===true?'true':'false'}" ondragstart="annualLeaveOrderDragStart(event,${e.id})" ondragend="annualLeaveOrderDragEnd()" title="이름을 잡아 위아래로 끌면 연차관리 순서만 바뀝니다" aria-label="${esc(e.name)} 연차관리 순서 이동"><span class="scheduleDragGrip">⋮⋮</span><b>${esc(e.name)}</b></span>`:`<b>${esc(e.name)}</b>`}<small>입사 ${esc(e.hire_date||'미등록')}</small>${retired?``:`<small>${esc(workTypeForDate(e,year+'-12-31'))}</small>`}${settled?'<span class="annualLeaveSettledBadge">정산완료</span>':''}</div></div></td>${monthCells}<td class="annualLeaveStat">${annualLeaveFmt(ann.days)}개<small>${annualLeaveFmt(ann.hours)}h</small>${anniversaryLabel?`<small title="${esc(anniversaryLabel)} · 1주년 15일, 3주년부터 가산" style="color:#1761b9;font-weight:650">${esc(anniversaryLabel)}</small>`:''}${upcoming.days?`<small title="입사일 기준 추정 · 아직 원장 미반영">예정 ${annualLeaveFmt(upcoming.days)}개 (${annualLeaveFmt(upcoming.hours)}h)</small>`:''}${sickMissedLabel}</td><td class="annualLeaveStat">${annualLeaveFmt(completedUsed)}개<small>${futureUsed?'사용예정 '+annualLeaveFmt(futureUsed)+'개':'완료 기준'}</small></td><td class="annualLeaveStat balance ${balance<0?'negative':''}">${annualLeaveFmt(balance)}h<small>${cutoff?(futureHours>0?'예정 사용 -'+annualLeaveFmt(futureHours)+'h (미차감)':'선택 연도 기준 원장'):`${carryover.asOf} 현재 잔여 · 차년도 잠정이월`}</small>${summary?.confirmedDate?`<small class="annualLeaveConfirmedMark" title="직원관리와 연동된 잔여확정">잔여확정 ${esc(summary.confirmedDate)} · 기준 ${annualLeaveFmt(summary.confirmedBalance)}h</small>`:''}</td><td><div class="annualLeaveActions"><button class="btn gray small" onclick="openAnnualLeaveAttendance(${e.id})">출근확인</button>${editable?`<button class="btn gray small" onclick="adjustLeave(${e.id})">잔여확정</button>`:''}${retired&&editable?(settled?`<button type="button" class="btn green small" onclick="annualLeaveSetSettlement(${e.id},false)">정산 복구</button>`:`<button type="button" class="btn gray small" onclick="annualLeaveSetSettlement(${e.id},true)">정산완료</button>`):''}</div></td></tr>`;
+  return `<tr data-annual-employee="${e.id}" class="${retired?'annualLeaveRetiredRow':''} ${firstRetired?'annualLeaveRetiredFirst':''} ${settled?'annualLeaveSettledRow':''}" ondragover="annualLeaveOrderDragOver(event,${e.id})" ondrop="annualLeaveOrderDrop(event,${e.id})"><td class="annualLeavePinned" style="--employee-print-bg:${employeeColor(e)}"><div class="annualLeaveNameRow"><div class="annualLeaveNameInfo">${editable?`<span class="scheduleDragHandle annualLeaveOrderGrip" draggable="${annualLeaveOrderAvailable===true?'true':'false'}" ondragstart="annualLeaveOrderDragStart(event,${e.id})" ondragend="annualLeaveOrderDragEnd()" title="이름을 잡아 위아래로 끌면 연차관리 순서만 바뀝니다" aria-label="${esc(e.name)} 연차관리 순서 이동"><span class="scheduleDragGrip">⋮⋮</span><b>${esc(e.name)}</b></span>`:`<b>${esc(e.name)}</b>`}<small>입사 ${esc(e.hire_date||'미등록')}</small>${retired?``:`<small>${esc(workTypeForDate(e,year+'-12-31'))}</small>`}${settled?'<span class="annualLeaveSettledBadge">정산완료</span>':''}</div></div></td>${monthCells}<td class="annualLeaveStat annualLeaveAccrualBreakdown" title="입사 후 누적 ${annualLeaveFmt(lifetimeEarned.days)}개 = 이전 연도 ${annualLeaveFmt(priorEarned.days)}개 + ${year}년 ${annualLeaveFmt(ann.days)}개"><b>${annualLeaveFmt(lifetimeEarned.days)}개</b><small>입사 후 누적 · ${annualLeaveFmt(lifetimeEarned.hours)}h</small><small>${year}년 발생 ${annualLeaveFmt(ann.days)}개 · ${annualLeaveFmt(ann.hours)}h</small>${priorEarned.days?`<small class="annualLeavePreviousAccrual">이전연도 발생 +${annualLeaveFmt(priorEarned.days)}개 · ${annualLeaveFmt(priorEarned.hours)}h</small>`:''}${anniversaryLabel?`<small title="${esc(anniversaryLabel)} · 1주년 15일, 3주년부터 가산" style="color:#1761b9;font-weight:650">${esc(anniversaryLabel)}</small>`:''}${upcoming.days?`<small title="입사일 기준 추정 · 아직 원장 미반영">예정 ${annualLeaveFmt(upcoming.days)}개 (${annualLeaveFmt(upcoming.hours)}h)</small>`:''}${sickMissedLabel}</td><td class="annualLeaveStat">${annualLeaveFmt(completedUsed)}개<small>${futureUsed?'사용예정 '+annualLeaveFmt(futureUsed)+'개':'완료 기준'}</small></td><td class="annualLeaveStat balance ${balance<0?'negative':''}">${annualLeaveFmt(balance)}h<small>${cutoff?(futureHours>0?'예정 사용 -'+annualLeaveFmt(futureHours)+'h (미차감)':'선택 연도 기준 원장'):`${carryover.asOf} 현재 잔여 · 차년도 잠정이월`}</small>${priorEarned.days?`<small class="annualLeaveCarryoverLabel" title="전년도까지 발생한 연차 중 사용·잔여확정을 적용한 이월 잔여">${year-1}년 말 잔여 이월 ${annualLeaveFmt(carryover.balance)}h${carryover.confirmed?'':' (잠정)'}</small>`:''}${summary?.confirmedDate?`<small class="annualLeaveConfirmedMark" title="직원관리와 연동된 잔여확정">잔여확정 ${esc(summary.confirmedDate)} · 기준 ${annualLeaveFmt(summary.confirmedBalance)}h</small>`:''}</td><td><div class="annualLeaveActions"><button class="btn gray small" onclick="openAnnualLeaveAttendance(${e.id})">출근확인</button>${editable?`<button class="btn gray small" onclick="adjustLeave(${e.id})">잔여확정</button>`:''}${retired&&editable?(settled?`<button type="button" class="btn green small" onclick="annualLeaveSetSettlement(${e.id},false)">정산 복구</button>`:`<button type="button" class="btn gray small" onclick="annualLeaveSetSettlement(${e.id},true)">정산완료</button>`):''}</div></td></tr>`;
  }).join(''):`<tr><td colspan="17" style="padding:24px">${settledCount&&!annualLeaveShowSettled?'정산완료로 숨긴 직원만 있습니다. 위 [정산완료 보기]에서 복구할 수 있습니다.':'해당 연도에 재직한 직원이 없습니다.'}</td></tr>`;
  scheduleViewportHeaderRequest();
  if(tiles){
   const carryoverFinal=(`${year-1}-12-31`<=today);
   const leaveCaption=cutoff?'선택 연도 잔여 합계':'현재 확인된 차년도 잠정잔여';
-  tiles.innerHTML=`<div class="annualLeaveTile"><small>${year}년 발생 합계</small><b>${annualLeaveFmt(grandAccrual)}개</b>${grandAccrualFuture?`<small>입사일 기준 발생예정 ${annualLeaveFmt(grandAccrualFuture)}개</small>`:''}</div><div class="annualLeaveTile"><small>${year}년 사용 완료 / 예정</small><b>${annualLeaveFmt(grandUsed)}개<small style="font-size:12px;font-weight:500"> / 예정 ${annualLeaveFmt(grandFuture)}개</small></b></div><div class="annualLeaveTile"><small>${leaveCaption}</small><b>${annualLeaveFmt(grandBalance)}h</b></div><div class="annualLeaveTile"><small>${year-1}년 잔여 이월${carryoverFinal?'':' (잠정)'}</small><b>${annualLeaveFmt(grandCarryover)}h</b><small>${carryoverFinal?'전년도 12/31 원장 기준':today+' 원장 기준 · 연말에 변동 가능'}</small></div><div class="annualLeaveTile"><small>연차 출근요건 확인 필요</small><b>${missing}명</b></div>`;
+  tiles.innerHTML=`<div class="annualLeaveTile"><small>${year}년 발생 합계</small><b>${annualLeaveFmt(grandAccrual)}개</b><small>이전연도 발생 ${annualLeaveFmt(grandPriorAccrual)}개 · 입사 후 누적 ${annualLeaveFmt(grandPriorAccrual+grandAccrual)}개</small>${grandAccrualFuture?`<small>입사일 기준 발생예정 ${annualLeaveFmt(grandAccrualFuture)}개</small>`:''}</div><div class="annualLeaveTile"><small>${year}년 사용 완료 / 예정</small><b>${annualLeaveFmt(grandUsed)}개<small style="font-size:12px;font-weight:500"> / 예정 ${annualLeaveFmt(grandFuture)}개</small></b></div><div class="annualLeaveTile"><small>${leaveCaption}</small><b>${annualLeaveFmt(grandBalance)}h</b></div><div class="annualLeaveTile"><small>${year-1}년 잔여 이월${carryoverFinal?'':' (잠정)'}</small><b>${annualLeaveFmt(grandCarryover)}h</b><small>${carryoverFinal?'전년도 12/31 원장 기준':today+' 원장 기준 · 연말에 변동 가능'}</small></div><div class="annualLeaveTile"><small>연차 출근요건 확인 필요</small><b>${missing}명</b></div>`;
  }
 }
 function openAnnualLeaveMonth(id,ym){
