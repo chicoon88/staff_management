@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>직원관리 대시보드 2026.11.27_10</title>
-<meta name="dashboard-build-version" content="2026.11.27_10">
+<title>직원관리 대시보드 2026.11.27_11</title>
+<meta name="dashboard-build-version" content="2026.11.27_11">
 <script id="dashboardBuildInfoJS">
 document.addEventListener('DOMContentLoaded',()=>{
  const version=document.querySelector('meta[name="dashboard-build-version"]')?.getAttribute('content');
@@ -2088,7 +2088,7 @@ body.commerceStoreMode .mobileNav .nav[data-page]{display:none!important}
 </div>
 
 <section id="commercePage" class="page">
- <div class="commerceHero"><h1 class="title">88커머스 <span class="commerceBuildVersion" data-dashboard-version="true">버전 2026.11.27_10</span></h1><div class="sub">대시보드에서 직접 입력·수정하고 자동 계산하며, 카페24 반영과 원본 Excel 형식 다운로드까지 한곳에서 관리합니다.</div></div>
+ <div class="commerceHero"><h1 class="title">88커머스 <span class="commerceBuildVersion" data-dashboard-version="true">버전 2026.11.27_11</span></h1><div class="sub">대시보드에서 직접 입력·수정하고 자동 계산하며, 카페24 반영과 원본 Excel 형식 다운로드까지 한곳에서 관리합니다.</div></div>
 
  <section id="commerceMenuSettings" class="card hidden" aria-labelledby="commerceMenuConfigTitle" style="margin:12px 0 16px">
  <div class="row" style="gap:12px;align-items:flex-start;flex-wrap:wrap"><div><h2 id="commerceMenuConfigTitle" style="margin:0 0 5px;font-size:18px">88커머스 표시 메뉴 설정</h2>
@@ -2179,7 +2179,7 @@ body.commerceStoreMode .mobileNav .nav[data-page]{display:none!important}
 </section>
 
 <section id="homePage" class="page active">
- <div class="row"><div><div class="homeBuildTitle"><h1 class="title" id="homeTitle">현황</h1><span class="buildVersionBadge" id="homeBuildVersion" data-dashboard-version="true">버전 2026.11.27_10</span></div><div class="sub">업장과 월을 선택하면 모든 정보가 같이 바뀝니다.</div></div></div>
+ <div class="row"><div><div class="homeBuildTitle"><h1 class="title" id="homeTitle">현황</h1><span class="buildVersionBadge" id="homeBuildVersion" data-dashboard-version="true">버전 2026.11.27_11</span></div><div class="sub">업장과 월을 선택하면 모든 정보가 같이 바뀝니다.</div></div></div>
  <div class="cards">
   <div class="card"><div class="k">재직 직원</div><div class="v" id="kEmp">0명</div></div>
   <div class="card"><div class="k">이번 달 연차 발생</div><div class="v" id="kLeaveDue">0명</div></div>
@@ -2424,7 +2424,7 @@ body.commerceStoreMode .mobileNav .nav[data-page]{display:none!important}
 
  <section id="payrollPage" class="page">
  <div class="row">
-  <div><h1 class="title">급여관리 <span data-dashboard-version="true" data-version-no-prefix="true" style="font-size:12px;color:#315efb;background:#eef3ff;border-radius:999px;padding:4px 8px;vertical-align:middle">2026.11.27_10</span></h1><div class="sub">월별 급여대장을 검산하고, 기간별·직원별 누적 급여도 조회합니다.</div></div>
+  <div><h1 class="title">급여관리 <span data-dashboard-version="true" data-version-no-prefix="true" style="font-size:12px;color:#315efb;background:#eef3ff;border-radius:999px;padding:4px 8px;vertical-align:middle">2026.11.27_11</span></h1><div class="sub">월별 급여대장을 검산하고, 기간별·직원별 누적 급여도 조회합니다.</div></div>
   <div class="toolbar">
    <input type="file" id="payrollFile" accept=".xlsx,.xls,.xlsm" multiple style="display:none" onchange="importPayrollFiles(this.files);this.value=''">
    <button id="payrollBatchImportBtn" class="btn" onclick="$('payrollFile').click()">급여대장 여러개 불러오기</button>
@@ -17043,7 +17043,7 @@ const v27_5PriorSwitchStore=switchStore;
 switchStore=async function(...args){const ret=await v27_5PriorSwitchStore(...args);syncCommerceWorkspaceNavigation();return ret};
 // A previously chosen 88 menu remains inside 88, not the unrelated labor/time screens.
 document.addEventListener('DOMContentLoaded',()=>{syncCommerceWorkspaceNavigation()});
-/* 2026.11.27_10 메가팜스365 급여표 연동: 원본 XLSM 보호 / 충돌 확인 / 지급완료 기록 */
+/* 2026.11.27_11 메가팜스365 급여표 연동: 원본 XLSM 보호 / 충돌 확인 / 지급완료 기록 */
 let payrollBridge={file:null,buffer:null,zip:null,ws:null,sheetPath:'',sheetXml:null,stylesXml:null,
   timeline:[],nameRows:new Map(),duplicateNames:new Set(),cells:new Map(),entries:[],payRecords:[],incRecords:[],
   workMonth:'',review:[],edits:new Map(),redMarks:new Set(),baseStore:null,storagePath:'',storageRevision:'',history:[],pendingReasons:[],saving:false};
@@ -17289,6 +17289,7 @@ function pbPatchNumCell(doc,cells,ref,value){
  return c;
 }
 // 기존 XLSM ZIP 항목을 보존하며 승인이 끝난 셀만 반영하는 공유 빌더
+// v11: JSZip.file()의 createFolders 기본 true가 디렉터리 없는 XLSM에 xl/, xl/worksheets/ 항목을 추가하므로 기존 경로 덮어쓰기에는 false를 지정한다.
 async function pbBuildSheetBytes(){
  const s=payrollBridge;if(!s.file)throw new Error('급여표 원본 없음');
  let zip=await JSZip.loadAsync(s.buffer), xml=pbXml(await zip.file(s.sheetPath).async('string')),
@@ -17302,12 +17303,12 @@ async function pbBuildSheetBytes(){
    if(!style){style=pbRedStyle(base);styleMemo.set(base,style)}c.setAttribute('s',style);
   }
  }finally{s.stylesXml=baseStyles}
- let ser=new XMLSerializer();zip.file(s.sheetPath,ser.serializeToString(xml));
- if(s.redMarks.size)zip.file('xl/styles.xml',ser.serializeToString(styles));
+ let ser=new XMLSerializer();zip.file(s.sheetPath,ser.serializeToString(xml),{createFolders:false});
+ if(s.redMarks.size)zip.file('xl/styles.xml',ser.serializeToString(styles),{createFolders:false});
  let out=await zip.generateAsync({type:'uint8array',compression:'DEFLATE',compressionOptions:{level:6}}),
  original=await JSZip.loadAsync(s.buffer),check=await JSZip.loadAsync(out);
  const originalPaths=Object.keys(original.files).sort(),newPaths=Object.keys(check.files).sort();
- if(JSON.stringify(originalPaths)!==JSON.stringify(newPaths))throw new Error('원본 구성 항목이 변경됨');
+ if(JSON.stringify(originalPaths)!==JSON.stringify(newPaths)){const extra=newPaths.filter(x=>!original.files[x]),missing=originalPaths.filter(x=>!check.files[x]);throw new Error('원본 구성 항목이 변경됨: 추가 '+(extra.join(', ')||'없음')+' / 누락 '+(missing.join(', ')||'없음'));}
  for(let path of originalPaths){if(path===s.sheetPath||(s.redMarks.size&&path==='xl/styles.xml'))continue;
   if(original.files[path].dir)continue;
   let before=await original.file(path).async('uint8array'),after=await check.file(path).async('uint8array');
@@ -17463,9 +17464,9 @@ async function pbDownload(){
   }
   s.stylesXml=baseStyles;
   let ser=new XMLSerializer(),newXML=ser.serializeToString(xml),newStyle=ser.serializeToString(styles);
-  zip.file(s.sheetPath,newXML);if(s.redMarks.size)zip.file('xl/styles.xml',newStyle);
+  zip.file(s.sheetPath,newXML,{createFolders:false});if(s.redMarks.size)zip.file('xl/styles.xml',newStyle,{createFolders:false});
   let out=await zip.generateAsync({type:'uint8array',compression:'DEFLATE',compressionOptions:{level:6}}),again=await JSZip.loadAsync(out),orig=await JSZip.loadAsync(s.buffer);
-  let expected=Object.keys(orig.files).sort(),actual=Object.keys(again.files).sort();if(JSON.stringify(expected)!==JSON.stringify(actual))throw new Error('원본 ZIP 구성 파일이 달라졌습니다.');
+  let expected=Object.keys(orig.files).sort(),actual=Object.keys(again.files).sort();if(JSON.stringify(expected)!==JSON.stringify(actual)){const extra=actual.filter(x=>!orig.files[x]),missing=expected.filter(x=>!again.files[x]);throw new Error('원본 ZIP 구성 항목 차이: 추가 '+(extra.join(', ')||'없음')+' / 누락 '+(missing.join(', ')||'없음'));}
   for(let path of ['xl/vbaProject.bin','xl/workbook.xml','xl/_rels/workbook.xml.rels','xl/worksheets/sheet2.xml','xl/calcChain.xml','xl/tables/table1.xml']){
    if(!orig.file(path))continue;let before=await orig.file(path).async('uint8array'),after=await again.file(path).async('uint8array');
    if(before.length!==after.length||before.some((v,i)=>v!==after[i]))throw new Error('원본 보존 검사 실패: '+path);
