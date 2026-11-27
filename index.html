@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>직원관리 대시보드 2026.11.27_6</title>
-<meta name="dashboard-build-version" content="2026.11.27_6">
+<title>직원관리 대시보드 2026.11.27_7</title>
+<meta name="dashboard-build-version" content="2026.11.27_7">
 <script id="dashboardBuildInfoJS">
 document.addEventListener('DOMContentLoaded',()=>{
  const version=document.querySelector('meta[name="dashboard-build-version"]')?.getAttribute('content');
@@ -768,20 +768,24 @@ tr[draggable="true"]:active,.empDragHandle:active{cursor:grabbing}
 #employeesPage th:nth-child(12),#employeesPage td:nth-child(12){width:94px}
 #employeesPage th:nth-child(13),#employeesPage td:nth-child(13){width:96px}
 
+/* 말일 지급 체크 셀 */
+#employeesPage th:nth-child(14),#employeesPage td:nth-child(14){width:78px}
+#employeesPage .monthEndPayCell{display:flex;align-items:center;justify-content:center;gap:4px;font-size:12px;white-space:nowrap;cursor:pointer}
+#employeesPage .monthEndPayCell input{width:16px;height:16px}
 /* 연차 기준 / 잔여 */
-#employeesPage th:nth-child(14),#employeesPage td:nth-child(14){width:112px}
-#employeesPage th:nth-child(15),#employeesPage td:nth-child(15){width:72px}
+#employeesPage th:nth-child(15),#employeesPage td:nth-child(15){width:112px}
+#employeesPage th:nth-child(16),#employeesPage td:nth-child(16){width:72px}
 
 /* 비고를 넓게 */
-#employeesPage th:nth-child(16),#employeesPage td:nth-child(16){
+#employeesPage th:nth-child(17),#employeesPage td:nth-child(17){
   width:240px;
   min-width:240px;
 }
 
 /* 출력색 / 문서 / 관리 */
-#employeesPage th:nth-child(17),#employeesPage td:nth-child(17){width:86px}
-#employeesPage th:nth-child(18),#employeesPage td:nth-child(18){width:265px}
-#employeesPage th:nth-child(19),#employeesPage td:nth-child(19){width:210px}
+#employeesPage th:nth-child(18),#employeesPage td:nth-child(18){width:86px}
+#employeesPage th:nth-child(19),#employeesPage td:nth-child(19){width:265px}
+#employeesPage th:nth-child(20),#employeesPage td:nth-child(20){width:210px}
 #employeesPage .empManageActions{display:flex;gap:4px;flex-wrap:wrap;align-items:center;justify-content:center}
 
 #employeesPage .empDragHandle{
@@ -848,8 +852,8 @@ body.resizingEmployeeColumn *{
 }
 
 /* 비고는 기본값도 더 넓게 */
-#employeesPage th:nth-child(16),
-#employeesPage td:nth-child(16){
+#employeesPage th:nth-child(17),
+#employeesPage td:nth-child(17){
   width:240px;
   min-width:240px;
 }
@@ -877,8 +881,8 @@ body.resizingEmployeeColumn *{
 #employeesPage .renewalBox .due{color:#b42318}.renewalBox .soon{color:#b54708}.renewalBox .ok{color:#067647}
 #employeesPage .scheduleHideToggle{display:flex;gap:4px;align-items:center;justify-content:center;margin-top:3px;font-size:10px;color:#475467;white-space:normal}
 #employeesPage .scheduleHideToggle input{margin:0}
-#employeesPage th:nth-child(18),
-#employeesPage td:nth-child(18){
+#employeesPage th:nth-child(19),
+#employeesPage td:nth-child(19){
   width:265px;
 }
 
@@ -2084,7 +2088,7 @@ body.commerceStoreMode .mobileNav .nav[data-page]{display:none!important}
 </div>
 
 <section id="commercePage" class="page">
- <div class="commerceHero"><h1 class="title">88커머스 <span class="commerceBuildVersion" data-dashboard-version="true">버전 2026.11.27_6</span></h1><div class="sub">대시보드에서 직접 입력·수정하고 자동 계산하며, 카페24 반영과 원본 Excel 형식 다운로드까지 한곳에서 관리합니다.</div></div>
+ <div class="commerceHero"><h1 class="title">88커머스 <span class="commerceBuildVersion" data-dashboard-version="true">버전 2026.11.27_7</span></h1><div class="sub">대시보드에서 직접 입력·수정하고 자동 계산하며, 카페24 반영과 원본 Excel 형식 다운로드까지 한곳에서 관리합니다.</div></div>
 
  <section id="commerceMenuSettings" class="card hidden" aria-labelledby="commerceMenuConfigTitle" style="margin:12px 0 16px">
  <div class="row" style="gap:12px;align-items:flex-start;flex-wrap:wrap"><div><h2 id="commerceMenuConfigTitle" style="margin:0 0 5px;font-size:18px">88커머스 표시 메뉴 설정</h2>
@@ -2175,7 +2179,7 @@ body.commerceStoreMode .mobileNav .nav[data-page]{display:none!important}
 </section>
 
 <section id="homePage" class="page active">
- <div class="row"><div><div class="homeBuildTitle"><h1 class="title" id="homeTitle">현황</h1><span class="buildVersionBadge" id="homeBuildVersion" data-dashboard-version="true">버전 2026.11.27_6</span></div><div class="sub">업장과 월을 선택하면 모든 정보가 같이 바뀝니다.</div></div></div>
+ <div class="row"><div><div class="homeBuildTitle"><h1 class="title" id="homeTitle">현황</h1><span class="buildVersionBadge" id="homeBuildVersion" data-dashboard-version="true">버전 2026.11.27_7</span></div><div class="sub">업장과 월을 선택하면 모든 정보가 같이 바뀝니다.</div></div></div>
  <div class="cards">
   <div class="card"><div class="k">재직 직원</div><div class="v" id="kEmp">0명</div></div>
   <div class="card"><div class="k">이번 달 연차 발생</div><div class="v" id="kLeaveDue">0명</div></div>
@@ -2420,7 +2424,7 @@ body.commerceStoreMode .mobileNav .nav[data-page]{display:none!important}
 
  <section id="payrollPage" class="page">
  <div class="row">
-  <div><h1 class="title">급여관리 <span data-dashboard-version="true" data-version-no-prefix="true" style="font-size:12px;color:#315efb;background:#eef3ff;border-radius:999px;padding:4px 8px;vertical-align:middle">2026.11.27_6</span></h1><div class="sub">월별 급여대장을 검산하고, 기간별·직원별 누적 급여도 조회합니다.</div></div>
+  <div><h1 class="title">급여관리 <span data-dashboard-version="true" data-version-no-prefix="true" style="font-size:12px;color:#315efb;background:#eef3ff;border-radius:999px;padding:4px 8px;vertical-align:middle">2026.11.27_7</span></h1><div class="sub">월별 급여대장을 검산하고, 기간별·직원별 누적 급여도 조회합니다.</div></div>
   <div class="toolbar">
    <input type="file" id="payrollFile" accept=".xlsx,.xls,.xlsm" multiple style="display:none" onchange="importPayrollFiles(this.files);this.value=''">
    <button id="payrollBatchImportBtn" class="btn" onclick="$('payrollFile').click()">급여대장 여러개 불러오기</button>
@@ -2478,11 +2482,13 @@ body.commerceStoreMode .mobileNav .nav[data-page]{display:none!important}
 
  <div class="card" id="payrollExcelBridge" style="margin-top:14px">
   <div class="row">
-   <div><h3 style="margin:0">메가팜스365 급여표 원본 연동 · 검증</h3><div class="help">기존 급여표 .xlsm 파일을 기준으로 직원별 정기급여와 말일 선지급금액을 대조합니다. 원본의 매크로·시트·수식·퇴사자 행과 모든 기존 데이터를 유지하며, 사용자가 승인한 금액 및 지급완료 글자색만 별도 사본에 반영합니다.</div></div>
+   <div><h3 style="margin:0">메가팜스365 급여표 원본 연동 · 검증</h3><div class="help">최초 1회 원본을 등록하면 서버에 보관하고 다음 접속부터 자동으로 불러옵니다. 승인한 수정·송금완료는 웹에서 저장하며 변경 전 버전도 보관합니다. 원본의 매크로·수식·퇴사자 행 순서는 유지합니다.</div></div>
    <div class="toolbar">
-    <input type="file" id="pbFile" accept=".xlsm" style="display:none" onchange="pbOpenFile(this.files[0]);this.value=''">
-    <button type="button" class="btn" onclick="$('pbFile').click()">기존 급여표 선택·검증</button>
-    <button type="button" class="btn green" id="pbExportBtn" onclick="pbDownload()" disabled>원본 양식 반영본 다운로드</button>
+    <input type="file" id="pbFile" accept=".xlsm" style="display:none" onchange="pbRegisterMaster(this.files[0]);this.value=''">
+    <button type="button" class="btn" onclick="$('pbFile').click()">최초 원본 등록 / 원본 교체</button>
+    <button type="button" class="btn gray" onclick="pbLoadStored()">서버 최신 급여표 불러오기</button>
+    <button type="button" class="btn green" id="pbSaveServerBtn" onclick="pbSaveServer()" disabled>확인한 수정 서버에 저장</button>
+    <button type="button" class="btn gray" id="pbExportBtn" onclick="pbDownload()" disabled>현재 급여표 다운로드</button>
    </div>
   </div>
   <div class="toolbar" style="margin-top:12px">
@@ -2492,9 +2498,11 @@ body.commerceStoreMode .mobileNav .nav[data-page]{display:none!important}
    <button type="button" class="btn gray small" onclick="pbCompare()">대시보드 자료 다시 대조</button>
   </div>
   <p class="help" style="margin:9px 0 5px"><b>정기급여</b>는 근무월 다음달 10일 지급액이고, <b>말일 선지급</b>은 같은 근무월 말일 지급액입니다. 인센일수는 해당 월 주말·공휴일 근무일수이며, 정기급여 지급완료 표시 시 두 달 전 인센일수도 빨간색으로 변경합니다. <b>빨간색은 실제 송금확인 후에만 적용</b>합니다. 기존 불일치 금액은 임의 덮어쓰기 하지 않습니다.</p>
-  <div id="pbState" class="help" role="status" aria-live="polite" style="margin:8px 0">원본 .xlsm 파일을 선택하면 변경 없이 대조합니다.</div>
+  <div id="pbState" class="help" role="status" aria-live="polite" style="margin:8px 0">원본이 서버에 저장돼 있으면 자동으로 불러옵니다.</div>
+  <div class="toolbar" style="margin-bottom:8px"><button type="button" class="btn gray small" onclick="pbShowHistory()">이전 버전 / 수정이력 보기</button><span id="pbServerRevision" class="help">저장된 원본 확인 전</span></div>
+  <div id="pbHistoryBox" class="help" style="display:none;margin-bottom:10px"></div>
   <div class="tablewrap" style="max-height:510px;overflow:auto"><table style="min-width:850px"><thead><tr><th>직원</th><th>항목 / 원본 셀</th><th>대시보드 자료</th><th>현재 급여표</th><th>대조 결과</th><th>직접 확인 후 반영</th></tr></thead><tbody id="pbReviewBody"><tr><td colspan="6" style="padding:20px">급여표 원본 선택 전입니다.</td></tr></tbody></table></div>
-  <p class="help" style="margin-top:7px">※ 노무사 선지급공제는 실제 송금내역과 다른 경우가 있어 참고금액으로 표시합니다. 차이·복수 지급은 담당자가 직접 확인해야 합니다. 이 화면에서 원본 Excel 또는 노무사 급여대장 자체를 덮어쓰지 않습니다. 파일은 사용자의 PC에서 분석하며 급여표 원본을 서버에 업로드하지 않습니다.</p>
+  <p class="help" style="margin-top:7px">※ 말일지급 대상자는 직원관리 체크값으로 판단합니다. 자동 대조값이 잘못됐으면 ‘직접 수정’으로 근거를 남기고 고치세요. 기존 값과 충돌하는 경우 자동 덮어쓰기하지 않습니다. 서버에는 최신본 1개를 표시하지만 이전 버전은 삭제하지 않습니다. 노무사 원본 급여대장은 변경하지 않습니다.</p>
  </div>
 </section>
 
@@ -2524,7 +2532,7 @@ body.commerceStoreMode .mobileNav .nav[data-page]{display:none!important}
   </div>
   <details class="auditHelpDisclosure"><summary>직원관리 사용방법 보기</summary><div class="help" style="margin-bottom:8px">이름·주민등록번호·계좌번호·직책·업무·입사일·근무형태·휴게·급여형태·비고는 표에서 바로 수정할 수 있습니다. <b>재직자는 기본적으로 내가 정한 연번순</b>이며 필요할 때만 입사일 오름차순으로 볼 수 있습니다. <b>퇴사자는 퇴사일 오름차순으로 자동 정렬</b>되며 <b>퇴사자도 표에서 직접 수정</b>할 수 있습니다. 퇴사일·과거 근무조건 변경은 저장 전 영향 경고가 나타납니다. <b>“스케줄·근로 제외”를 체크하면 재직·급여자료는 그대로 두고 월간스케줄·주간편성·근로시간에서 숨깁니다.</b> 문서 칸에서는 근로계약서의 계약 종료일을 기준으로 재계약 D-day와 근로·연봉계약서 등록 여부를 바로 확인합니다. 연봉계약서는 별도 기간을 관리하지 않고 근로계약기간을 따르는 원본 보관 문서로 취급합니다. 퇴사자 화면에서는 사직서 PDF 보관 여부도 확인할 수 있습니다. 근무형태가 날짜별로 바뀌는 직원은 우측 “근무조건”에서 적용 시작일별 이력을 등록합니다. 표 머리글의 오른쪽 경계선을 좌우로 끌면 열 폭을 직접 조절할 수 있고 자동 저장됩니다. 비고는 여러 줄로 입력할 수 있습니다.</div></details>
   <datalist id="employeeWorkTypeSuggestions"><option value="주5일 스케줄근무"></option><option value="주4일 스케줄근무"></option><option value="기타"></option></datalist>
-  <div class="tablewrap"><table><thead><tr><th>연번</th><th class="name">성명</th><th>주민등록번호</th><th>계좌번호</th><th>직책</th><th>업무</th><th>입사일</th><th>퇴사일</th><th>근무형태</th><th>기본시간</th><th>휴게시간(분)</th><th>스케줄방식</th><th>급여형태</th><th>연차 기준</th><th>연차 잔여</th><th>비고</th><th>출력색</th><th>문서 / 재계약</th><th></th></tr></thead><tbody id="employeeBody"></tbody></table></div>
+  <div class="tablewrap"><table><thead><tr><th>연번</th><th class="name">성명</th><th>주민등록번호</th><th>계좌번호</th><th>직책</th><th>업무</th><th>입사일</th><th>퇴사일</th><th>근무형태</th><th>기본시간</th><th>휴게시간(분)</th><th>스케줄방식</th><th>급여형태</th><th title="체크 시 해당 근무월 말일에 지급, 정기급여는 다음달 10일 지급">말일지급</th><th>연차 기준</th><th>연차 잔여</th><th>비고</th><th>출력색</th><th>문서 / 재계약</th><th></th></tr></thead><tbody id="employeeBody"></tbody></table></div>
  </div>
 </section>
 
@@ -6634,6 +6642,21 @@ function employeePayTypeOptions(e){
    ['business','사업소득']
  ].map(([v,n])=>`<option value="${v}" ${e.pay_type===v?'selected':''}>${n}</option>`).join('');
 }
+async function saveMonthEndPay(id,checked,input){
+ const e=allEmployees().find(x=>Number(x.id)===Number(id));if(!e)return;
+ if(!isAppAdmin()||!requireModuleEdit('employees')){if(input)input.checked=!checked;alert('급여 지급일 설정은 관리자만 수정할 수 있습니다.');return;}
+ const next=checked?'month_end':'10', delay=checked?0:1;
+ if(!confirm(`${e.name} 급여 지급일을 ${checked?'근무월 말일':'다음달 10일'}로 설정할까요?\n\n기존 급여대장·급여표의 금액은 변경하지 않습니다. 월별 연동 분류에 적용됩니다.`)){
+  if(input)input.checked=!checked;return;
+ }
+ if(input)input.disabled=true;
+ let q=await sb.from('employees').update({salary_pay_day:next,salary_delay_months:delay}).eq('id',id).eq('store_id',storeId()).select('id,salary_pay_day,salary_delay_months');
+ if(q.error||!q.data?.length||q.data.some(x=>x.salary_pay_day!==next||Number(x.salary_delay_months)!==delay)){alert('말일지급 설정 실패: '+(q.error?.message||'직원 레코드 없음'));if(input){input.checked=!checked;input.disabled=false}return;}
+ e.salary_pay_day=next;e.salary_delay_months=delay;
+ if(input)input.disabled=false;
+ await refreshAll();
+ if(payrollBridge.file&&Number(payrollBridge.baseStore)===Number(storeId()))await pbCompare();
+}
 async function saveEmployeeInline(id,field,value){
  let e=allEmployees().find(x=>x.id===id);
  if(!e)return;
@@ -6882,7 +6905,7 @@ async function moveEmployeeToPosition(dragId,targetId,after){
 }
 
 
-const EMPLOYEE_COL_WIDTH_KEY='staff_dashboard_employee_col_widths_v3';
+const EMPLOYEE_COL_WIDTH_KEY='staff_dashboard_employee_col_widths_v4';
 
 function getEmployeeTable(){
  return document.querySelector('#employeesPage .tablewrap table');
@@ -6890,6 +6913,10 @@ function getEmployeeTable(){
 function loadEmployeeColumnWidths(){
  try{
   const existing=localStorage.getItem(EMPLOYEE_COL_WIDTH_KEY);
+  if(existing===null){let prior=localStorage.getItem('staff_dashboard_employee_col_widths_v3');if(prior){
+    let prev=JSON.parse(prior)||{},moved={};Object.entries(prev).forEach(([k,v])=>{let i=Number(k);moved[Number.isFinite(i)&&i>=13?String(i+1):k]=v});
+    localStorage.setItem(EMPLOYEE_COL_WIDTH_KEY,JSON.stringify(moved));return moved;
+  }}
   if(existing!==null)return JSON.parse(existing)||{};
   // v2 table had a separate Select column. Preserve the user's other widths.
   const old=JSON.parse(localStorage.getItem('staff_dashboard_employee_col_widths_v2')||'{}')||{};
@@ -7186,6 +7213,7 @@ function renderEmployees(){
    <td>${currentCond.work_type==='36'?'주4일':currentCond.work_type==='40'?'주5일':'기타'}<br><span class="help">${conditionScheduleMode(currentCond)==='auto'?'고정요일 자동채우기':'스케줄 직접입력'}</span><div class="empScheduleToggles">${employeeView==='active'?`<label class="scheduleHideToggle" title="직원관리·급여관리에는 그대로 두고 월간스케줄·주간편성·근로시간에서만 숨깁니다."><input type="checkbox" ${employeeMonthlyScheduleHidden(e)?'checked':''} onchange="saveMonthlyScheduleVisibility(${e.id},this.checked,this)">스케줄·근로 제외</label>`:''}<label class="empBonusToggle" title="회사 별도상여 대상자 · 체크값만 노무사 O열 추가상여의 대상 판정에 사용"><input type="checkbox" ${e.holiday_bonus_eligible===true?'checked':''} onchange="saveEmployeeInline(${e.id},'holiday_bonus_eligible',this.checked)">상여대상</label></div></td>
 
    <td class="empInlineCell">${payTypeCell}</td>
+   <td class="empInlineCell" style="text-align:center"><label class="monthEndPayCell" title="체크하면 근무월 말일에 지급하며, 체크 해제 시 다음달 10일 정기지급"><input type="checkbox" ${payDayRule(e)==='month_end'&&salaryDelay(e)===0?'checked':''} onchange="saveMonthEndPay(${e.id},this.checked,this)"><span>말일</span></label></td>
 
    <!-- 연차기준: 원래 compact 표시 -->
    <td>주 ${leaveWeeklyHoursAt(e,employeeRefDate)}h<br><span class="help">월 +${leaveMonthlyHoursAt(e,employeeRefDate)}h / 1일 -${leaveUseHoursDisplay(e,employeeRefDate)}</span>${monthlyAccrualEmployeeBadge(e,isoToday())}</td>
@@ -7702,7 +7730,7 @@ async function openEmployee(id,isRetired=false){
  <div class="field"><label>휴게(분)</label><input id="eBreak" type="number" value="${currentCond.break_minutes||60}"></div>
  <div class="field"><label>급여형태</label><select id="ePay" onchange="applyPayPreset()"><option value="monthly">월급</option><option value="hourly">시급/파트타임</option><option value="daily">일당/파트타임</option><option value="business">사업소득</option></select></div>
  <div class="field"><label>기본급 지급시차(개월)</label><input id="eSalaryDelay" type="number" min="0" max="12" value="${salaryDelay(e)}"></div>
- <div class="field"><label>급여 지급일</label><select id="ePayDay"><option value="10">10일</option><option value="month_end">말일</option><option value="25">25일</option></select></div>
+ <div class="field"><label>급여 지급일 (직원관리의 말일지급 체크와 연동)</label><select id="ePayDay"><option value="10">10일</option><option value="month_end">말일</option><option value="25">25일</option></select></div>
  <div class="field"><label>공휴일 인센 반영시차(개월)</label><input id="eIncentiveDelay" type="number" min="0" max="12" value="${incentiveDelay(e)}"></div>
  <div class="field"><label>연차 산정 주 소정시간</label><input id="eLeaveWeekly" type="number" step=".5" value="${leaveWeeklyHours(e)}"></div>
  <div class="field"><label>1년 미만 월 발생(h)</label><input id="eLeaveMonthly" type="number" step="1" value="${leaveMonthlyHours(e)}"></div>
@@ -17014,10 +17042,10 @@ const v27_5PriorSwitchStore=switchStore;
 switchStore=async function(...args){const ret=await v27_5PriorSwitchStore(...args);syncCommerceWorkspaceNavigation();return ret};
 // A previously chosen 88 menu remains inside 88, not the unrelated labor/time screens.
 document.addEventListener('DOMContentLoaded',()=>{syncCommerceWorkspaceNavigation()});
-/* 2026.11.27_6 메가팜스365 급여표 연동: 원본 XLSM 보호 / 충돌 확인 / 지급완료 기록 */
+/* 2026.11.27_7 메가팜스365 급여표 연동: 원본 XLSM 보호 / 충돌 확인 / 지급완료 기록 */
 let payrollBridge={file:null,buffer:null,zip:null,ws:null,sheetPath:'',sheetXml:null,stylesXml:null,
   timeline:[],nameRows:new Map(),duplicateNames:new Set(),cells:new Map(),entries:[],payRecords:[],incRecords:[],
-  workMonth:'',review:[],edits:new Map(),redMarks:new Set(),baseStore:null};
+  workMonth:'',review:[],edits:new Map(),redMarks:new Set(),baseStore:null,storagePath:'',storageRevision:'',history:[],pendingReasons:[]};
 const PB_NS='http://schemas.openxmlformats.org/spreadsheetml/2006/main';
 function pbMessage(t,error=false){let el=$('pbState');if(el){el.textContent=t;el.style.color=error?'#b42318':'#475467'}}
 function pbName(s){return String(s||'').normalize('NFKC').replace(/\s+/g,'').trim()}
@@ -17055,11 +17083,11 @@ function pbTimeline(headers){
  for(let i=1;i<a.length;i++)if(a[i].ym<=a[i-1].ym)throw new Error('급여표의 월 순서가 잘못되었습니다.');
  return a;
 }
-async function pbOpenFile(file){
+async function pbOpenFile(file,options={}){
  if(!file)return;if(!canViewModule('payroll'))return alert('급여관리 열람 권한이 없습니다.');
  let pharmacy=stores.find(x=>Number(x.id)===Number(storeId()));
  if(!String(pharmacy?.name||'').includes('메가팜스365'))return alert('메가팜스365약국을 선택한 후 급여표를 연동하세요. 다른 업장은 수정하지 않습니다.');
- payrollBridge.file=null;payrollBridge.edits.clear();payrollBridge.redMarks.clear();if($('pbExportBtn'))$('pbExportBtn').disabled=true;
+ payrollBridge.file=null;payrollBridge.edits.clear();payrollBridge.redMarks.clear();if($('pbExportBtn'))$('pbExportBtn').disabled=true;if($('pbSaveServerBtn'))$('pbSaveServerBtn').disabled=true;
  if(!/\.xlsm$/i.test(file.name))return alert('원본 양식을 보존하기 위해 .xlsm 파일만 선택하세요.');
  try{
   pbMessage('원본 XLSM 검사 중 · 아직 수정하지 않았습니다.');
@@ -17079,13 +17107,14 @@ async function pbOpenFile(file){
    let n=pbName(ws[`C${row}`]?.v);if(!n)continue;if(nameRows.has(n))duplicates.add(n);else nameRows.set(n,row);
   }
   payrollBridge={file,buffer:array,zip,ws,sheetPath:path,sheetXml:sx,stylesXml:styles,timeline,nameRows,
-   duplicateNames:duplicates,cells,entries:[],payRecords:[],incRecords:[],workMonth:'',review:[],edits:new Map(),redMarks:new Set(),baseStore:storeId()};
+   duplicateNames:duplicates,cells,entries:[],payRecords:[],incRecords:[],workMonth:'',review:[],edits:new Map(),redMarks:new Set(),baseStore:storeId(),storagePath:options.path||'',storageRevision:options.path||'',history:[],pendingReasons:[]};
   let sel=$('pbMonth'),options=timeline.filter(t=>t.year>=2026).map(t=>({ym:shiftMonth(t.ym,-1),t}));
   sel.innerHTML=options.map(({ym,t})=>`<option value="${ym}">${ym} 근무분 (정기 ${t.ym})</option>`).join('');
   sel.value=options.some(x=>x.ym===$('monthSelect')?.value)?$('monthSelect').value:(options.find(x=>x.ym==='2026-10')?.ym||options[0]?.ym||'');
-  $('pbExportBtn').disabled=false;
+  $('pbExportBtn').disabled=false;if($('pbSaveServerBtn'))$('pbSaveServerBtn').disabled=!options.path;
   pbMessage(`원본 확인: ${file.name} · ${timeline[0].ym}~${timeline[timeline.length-1].ym} · ${nameRows.size}명 · 기존 서식·매크로 보존`);
   await pbCompare();
+  return true;
  }catch(e){console.error(e);pbMessage('급여표 검사 실패: '+(e.message||e),true)}
 }
 async function pbCompare(){
@@ -17107,9 +17136,10 @@ async function pbCompare(){
     list.set(k,item);return item;
    }
   let entryNames=new Set();for(let p of state.entries){let n=pbName(p.employee_name),e=allEmployees().find(x=>Number(x.id)===Number(p.employee_id))||allEmployees().find(x=>pbName(x.name)===n),
-   display=e?.name||p.employee_name, v=pbNumber(p.net_pay)||0,d=pbNumber(p.other_deduction)||0,reg=add('regular',display,e,p,v,'급여대장 실지급');
-   reg.entryCount++;entryNames.add(pbName(display));
-   if(d){let adv=add('end',display,e,p,d,'노무사 선지급공제(참고)');adv.entryCount++}
+   display=e?.name||p.employee_name, v=pbNumber(p.net_pay)||0,d=pbNumber(p.other_deduction)||0,isEnd=e&&payDayRule(e)==='month_end';
+   entryNames.add(pbName(display));
+   if(isEnd){let value=v||d;if(value>0){let paid=add('end',display,e,p,value,v>0?'말일지급자 노무사 실지급액':'말일지급자 노무사 선지급공제(참고)');paid.entryCount++}}
+   else {let reg=add('regular',display,e,p,v,'급여대장 실지급');reg.entryCount++;if(d){let adv=add('end',display,e,p,d,'노무사 선지급공제(참고)');adv.entryCount++}}
   }
   for(let [name,row] of state.nameRows){if(state.duplicateNames.has(name))continue;
    let e=allEmployees().find(x=>pbName(x.name)===name);
@@ -17165,8 +17195,9 @@ function pbRenderReview(){
   let kind=x.kind==='regular'?'다음달 10일 정기급여':x.kind==='end'?'근무월 말일 선지급':'해당월 인센일수',bad=x.result!=='일치',change=x.addr&&x.db!==null&&x.db!==x.excel&&!x.duplicateName&&x.db>=0,
   paid=x.paid,cell=x.addr||'—',fmt=v=>x.kind==='incentive'?(v===null||v===undefined?'—':`${v}일`):pbMoney(v),
   btn=change?`<button class="btn gray small" onclick="pbConfirmAmount(decodeURIComponent('${encodeURIComponent(x.key).replaceAll("'",'%27')}'))">${x.kind==='incentive'?'일수 확인·반영':'금액 확인·반영'}</button>`:'',
+  manualBtn=x.addr&&!x.duplicateName?`<button class="btn gray small" onclick="pbManualEdit(decodeURIComponent('${encodeURIComponent(x.key).replaceAll("'",'%27')}'))">직접 수정</button>`:'',
   paidBtn=x.kind!=='incentive'&&x.addr&&Number(x.excel)>0&&!paid&&!x.duplicateName?`<button class="btn green small" onclick="pbMarkPaid(decodeURIComponent('${encodeURIComponent(x.key).replaceAll("'",'%27')}'))">송금완료 기록</button>`:'';
-  return `<tr><td>${esc(x.name)}</td><td>${kind}<br><span class="help">${cell}</span></td><td class="money">${fmt(x.db)}</td><td class="money">${fmt(x.excel)}</td><td class="${bad?'warn':'ok'}">${esc(x.result)}${paid?'<br><span class="ok">지급완료 표시</span>':''}</td><td>${btn} ${paidBtn}</td></tr>`;
+  return `<tr><td>${esc(x.name)}</td><td>${kind}<br><span class="help">${cell}</span></td><td class="money">${fmt(x.db)}</td><td class="money">${fmt(x.excel)}</td><td class="${bad?'warn':'ok'}">${esc(x.result)}${paid?'<br><span class="ok">지급완료 표시</span>':''}</td><td>${btn} ${manualBtn} ${paidBtn}</td></tr>`;
  }).join('');
  $('pbReviewBody').innerHTML=html||'<tr><td colspan="6" style="padding:20px">차이 없음. ‘일치 포함’으로 전체 내역을 볼 수 있습니다.</td></tr>';
  pbMessage(`${s.workMonth} 근무분 · ${s.review.length}건 대조 · 정상 ${s.review.length-conflicts.length}건 · 확인 필요 ${conflicts.length}건 · 원본 XLSM은 아직 변경되지 않았습니다.`);
@@ -17178,7 +17209,24 @@ async function pbConfirmAmount(key){
   if(word!==term)return;
  }else if(!confirm(`${x.name} / ${x.addr}\n현재 빈칸에 ${x.kind==='incentive'?x.db+'일':pbMoney(x.db)}를 반영할까요?`))return;
  let cell=pbExcelCell(x.addr);if(cell&&pbLocal(cell,'f'))return alert('수식이 들어 있는 셀은 자동 수정하지 않습니다.');
- payrollBridge.edits.set(x.addr,{value:x.db});x.excel=x.db;x.result='일치';pbRenderReview();
+ payrollBridge.edits.set(x.addr,{value:x.db,reason:'대시보드 대조값 확인·승인',proposed:x.db,before:pbNumber(payrollBridge.ws[x.addr]?.v),name:x.name,kind:x.kind,workMonth:payrollBridge.workMonth,employeeId:x.employee?.id||null});x.excel=x.db;x.result='일치';pbRenderReview();
+}
+async function pbManualEdit(key){
+ if(!requireModuleEdit('payroll')||!isAppAdmin())return alert('급여표 직접 수정은 관리자만 가능합니다.');
+ const x=pbFindItem(key);if(!x||!x.addr||x.duplicateName)return;
+ const cell=pbExcelCell(x.addr);if(cell&&pbLocal(cell,'f'))return alert('수식 셀은 변경하지 않습니다.');
+ const current=pbNumber(pbCellValue(x.addr));
+ const raw=prompt(`${x.name} / ${x.addr} ${x.kind==='incentive'?'인센일수':'급여금액'}\n현재값: ${current??'빈칸'}\n대시보드 계산: ${x.db??'없음'}\n\n실제 확인한 값을 입력하세요.`,current??'');
+ if(raw===null)return;let n=pbNumber(raw);
+ if(n===null||n<0||(x.kind==='incentive'&&!Number.isInteger(n)))return alert('0 이상의 정확한 숫자를 입력하세요.');
+ if(n===current)return;
+ let reason=prompt('자동 대조값과 다르게 수정한 이유를 입력하세요.\n(예: 말일 선지급, 추가근무 지급, 노무사 재정산 등)',x.kind==='end'?'말일 선지급 실제 확인':'실제 금액 확인');
+ if(reason===null||!reason.trim())return alert('수정 사유가 없으면 저장할 수 없습니다.');
+ if(!confirm(`${x.name} ${x.addr}\n${current??'빈칸'} → ${n}\n사유: ${reason}\n\n서버 저장 전 대기 변경으로 기록할까요?`))return;
+ payrollBridge.edits.set(x.addr,{value:n,before:pbNumber(payrollBridge.ws[x.addr]?.v),proposed:x.db,reason:reason.trim(),name:x.name,kind:x.kind,workMonth:payrollBridge.workMonth,employeeId:x.employee?.id||null,manuallyEdited:true});
+ x.excel=n;x.result=n===x.db?'일치':'직접수정(대조차이 유지)';
+ if($('pbSaveServerBtn'))$('pbSaveServerBtn').disabled=!payrollBridge.storagePath;
+ pbRenderReview();
 }
 async function pbMarkPaid(key){
  if(!requireModuleEdit('payroll'))return;let x=pbFindItem(key);if(x?.entryCount>1)return alert('같은 직원의 급여대장 행이 여러 건입니다. 먼저 지급내역을 개별 확인한 후 처리하세요.');if(!x||!x.addr||!x.employee||!Number(x.excel)||x.duplicateName)return alert('대상 직원과 금액을 확인할 수 없습니다.');
@@ -17197,7 +17245,7 @@ async function pbMarkPaid(key){
   let incMonth=shiftMonth(x.payMonth,-2),target=payrollBridge.timeline.find(t=>t.ym===incMonth);
   if(target?.incCol){let incAddr=cellAddress(target.incCol,x.row),v=pbNumber(pbCellValue(incAddr));if(v!==null&&v!==0)payrollBridge.redMarks.add(incAddr)}
  }
- await pbCompare();alert(`${x.name} 지급완료를 저장했습니다.\n빨간색 변경은 '원본 양식 반영본 다운로드'로 받은 사본에서 확인하세요.`);
+ await pbCompare();if($('pbSaveServerBtn'))$('pbSaveServerBtn').disabled=!payrollBridge.storagePath;alert(`${x.name} 지급완료를 기록했습니다.\n급여표에 빨간색을 영구 반영하려면 '확인한 수정 서버에 저장'을 누르세요.`);
 }
 function pbRedStyle(base){
  let s=payrollBridge.stylesXml,fonts=pbChildren(s,'fonts')[0],xfs=pbChildren(s,'cellXfs')[0],xf=xfs.children[Number(base||0)];
@@ -17219,11 +17267,156 @@ function pbPatchNumCell(doc,cells,ref,value){
  c.removeAttribute('t');let v=pbLocal(c,'v');if(!v){v=doc.createElementNS(PB_NS,'v');c.appendChild(v)}v.textContent=String(value);
  return c;
 }
+// 기존 XLSM ZIP 항목을 보존하며 승인이 끝난 셀만 반영하는 공유 빌더
+async function pbBuildSheetBytes(){
+ const s=payrollBridge;if(!s.file)throw new Error('급여표 원본 없음');
+ let zip=await JSZip.loadAsync(s.buffer), xml=pbXml(await zip.file(s.sheetPath).async('string')),
+ styles=pbXml(await zip.file('xl/styles.xml').async('string'));
+ const baseStyles=s.stylesXml;s.stylesXml=styles;
+ const cells=new Map(pbChildren(xml,'c').map(c=>[c.getAttribute('r'),c]));
+ try{
+  for(let [addr,rec] of s.edits)pbPatchNumCell(xml,cells,addr,rec.value);
+  let styleMemo=new Map();for(let addr of s.redMarks){let c=cells.get(addr);if(!c)continue;
+   let base=c.getAttribute('s')||'0',style=styleMemo.get(base);
+   if(!style){style=pbRedStyle(base);styleMemo.set(base,style)}c.setAttribute('s',style);
+  }
+ }finally{s.stylesXml=baseStyles}
+ let ser=new XMLSerializer();zip.file(s.sheetPath,ser.serializeToString(xml));
+ if(s.redMarks.size)zip.file('xl/styles.xml',ser.serializeToString(styles));
+ let out=await zip.generateAsync({type:'uint8array',compression:'DEFLATE',compressionOptions:{level:6}}),
+ original=await JSZip.loadAsync(s.buffer),check=await JSZip.loadAsync(out);
+ const originalPaths=Object.keys(original.files).sort(),newPaths=Object.keys(check.files).sort();
+ if(JSON.stringify(originalPaths)!==JSON.stringify(newPaths))throw new Error('원본 구성 항목이 변경됨');
+ for(let path of originalPaths){if(path===s.sheetPath||(s.redMarks.size&&path==='xl/styles.xml'))continue;
+  if(original.files[path].dir)continue;
+  let before=await original.file(path).async('uint8array'),after=await check.file(path).async('uint8array');
+  if(before.length!==after.length||before.some((v,i)=>v!==after[i]))throw new Error('원본 기타시트·매크로 보존 실패: '+path);
+ }
+ let verify=pbXml(await check.file(s.sheetPath).async('string'));
+ let verifiedCells=new Map(pbChildren(verify,'c').map(c=>[c.getAttribute('r'),c]));
+ for(let [addr,rec] of s.edits)if(Number(pbLocal(verifiedCells.get(addr),'v')?.textContent)!==Number(rec.value))throw new Error('금액 검산 실패: '+addr);
+ let wb=XLSX.read(out,{type:'array',bookVBA:true,bookSheets:true});
+ let originalWb=XLSX.read(s.buffer,{type:'array',bookSheets:true});
+ if(JSON.stringify(wb.SheetNames)!==JSON.stringify(originalWb.SheetNames))throw new Error('시트 목록 변경');
+ return out;
+}
+const PB_LEDGER_FOLDER= sid=>`store_${Number(sid)}/pharmacy-ledger`;
+const PB_LEDGER_BUCKET='payroll-sources';
+async function pbStoredVersions(){
+ let folder=PB_LEDGER_FOLDER(storeId()),q=await sb.storage.from(PB_LEDGER_BUCKET).list(folder,{limit:100,sortBy:{column:'name',order:'desc'}});
+ if(q.error)throw new Error('서버 저장본 목록 조회 실패: '+q.error.message);
+ return (q.data||[]).filter(x=>/^ledger_\d{17}_[a-z0-9]{6}\.xlsm$/.test(x.name))
+  .map(x=>({...x,path:folder+'/'+x.name})).sort((a,b)=>b.name.localeCompare(a.name));
+}
+async function pbLoadStored(silent=false,force=false){
+ if(!isAppAdmin()||!canViewModule('payroll')){if(!silent)alert('급여표 서버 접근은 관리자만 가능합니다.');return false}
+ if(Number(storeId())!==1){if(!silent)alert('메가팜스365약국을 선택하세요.');return false}
+ if(!force&&payrollBridge.file&&(payrollBridge.edits.size||payrollBridge.redMarks.size)&&!confirm('아직 서버에 저장하지 않은 변경이 있습니다. 이를 버리고 서버 최신본을 불러올까요?'))return false;
+ try{
+  pbMessage('서버에 저장된 급여표 확인 중…');let versions=await pbStoredVersions();
+  if(!versions.length){pbMessage('서버에 등록된 급여표가 없습니다. 최초 1회 원본 등록을 해주세요.');return false;}
+  let newest=versions[0],d=await sb.storage.from(PB_LEDGER_BUCKET).download(newest.path);
+  if(d.error)throw new Error('원본 다운로드 실패: '+d.error.message);
+  let file=new File([d.data],'메가팜스365약국 급여표.xlsm',{type:'application/vnd.ms-excel.sheet.macroEnabled.12'});
+  let ok=await pbOpenFile(file,{path:newest.path});if(ok){payrollBridge.history=versions;
+   $('pbServerRevision').textContent=`서버 저장본 ${newest.name} · 이전 버전 ${Math.max(0,versions.length-1)}개 보관`;
+   pbMessage('서버 최신 급여표 불러오기 완료 · 직접 수정 후 서버 저장할 수 있습니다.');return true;}
+ }catch(e){pbMessage('서버 급여표 오류: '+e.message,true);if(!silent)alert(e.message)}return false;
+}
+async function pbRegisterMaster(file){
+ if(!file)return;
+ if(payrollBridge.file&&(payrollBridge.edits.size||payrollBridge.redMarks.size)&&!confirm('현재 승인한 수정 사항이 서버에 저장되지 않았습니다. 버리고 새 원본을 등록할까요?'))return;
+ if(!isAppAdmin()||!requireModuleEdit('payroll'))return alert('서버 급여표 등록은 관리자만 가능합니다.');
+ if(Number(storeId())!==1)return alert('메가팜스365약국을 선택하세요.');
+ if(!/\.xlsm$/i.test(file.name))return alert('매크로 원본 XLSM만 등록할 수 있습니다.');
+ try{
+  const history=await pbStoredVersions();
+  if(history.length&&!confirm('서버에 기존 급여표가 있습니다. 새 원본을 등록하면 최신본이 교체됩니다.\\n기존 버전은 삭제하지 않지만, 새 파일에서 이전 입력값이 빠졌을 수 있습니다. 내용 확인 후 진행할까요?'))return;
+  const loaded=await pbOpenFile(file,{path:''});if(!loaded)return;
+  if(!confirm(`검사된 원본 '${file.name}'을 최신 서버 원본으로 등록할까요?\\n기존 양식을 고치거나 수식을 다시 만들지 않습니다. 이전 버전이 있다면 보존됩니다.`))return;
+  await pbSaveNewVersion(await file.arrayBuffer(),'manual-master-import',history[0]?.path||'',[]);
+  alert('최신 급여표 서버 등록 완료. 다음 접속부터 서버에서 불러옵니다.');
+ }catch(e){pbMessage('원본 등록 실패: '+e.message,true);alert(e.message)}
+}
+async function pbSaveNewVersion(bytes,reason,sourcePath,changes){
+ const folder=PB_LEDGER_FOLDER(storeId()),now=new Date(),stamp=now.toISOString().replace(/[-:TZ.]/g,'').slice(0,17),
+  rand=Math.random().toString(36).slice(2,8).padEnd(6,'0'),fileName=`ledger_${stamp}_${rand}.xlsm`,path=`${folder}/${fileName}`;
+ let source=new Blob([bytes],{type:'application/vnd.ms-excel.sheet.macroEnabled.12'}),up=await sb.storage.from(PB_LEDGER_BUCKET).upload(path,source,{upsert:false,contentType:source.type});
+ if(up.error)throw new Error('급여표 저장 실패: '+up.error.message);
+ const audit={version:fileName,sourceVersion:sourcePath,reason,editor_id:currentSessionUser?.id||null,at:now.toISOString(),changes};
+ let a=await sb.storage.from(PB_LEDGER_BUCKET).upload(path.replace(/\.xlsm$/,'.json'),new Blob([JSON.stringify(audit)],{type:'application/json'}),{upsert:false,contentType:'application/json'});
+ if(a.error)console.warn('급여표 이력 부가정보 저장 실패: ',a.error.message);
+ // 수정 전·계산값·직접 확인값을 비교 가능한 DB 이력으로 남긴다. 원본 급여대장 값은 변경하지 않는다.
+ const correctionRows=(changes||[]).filter(x=>x.cell&&Object.prototype.hasOwnProperty.call(x,'value')&&x.kind).map(x=>({
+  store_id:Number(storeId()),employee_id:x.employeeId||null,employee_name:String(x.name||'(이름없음)'),
+  work_month:(x.workMonth||payrollBridge.workMonth||$('monthSelect')?.value)+'-01',pay_kind:x.kind,cell_ref:x.cell,
+  original_value:x.before??null,dashboard_value:x.proposed??null,confirmed_value:Number(x.value),
+  reason:String(x.reason||'직접 확인').slice(0,1000),source_revision:sourcePath||null,saved_revision:path
+ }));
+ if(correctionRows.length){
+  const log=await sb.from('pharmacy_payroll_corrections').insert(correctionRows).select('id');
+  if(log.error||log.data?.length!==correctionRows.length){
+   console.error('급여표 수정이력 DB 기록 실패',log.error);
+   alert('급여표 파일은 서버에 저장됐지만 DB 수정이력의 기록이 완료되지 않았습니다. 같은 파일을 다시 저장하지 말고 관리자에게 확인하세요.');
+  }
+ }
+ const verify=await sb.storage.from(PB_LEDGER_BUCKET).download(path);
+ if(verify.error||verify.data.size!==source.size)throw new Error('급여표 파일 저장 후 다운로드 검증 실패. 서버에 저장됐을 수 있으니 최신본부터 확인하세요.');
+ await pbLoadStored(true,true);
+ return path;
+}
+async function pbSaveServer(){
+ if(!isAppAdmin()||!requireModuleEdit('payroll'))return alert('급여표 저장은 관리자만 가능합니다.');
+ let state=payrollBridge;
+ if(!state.file||!state.storagePath)return alert('먼저 최신 서버 급여표를 불러오거나 최초 원본 등록을 해주세요.');
+ if(!state.edits.size&&!state.redMarks.size)return alert('서버에 반영할 변경 사항이 없습니다.');
+ try{
+  let newest=(await pbStoredVersions())[0];
+  if(!newest||newest.path!==state.storagePath)return alert('다른 저장본이 더 최신입니다. 현재 내용은 덮어쓰지 않습니다. 서버 최신본을 다시 불러와 차이를 검토하세요.');
+  if(!confirm(`메가팜스365약국 최신 급여표에 승인된 변경을 저장하시겠습니까?\\n금액·일수 ${state.edits.size}셀 / 지급완료 색상 ${state.redMarks.size}셀\\n직전 파일은 이전 버전으로 보관되며 삭제되지 않습니다.`))return;
+  pbMessage('변경 셀 검증 · 매크로·수식 보존 · 서버 버전 저장 중…');
+  const edits=[...state.edits.entries()].map(([cell,change])=>({cell,...change})),red=[...state.redMarks].map(cell=>({cell,type:'paid-red'})),
+    bytes=await pbBuildSheetBytes();
+  await pbSaveNewVersion(bytes,'approved-web-edit',state.storagePath,[...edits,...red]);
+  pbMessage('서버 최신 급여표 저장 완료 · 이전 버전은 그대로 보관했습니다.');
+ }catch(e){pbMessage('서버 저장 실패: '+e.message,true);alert('저장 실패: '+e.message)}
+}
+async function pbShowHistory(){
+ if(!isAppAdmin())return alert('관리자만 이전 급여표를 조회할 수 있습니다.');
+ const box=$('pbHistoryBox');if(!box)return;
+ if(box.style.display!=='none'){box.style.display='none';return}
+ try{
+  let versions=await pbStoredVersions();
+  let correction=await sb.from('pharmacy_payroll_corrections').select('created_at,employee_name,work_month,pay_kind,cell_ref,original_value,dashboard_value,confirmed_value,reason').eq('store_id',storeId()).order('created_at',{ascending:false}).limit(40);
+  let report=!correction.error&&(correction.data||[]).length?`<h4>최근 직접 확인·수정 기록</h4>`+correction.data.map(x=>`<div style="padding:5px;border-bottom:1px solid #ddd">${esc(String(x.created_at||'').slice(0,16))} · ${esc(x.employee_name)} ${esc(x.cell_ref)} · 원본 ${x.original_value??'공란'} / 자동 ${x.dashboard_value??'없음'} → 확정 ${x.confirmed_value} · ${esc(x.reason)}</div>`).join(''):'';
+  box.innerHTML=(versions.length?versions.map((v,i)=>`<div style="padding:6px;border-bottom:1px solid #ddd">${i===0?'[최신]':'[이전]'} ${esc(v.name)} <button type="button" class="btn gray small" onclick="pbViewVersion('${v.path}')">${i===0?'보기':'이전 버전 확인'}</button></div>`).join(''):'저장된 이전 버전이 없습니다.')+report;
+  box.style.display='block';
+ }catch(e){alert(e.message)}
+}
+async function pbViewVersion(path){
+ if(!isAppAdmin()||!path.startsWith(PB_LEDGER_FOLDER(storeId())+'/'))return;
+ if(payrollBridge.edits.size||payrollBridge.redMarks.size)return alert('현재 수정사항을 먼저 저장하거나 취소하세요.');
+ if(!confirm('이 버전을 조회할까요? 이전 버전 조회만으로 최신본을 교체하지 않습니다.'))return;
+ try{let dl=await sb.storage.from(PB_LEDGER_BUCKET).download(path);if(dl.error)throw dl.error;
+  const f=new File([dl.data],'메가팜스365약국 급여표.xlsm',{type:'application/vnd.ms-excel.sheet.macroEnabled.12'});
+  await pbOpenFile(f,{path});$('pbServerRevision').textContent=`이전 버전 조회 중: ${path.split('/').pop()} · 최신본에 덮어쓰기 전 다시 최신본 확인 필요`;
+ }catch(e){alert('이전 버전 열기 실패: '+e.message)}
+}
+// 화면 진입 시 새 파일을 요구하지 않고 서버 최신 원본을 불러온다.
+document.addEventListener('click',e=>{
+ if(e.target.closest?.('[data-page="payroll"]'))setTimeout(()=>{if(!payrollBridge.file&&isAppAdmin()&&Number(storeId())===1)pbLoadStored(true)},500);
+});
+document.addEventListener('DOMContentLoaded',()=>{
+ setTimeout(()=>{if($('payrollPage')?.classList.contains('active')&&isAppAdmin()&&Number(storeId())===1)pbLoadStored(true)},1300);
+});
 async function pbDownload(){
  let s=payrollBridge;if(!s.file)return alert('원본 Excel을 선택하세요.');if(!requireModuleEdit('payroll'))return;
  if(Number(s.baseStore)!==Number(storeId()))return alert('원본을 선택한 업장과 현재 업장이 다릅니다.');
  let changes=s.edits.size+s.redMarks.size;
- if(!changes)return alert('급여표에 반영할 승인된 변경 내용이 없습니다. 기존 원본을 그대로 사용하세요.');
+ if(!changes){
+  const blob=new Blob([s.buffer],{type:'application/vnd.ms-excel.sheet.macroEnabled.12'}),a=document.createElement('a'),url=URL.createObjectURL(blob);
+  a.href=url;a.download=s.file.name;a.click();setTimeout(()=>URL.revokeObjectURL(url),30000);return;
+ }
  if(!confirm(`${s.file.name}\n기존 파일을 새로 만들지 않고 그 파일의 지정 셀만 수정한 복사본을 다운로드합니다.\n반영 예정: 금액 ${s.edits.size}셀 · 지급완료 색상 ${s.redMarks.size}셀\n\n원본 파일과 다른 모든 셀·수식·매크로·퇴사자 행 순서는 유지합니다. 계속할까요?`))return;
  try{
   pbMessage('원본 보존 검증 및 사본 생성 중…');
