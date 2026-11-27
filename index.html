@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>직원관리 대시보드 2026.11.27_1</title>
-<meta name="dashboard-build-version" content="2026.11.27_1">
+<title>직원관리 대시보드 2026.11.27_3</title>
+<meta name="dashboard-build-version" content="2026.11.27_3">
 <script id="dashboardBuildInfoJS">
 document.addEventListener('DOMContentLoaded',()=>{
  const version=document.querySelector('meta[name="dashboard-build-version"]')?.getAttribute('content');
@@ -1934,6 +1934,42 @@ body:not(.laborPrivateAuthorized) #hoursPage > #laborPage.laborInlinePage{displa
 #schedulePage .annualLeaveTable .annualLeaveAccrualBreakdown .annualLeavePreviousAccrual{font-weight:850;color:#235bb0}
 #schedulePage .annualLeaveTable .annualLeaveCarryoverLabel{display:block;color:#305d8d;font-weight:700;margin-top:3px;white-space:normal}
 </style>
+
+<style id="globalStickySidebar20261127_3CSS">
+/* All modules (staff, admin, 88커머스) share the same left navigation.
+   Use the document as the only vertical scroll container: never add a sidebar scrollbar. */
+@media (min-width:901px){
+  .layout{
+    align-items:start;
+    /* Continue the white sidebar track while its controls stay pinned. */
+    background:linear-gradient(to right,#fff 0,#fff 231px,var(--line) 231px,var(--line) 232px,transparent 232px);
+  }
+  .layout > aside.side{
+    position:sticky;
+    top:66px;
+    align-self:start;
+    height:max-content;
+    min-height:0;
+    max-height:none;
+    overflow:visible;
+    z-index:15;
+  }
+}
+/* Keep navigation within shorter desktop viewports without creating a second vertical scroller. */
+@media (min-width:901px) and (max-height:690px){
+  .layout > aside.side{padding-top:8px;padding-bottom:8px}
+  .layout > aside.side .nav{min-height:35px;padding:6px 12px;margin:0}
+  .layout > aside.side #adminNavDivider{margin:6px 12px}
+}
+@media (max-width:900px){
+  .layout{background:none}
+  /* Narrow screens already have a sticky horizontal menu below the top bar. */
+  .mobileNav{position:sticky;top:66px}
+}
+@media print{
+  .layout > aside.side{position:static!important}
+}
+</style>
 </head>
 <body>
 <section id="login" class="login">
@@ -1979,7 +2015,7 @@ body:not(.laborPrivateAuthorized) #hoursPage > #laborPage.laborInlinePage{displa
 </div>
 
 <section id="commercePage" class="page">
- <div class="commerceHero"><h1 class="title">88커머스 <span class="commerceBuildVersion" data-dashboard-version="true">버전 2026.11.27_1</span></h1><div class="sub">대시보드에서 직접 입력·수정하고 자동 계산하며, 카페24 반영과 원본 Excel 형식 다운로드까지 한곳에서 관리합니다.</div></div>
+ <div class="commerceHero"><h1 class="title">88커머스 <span class="commerceBuildVersion" data-dashboard-version="true">버전 2026.11.27_3</span></h1><div class="sub">대시보드에서 직접 입력·수정하고 자동 계산하며, 카페24 반영과 원본 Excel 형식 다운로드까지 한곳에서 관리합니다.</div></div>
 
  <div id="commerceGroupBar" class="commerceGroupBar hidden">
   <div><div id="commerceGroupTitle" class="groupTitle">-</div><div id="commerceGroupSub" class="help" style="margin-top:3px">-</div></div>
@@ -2063,7 +2099,7 @@ body:not(.laborPrivateAuthorized) #hoursPage > #laborPage.laborInlinePage{displa
 </section>
 
 <section id="homePage" class="page active">
- <div class="row"><div><div class="homeBuildTitle"><h1 class="title" id="homeTitle">현황</h1><span class="buildVersionBadge" id="homeBuildVersion" data-dashboard-version="true">버전 2026.11.27_1</span></div><div class="sub">업장과 월을 선택하면 모든 정보가 같이 바뀝니다.</div></div></div>
+ <div class="row"><div><div class="homeBuildTitle"><h1 class="title" id="homeTitle">현황</h1><span class="buildVersionBadge" id="homeBuildVersion" data-dashboard-version="true">버전 2026.11.27_3</span></div><div class="sub">업장과 월을 선택하면 모든 정보가 같이 바뀝니다.</div></div></div>
  <div class="cards">
   <div class="card"><div class="k">재직 직원</div><div class="v" id="kEmp">0명</div></div>
   <div class="card"><div class="k">이번 달 연차 발생</div><div class="v" id="kLeaveDue">0명</div></div>
@@ -2220,11 +2256,12 @@ body:not(.laborPrivateAuthorized) #hoursPage > #laborPage.laborInlinePage{displa
    <div class="simpleTabs">
    <button id="hoursSummaryTabBtn" class="simpleTab active" onclick="setHoursView('summary')">근로시간</button>
    <button id="attendanceTabBtn" class="simpleTab" onclick="setHoursView('attendance')">근태 확인 <span id="attendanceNeedBadge" class="attendanceBadge" style="display:none">0</span></button>
+   <button id="laborTabBtn" class="simpleTab laborRoleTab" onclick="setHoursView('labor')" aria-label="관리자 권한 근로자현황파악" style="display:none">근로자현황파악</button>
    </div>
   </div>
  </div>
  <div class="workHoursExcelExportBar" aria-label="업장별 엑셀 파일 관리">
-  <div class="workHoursExcelExportInfo"><strong>엑셀 파일 관리</strong><span class="laborOwnerHelp">스케줄 다운로드 · 노무사 제출자료는 근로시간 탭 맨 아래에서 별도로 관리합니다.</span><span class="laborStaffHelp">선택한 업장·월의 스케줄 자료를 다운로드합니다.</span></div>
+  <div class="workHoursExcelExportInfo"><strong>엑셀 파일 관리</strong><span class="laborOwnerHelp">선택한 업장·월의 스케줄을 다운로드합니다. 근로자현황파악은 오른쪽 별도 탭에서 관리합니다.</span><span class="laborStaffHelp">선택한 업장·월의 스케줄 자료를 다운로드합니다.</span></div>
   <div class="hoursExcelActionGroup">
    <button type="button" class="btn green workHoursExcelDownloadBtn" id="workHoursExcelBtn" onclick="exportSchedule()" title="기존 근무표와 집계 서식 포함">스케줄다운로드</button>
   </div>
@@ -2269,7 +2306,7 @@ body:not(.laborPrivateAuthorized) #hoursPage > #laborPage.laborInlinePage{displa
 
 <section id="laborPage" class="page laborInlinePage">
   <div class="row" style="flex-wrap:wrap;gap:10px">
-   <div><h1 class="title">노무사 제출자료</h1><div class="sub">공통 원본은 업장별 1개를 보존하고, <b>선택한 급여월마다 수정 내용과 특이사항을 따로 저장</b>합니다. <b>직원 자료 B~O열은 바로 수정·자동 저장</b>되며, 이름 옆 손잡이로 순서를 바꾸면 엑셀 연번과 직원 행도 함께 정렬됩니다.</div></div>
+   <div><h1 class="title">근로자현황파악</h1><div class="sub">노무사 제출자료입니다. 공통 원본은 업장별 1개를 보존하고, <b>선택한 급여월마다 수정 내용과 특이사항을 따로 저장</b>합니다. <b>직원 자료 B~O열은 바로 수정·자동 저장</b>되며, 이름 옆 손잡이로 순서를 바꾸면 엑셀 연번과 직원 행도 함께 정렬됩니다.</div></div>
    <span id="laborScopeBadge" class="saveState">업장·월 선택</span>
   </div>
   <div class="card" style="margin-top:14px">
@@ -2282,7 +2319,7 @@ body:not(.laborPrivateAuthorized) #hoursPage > #laborPage.laborInlinePage{displa
 
     <span id="laborSaveState" class="saveState" role="status" aria-live="polite">자동 저장 준비</span><button id="laborRetryBtn" type="button" class="btn gray small" style="display:none" onclick="laborFlushSave()">저장 재시도</button>
    </div>
-   <p class="laborIntro">업장별 공통 원본을 보존하면서 <b>선택 업장·급여월별 입력값을 별도 자동저장</b>합니다. <b>직원 데이터 전체 열(B~O) 수정 및 자동저장, 이름 옆 드래그로 순서 변경</b>을 지원합니다. Excel 다운로드에는 수정값·직원 순서·연번이 반영되고 <b>작업 체크·웹 열 너비는 반영되지 않습니다.</b> 당월 퇴사자는 빨강, 이전월 퇴사자는 회색으로 구분합니다. 주민번호·급여가 있어 최고관리자 전용입니다.</p>
+   <p class="laborIntro">업장별 공통 원본을 보존하면서 <b>선택 업장·급여월별 입력값을 별도 자동저장</b>합니다. <b>직원 데이터 전체 열(B~O) 수정 및 자동저장, 이름 옆 드래그로 순서 변경</b>을 지원합니다. Excel 다운로드에는 수정값·직원 순서·연번이 반영되고 <b>작업 체크·웹 열 너비는 반영되지 않습니다.</b> 당월 퇴사자는 빨강, 이전월 퇴사자는 회색으로 구분합니다. 주민번호·급여가 포함되므로 기본적으로 최고관리자 전용이며, 권한관리에서 별도로 보기·수정을 부여한 계정에만 허용됩니다.</p>
    <div id="laborWorkbookInfo" class="laborInfo">아직 파일을 불러오지 않았습니다.</div>
    <!-- 자동검산은 별도 표가 아니라 선택 월 인원현황 O열에 직접 반영 -->
    <section id="laborSpecialPanel" hidden aria-hidden="true"><span id="laborSpecialStatus"></span><div id="laborSpecialBody"></div></section>
@@ -2307,7 +2344,7 @@ body:not(.laborPrivateAuthorized) #hoursPage > #laborPage.laborInlinePage{displa
 
  <section id="payrollPage" class="page">
  <div class="row">
-  <div><h1 class="title">급여관리 <span data-dashboard-version="true" data-version-no-prefix="true" style="font-size:12px;color:#315efb;background:#eef3ff;border-radius:999px;padding:4px 8px;vertical-align:middle">2026.11.27_1</span></h1><div class="sub">월별 급여대장을 검산하고, 기간별·직원별 누적 급여도 조회합니다.</div></div>
+  <div><h1 class="title">급여관리 <span data-dashboard-version="true" data-version-no-prefix="true" style="font-size:12px;color:#315efb;background:#eef3ff;border-radius:999px;padding:4px 8px;vertical-align:middle">2026.11.27_3</span></h1><div class="sub">월별 급여대장을 검산하고, 기간별·직원별 누적 급여도 조회합니다.</div></div>
   <div class="toolbar">
    <input type="file" id="payrollFile" accept=".xlsx,.xls,.xlsm" multiple style="display:none" onchange="importPayrollFiles(this.files);this.value=''">
    <button id="payrollBatchImportBtn" class="btn" onclick="$('payrollFile').click()">급여대장 여러개 불러오기</button>
@@ -3098,7 +3135,7 @@ function openUserPermissionEditor(uid){
  let u=adminUsers.find(x=>x.user_id===uid);if(!u)return;let currentStores=new Set(adminUserStoreAccess.filter(x=>x.user_id===uid).map(x=>Number(x.store_id)));let perms=new Map(adminUserPermissions.filter(x=>x.user_id===uid).map(x=>[x.module_key,x]));
  let storeHtml=stores.map(st=>`<label class="permissionStoreCheck"><input type="checkbox" class="permStore" value="${st.id}" ${currentStores.has(st.id)?'checked':''}>${esc(st.name)}</label>`).join('');
  let grid=APP_PERMISSION_MODULES.map(m=>{let p=perms.get(m.key)||{};return `<div>${esc(m.label)}</div><div style="text-align:center"><input type="checkbox" id="pv-${m.key}" ${p.can_view?'checked':''} onchange="if(!this.checked)$('pe-${m.key}').checked=false"></div><div style="text-align:center"><input type="checkbox" id="pe-${m.key}" ${p.can_edit?'checked':''} onchange="if(this.checked)$('pv-${m.key}').checked=true"></div>`}).join('');
- modal(`<h2>${esc(u.display_name||u.login_id||'사용자')} · 권한 설정</h2><div class="field"><label>표시 이름</label><input id="permDisplayName" value="${esc(u.display_name||'')}" style="width:100%"></div><div style="margin-top:10px"><b>접근 업장</b><div class="permissionStoreList">${storeHtml}</div></div><div class="toolbar" style="margin-top:10px"><button class="btn green small" onclick="setSchedulerPermissionPreset()">스케줄 담당자 기본권한</button><span class="help">전체현황 보기 + 스케줄 보기·수정 + 근로시간 보기</span></div><div class="permissionGrid"><div class="head">대시보드</div><div class="head" style="text-align:center">보기</div><div class="head" style="text-align:center">수정</div>${grid}</div><label class="accountUseRow" style="margin-top:12px"><input id="permUserActive" type="checkbox" ${u.active!==false?'checked':''}>계정 사용</label><div class="modalActions"><button class="btn gray" onclick="closeModal()">취소</button><button class="btn" onclick="saveUserPermissionEditor('${uid}')">저장</button></div>`);
+ modal(`<h2>${esc(u.display_name||u.login_id||'사용자')} · 권한 설정</h2><div class="field"><label>표시 이름</label><input id="permDisplayName" value="${esc(u.display_name||'')}" style="width:100%"></div><div style="margin-top:10px"><b>접근 업장</b><div class="permissionStoreList">${storeHtml}</div></div><div class="toolbar" style="margin-top:10px"><button class="btn green small" onclick="setSchedulerPermissionPreset()">스케줄 담당자 기본권한</button><span class="help">전체현황 보기 + 스케줄 보기·수정 + 근로시간 보기</span></div><div class="permissionGrid"><div class="head">대시보드</div><div class="head" style="text-align:center">보기</div><div class="head" style="text-align:center">수정</div>${grid}</div><div class="help" style="margin-top:10px"><b>신규 탭·민감정보는 기본 최고관리자 전용</b>입니다. 근로자현황파악은 체크한 담당자에게만 허용되며, 접근 업장 설정까지 함께 적용됩니다. 보기·수정은 별도 권한입니다.</div><label class="accountUseRow" style="margin-top:12px"><input id="permUserActive" type="checkbox" ${u.active!==false?'checked':''}>계정 사용</label><div class="modalActions"><button class="btn gray" onclick="closeModal()">취소</button><button class="btn" onclick="saveUserPermissionEditor('${uid}')">저장</button></div>`);
 }
 function setSchedulerPermissionPreset(){APP_PERMISSION_MODULES.forEach(m=>{let v=$(`pv-${m.key}`),e=$(`pe-${m.key}`);if(v)v.checked=(m.key==='home'||m.key==='schedule'||m.key==='hours');if(e)e.checked=(m.key==='schedule')})}
 async function saveUserPermissionEditor(uid){
@@ -14396,7 +14433,7 @@ function laborRenderSheet(){const d=laborDraft,box=$('laborWorkbookGrid'),sel=$(
  // follows the document scroll instead of getting trapped by the worksheet.
  laborInstallStickyHeader(box);
  laborAutoFitAllCells(box);
- if($('laborUploadBtn'))$('laborUploadBtn').disabled=!isAppAdmin();
+ if($('laborUploadBtn'))$('laborUploadBtn').disabled=!laborGrantedAccessV27('edit');
 }
 function laborSetValue(sheet,ref,value){const d=laborDraft;if(!d||!/^[A-Z]{1,2}[1-9]\d*$/.test(ref))return;
  const cell=XLSX.utils.decode_cell(ref),ws=d.wb.Sheets[sheet];if(cell.r<3||cell.c===0||laborMergedCovered(ws,cell.r,cell.c))return;
@@ -14869,7 +14906,7 @@ laborSetInfo=function(){const d=laborDraft,{sid,ym}=laborMonthlyScope(),name=sto
 };
 laborLoadSelectedMonth=async function(){
  const {sid,ym}=laborMonthlyScope(),seq=++laborFetchToken;
- if(!sid||!/^20\d\d-(0[1-9]|1[0-2])$/.test(ym)||!isAppAdmin()||permissionSystemAvailable===false){laborDraft=null;laborRenderSheet();return;}
+ if(!sid||!/^20\d\d-(0[1-9]|1[0-2])$/.test(ym)||!laborPrivateAllowedV21()||permissionSystemAvailable===false){laborDraft=null;laborRenderSheet();return;}
  laborNotify(`${ym} 선택월 자료 불러오는 중…`);
  try{
   let monthRow=await laborFetchMonth(sid,ym),source=monthRow;
@@ -14925,7 +14962,7 @@ laborSaveMonth=async function(){
  }
  if(!d.dirty)return true;
  const sid=Number(d.sid),ym=String(d.ym);
- if(!sid||!/^20\d\d-(0[1-9]|1[0-2])$/.test(ym)||!isAppAdmin()){
+ if(!sid||!/^20\d\d-(0[1-9]|1[0-2])$/.test(ym)||!laborGrantedAccessV27('edit')){
   laborNotify('저장 권한이나 업장·월이 유효하지 않습니다. 내용을 유지하고 중단했습니다.',true);return false;
  }
  laborBusy=true;laborAutoLastError=null;
@@ -15077,7 +15114,7 @@ function laborSpecialExtraNote(employeeId){if(!laborDraft)return alert('노무�
 }
 function laborSpecialSupplement(eid,ym){return String(laborDraft?.edits?.__specialExtra?.[ym]?.[eid]||'').trim()}
 async function laborSpecialLoad(force=false){const panel=$('laborSpecialPanel'),sid=storeId(),ym=$('monthSelect')?.value;
- if(!panel||!sid||!/^(20\d\d)-(0[1-9]|1[0-2])$/.test(ym||'')||!isAppAdmin())return;
+ if(!panel||!sid||!/^(20\d\d)-(0[1-9]|1[0-2])$/.test(ym||'')||!laborPrivateAllowedV21())return;
  if(laborSpecialBusy&&!force)return;
  const token=++laborSpecialFetchToken,previous=shiftMonth(ym,-1),range=laborSpecialRange(ym),past=laborSpecialRange(previous);
  const status=$('laborSpecialStatus');if(status)status.textContent='스케줄·공휴일·원본 대조 중…';
@@ -15662,7 +15699,7 @@ switchMonth=async function(...args){
  try{
   const outcome=await laborMonthGuardOldSwitch(...args);
   if(selector?.value!==requested)return outcome;
-  if($('hoursPage')?.classList.contains('active')&&$('laborPage')?.classList.contains('active')&&isAppAdmin()){
+  if($('hoursPage')?.classList.contains('active')&&$('laborPage')?.classList.contains('active')&&laborPrivateAllowedV21()){
    const sid=Number(storeId());
    if(!laborDraft||Number(laborDraft.sid)!==sid||laborDraft.ym!==requested)await laborLoadSelectedMonth();
    if(!laborDraft||Number(laborDraft.sid)!==sid||laborDraft.ym!==requested)
@@ -15693,7 +15730,7 @@ switchMonth=async function(...args){
 const laborMonthGuardOldToggle=toggleLaborInlineEditor;
 toggleLaborInlineEditor=async function(...args){
  const result=await laborMonthGuardOldToggle(...args);
- if($('laborPage')?.classList.contains('active')&&isAppAdmin()){
+ if($('laborPage')?.classList.contains('active')&&laborPrivateAllowedV21()){
   const scope=laborMonthlyScope();
   if(!laborDraft||laborDraft.ym!==scope.ym||Number(laborDraft.sid)!==scope.sid)
    await laborLoadSelectedMonth();
@@ -16181,7 +16218,7 @@ laborSpecialBuild=function(e,payMonth,curRows,prevRows,holidayDates,opts={}){
 const dashboardV18PrevSpecialLoad=laborSpecialLoad;
 laborSpecialLoad=async function(force=false){
  const ym=$('monthSelect')?.value||'',sid=Number(storeId());
- if(/^20\d{2}-(?:0[1-9]|1[0-2])$/.test(ym)&&isAppAdmin() &&
+ if(/^20\d{2}-(?:0[1-9]|1[0-2])$/.test(ym)&&laborGrantedAccessV27('edit') &&
   allEmployees().some(e=>Number(e.store_id)===sid&&!employeeMonthlyScheduleHidden(e)&&['hourly','daily'].includes(String(e.pay_type||'')))){
   const year=Number(ym.slice(0,4));
   try{
@@ -16458,7 +16495,7 @@ const laborV20PreviousMonthLoad=laborLoadSelectedMonth;
 laborLoadSelectedMonth=async function(...args){
  const response=await laborV20PreviousMonthLoad(...args),d=laborDraft;
  if(d&&Number(d.sid)===Number(storeId())&&d.ym===$('monthSelect')?.value&&
-    $('hoursPage')?.classList.contains('active')&&isAppAdmin()){
+    $('hoursPage')?.classList.contains('active')&&laborPrivateAllowedV21()){
   await laborSpecialLoad(true);
  }
  return response;
@@ -16529,4 +16566,162 @@ toggleLaborInlineEditor=async function(...args){
 // Neither the existing work-hours summary nor its per-employee attendance-date grid is altered.
 </script>
 
+<style id="laborThirdTab20261127_2CSS">
+/* Lab workbook is a third subtab, not a repeated bottom panel of the other two. */
+#hoursPage .hoursPageTabs .simpleTabs{display:flex;flex-wrap:wrap;gap:7px;align-items:center}
+#hoursPage .laborRoleTab{white-space:nowrap}
+body:not(.laborPrivateAuthorized) #laborTabBtn{display:none!important}
+body.laborPrivateAuthorized #laborTabBtn{display:inline-flex!important;align-items:center;justify-content:center}
+/* Override legacy unconditional display rules from the former bottom-panel design. */
+html body #hoursPage.active:not([data-hours-view="labor"]) > #laborPage.laborInlinePage,
+html body #hoursPage:not([data-hours-view="labor"]) > #laborPage.laborInlinePage{display:none!important;visibility:hidden!important}
+html body:not(.laborPrivateAuthorized) #hoursPage #laborPage.laborInlinePage{display:none!important;visibility:hidden!important}
+html body.laborPrivateAuthorized #hoursPage.active[data-hours-view="labor"] > #laborPage.laborInlinePage{
+ display:block!important;visibility:visible!important;margin-top:14px!important;
+ border-top:none!important;padding-top:12px!important;
+}
+#hoursPage[data-hours-view="labor"] > #hoursSummaryView,
+#hoursPage[data-hours-view="labor"] > #attendanceView,
+#hoursPage[data-hours-view="labor"] > .workHoursExcelExportBar{display:none!important}
+body.laborWorkbookReadOnly #laborPage input:not([type="hidden"]):not([type="file"]),
+body.laborWorkbookReadOnly #laborPage textarea{pointer-events:none!important;cursor:not-allowed!important}
+body.laborWorkbookReadOnly #laborPage .laborResizeHandle,
+body.laborWorkbookReadOnly #laborPage .laborDragHandle,
+body.laborWorkbookReadOnly #laborPage .laborDragGrip{pointer-events:none!important}
+body.laborWorkbookReadOnly #laborPage #laborQuickUploadBtn,
+body.laborWorkbookReadOnly #laborPage #laborUploadBtn,
+body.laborWorkbookReadOnly #laborPage #laborCopyBtn,
+body.laborWorkbookReadOnly #laborPage #laborClearChecksBtn,
+body.laborWorkbookReadOnly #laborPage #laborSaveBtn,
+body.laborWorkbookReadOnly #laborPage #laborRetryBtn,
+body.laborWorkbookReadOnly #laborPage #laborSpecialPanel,
+body.laborWorkbookReadOnly #laborPage button[title*="자동 내용"]{display:none!important}
+@media(max-width:620px){#hoursPage .hoursPageTabs{justify-content:flex-start!important}#hoursPage .hoursPageTabs .simpleTabs{flex-wrap:wrap}#hoursPage .laborRoleTab{font-size:12px;padding:9px 10px}}
+</style>
+<script id="laborThirdTab20261127_2JS">
+/* Security invariant: any new restricted module starts with NO user grant.
+ * Admins get rights through app_users.is_admin; grants are explicit rows in
+ * user_permissions and scoped to user_store_access. Server RLS must enforce it.
+ */
+const V27_RESTRICTED_LABOR_MODULE='labor';
+if(!APP_PERMISSION_MODULES.some(m=>m.key===V27_RESTRICTED_LABOR_MODULE)){
+ const idx=APP_PERMISSION_MODULES.findIndex(m=>m.key==='hours');
+ APP_PERMISSION_MODULES.splice(idx<0?APP_PERMISSION_MODULES.length:idx+1,0,
+  {key:V27_RESTRICTED_LABOR_MODULE,label:'근로자현황파악 (민감정보·별도 승인)'});
+}
+function laborGrantedAccessV27(action='view'){
+ if(permissionSystemAvailable!==true||!currentSessionUser?.id||!currentAppUser||
+    currentAppUser.user_id!==currentSessionUser.id||currentAppUser.active!==true)return false;
+ if(currentAppUser.is_admin===true)return true;
+ const perm=currentPermissions.get(V27_RESTRICTED_LABOR_MODULE);
+ const store=Number($('storeSelect')?.value||0);
+ if(!store||!currentStoreAccess.has(store))return false;
+ return action==='edit' ? (perm?.can_view===true&&perm?.can_edit===true) : perm?.can_view===true;
+}
+// Earlier wrappers reference this guard dynamically; preserve their protective behavior.
+laborPrivateAllowedV21=function(){return laborGrantedAccessV27('view')};
+const v27CanViewPrevious=canViewModule;
+canViewModule=function(module){if(module==='labor')return laborGrantedAccessV27('view');return v27CanViewPrevious(module)};
+const v27CanEditPrevious=canEditModule;
+canEditModule=function(module){if(module==='labor')return laborGrantedAccessV27('edit');return v27CanEditPrevious(module)};
+// Previous laborAllowed() was hardcoded to admin. Replace it with explicit grants.
+laborAllowed=function(){
+ if(laborGrantedAccessV27('view'))return true;
+ alert('근로자현황파악은 최고관리자 또는 권한관리에서 보기 권한을 부여받은 계정만 이용할 수 있습니다.');
+ return false;
+};
+function laborRequireEditV27(){return laborGrantedAccessV27('edit')}
+const v27ApplyPermissionPrevious=applyPermissionUI;
+applyPermissionUI=function(...args){
+ const result=v27ApplyPermissionPrevious(...args);
+ const view=laborGrantedAccessV27('view'),edit=laborGrantedAccessV27('edit');
+ document.body.classList.toggle('laborPrivateAuthorized',view);
+ document.body.classList.toggle('laborWorkbookReadOnly',view&&!edit);
+ if($('laborTabBtn'))$('laborTabBtn').style.display=view?'inline-flex':'none';
+ if(!view){
+  $('laborPage')?.classList.remove('active');laborDraft=null;laborSpecialState=null;
+  if(hoursView==='labor')setHoursView('summary',false);
+ }
+ return result;
+};
+const v27SavedViewPrevious=hoursSavedView;
+hoursSavedView=function(){
+ try{const key=hoursViewStorageKey();if(key&&localStorage.getItem(key)==='labor'&&laborGrantedAccessV27('view'))return 'labor'}catch(_){}
+ return v27SavedViewPrevious();
+};
+const v27SetViewPrevious=setHoursView;
+setHoursView=function(view,remember=true){
+ const allowed=laborGrantedAccessV27('view');
+ const requested=view==='labor'?(allowed?'labor':'summary'):(view==='attendance'?'attendance':'summary');
+ v27SetViewPrevious(requested==='labor'?'summary':requested,false);
+ hoursView=requested;
+ const host=$('hoursPage');if(host)host.dataset.hoursView=requested;
+ const labor=$('laborPage');if(labor)labor.classList.toggle('active',requested==='labor'&&allowed);
+ $('hoursSummaryView')?.classList.toggle('hidden',requested!=='summary');
+ $('attendanceView')?.classList.toggle('hidden',requested!=='attendance');
+ $('hoursSummaryTabBtn')?.classList.toggle('active',requested==='summary');
+ $('attendanceTabBtn')?.classList.toggle('active',requested==='attendance');
+ $('laborTabBtn')?.classList.toggle('active',requested==='labor');
+ $('laborTabBtn')?.setAttribute('aria-selected',String(requested==='labor'));
+ if($('hoursPageTitle'))$('hoursPageTitle').textContent=requested==='labor'?'근로자현황파악':requested==='attendance'?'근태 확인':'근로시간';
+ if($('hoursPageSub'))$('hoursPageSub').textContent=requested==='labor'?'노무사 제출자료 · 업장별 월간 원본 및 특이사항':requested==='attendance'?'텔레캅 지문기록과 대시보드 스케줄을 비교합니다.':'선택월 스케줄을 기준으로 근로시간을 확인합니다.';
+ if(remember){try{const key=hoursViewStorageKey();if(key)localStorage.setItem(key,requested)}catch(_){}}
+ if(requested==='labor'&&host?.classList.contains('active')){
+  if(!laborDraft||Number(laborDraft.sid)!==Number(storeId())||String(laborDraft.ym)!==String($('monthSelect')?.value)){
+    Promise.resolve(laborLoadSelectedMonth()).catch(err=>{console.warn('근로자현황파악 로드 실패',err)});
+  }
+ }
+};
+// The public user list can grant the module with independent view/edit controls.
+// View-only access must never write, including automatic O-column regeneration.
+for(const method of ['laborSetValue','laborCellChange','laborQueueEdit','laborSaveMonth',
+ 'laborFlushSave','laborUploadOriginal','laborCopyPriorMonth','laborClearChecks',
+ 'laborToggleChecked','laborChangeOrder','laborSpecialMarkSent','laborSpecialExtraNote',
+ 'laborScheduleAutoSave','laborInlineSyncO','laborQueueResizeSave']){
+ const old=globalThis[method];
+ if(typeof old!=='function')continue;
+ // Preserve async returns for callers awaiting save/flush.
+ globalThis[method]=function(...args){
+   if(!laborRequireEditV27())return method==='laborFlushSave'?Promise.resolve(!!laborDraft&&!laborDraft.dirty):method==='laborSaveMonth'?Promise.resolve(false):undefined;
+   return old.apply(this,args);
+ };
+}
+const v27SpecialLoadPrevious=laborSpecialLoad;
+laborSpecialLoad=async function(...args){
+ if(!laborGrantedAccessV27('view'))return;
+ if(!laborGrantedAccessV27('edit'))return; // no O auto-write for read-only users
+ return v27SpecialLoadPrevious(...args);
+};
+const v27RenderLaborPrevious=laborRenderSheet;
+laborRenderSheet=function(...args){
+ const out=v27RenderLaborPrevious(...args);
+ if(!laborRequireEditV27()){
+   document.querySelectorAll('#laborWorkbookGrid input,#laborWorkbookGrid textarea').forEach(el=>{
+     if(!el.disabled){el.readOnly=true;el.tabIndex=-1}
+   });
+   document.querySelectorAll('#laborWorkbookGrid input[type=checkbox]').forEach(el=>el.disabled=true);
+ }
+ return out;
+};
+const v27ToggleLaborPrevious=toggleLaborInlineEditor;
+toggleLaborInlineEditor=async function(...args){
+ if(!laborAllowed())return;
+ setHoursView('labor');
+ if(!laborDraft||laborDraft.sid!==storeId()||laborDraft.ym!==$('monthSelect')?.value)await laborLoadSelectedMonth();
+};
+// Initial authentication may finish between older script blocks. Reconcile once
+// after all scripts register their permission guards and the DOM is ready.
+document.addEventListener('DOMContentLoaded',()=>{
+ if(currentSessionUser?.id){applyPermissionUI();setHoursView(hoursSavedView(),false)}
+ else if($('hoursPage'))$('hoursPage').dataset.hoursView='summary';
+});
+// If a delegate has access only to a non-default store, restore the tab after
+// the store selector has been filtered to that user's allowed locations.
+const v27LoadStoresPrevious=loadStores;
+loadStores=async function(...args){
+ const result=await v27LoadStoresPrevious(...args);
+ if(currentSessionUser?.id){applyPermissionUI();setHoursView(hoursSavedView(),false)}
+ return result;
+};
+</script>
 </body></html>
